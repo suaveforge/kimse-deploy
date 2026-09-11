@@ -41,5 +41,5 @@ if(card){
  z+='</div>';card.classList.add('mb-4');card.innerHTML=z;
 }
 document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.11')>=0)e.textContent='Updated 2026.09.11 · 02';});
-document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KKIMSAE Evidence MVP')>=0)e.textContent='KKIMSAE Evidence MVP · Technical evidence reference · Updated 2026.09.11 · Build 02 · UI based on Tabler official dashboard template';});
+document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KKIMSAE Evidence MVP')>=0)e.textContent='KKIMSAE Evidence · Updated 2026.09.11';});
 })();
