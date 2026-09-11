@@ -30,16 +30,16 @@ var S=[
 ['yellow','ADDITIONAL SENSOR CANDIDATE','Olfactory impairment and the risk of cognitive decline and dementia: a meta-analysis','Zirong Chen, Hongbo Xie, Linyin Yao, Yongxiang Wei · Capital Medical University / Beijing AnZhen Hospital · 2021','8 studies · 13,165 participants · 3,237 events · age 70–80 subgroup pooled RR 2.00 (95% CI 1.79–2.23)','PMID 32978117 · DOI 10.1016/j.bjorl.2020.07.009','https://pubmed.ncbi.nlm.nih.gov/32978117/']
 ];
 function chips(s,c){return s.split('|').map(function(x){return '<span class="badge bg-'+c+'-lt me-1">'+x+'</span>';}).join('');}
-var h='<div class="card mb-4" id="authority-backbone"><div class="card-header"><div><h2 class="card-title">Authority Backbone · 이 근거를 누가 만들었는가</h2><div class="text-secondary small mt-1">기관명만 나열하지 않고, 권위의 성격 · 대표 저자 · 소속 · 저널/규제기관 · 식별자를 함께 표시합니다.</div></div></div><div class="card-body"><div class="row g-3">';
+var h='<div class="card mb-4" id="authority-backbone"><div class="card-header"><div><h2 class="card-title">Authority Backbone · 이 근거를 누가 만들었는가</h2><div class="text-secondary small mt-1">공식기관 · 학회 · 대표 저자 · 소속 · 저널 · 연구규모 · 식별자</div></div></div><div class="card-body"><div class="row g-3">';
 A.forEach(function(a){h+='<div class="col-md-6 col-xl-4"><div class="card h-100 border-'+a[0]+'"><div class="card-body"><span class="badge bg-'+a[0]+' text-white mb-2">'+a[1]+'</span><h3 class="card-title mb-1">'+a[2]+'</h3><div class="fw-bold">'+a[3]+'</div><div class="text-secondary small">'+a[4]+'</div><div class="mt-2">'+chips(a[5],a[0])+'</div><div class="small mt-2 font-monospace">'+a[6]+'</div></div></div></div>';});
 h+='</div></div></div>';
 if(!document.getElementById('authority-backbone')){var i=document.querySelector('.page-body .container-xl > .alert.alert-info');if(i)i.insertAdjacentHTML('afterend',h);}
 var card=document.getElementById('sources');
 if(card){
- var z='<div class="card-header"><div><h2 class="card-title">Authority & Original Sources · 근거 라이브러리</h2><div class="text-secondary small mt-1">개수를 맞추기 위해 줄이지 않습니다. 조기발견 팩터·가중치·조합·검증에 직접 연결되고 권위가 높은 공식기관·원논문·메타분석·체계적 문헌고찰을 우선 수록합니다.</div></div><div class="card-actions"><span class="badge bg-primary-lt">'+S.length+' high-relevance sources</span></div></div><div class="list-group list-group-flush">';
+ var z='<div class="card-header"><div><h2 class="card-title">Authority & Original Sources · 근거 라이브러리</h2><div class="text-secondary small mt-1">공식기관 · 원논문 · 메타분석 · 체계적 문헌고찰 · 검증연구</div></div><div class="card-actions"><span class="badge bg-primary-lt">'+S.length+' high-relevance sources</span></div></div><div class="list-group list-group-flush">';
  S.forEach(function(s){var sid=s[5].replace(' · ','<br>');z+='<a class="list-group-item list-group-item-action" href="'+s[6]+'" target="_blank" rel="noopener"><div class="d-flex w-100 justify-content-between gap-3"><div><div class="mb-1"><span class="badge bg-'+s[0]+'-lt me-2">'+s[1]+'</span><span class="fw-bold">'+s[2]+'</span></div><div class="text-secondary">'+s[3]+'</div><div class="small mt-1">'+s[4]+'</div></div><div class="text-end small text-secondary text-nowrap">'+sid+'</div></div></a>';});
  z+='</div>';card.classList.add('mb-4');card.innerHTML=z;
 }
 document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.11')>=0)e.textContent='Updated 2026.09.11 · 02';});
-document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KKIMSAE Evidence MVP')>=0)e.textContent='KKIMSAE Evidence MVP · Research planning interface, not medical diagnosis · Updated 2026.09.11 · Build 02 · UI based on Tabler official dashboard template';});
+document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KKIMSAE Evidence MVP')>=0)e.textContent='KKIMSAE Evidence MVP · Technical evidence reference · Updated 2026.09.11 · Build 02 · UI based on Tabler official dashboard template';});
 })();
