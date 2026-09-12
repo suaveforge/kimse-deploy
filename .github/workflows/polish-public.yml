@@ -1,0 +1,88 @@
+name: KIMSE PUBLIC PREVIEW POLISH
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/polish-public.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Match polished KIMSE preview
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          p = Path('app/app.js')
+          s = p.read_text(encoding='utf-8')
+          replacements = {
+            './assets/icons/icon-192.png': './assets/icons/icon.svg',
+            'Updated 2026.09.12 · P0-01': 'Updated 2026.09.12 · Release 01',
+            '<button disabled class="btn-kimse btn-secondary-k">${I(\'brand-apple\')} Apple 연결 예정</button><button disabled class="btn-kimse btn-secondary-k">${I(\'brand-google\')} Google 연결 예정</button>': '',
+            "${row('예상 시간','약 10분','10분')}${row('문항','기억·집중·언어 등','12문항')}": "${row('예상 시간','약 3분','3분')}${row('문항','기억·집중·언어','3문항')}",
+            '*100)||82;': '*100);',
+            '<div class="price">가격 확정 전</div>': '<div class="price">가족 확장</div>',
+            '>P0 테스트 활성화</button>': '>보호자 2인 이상 사용</button>',
+            "say('P0 테스트용 프리미엄이 활성화되었습니다.');": "say('가족 확장 기능이 적용되었습니다.');",
+            '<h2>확인이 필요한 변화가 있어요</h2><p>낙상으로 의심되는 움직임이 기록되었습니다.</p>': '<h2>비상 알림</h2><p>사용자가 긴급 도움을 요청하면 연결된 가족에게 알림을 전달합니다.</p>',
+            "${row('발생 시간','','오늘 오전 10:24')}${row('위치','','자택 (거실)')}${btn('📞 지금 전화하기','emergency')}${btn('💬 메시지 보내기','emergency','btn-blue-k')}": "${row('알림 수신자','','연결된 보호자')}${row('현재 상태','','알림 대기')}${notice('가족 연결','비상상태는 등록된 보호자에게 전달되도록 설계되어 있습니다.')}"
+          }
+          for old, new in replacements.items():
+            s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+
+          icon = Path('app/assets/icons/icon.svg')
+          icon.parent.mkdir(parents=True, exist_ok=True)
+          icon.write_text('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="낌새">
+            <rect width="512" height="512" rx="120" fill="#fffaf7"/>
+            <rect x="34" y="34" width="444" height="444" rx="100" fill="#eaf4ff" stroke="#17325c" stroke-width="20"/>
+            <circle cx="256" cy="256" r="118" fill="#ffffff" stroke="#168f73" stroke-width="24"/>
+            <path d="M174 268c32-70 132-101 188-30" fill="none" stroke="#17325c" stroke-width="28" stroke-linecap="round"/>
+            <path d="M185 326c42 39 112 48 166 12" fill="none" stroke="#17325c" stroke-width="28" stroke-linecap="round"/>
+            <circle cx="323" cy="202" r="25" fill="#168f73"/>
+          </svg>''', encoding='utf-8')
+
+          manifest = Path('app/manifest.webmanifest')
+          m = json.loads(manifest.read_text(encoding='utf-8'))
+          m['icons'] = [{'src':'./assets/icons/icon.svg','sizes':'any','type':'image/svg+xml','purpose':'any maskable'}]
+          manifest.write_text(json.dumps(m, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          sw = Path('app/service-worker.js')
+          t = sw.read_text(encoding='utf-8').replace('kimse-pwa-20260912-p0','kimse-pwa-20260912-release01')
+          if './assets/icons/icon.svg' not in t:
+            t = t.replace("'./manifest.webmanifest'", "'./manifest.webmanifest','./assets/icons/icon.svg'")
+          sw.write_text(t, encoding='utf-8')
+          PY
+
+      - name: Validate public preview
+        run: |
+          set -e
+          test -s app/assets/icons/icon.svg
+          ! grep -q 'icon-192.png' app/app.js
+          ! grep -q 'P0 테스트' app/app.js
+          ! grep -q '연결 예정' app/app.js
+          ! grep -q '가격 확정 전' app/app.js
+          python -m json.tool app/manifest.webmanifest >/dev/null
+          node --check app/app.js
+          node --check app/service-worker.js
+
+      - name: Commit public preview
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app CNAME .nojekyll
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Polish KIMSE public preview"
+          git push origin HEAD:main
