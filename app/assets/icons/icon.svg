@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="낌새">
+  <rect width="512" height="512" rx="120" fill="#fffaf7"/>
+  <rect x="34" y="34" width="444" height="444" rx="100" fill="#eaf4ff" stroke="#17325c" stroke-width="20"/>
+  <circle cx="256" cy="256" r="118" fill="#ffffff" stroke="#168f73" stroke-width="24"/>
+  <path d="M174 268c32-70 132-101 188-30" fill="none" stroke="#17325c" stroke-width="28" stroke-linecap="round"/>
+  <path d="M185 326c42 39 112 48 166 12" fill="none" stroke="#17325c" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="323" cy="202" r="25" fill="#168f73"/>
+</svg>
