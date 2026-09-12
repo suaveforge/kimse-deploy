@@ -1,0 +1,13 @@
+{
+  "name": "낌새",
+  "short_name": "낌새",
+  "description": "작은 인지·생활 변화를 알아차리고 가족과 함께 관리하는 인지 케어 서비스",
+  "lang": "ko-KR",
+  "start_url": "./#/start",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fffaf7",
+  "theme_color": "#17325c",
+  "orientation": "portrait-primary",
+  "icons": []
+}
