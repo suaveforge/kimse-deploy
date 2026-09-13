@@ -77,3 +77,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:460px){.market-item{grid-template-columns:48px 1fr auto}.market-item-icon{width:48px;height:48px}.compact-btn{font-size:14px;padding:9px 11px}}
 
 .market-vendor{display:block;color:#116b58;font-size:13px;font-weight:900;margin-bottom:2px;letter-spacing:-.01em}
+
+.admin-inquiry{border:1px solid var(--kimse-border);border-radius:20px;background:#fff;padding:16px}
+.admin-inquiry b{display:block;font-size:18px}.admin-inquiry small{display:block;color:var(--kimse-muted);margin-top:2px}.admin-inquiry p{margin:12px 0;color:var(--kimse-text);white-space:pre-wrap}
+.admin-inquiry dl{display:grid;gap:6px;margin:0}.admin-inquiry dl div{display:grid;grid-template-columns:74px 1fr;gap:8px}.admin-inquiry dt{font-size:13px;font-weight:900;color:var(--kimse-muted)}.admin-inquiry dd{margin:0;min-width:0;word-break:break-word}.admin-status-actions{display:flex;gap:8px;overflow-x:auto;margin-top:14px;padding-bottom:2px}
