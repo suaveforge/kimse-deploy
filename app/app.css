@@ -75,3 +75,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .field textarea,.field select{width:100%;border:1px solid #bfcbd9;border-radius:14px;padding:12px 14px;background:#fff;color:var(--kimse-text)}
 .field textarea{min-height:120px;resize:vertical}
 @media(max-width:460px){.market-item{grid-template-columns:48px 1fr auto}.market-item-icon{width:48px;height:48px}.compact-btn{font-size:14px;padding:9px 11px}}
+
+.market-vendor{display:block;color:#116b58;font-size:13px;font-weight:900;margin-bottom:2px;letter-spacing:-.01em}
