@@ -1,0 +1,225 @@
+{
+  "schemaVersion": "2026-09-14.1",
+  "updated": "2026-09-14",
+  "governance": {
+    "principle": "근거 페이지를 단일 기준으로 사용하며 앱은 이 레지스트리의 활성 모델을 읽어 계산합니다.",
+    "activeModelChanges": "새 논문·가이드라인·규제 이슈는 먼저 changeReview에 후보로 표시하고, 근거 검토 전 활성 팩터·가중치를 자동 변경하지 않습니다."
+  },
+  "activeModel": {
+    "id": "CAIDE_MODEL_1",
+    "name": "CAIDE Dementia Risk Score · Model 1",
+    "role": "risk_prior",
+    "status": "active",
+    "description": "중년기의 장기 치매 위험을 추정하기 위해 공개 검증된 CAIDE Model 1의 7개 변수와 원 점수체계를 그대로 사용합니다.",
+    "source": {
+      "title": "Risk score for the prediction of dementia risk in 20 years among middle aged people",
+      "authors": "Miia Kivipelto et al.",
+      "journal": "The Lancet Neurology",
+      "year": 2006,
+      "pmid": "16914401",
+      "doi": "10.1016/S1474-4422(06)70537-3",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/16914401/"
+    },
+    "combination": {
+      "method": "sum_points",
+      "maxScore": 15,
+      "rule": "7개 팩터의 공개 CAIDE Model 1 점수를 합산합니다.",
+      "researchCutoff": {
+        "value": 9,
+        "operator": ">=",
+        "note": "원 연구의 연구용 기준점입니다. 낌새에서 진단 또는 확정 판정으로 사용하지 않습니다."
+      }
+    },
+    "factors": [
+      {
+        "id": "age",
+        "label": "연령",
+        "group": "Risk",
+        "question": "연령 구간을 선택해주세요.",
+        "options": [
+          {
+            "label": "46세 이하",
+            "points": 0
+          },
+          {
+            "label": "47–53세",
+            "points": 3
+          },
+          {
+            "label": "54세 이상",
+            "points": 4
+          }
+        ],
+        "evidence": "CAIDE Model 1"
+      },
+      {
+        "id": "education",
+        "label": "교육기간",
+        "group": "Risk",
+        "question": "정규 교육을 받은 기간을 선택해주세요.",
+        "options": [
+          {
+            "label": "10년 이상",
+            "points": 0
+          },
+          {
+            "label": "7–9년",
+            "points": 2
+          },
+          {
+            "label": "0–6년",
+            "points": 3
+          }
+        ],
+        "evidence": "CAIDE Model 1"
+      },
+      {
+        "id": "sex",
+        "label": "성별",
+        "group": "Risk",
+        "question": "원 CAIDE 점수의 성별 변수를 선택해주세요.",
+        "options": [
+          {
+            "label": "여성",
+            "points": 0
+          },
+          {
+            "label": "남성",
+            "points": 1
+          }
+        ],
+        "evidence": "CAIDE Model 1"
+      },
+      {
+        "id": "sbp",
+        "label": "수축기혈압",
+        "group": "Risk",
+        "question": "수축기혈압 구간을 선택해주세요.",
+        "options": [
+          {
+            "label": "140 mmHg 이하",
+            "points": 0
+          },
+          {
+            "label": "140 mmHg 초과",
+            "points": 2
+          }
+        ],
+        "evidence": "CAIDE Model 1"
+      },
+      {
+        "id": "bmi",
+        "label": "BMI",
+        "group": "Risk",
+        "question": "BMI 구간을 선택해주세요.",
+        "options": [
+          {
+            "label": "30 이하",
+            "points": 0
+          },
+          {
+            "label": "30 초과",
+            "points": 2
+          }
+        ],
+        "evidence": "CAIDE Model 1"
+      },
+      {
+        "id": "cholesterol",
+        "label": "총콜레스테롤",
+        "group": "Risk",
+        "question": "총콜레스테롤 구간을 선택해주세요.",
+        "options": [
+          {
+            "label": "6.5 mmol/L 이하",
+            "points": 0
+          },
+          {
+            "label": "6.5 mmol/L 초과",
+            "points": 2
+          }
+        ],
+        "evidence": "CAIDE Model 1"
+      },
+      {
+        "id": "activity",
+        "label": "신체활동",
+        "group": "Risk",
+        "question": "원 CAIDE 기준의 신체활동 상태를 선택해주세요.",
+        "options": [
+          {
+            "label": "활동적",
+            "points": 0
+          },
+          {
+            "label": "비활동적",
+            "points": 1
+          }
+        ],
+        "evidence": "CAIDE Model 1"
+      }
+    ]
+  },
+  "trackedSignals": [
+    {
+      "id": "cognitive_tasks",
+      "label": "기억·집중·언어·일상 과제",
+      "appUse": "반복 과제 수행과 개인 변화 추적",
+      "fixedWeight": null,
+      "evidence": "MoCA-K 및 디지털 인지·행동 연구",
+      "note": "현재 CAIDE 점수에 합산하지 않습니다."
+    },
+    {
+      "id": "sleep",
+      "label": "수면",
+      "appUse": "건강 기록·개인 baseline 변화 추적",
+      "fixedWeight": null,
+      "evidence": "LIBRA2 · Passive DHT",
+      "note": "고정 진단 가중치 없음"
+    },
+    {
+      "id": "steps",
+      "label": "활동량",
+      "appUse": "건강 기록·개인 baseline 변화 추적",
+      "fixedWeight": null,
+      "evidence": "CAIDE/LIBRA2 · Passive DHT",
+      "note": "CAIDE의 신체활동 점수와 앱의 일일 걸음수는 동일 변수로 자동 환산하지 않습니다."
+    },
+    {
+      "id": "blood_pressure_record",
+      "label": "혈압 기록",
+      "appUse": "건강 기록",
+      "fixedWeight": null,
+      "evidence": "CAIDE",
+      "note": "위험요인 체크에서 사용자가 선택한 CAIDE 수축기혈압 구간과 별도로 저장됩니다."
+    },
+    {
+      "id": "mood",
+      "label": "기분",
+      "appUse": "생활 변화 기록",
+      "fixedWeight": null,
+      "evidence": "우울 관련 위험요인 연구",
+      "note": "간단 기분 선택값을 임상 우울 가중치로 환산하지 않습니다."
+    },
+    {
+      "id": "medication",
+      "label": "복약 기록",
+      "appUse": "복약 관리",
+      "fixedWeight": null,
+      "evidence": "생활관리 데이터",
+      "note": "현재 치매 위험점수에 합산하지 않습니다."
+    }
+  ],
+  "combinationRules": [
+    "활성 위험점수는 CAIDE Model 1 내부에서만 합산합니다.",
+    "CAIDE · ANU-ADRI · LIBRA2는 목적과 모집단이 달라 서로 합산하지 않습니다.",
+    "보행·음성·그리기 등 디지털 바이오마커 연구의 분류 정확도를 임상 점수 가중치로 직접 변환하지 않습니다.",
+    "개인 baseline 변화와 반복 인지과제 결과는 별도 시계열 신호로 보존하고, 외부검증 전 고정 진단 가중치를 부여하지 않습니다."
+  ],
+  "changeReview": {
+    "lastReviewed": "2026-09-14",
+    "status": "clear",
+    "items": [],
+    "emptyMessage": "현재 활성 팩터·가중치·조합의 추가·변경·삭제를 요구하는 검토 대기 근거가 없습니다."
+  }
+}
