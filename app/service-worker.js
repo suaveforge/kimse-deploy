@@ -1,9 +1,10 @@
-const CACHE = 'kimse-pwa-20260914-release07';
+const CACHE = 'kimse-pwa-20260914-release08';
 const CORE = [
   './',
   './index.html',
   './app.css',
   './app.js',
+  './localizehub-runtime.js',
   './manifest.webmanifest',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
