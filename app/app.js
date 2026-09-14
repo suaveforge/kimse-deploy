@@ -140,7 +140,7 @@ const MARKET_ITEMS=[
 
 {id:'d1',cat:'digital',icon:'📱',vendor:'케어네이션',title:'케어네이션 앱',desc:'간병인 찾기, 방문요양·병원동행 등 여러 돌봄 서비스를 한곳에서 신청·관리하는 앱 기반 플랫폼.',useFor:'가족의 돌봄 서비스를 휴대폰에서 비교·신청하고 싶은 보호자',check:'서비스별 계약 주체, 개인정보 처리, 결제·취소 조건을 확인하세요.',meta:'가족 돌봄 플랫폼 · 비제휴',url:'https://www.carenation.kr/'},
 {id:'d2',cat:'digital',icon:'🏡',vendor:'삼성전자',title:'SmartThings',desc:'호환되는 센서·가전·태그를 스마트폰에서 연결해 상태를 확인하고 자동화를 설정하는 플랫폼.',useFor:'가정의 조명·센서·태그 등 호환 기기를 가족과 함께 관리하고 싶은 경우',check:'기기별 호환성, 계정 공유 권한과 위치·생활 데이터의 개인정보 설정을 확인하세요.',meta:'스마트홈 플랫폼 · 비제휴',url:'https://www.samsung.com/sec/smartthings/'},
-{id:'d3',cat:'digital',icon:'📞',vendor:'캐어유',title:'AI 케어콜',desc:'기관이 어르신 안부 확인과 생활 지원 연락을 운영할 때 활용할 수 있는 AI 기반 케어콜 서비스.',useFor:'기관·복지시설에서 정기 안부 확인 업무를 보조하려는 경우',check:'기관용 서비스 범위, 동의 절차, 통화기록·개인정보 처리와 사람의 후속 대응 체계를 확인하세요.',meta:'기관용 안부확인 서비스',url:'https://careyou.org/'},
+{id:'d3',cat:'digital',icon:'📞',vendor:'캐어유',title:'AI 케어콜',desc:'기관이 어르신 안부 확인과 생활 지원 연락을 운영할 때 활용할 수 있는 AI 기반 케어콜 서비스.',useFor:'기관·복지시설에서 정기 안부 확인 업무를 보조하려는 경우',check:'기관용 서비스 범위, 동의 절차, 통화기록·개인정보 처리와 사람의 후속 대응 체계를 확인하세요.',meta:'기관용 안부확인 서비스',url:'https://careyou.org/98'},
 
 {id:'w1',cat:'welfare',icon:'🏥',vendor:'국민건강보험공단',title:'노인장기요양보험',desc:'장기요양 인정신청, 급여·기관·복지용구 정보를 확인할 수 있는 공식 서비스.',useFor:'방문요양·주간보호·복지용구 등 장기요양 서비스를 알아보는 가족',check:'등급과 급여종류, 본인부담률, 이용 가능한 기관·복지용구를 공식 사이트에서 확인하세요.',meta:'공공 제도 안내',url:'https://www.longtermcare.or.kr/'},
 {id:'w2',cat:'welfare',icon:'🧭',vendor:'중앙치매센터',title:'치매안심센터·지원정보',desc:'지역 치매안심센터와 치매 관련 공공 지원, 안내 자료를 확인할 수 있는 공식 정보 채널.',useFor:'검사·상담·가족지원·실종예방 등 지역 서비스를 찾는 분',check:'실제 서비스 신청은 거주지 치매안심센터의 대상·운영시간·필요서류를 확인하세요.',meta:'공공 치매지원 정보',url:'https://www.nid.or.kr/'},
