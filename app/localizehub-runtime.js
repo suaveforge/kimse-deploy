@@ -148,9 +148,18 @@ function observe(){
   });
   observer.observe(document.documentElement,{subtree:true,childList:true});
 }
+function setSwitcherVisibility(cfg){
+  const count=new Set((cfg.supportedLocales||[]).map(baseLocale).filter(Boolean)).size;
+  let style=document.getElementById('kimse-localizehub-visibility');
+  if(count<=1){
+    if(!style){style=document.createElement('style');style.id='kimse-localizehub-visibility';document.head.append(style)}
+    style.textContent='localize-switcher{display:none!important}';
+  }else if(style){style.remove()}
+}
 async function boot(){
   try{
     const cfg=await config();
+    setSwitcherVisibility(cfg);
     const locale=requestedLocale(cfg);
     await setLocale(locale);
     document.addEventListener('localechange',e=>{
