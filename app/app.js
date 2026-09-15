@@ -82,11 +82,11 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.15 · Release 15<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.15 · Release 16<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
-function captureScenarioRibbon(){return demoAutoRunning?'<div class="capture-scenario-ribbon" role="status"><strong>자동촬영 시나리오</strong><span>실제 앱 화면 · 14일 경과만 압축 재현 · 예시 경과 데이터</span></div>':''}
-function wrap(html,o={}){return `${captureScenarioRibbon()}${o.nohead?standaloneLang():head(o.title||'낌새',o.back!==false)}<main id="main" class="page ${o.narrow?'narrow':''}" tabindex="-1">${html}${foot()}</main>${o.bottom?nav(o.care,o.active):''}`}
+function captureScenarioRibbon(){return ''}
+function wrap(html,o={}){return `${o.nohead?standaloneLang():head(o.title||'낌새',o.back!==false)}<main id="main" class="page ${o.narrow?'narrow':''}" tabindex="-1">${html}${foot()}</main>${o.bottom?nav(o.care,o.active):''}`}
 const notice=(h,p)=>`<div class="notice"><strong>${h}</strong>${p}</div>`;
 const row=(h,s='',right='')=>`<div class="list-row"><span><strong>${h}</strong>${s?`<small>${s}</small>`:''}</span>${right}</div>`;
 const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
@@ -283,14 +283,22 @@ function startPassiveCollectors(){
   if(S.consents.location&&S.permissions.location==='granted'){collectLocationOnce();locationTimer=setInterval(collectLocationOnce,10*60*1000)}if(S.consents.motion&&['granted','available'].includes(S.permissions.motion))window.addEventListener('devicemotion',onDeviceMotion,{passive:true});collectNativeBridgeSignals();setTimeout(flushSignals,500);
 }
 function recordAppActive(){if(!monitoringEnabled()||!S.consents.usage)return;const mins=(Date.now()-appSessionStarted)/60000;if(mins>.05)queueSignal('app_active_minutes',mins,'min','pwa');appSessionStarted=Date.now()}
-const DEMO_DURATION_MS=30000;
+const DEMO_DURATION_MS=40000;
 let demoRecorder=null,demoRecordStream=null,demoChunks=[],demoDownloadUrl='',demoAutoRunning=false,demoOriginalStateJson=null,demoRunId=0,demoPreviewOnly=false;
 const demoWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function demoSetValue(selector,value){
-  const el=$(selector);if(!el)return false;el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));return true;
+  const el=$(selector);if(!el)return false;el.scrollIntoView?.({block:'center',behavior:'smooth'});el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));return true;
 }
 function demoCheck(selector,checked=true){const el=$(selector);if(!el)return false;el.checked=checked;el.dispatchEvent(new Event('change',{bubbles:true}));return true}
-function demoClick(selector){const el=$(selector);if(!el)return false;el.click();return true}
+async function demoFocus(selector,ms=260,block='center'){
+  const el=$(selector);if(!el)return false;el.scrollIntoView?.({block,behavior:'smooth'});await demoWait(ms);return true;
+}
+async function demoClick(selector,after=420,block='center'){
+  const el=$(selector);if(!el)return false;el.scrollIntoView?.({block,behavior:'smooth'});await demoWait(220);el.classList.add('capture-tap');await demoWait(180);el.click();await demoWait(after);return true;
+}
+async function demoGo(name,after=800){
+  go(name);await demoWait(100);window.scrollTo({top:0,left:0,behavior:'instant'});await demoWait(after);
+}
 function demoRestoreState(){
   const raw=demoOriginalStateJson;demoOriginalStateJson=null;
   try{const x=raw?JSON.parse(raw):{};S=Object.assign(structuredClone(D),x);S.a11y=Object.assign({},D.a11y,x.a11y||{});S.profile=Object.assign({},D.profile,x.profile||{});S.onboarding=Object.assign({},D.onboarding,x.onboarding||{});S.initial=Object.assign({},D.initial,x.initial||{});S.initial.answers=Object.assign({},D.initial.answers,x.initial?.answers||{});S.consents=Object.assign({},D.consents,x.consents||{});S.baseline=Object.assign({},D.baseline,x.baseline||{});S.permissions=Object.assign({},D.permissions,x.permissions||{});S.remote=Object.assign({},D.remote,x.remote||{});S.monitoring=Object.assign({},D.monitoring,x.monitoring||{});if(!Array.isArray(S.monitoring.pending))S.monitoring.pending=[];if(!Array.isArray(S.monitoring.alerts))S.monitoring.alerts=[];if(!Array.isArray(S.brainHistory))S.brainHistory=[];if(raw)localStorage.setItem(K,raw);else localStorage.removeItem(K)}catch{}
@@ -303,7 +311,7 @@ function demoPrepareScenario(){
   demoAutoRunning=true;document.documentElement.classList.add('real-app-capture-running');save();
 }
 function demoWarpBaseline(day){
-  S.baseline.startedAt=new Date(Date.now()-Math.max(0,day-1)*86400000).toISOString();save();render();
+  S.baseline.startedAt=new Date(Date.now()-Math.max(0,day-1)*86400000).toISOString();save();render();window.scrollTo({top:0,left:0,behavior:'instant'});
 }
 function demoInjectHistoryAndChanges(){
   const now=Date.now(),day=n=>new Date(now-n*86400000).toISOString();
@@ -327,33 +335,50 @@ async function runRealAppTour(){
   const alive=()=>demoAutoRunning&&run===demoRunId;
   const wait=async ms=>{await demoWait(ms);return alive()};
   try{
-    go('start');if(!await wait(1300))return;
-    demoClick('[data-go="role"]');if(!await wait(850))return;
-    demoClick('[data-role="self"]');if(!await wait(750))return;
-    demoSetValue('#name','시연 사용자');demoSetValue('#email','demo@kimse.app');if(!await wait(250))return;demoClick('#signup');if(!await wait(900))return;
+    await demoGo('start',1500);if(!alive())return;
+    await demoClick('[data-go="role"]',650);if(!alive())return;
+    await demoClick('[data-role="self"]',650);if(!alive())return;
 
-    demoSetValue('#profile-birth','1956');demoSetValue('#profile-sex','female');demoSetValue('#profile-education','gte10');demoSetValue('#profile-living','family');demoSetValue('#profile-sleep','7시간');demoSetValue('#profile-activity','some');demoSetValue('#profile-hearing','no');if(!await wait(250))return;
-    $('#profile-form')?.requestSubmit();if(!await wait(1200))return;
+    demoSetValue('#name','시연 사용자');demoSetValue('#email','demo@kimse.app');if(!await wait(650))return;
+    await demoClick('#signup',850);if(!alive())return;
 
-    demoClick('[data-initial-next]');if(!await wait(550))return;
-    demoClick('[data-initial-answer="attention:10"]');if(!await wait(500))return;
-    demoClick('[data-initial-answer="language:과일"]');if(!await wait(500))return;
-    demoClick('[data-initial-answer="spatial:no"]');if(!await wait(500))return;
-    demoClick('[data-initial-answer="daily:no"]');if(!await wait(500))return;
-    demoSetValue('#recall-input','나무, 기차, 우산');if(!await wait(250))return;demoClick('#save-recall');if(!await wait(1500))return;
+    demoSetValue('#profile-birth','1956');demoSetValue('#profile-sex','female');demoSetValue('#profile-education','gte10');demoSetValue('#profile-living','family');demoSetValue('#profile-sleep','7시간');demoSetValue('#profile-activity','some');demoSetValue('#profile-hearing','no');
+    await demoFocus('#profile-form button[type="submit"]',500,'center');if(!alive())return;$('#profile-form')?.requestSubmit();if(!await wait(1000))return;
 
-    demoClick('#skip-voice');if(!await wait(1500))return;
-    demoClick('[data-go="consent"]');if(!await wait(850))return;
-    ['#consent-service','#consent-privacy','#consent-health','#consent-microphone','#consent-location','#consent-motion','#consent-usage','#consent-notifications','#consent-caregiver'].forEach(x=>demoCheck(x,true));if(!await wait(550))return;
-    $('#consent-form')?.requestSubmit();if(!await wait(1200))return;
+    await demoClick('[data-initial-next]',650);if(!alive())return;
+    await demoClick('[data-initial-answer="attention:10"]',550);if(!alive())return;
+    await demoClick('[data-initial-answer="language:과일"]',550);if(!alive())return;
+    await demoClick('[data-initial-answer="spatial:no"]',550);if(!alive())return;
+    await demoClick('[data-initial-answer="daily:no"]',550);if(!alive())return;
+    demoSetValue('#recall-input','나무, 기차, 우산');if(!await wait(500))return;await demoClick('#save-recall',1000);if(!alive())return;
 
-    if(!await wait(1100))return;demoWarpBaseline(7);if(!await wait(1000))return;demoWarpBaseline(14);if(!await wait(1200))return;
-    demoInjectHistoryAndChanges();go('brain-map');if(!await wait(1700))return;
-    demoClick('[data-brain-view="top"]');if(!await wait(900))return;
-    go('brain-trends');if(!await wait(1500))return;demoClick('[data-brain-range="month"]');if(!await wait(1100))return;
-    go('monitoring-status');if(!await wait(1900))return;
-    S.mode='care';save();go('caregiver-home');if(!await wait(1600))return;
-    S.mode='self';save();go('home');if(!await wait(1700))return;
+    await demoFocus('#skip-voice',850,'end');if(!alive())return;await demoClick('#skip-voice',1100,'end');if(!alive())return;
+    await demoFocus('[data-go="brain-map"]',700,'center');if(!alive())return;
+    await demoClick('[data-go="consent"]',750,'end');if(!alive())return;
+
+    ['#consent-service','#consent-privacy','#consent-health'].forEach(x=>demoCheck(x,true));if(!await wait(700))return;
+    await demoFocus('#consent-microphone',650,'center');if(!alive())return;
+    ['#consent-microphone','#consent-location','#consent-motion','#consent-usage','#consent-notifications','#consent-caregiver'].forEach(x=>demoCheck(x,true));
+    await demoFocus('#consent-form button[type="submit"]',900,'end');if(!alive())return;$('#consent-form')?.requestSubmit();if(!await wait(1200))return;
+
+    demoWarpBaseline(1);if(!await wait(1200))return;
+    demoWarpBaseline(7);if(!await wait(1200))return;
+    demoWarpBaseline(14);if(!await wait(1400))return;
+
+    demoInjectHistoryAndChanges();await demoGo('brain-map',1700);if(!alive())return;
+    await demoClick('[data-brain-view="top"]',900);if(!alive())return;
+
+    await demoGo('brain-trends',1600);if(!alive())return;
+    await demoClick('[data-brain-range="month"]',1400);if(!alive())return;
+    await demoFocus('.trend-stack .trend-card:nth-child(3)',700,'center');if(!alive())return;
+
+    await demoGo('monitoring-status',1900);if(!alive())return;
+    await demoFocus('.signal-change-list',900,'center');if(!alive())return;
+
+    S.mode='care';save();await demoGo('caregiver-home',1800);if(!alive())return;
+    await demoFocus('.care-alert-card',800,'center');if(!alive())return;
+
+    S.mode='self';save();await demoGo('home',1800);if(!alive())return;
   }finally{
     if(!alive())return;
     demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running');
@@ -385,7 +410,7 @@ async function startDemoCapture(){
 }
 
 const page={};
-page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>30초 안에 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·기본검사·동의·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>시작</span><i>→</i><span>최초검사</span><i>→</i><span>음성</span><i>→</i><span>동의</span><i>→</i><span>1·7·14일</span><i>→</i><span>뇌지도</span><i>→</i><span>변화알림</span><i>→</i><span>보호자</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">현재 탭 녹화 + 실제 앱 자동조작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-real-app-auto-30s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">브라우저 보안상 녹화 시작 때 한 번만 “현재 탭”을 직접 선택해야 합니다. 이후 앱 조작·장면 이동·녹화 종료는 자동입니다.</p>',{title:'자동촬영',narrow:true});
+page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 40초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·기본검사·동의·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>시작</span><i>→</i><span>최초검사</span><i>→</i><span>음성</span><i>→</i><span>동의</span><i>→</i><span>1·7·14일</span><i>→</i><span>뇌지도</span><i>→</i><span>변화알림</span><i>→</i><span>보호자</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 녹화 + 실제 앱 자동조작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-40s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">브라우저 보안상 녹화 시작 때 한 번만 “현재 탭”을 직접 선택해야 합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
 page.start=()=>wrap(`<section class="hero"><img class="hero-logo" src="./assets/icons/icon.svg" alt="낌새 로고"><div class="eyebrow">오늘도, 변화를 먼저 알아차리는</div><h1>낌새</h1><p>작은 관심이 큰 안심이 됩니다.<br>나와 가족의 인지·생활 변화를 쉽고 꾸준하게 기록해요.</p><div class="hero-actions">${btn('시작하기','role')}${btn('로그인','auth','btn-secondary-k')}</div></section>${notice('접근성을 기본으로 설계했어요.','큰 글씨, 큰 터치 영역, 색상+아이콘, 화면 읽기와 음성 안내를 지원합니다.')}`,{nohead:true,narrow:true});
 page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','👵','제가 사용해요','내 건강을 스스로 관리해요.','bg-blue'],['care','👩','가족을 돌보고 있어요','가족의 상태를 함께 살펴봐요.','bg-pink'],['both','👵👩','둘 다 사용해요','내 건강도 챙기고 가족도 돌봐요.','bg-purple']].map(x=>`<button class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg">${x[1]}</span><span><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}${notice('계정은 하나, 역할은 여러 개.','보호자로 시작해도 나중에 사용자 역할을 추가할 수 있어요.')}`,{title:'역할 선택',narrow:true});
 page.auth=()=>wrap(`<div class="eyebrow">가입 2/3</div><h1 class="page-title">간편하게 시작하세요</h1><div class="form-stack"><div class="field"><label for="name">이름</label><input id="name" value="${S.account?.name||''}" placeholder="이름"></div><div class="field"><label for="email">이메일</label><input id="email" type="email" value="${S.account?.email||''}" placeholder="name@example.com"></div><button id="signup" class="btn-kimse btn-primary-k">이메일로 시작하기</button></div>`,{title:'회원가입 / 로그인',narrow:true});
