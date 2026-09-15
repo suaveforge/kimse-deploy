@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "2026-09-14.3",
-  "updated": "2026-09-14",
+  "schemaVersion": "2026-09-15.1",
+  "updated": "2026-09-15",
   "governance": {
     "principle": "근거 페이지를 단일 기준으로 사용하며 앱은 이 레지스트리의 활성 모델을 읽어 계산합니다.",
     "activeModelChanges": "새 논문·가이드라인·규제 이슈는 먼저 changeReview에 후보로 표시하고, 근거 검토 전 활성 팩터·가중치를 자동 변경하지 않습니다."
@@ -326,5 +326,153 @@
         "note": "홈캠 자체를 치매 진단기기로 보는 직접 근거는 현재 레지스트리에 없으며, 실제 적용 전 개인정보·동의·장치별 검증이 필요합니다."
       }
     ]
+  },
+  "signalMap": {
+    "eyebrow": "KIMSE · EARLY CHANGE SIGNAL MAP",
+    "headline": "낌새는 이런 작은 변화를 함께 봅니다",
+    "subheadline": "한 가지 수치가 아니라 수면·말하기·이동·사회활동·보행·인지 변화를 평소의 나와 비교하고, 각 신호를 외부 근거와 연결해 관찰합니다.",
+    "principle": "절대값 하나보다 ‘평소와 달라진 변화’를 봅니다. 신호 하나만으로 진단하지 않고 여러 변화의 방향과 지속성을 함께 확인합니다.",
+    "signals": [
+      {
+        "id": "sleep",
+        "icon": "moon",
+        "label": "수면 변화",
+        "summary": "잠드는 시간과 수면량이 평소와 달라지는가",
+        "examples": [
+          "수면시간 변화",
+          "취침·기상시간 변화",
+          "야간 활동 변화"
+        ],
+        "devices": [
+          "스마트폰",
+          "웨어러블"
+        ],
+        "evidenceLevel": "근거 기반",
+        "authority": [
+          "Passive DHT",
+          "LIBRA2"
+        ],
+        "status": "tracked",
+        "note": "현재 고정 진단 가중치는 부여하지 않고 개인 baseline 변화로 추적합니다."
+      },
+      {
+        "id": "speech",
+        "icon": "microphone",
+        "label": "말하기 변화",
+        "summary": "말의 속도·멈춤·운율이 평소와 달라지는가",
+        "examples": [
+          "발음·발화 변화",
+          "말 멈춤 증가",
+          "말속도·억양·운율 변화"
+        ],
+        "devices": [
+          "스마트폰"
+        ],
+        "evidenceLevel": "연구 근거",
+        "authority": [
+          "Speech biomarkers",
+          "Gait + Speech + Drawing"
+        ],
+        "status": "tracked",
+        "note": "음성 디지털 바이오마커 연구의 성능을 임상 진단 가중치로 직접 환산하지 않습니다."
+      },
+      {
+        "id": "mobility",
+        "icon": "map-pin",
+        "label": "이동 변화",
+        "summary": "외출·이동시간과 생활반경이 평소와 달라지는가",
+        "examples": [
+          "외출시간 변화",
+          "이동시간 변화",
+          "생활반경 축소"
+        ],
+        "devices": [
+          "스마트폰",
+          "홈센서"
+        ],
+        "evidenceLevel": "연구 근거",
+        "authority": [
+          "Passive DHT",
+          "Gait literature"
+        ],
+        "status": "tracked",
+        "note": "위치·이동 데이터는 권한과 기기 지원 범위 안에서만 사용합니다."
+      },
+      {
+        "id": "social",
+        "icon": "phone",
+        "label": "통화·사회활동 변화",
+        "summary": "연락 빈도와 사회적 활동이 평소와 달라지는가",
+        "examples": [
+          "통화량 변화",
+          "연락 빈도 변화",
+          "사회활동 패턴 변화"
+        ],
+        "devices": [
+          "스마트폰"
+        ],
+        "evidenceLevel": "확장 관찰",
+        "authority": [
+          "Social activity risk evidence",
+          "Passive sensing research"
+        ],
+        "status": "candidate",
+        "note": "사회활동 저하는 위험요인 근거가 있으나 ‘통화량’ 자체에 현재 고정 임상 가중치를 두지 않습니다."
+      },
+      {
+        "id": "gait_activity",
+        "icon": "walk",
+        "label": "활동·보행 변화",
+        "summary": "걷는 양과 보행 패턴이 평소와 달라지는가",
+        "examples": [
+          "걸음수·활동량 변화",
+          "비활동 시간 증가",
+          "보행 변동성 변화"
+        ],
+        "devices": [
+          "스마트폰",
+          "웨어러블",
+          "홈센서"
+        ],
+        "evidenceLevel": "근거 기반",
+        "authority": [
+          "CAIDE",
+          "Dual-task gait",
+          "Passive DHT"
+        ],
+        "status": "tracked",
+        "note": "일일 걸음수는 CAIDE의 신체활동 점수로 자동 환산하지 않습니다."
+      },
+      {
+        "id": "cognition",
+        "icon": "brain",
+        "label": "기억·집중 변화",
+        "summary": "기억·주의·언어 과제 수행이 평소와 달라지는가",
+        "examples": [
+          "기억 과제 변화",
+          "집중·주의 변화",
+          "언어·일상 과제 변화"
+        ],
+        "devices": [
+          "스마트폰"
+        ],
+        "evidenceLevel": "근거 기반",
+        "authority": [
+          "MoCA-K",
+          "Digital cognition research"
+        ],
+        "status": "tracked",
+        "note": "반복 과제 결과는 개인 변화 시계열로 보존하며 현재 CAIDE 위험점수에는 합산하지 않습니다."
+      }
+    ],
+    "riskContext": [
+      "연령",
+      "교육",
+      "수축기혈압",
+      "BMI",
+      "총콜레스테롤",
+      "신체활동"
+    ],
+    "footerMessage": "생활·인지 변화 신호 + 검증된 위험요인을 함께 본 뒤, 아래 근거 레지스트리에서 각 기준의 출처와 가중치 사용 여부를 확인할 수 있습니다."
   }
 }
