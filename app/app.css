@@ -153,17 +153,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .care-alert-card strong{display:block;font-size:17px}.care-alert-card small{display:block;color:#7f3d49;font-size:12px;margin-top:3px}
 @media(max-width:520px){.monitor-sync-card{grid-template-columns:1fr}.monitor-sync-card .btn-kimse{grid-row:auto;grid-column:auto;width:100%;margin-top:6px}.care-alert-card{grid-template-columns:42px minmax(0,1fr)}.care-alert-card>i{display:none}}
 
-/* Release 15 · real app auto-capture */
-.capture-scenario-ribbon{
-  position:sticky;top:0;z-index:1200;display:flex;justify-content:center;align-items:center;gap:8px;
-  padding:7px 12px;background:#10264a;color:#fff;border-bottom:1px solid rgba(255,255,255,.16);
-  font-size:11px;letter-spacing:.01em
-}
-.capture-scenario-ribbon strong{font-size:11px;color:#d9f4ea}
-.capture-scenario-ribbon span{opacity:.86}
+/* Release 16 · YouTube-ready real app auto-capture */
 .real-app-capture-running{scroll-behavior:auto}
-.real-app-capture-running .app-header{top:27px}
-.real-app-capture-running .standalone-lang{top:39px}
+.real-app-capture-running .capture-tap{
+  position:relative;z-index:2;box-shadow:0 0 0 4px rgba(20,143,115,.16),0 0 0 8px rgba(20,143,115,.07)!important;
+  transform:scale(.985);transition:box-shadow .16s ease,transform .16s ease
+}
 .demo-capture-mode body{background:#f5f7fa}
 .capture-route-list{
   display:flex;align-items:center;gap:6px;overflow-x:auto;padding:12px;margin:16px 0;border:1px solid var(--kimse-border);
@@ -175,7 +170,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .demo-controller-note{margin:14px 0 0;color:var(--kimse-muted);font-size:12px;line-height:1.55}
 #demo-download{text-decoration:none;text-align:center}
 @media(max-width:520px){
-  .capture-scenario-ribbon{justify-content:flex-start;overflow:hidden;white-space:nowrap}
-  .capture-scenario-ribbon span{overflow:hidden;text-overflow:ellipsis}
-  .real-app-capture-running .app-header{top:27px}
+  .real-app-capture-running .page{padding-left:18px;padding-right:18px}
 }
