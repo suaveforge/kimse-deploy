@@ -6,13 +6,31 @@ function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){retur
 function badge(points){return '<span class="badge bg-azure-lt">'+esc(points)+'점</span>'}
 function optionText(options){return options.map(function(o){return esc(o.label)+' '+badge(o.points)}).join(' · ')}
 function render(m){
-  var a=m.activeModel, cr=m.changeReview||{}, tracked=m.trackedSignals||[], rules=m.combinationRules||[], devices=m.deviceTiers||{}, tiers=devices.tiers||[];
+  var a=m.activeModel, cr=m.changeReview||{}, tracked=m.trackedSignals||[], rules=m.combinationRules||[], devices=m.deviceTiers||{}, tiers=devices.tiers||[], signalMap=m.signalMap||{}, signals=signalMap.signals||[];
   var review=(cr.items||[]).length
     ? '<div class="list-group list-group-flush">'+cr.items.map(function(x){
         var tone=x.action==='add'?'green':x.action==='remove'?'red':'yellow';
         return '<div class="list-group-item"><div class="d-flex justify-content-between gap-2"><strong>'+esc(x.title||x.factor||'근거 변경 후보')+'</strong><span class="badge bg-'+tone+'-lt">'+esc(x.action||'review')+'</span></div>'+(x.evidenceLevel?'<div class="small fw-bold mt-2">'+esc(x.evidenceLevel)+'</div>':'')+(x.source?'<div class="text-secondary small">'+esc(x.source)+'</div>':'')+'<div class="mt-2">'+esc(x.rationale||x.detail||'')+'</div>'+(x.impact?'<div class="alert alert-warning py-2 mt-2 mb-0"><strong>영향 검토</strong><br>'+esc(x.impact)+'</div>':'')+(x.sourceUrl?'<a class="btn btn-sm btn-outline-secondary mt-2" target="_blank" rel="noopener" href="'+esc(x.sourceUrl)+'">근거 원문 ↗</a>':'')+'</div>'
       }).join('')+'</div>'
     : '<div class="alert alert-success mb-0"><strong>변경 검토 대기 없음</strong><br>'+esc(cr.emptyMessage||'현재 검토 대기 근거가 없습니다.')+'</div>';
+  var signalHtml='';
+  if(signals.length){
+    var iconMap={sleep:'🌙',speech:'🗣️',mobility:'🚶',social:'📞',gait_activity:'👣',cognition:'🧠'};
+    var levelTone={'근거 기반':'green','연구 근거':'azure','확장 관찰':'yellow'};
+    signalHtml='<section class="mb-4" id="signal-map">'
+      +'<div class="card border-0 shadow-sm overflow-hidden"><div class="card-body p-4 p-lg-5">'
+      +'<div class="row g-4 align-items-end mb-4"><div class="col-lg-8"><div class="text-uppercase text-azure fw-bold small">'+esc(signalMap.eyebrow||'KIMSE · EARLY CHANGE SIGNAL MAP')+'</div><h2 class="display-5 mt-2 mb-2">'+esc(signalMap.headline||'낌새는 이런 작은 변화를 함께 봅니다')+'</h2><p class="lead text-secondary mb-0">'+esc(signalMap.subheadline||'')+'</p></div>'
+      +'<div class="col-lg-4"><div class="alert alert-primary mb-0"><strong>관찰 원칙</strong><br>'+esc(signalMap.principle||'여러 변화 신호를 함께 봅니다.')+'</div></div></div>'
+      +'<div class="row g-3">'+signals.map(function(s){var tone=levelTone[s.evidenceLevel]||'secondary';return '<div class="col-md-6 col-xl-4"><article class="card h-100 kimse-signal-card"><div class="card-body">'
+        +'<div class="d-flex align-items-start justify-content-between gap-3 mb-3"><div class="d-flex align-items-center gap-3"><div class="kimse-signal-icon" aria-hidden="true">'+esc(iconMap[s.id]||'•')+'</div><div><h3 class="h2 mb-1">'+esc(s.label)+'</h3><p class="text-secondary mb-0">'+esc(s.summary)+'</p></div></div><span class="badge bg-'+tone+'-lt text-'+tone+'">'+esc(s.evidenceLevel||'근거 검토')+'</span></div>'
+        +'<div class="kimse-signal-examples mb-3">'+(s.examples||[]).map(function(x){return '<div class="kimse-signal-example"><span class="text-azure">●</span><strong>'+esc(x)+'</strong></div>'}).join('')+'</div>'
+        +'<div class="mb-2"><div class="text-secondary small mb-1">수집 기기</div><div class="d-flex flex-wrap gap-1">'+(s.devices||[]).map(function(x){return '<span class="badge bg-blue-lt">'+esc(x)+'</span>'}).join('')+'</div></div>'
+        +'<div class="pt-2 mt-2 border-top"><div class="text-secondary small mb-1">외부 근거</div><div class="d-flex flex-wrap gap-1">'+(s.authority||[]).map(function(x){return '<span class="badge bg-green-lt">'+esc(x)+'</span>'}).join('')+'</div></div>'
+        +(s.note?'<p class="text-secondary small mt-3 mb-0">'+esc(s.note)+'</p>':'')
+        +'</div></article></div>'}).join('')+'</div>'
+      +'<div class="mt-4 p-3 rounded bg-light"><div class="d-flex flex-wrap align-items-center gap-2"><strong>함께 보는 위험요인</strong>'+(signalMap.riskContext||[]).map(function(x){return '<span class="badge bg-white text-dark border">'+esc(x)+'</span>'}).join('')+'</div><div class="text-secondary mt-2">'+esc(signalMap.footerMessage||'')+'</div></div>'
+      +'</div></div></section>';
+  }
   var deviceHtml='';
   if(tiers.length){
     var tone={phone:'blue',health:'azure',wearable:'green',home:'purple'};
@@ -29,6 +47,7 @@ function render(m){
     +'<div class="col-lg-5"><div class="card h-100"><div class="card-header"><h3 class="card-title">결합 원칙</h3></div><div class="card-body"><ol class="mb-0">'+rules.map(function(x){return '<li class="mb-2">'+esc(x)+'</li>'}).join('')+'</ol></div></div></div></div></div></div>'
     +'<div class="card mb-4" id="change-review"><div class="card-header"><div><div class="text-uppercase text-secondary small">EVIDENCE CHANGE REVIEW</div><h2 class="card-title mt-1">팩터 · 가중치 · 조합 변경 검토</h2><div class="text-secondary small mt-1">새 논문·가이드라인·규제 이슈가 활성 모델의 추가·변경·삭제를 요구할 때 여기에 표시합니다. 검토 후보는 활성 모델에 자동 반영하지 않습니다.</div></div></div>'+review+'<div class="card-footer text-secondary small">Last reviewed '+esc(cr.lastReviewed||m.updated)+' · 상태 '+esc(cr.status||'review')+'</div></div>';
   if(deviceHtml)root.insertAdjacentHTML('afterbegin',deviceHtml);
+  if(signalHtml)root.insertAdjacentHTML('afterbegin',signalHtml);
   var factors=document.getElementById('factors');
   if(factors)factors.insertAdjacentHTML('beforebegin',html); else root.insertAdjacentHTML('beforeend',html);
 }
