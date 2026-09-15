@@ -153,12 +153,30 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .care-alert-card strong{display:block;font-size:17px}.care-alert-card small{display:block;color:#7f3d49;font-size:12px;margin-top:3px}
 @media(max-width:520px){.monitor-sync-card{grid-template-columns:1fr}.monitor-sync-card .btn-kimse{grid-row:auto;grid-column:auto;width:100%;margin-top:6px}.care-alert-card{grid-template-columns:42px minmax(0,1fr)}.care-alert-card>i{display:none}}
 
-/* Release 16 · YouTube-ready real app auto-capture */
+/* Release 17 · cropped 9:16 real-app capture */
 .real-app-capture-running{scroll-behavior:auto}
 .real-app-capture-running .capture-tap{
   position:relative;z-index:2;box-shadow:0 0 0 4px rgba(20,143,115,.16),0 0 0 8px rgba(20,143,115,.07)!important;
   transform:scale(.985);transition:box-shadow .16s ease,transform .16s ease
 }
+.capture-frame-mode body{
+  margin:0;min-height:100vh;display:grid;place-items:center;background:#dfe6ec;overflow:hidden
+}
+.capture-frame-mode .skip-link,
+.capture-frame-mode #offline-banner,
+.capture-frame-mode #announcer{display:none!important}
+.capture-frame-mode .kimse-app{
+  width:450px!important;max-width:450px!important;height:800px!important;min-height:800px!important;
+  overflow-y:auto!important;overflow-x:hidden!important;background:#fff;position:relative;
+  padding-bottom:calc(90px + env(safe-area-inset-bottom));box-shadow:0 18px 50px rgba(25,50,92,.20);
+  overscroll-behavior:contain;scroll-behavior:smooth
+}
+.capture-frame-mode .page,
+.capture-frame-mode .page.narrow,
+.capture-frame-mode .app-header-inner,
+.capture-frame-mode .bottom-nav-inner{max-width:100%!important}
+.capture-frame-mode .app-header{position:sticky;top:0}
+.capture-frame-mode .bottom-nav{position:sticky;bottom:0}
 .demo-capture-mode body{background:#f5f7fa}
 .capture-route-list{
   display:flex;align-items:center;gap:6px;overflow-x:auto;padding:12px;margin:16px 0;border:1px solid var(--kimse-border);
@@ -170,5 +188,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .demo-controller-note{margin:14px 0 0;color:var(--kimse-muted);font-size:12px;line-height:1.55}
 #demo-download{text-decoration:none;text-align:center}
 @media(max-width:520px){
+  .capture-frame-mode body{display:block;background:#fff}
+  .capture-frame-mode .kimse-app{width:100%!important;max-width:none!important;height:100vh!important;min-height:100vh!important;box-shadow:none}
   .real-app-capture-running .page{padding-left:18px;padding-right:18px}
 }

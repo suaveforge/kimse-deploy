@@ -82,7 +82,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.15 · Release 16<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 17<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -296,13 +296,19 @@ async function demoFocus(selector,ms=260,block='center'){
 async function demoClick(selector,after=420,block='center'){
   const el=$(selector);if(!el)return false;el.scrollIntoView?.({block,behavior:'smooth'});await demoWait(220);el.classList.add('capture-tap');await demoWait(180);el.click();await demoWait(after);return true;
 }
+function demoCaptureScroller(){return document.documentElement.classList.contains('capture-frame-mode')?A:window}
+function demoScrollTop(){
+  const scroller=demoCaptureScroller();
+  if(scroller===window)window.scrollTo({top:0,left:0,behavior:'instant'});
+  else scroller.scrollTo({top:0,left:0,behavior:'instant'});
+}
 async function demoGo(name,after=800){
-  go(name);await demoWait(100);window.scrollTo({top:0,left:0,behavior:'instant'});await demoWait(after);
+  go(name);await demoWait(100);demoScrollTop();await demoWait(after);
 }
 function demoRestoreState(){
   const raw=demoOriginalStateJson;demoOriginalStateJson=null;
   try{const x=raw?JSON.parse(raw):{};S=Object.assign(structuredClone(D),x);S.a11y=Object.assign({},D.a11y,x.a11y||{});S.profile=Object.assign({},D.profile,x.profile||{});S.onboarding=Object.assign({},D.onboarding,x.onboarding||{});S.initial=Object.assign({},D.initial,x.initial||{});S.initial.answers=Object.assign({},D.initial.answers,x.initial?.answers||{});S.consents=Object.assign({},D.consents,x.consents||{});S.baseline=Object.assign({},D.baseline,x.baseline||{});S.permissions=Object.assign({},D.permissions,x.permissions||{});S.remote=Object.assign({},D.remote,x.remote||{});S.monitoring=Object.assign({},D.monitoring,x.monitoring||{});if(!Array.isArray(S.monitoring.pending))S.monitoring.pending=[];if(!Array.isArray(S.monitoring.alerts))S.monitoring.alerts=[];if(!Array.isArray(S.brainHistory))S.brainHistory=[];if(raw)localStorage.setItem(K,raw);else localStorage.removeItem(K)}catch{}
-  demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running');applyA11y();
+  demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running','capture-frame-mode');applyA11y();
 }
 function demoPrepareScenario(){
   demoOriginalStateJson=localStorage.getItem(K);
@@ -311,7 +317,7 @@ function demoPrepareScenario(){
   demoAutoRunning=true;document.documentElement.classList.add('real-app-capture-running');save();
 }
 function demoWarpBaseline(day){
-  S.baseline.startedAt=new Date(Date.now()-Math.max(0,day-1)*86400000).toISOString();save();render();window.scrollTo({top:0,left:0,behavior:'instant'});
+  S.baseline.startedAt=new Date(Date.now()-Math.max(0,day-1)*86400000).toISOString();save();render();demoScrollTop();
 }
 function demoInjectHistoryAndChanges(){
   const now=Date.now(),day=n=>new Date(now-n*86400000).toISOString();
@@ -395,9 +401,20 @@ function playDemoTimeline(){demoPreviewOnly=true;runRealAppTour()}
 async function startDemoCapture(){
   if(!navigator.mediaDevices?.getDisplayMedia||!('MediaRecorder'in window)){feedback('이 브라우저는 현재 탭 녹화를 지원하지 않습니다. 자동조작 미리보기만 이용해주세요.','warning');return}
   try{
+    document.documentElement.classList.add('capture-frame-mode');
+    await demoWait(120);
     demoRecordStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:false,preferCurrentTab:true,selfBrowserSurface:'include'});
+    const [videoTrack]=demoRecordStream.getVideoTracks();
+    if(window.CropTarget?.fromElement&&videoTrack&&typeof videoTrack.cropTo==='function'){
+      try{
+        const target=await CropTarget.fromElement(A);
+        await videoTrack.cropTo(target);
+      }catch(err){
+        console.warn('KIMSE_REGION_CAPTURE_FALLBACK',err);
+      }
+    }
     const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'],mime=types.find(x=>MediaRecorder.isTypeSupported?.(x))||'';
-    demoChunks=[];demoPreviewOnly=false;demoRecorder=mime?new MediaRecorder(demoRecordStream,{mimeType:mime}):new MediaRecorder(demoRecordStream);
+    demoChunks=[];demoPreviewOnly=false;demoRecorder=mime?new MediaRecorder(demoRecordStream,{mimeType:mime,videoBitsPerSecond:4500000}):new MediaRecorder(demoRecordStream,{videoBitsPerSecond:4500000});
     demoRecorder.ondataavailable=e=>{if(e.data&&e.data.size)demoChunks.push(e.data)};
     demoRecorder.onstop=()=>{
       if(demoDownloadUrl)URL.revokeObjectURL(demoDownloadUrl);
@@ -406,11 +423,14 @@ async function startDemoCapture(){
       demoRecorder=null;demoRestoreState();go('demo-capture');setTimeout(()=>{if(route()==='demo-capture')render()},80);
     };
     demoRecorder.start(500);setTimeout(()=>runRealAppTour(),220);
-  }catch{feedback('화면 공유가 취소되었습니다. 현재 탭을 선택하면 실제 앱 자동조작을 촬영할 수 있습니다.','warning')}
+  }catch{
+    document.documentElement.classList.remove('capture-frame-mode');
+    feedback('화면 공유가 취소되었습니다. 현재 탭을 선택하면 실제 앱 자동조작을 촬영할 수 있습니다.','warning')
+  }
 }
 
 const page={};
-page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 40초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·기본검사·동의·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>시작</span><i>→</i><span>최초검사</span><i>→</i><span>음성</span><i>→</i><span>동의</span><i>→</i><span>1·7·14일</span><i>→</i><span>뇌지도</span><i>→</i><span>변화알림</span><i>→</i><span>보호자</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 녹화 + 실제 앱 자동조작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-40s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">브라우저 보안상 녹화 시작 때 한 번만 “현재 탭”을 직접 선택해야 합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
+page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 40초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·기본검사·동의·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>시작</span><i>→</i><span>최초검사</span><i>→</i><span>음성</span><i>→</i><span>동의</span><i>→</i><span>1·7·14일</span><i>→</i><span>뇌지도</span><i>→</i><span>변화알림</span><i>→</i><span>보호자</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 자동촬영 시작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-40s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">녹화 시작 때 공유창에서 반드시 “현재 탭”을 선택하세요. Chrome에서는 앱 영역만 9:16 세로로 자동 크롭해 녹화합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
 page.start=()=>wrap(`<section class="hero"><img class="hero-logo" src="./assets/icons/icon.svg" alt="낌새 로고"><div class="eyebrow">오늘도, 변화를 먼저 알아차리는</div><h1>낌새</h1><p>작은 관심이 큰 안심이 됩니다.<br>나와 가족의 인지·생활 변화를 쉽고 꾸준하게 기록해요.</p><div class="hero-actions">${btn('시작하기','role')}${btn('로그인','auth','btn-secondary-k')}</div></section>${notice('접근성을 기본으로 설계했어요.','큰 글씨, 큰 터치 영역, 색상+아이콘, 화면 읽기와 음성 안내를 지원합니다.')}`,{nohead:true,narrow:true});
 page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','👵','제가 사용해요','내 건강을 스스로 관리해요.','bg-blue'],['care','👩','가족을 돌보고 있어요','가족의 상태를 함께 살펴봐요.','bg-pink'],['both','👵👩','둘 다 사용해요','내 건강도 챙기고 가족도 돌봐요.','bg-purple']].map(x=>`<button class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg">${x[1]}</span><span><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}${notice('계정은 하나, 역할은 여러 개.','보호자로 시작해도 나중에 사용자 역할을 추가할 수 있어요.')}`,{title:'역할 선택',narrow:true});
 page.auth=()=>wrap(`<div class="eyebrow">가입 2/3</div><h1 class="page-title">간편하게 시작하세요</h1><div class="form-stack"><div class="field"><label for="name">이름</label><input id="name" value="${S.account?.name||''}" placeholder="이름"></div><div class="field"><label for="email">이메일</label><input id="email" type="email" value="${S.account?.email||''}" placeholder="name@example.com"></div><button id="signup" class="btn-kimse btn-primary-k">이메일로 시작하기</button></div>`,{title:'회원가입 / 로그인',narrow:true});
