@@ -327,33 +327,33 @@ async function runRealAppTour(){
   const alive=()=>demoAutoRunning&&run===demoRunId;
   const wait=async ms=>{await demoWait(ms);return alive()};
   try{
-    go('start');if(!await wait(1100))return;
+    go('start');if(!await wait(1300))return;
     demoClick('[data-go="role"]');if(!await wait(850))return;
     demoClick('[data-role="self"]');if(!await wait(750))return;
     demoSetValue('#name','시연 사용자');demoSetValue('#email','demo@kimse.app');if(!await wait(250))return;demoClick('#signup');if(!await wait(900))return;
 
     demoSetValue('#profile-birth','1956');demoSetValue('#profile-sex','female');demoSetValue('#profile-education','gte10');demoSetValue('#profile-living','family');demoSetValue('#profile-sleep','7시간');demoSetValue('#profile-activity','some');demoSetValue('#profile-hearing','no');if(!await wait(250))return;
-    $('#profile-form')?.requestSubmit();if(!await wait(1050))return;
+    $('#profile-form')?.requestSubmit();if(!await wait(1200))return;
 
     demoClick('[data-initial-next]');if(!await wait(550))return;
     demoClick('[data-initial-answer="attention:10"]');if(!await wait(500))return;
     demoClick('[data-initial-answer="language:과일"]');if(!await wait(500))return;
     demoClick('[data-initial-answer="spatial:no"]');if(!await wait(500))return;
     demoClick('[data-initial-answer="daily:no"]');if(!await wait(500))return;
-    demoSetValue('#recall-input','나무, 기차, 우산');if(!await wait(250))return;demoClick('#save-recall');if(!await wait(1250))return;
+    demoSetValue('#recall-input','나무, 기차, 우산');if(!await wait(250))return;demoClick('#save-recall');if(!await wait(1500))return;
 
-    demoClick('#skip-voice');if(!await wait(1250))return;
+    demoClick('#skip-voice');if(!await wait(1500))return;
     demoClick('[data-go="consent"]');if(!await wait(850))return;
     ['#consent-service','#consent-privacy','#consent-health','#consent-microphone','#consent-location','#consent-motion','#consent-usage','#consent-notifications','#consent-caregiver'].forEach(x=>demoCheck(x,true));if(!await wait(550))return;
-    $('#consent-form')?.requestSubmit();if(!await wait(1050))return;
+    $('#consent-form')?.requestSubmit();if(!await wait(1200))return;
 
-    if(!await wait(750))return;demoWarpBaseline(7);if(!await wait(800))return;demoWarpBaseline(14);if(!await wait(900))return;
-    demoInjectHistoryAndChanges();go('brain-map');if(!await wait(1350))return;
-    demoClick('[data-brain-view="top"]');if(!await wait(750))return;
-    go('brain-trends');if(!await wait(1150))return;demoClick('[data-brain-range="month"]');if(!await wait(900))return;
-    go('monitoring-status');if(!await wait(1600))return;
-    S.mode='care';save();go('caregiver-home');if(!await wait(1350))return;
-    S.mode='self';save();go('home');if(!await wait(1400))return;
+    if(!await wait(1100))return;demoWarpBaseline(7);if(!await wait(1000))return;demoWarpBaseline(14);if(!await wait(1200))return;
+    demoInjectHistoryAndChanges();go('brain-map');if(!await wait(1700))return;
+    demoClick('[data-brain-view="top"]');if(!await wait(900))return;
+    go('brain-trends');if(!await wait(1500))return;demoClick('[data-brain-range="month"]');if(!await wait(1100))return;
+    go('monitoring-status');if(!await wait(1900))return;
+    S.mode='care';save();go('caregiver-home');if(!await wait(1600))return;
+    S.mode='self';save();go('home');if(!await wait(1700))return;
   }finally{
     if(!alive())return;
     demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running');
