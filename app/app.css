@@ -338,7 +338,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .result-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.result-sync{border:0;background:#edf2f6;color:#4b6177;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:850}
 
 
-/* Release 27 · capture viewport isolation
+/* Release 28 · capture viewport isolation
    Desktop browser media queries follow the outer viewport, not the 450px capture surface.
    Lock capture mode to the same responsive geometry as a real phone so the recorded 9:16 UI cannot inherit desktop grids. */
 .capture-frame-mode .app-header-inner{padding-left:12px!important;padding-right:12px!important;gap:8px!important}
@@ -655,3 +655,52 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .capture-frame-mode .research-compare{margin:15px auto 10px!important;min-height:58px!important}
 .capture-frame-mode .research-compare strong,.capture-frame-mode .research-result strong{font-size:17px!important}
 .capture-frame-mode .research-story-note{font-size:16px!important;margin-top:12px!important}
+
+
+/* Release 28 · 14-day calendar flow, real tap feedback, readable trend events */
+.screen-baseline .page-title{font-size:34px!important;line-height:1.14!important;margin-bottom:10px!important}
+.screen-baseline .page-desc{font-size:18px!important;line-height:1.45!important;margin-bottom:16px!important}
+.baseline-calendar-page{width:min(100%,390px);margin:12px auto 16px;border:1px solid #dce5eb;border-radius:22px;background:#fff;box-shadow:0 10px 28px rgba(24,49,78,.08);overflow:hidden}
+.baseline-calendar-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px;background:#1d6f62;color:#fff}
+.baseline-calendar-top span{font-size:16px;font-weight:850}
+.baseline-calendar-top b{font-size:15px;font-weight:850;letter-spacing:.02em}
+.baseline-calendar-sheet{position:relative;display:flex;min-height:225px;flex-direction:column;align-items:center;justify-content:center;background:#fff;transform-origin:50% 0;backface-visibility:hidden}
+.baseline-calendar-sheet small{font-size:17px;color:#66778a;font-weight:800;margin-bottom:3px}
+.baseline-calendar-sheet strong{font-size:96px;line-height:.96;color:#16365f;font-weight:900;letter-spacing:-.06em}
+.baseline-calendar-sheet span{font-size:16px;line-height:1;color:#8a98a7;font-weight:900;letter-spacing:.15em;margin-top:7px}
+.baseline-calendar-progress{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;padding:0 16px 16px}
+.baseline-calendar-progress span{height:6px;border-radius:999px;background:#e4e9ee}
+.baseline-calendar-progress span.done{background:#8ac5b6}
+.baseline-calendar-progress span.current{background:#1d6f62;box-shadow:0 0 0 2px rgba(29,111,98,.12)}
+.baseline-complete-message{display:grid;grid-template-columns:38px 1fr;align-items:center;gap:10px;padding:14px 15px;border-radius:18px;background:#eaf6f2;color:#165b4e;margin:12px 0}
+.baseline-complete-message i{font-size:28px}
+.baseline-complete-message strong,.baseline-complete-message span{display:block}
+.baseline-complete-message strong{font-size:18px;line-height:1.25}
+.baseline-complete-message span{font-size:15px;line-height:1.4;color:#527165;margin-top:3px}
+.real-app-capture-running .baseline-calendar-sheet{animation:baselinePageFlip .26s cubic-bezier(.2,.72,.28,1)}
+@keyframes baselinePageFlip{0%{opacity:.55;transform:perspective(700px) rotateX(-11deg) translateY(-5px)}100%{opacity:1;transform:perspective(700px) rotateX(0) translateY(0)}}
+
+.demo-touch-point{position:fixed;z-index:12000;width:34px;height:34px;margin:-17px 0 0 -17px;border:2px solid rgba(27,45,66,.72);border-radius:50%;background:rgba(255,255,255,.78);box-shadow:0 2px 9px rgba(18,39,63,.18);pointer-events:none;animation:demoTapPulse .18s ease-out both}
+.demo-touch-point:after{content:'';position:absolute;inset:9px;border-radius:50%;background:rgba(27,45,66,.72)}
+@keyframes demoTapPulse{from{opacity:0;transform:scale(.62)}to{opacity:1;transform:scale(1)}}
+
+.overall-trend circle.attention{fill:#f3c64f!important;stroke:#8b6b00!important;stroke-width:3!important}
+.trend-attention-note{display:flex;align-items:center;gap:10px;margin:8px 2px 12px;padding:11px 13px;border-radius:15px;background:#fff8dd;border:1px solid #ecd88f;color:#594900}
+.trend-attention-note>span{width:14px;height:14px;border-radius:50%;background:#f3c64f;border:2px solid #8b6b00;flex:0 0 14px}
+.trend-attention-note strong,.trend-attention-note small{display:block}
+.trend-attention-note strong{font-size:16px;line-height:1.25}
+.trend-attention-note small{font-size:14px;line-height:1.35;color:#756527;margin-top:2px}
+.screen-brain-trends .page-desc{font-size:17px!important;line-height:1.42!important;margin-bottom:12px!important}
+
+.capture-frame-mode .screen-baseline{padding-top:16px!important}
+.capture-frame-mode .screen-baseline .page-title{font-size:32px!important}
+.capture-frame-mode .baseline-calendar-page{margin:10px auto 12px!important}
+.capture-frame-mode .baseline-calendar-sheet{min-height:205px!important}
+.capture-frame-mode .baseline-calendar-sheet strong{font-size:88px!important}
+.capture-frame-mode .baseline-calendar-progress{padding-bottom:14px!important}
+
+.capture-frame-mode .kimse-app{scrollbar-width:none!important}
+.capture-frame-mode .kimse-app::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
+.capture-frame-mode.real-app-capture-running #app:has(.screen-caregiver-home) .app-header{display:none!important}
+.capture-frame-mode.real-app-capture-running #app:has(.screen-caregiver-home) .screen-caregiver-home{padding-top:26px!important}
+.capture-frame-mode.real-app-capture-running #app:has(.screen-caregiver-home) .page-title{font-size:34px!important;line-height:1.15!important}
