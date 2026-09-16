@@ -84,7 +84,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 33<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 34<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -105,7 +105,7 @@ async function demoShowCaption(topic,hold=1000){
   A.classList.add('capture-caption-active','caption-'+pos);
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   A.classList.add('capture-caption-show');
-  const live=Math.max(900,hold);
+  const live=Math.max(1400,hold);
   await demoWait(live);
   A.classList.remove('capture-caption-show');
   await demoWait(1500);
@@ -197,8 +197,26 @@ function brainRegionClass(key,focus){
 function brainSvg(view='side',focus=S.brainFocus){
   const d=initialScores(),meta=brainFocusMeta(focus),m=statusMeta(d[focus]??Object.values(d).reduce((a,b)=>a+b,0)/5);
   const focusHead='<div class="brain-focus-head"><span class="domain-icon">'+meta[3]+'</span><div><small>'+meta[2]+'</small><strong>'+meta[1]+'</strong></div><span class="brain-score '+m[1]+'">'+m[0]+'</span></div>';
-  if(view==='top')return '<div class="brain-visual-wrap focus-'+focus+'">'+focusHead+'<svg class="brain-visual" viewBox="0 0 360 250" role="img" aria-label="위에서 본 뇌 기능 연관 지도"><path d="M178 28C119 5 54 46 54 112c0 34 18 58 45 75 20 13 43 23 79 33V28Z" class="brain-outline"/><path d="M182 28c59-23 124 18 124 84 0 34-18 58-45 75-20 13-43 23-79 33V28Z" class="brain-outline"/><path d="M92 62c24-22 58-27 86-17v67H78c-2-20 2-36 14-50Z" class="'+brainRegionClass('executive',focus)+'"/><path d="M268 62c-24-22-58-27-86-17v67h100c2-20-2-36-14-50Z" class="'+brainRegionClass('executive',focus)+'"/><path d="M76 120h102v82c-29-7-53-18-72-34-20-16-30-32-30-48Z" class="'+brainRegionClass('spatial',focus)+'"/><path d="M284 120H182v82c29-7 53-18 72-34 20-16 30-32 30-48Z" class="'+brainRegionClass('spatial',focus)+'"/><line x1="180" y1="28" x2="180" y2="220" class="brain-mid"/></svg></div>';
-  return '<div class="brain-visual-wrap focus-'+focus+'">'+focusHead+'<svg class="brain-visual" viewBox="0 0 360 250" role="img" aria-label="옆에서 본 뇌 기능 연관 지도"><path d="M52 126c0-58 47-103 112-103 70 0 132 43 143 98 7 37-12 71-48 88-24 12-52 15-82 9-26 18-69 10-88-12-25-28-37-50-37-80Z" class="brain-outline"/><path d="M65 113c6-45 43-76 91-80l4 76-95 4Z" class="'+brainRegionClass('executive',focus)+'"/><path d="M167 34c55 1 105 33 126 78l-91 15-35-93Z" class="'+brainRegionClass('spatial',focus)+'"/><path d="M196 133l91-12c3 33-16 61-49 75l-72-35 30-28Z" class="'+brainRegionClass('language',focus)+'"/><ellipse cx="158" cy="150" rx="39" ry="22" class="'+brainRegionClass('memory',focus)+'"/><path d="M96 124c7 39 30 70 67 87-29 9-58 0-75-20-21-25-30-45-30-67l38 0Z" class="'+brainRegionClass('language',focus)+'"/></svg></div>';
+  const gyri='<path d="M92 72c24-21 57-27 85-16M75 104c29-19 65-21 94-6M82 142c29-17 61-18 90-4M194 62c25 2 49 13 68 31M207 95c27 4 51 17 66 36M205 158c25 4 47 15 61 31" class="brain-gyrus"/>';
+  if(view==='top')return '<div class="brain-visual-wrap focus-'+focus+'">'+focusHead+'<svg class="brain-visual" viewBox="0 0 360 250" role="img" aria-label="위에서 본 인지 기능 연관 지도">'+
+    '<path d="M177 31c-21-14-48-17-70-7-28 12-48 36-52 65-5 31 6 59 27 80 21 22 50 36 95 48V31Z" class="brain-outline"/>'+
+    '<path d="M183 31c21-14 48-17 70-7 28 12 48 36 52 65 5 31-6 59-27 80-21 22-50 36-95 48V31Z" class="brain-outline"/>'+
+    '<path d="M90 59c24-20 55-26 87-16v67H70c0-22 6-38 20-51Z" class="'+brainRegionClass('executive',focus)+'"/>'+
+    '<path d="M270 59c-24-20-55-26-87-16v67h107c0-22-6-38-20-51Z" class="'+brainRegionClass('executive',focus)+'"/>'+
+    '<path d="M70 116h107v84c-36-9-63-23-82-43-17-18-26-31-25-41Z" class="'+brainRegionClass('spatial',focus)+'"/>'+
+    '<path d="M290 116H183v84c36-9 63-23 82-43 17-18 26-31 25-41Z" class="'+brainRegionClass('spatial',focus)+'"/>'+
+    '<path d="M83 146c18 9 42 14 69 16M208 162c27-2 51-7 69-16M108 83c19 8 41 11 66 9M186 92c25 2 47-1 66-9" class="brain-gyrus"/>'+
+    '<path d="M180 31v188" class="brain-mid"/></svg></div>';
+  return '<div class="brain-visual-wrap focus-'+focus+'">'+focusHead+'<svg class="brain-visual" viewBox="0 0 360 250" role="img" aria-label="옆에서 본 인지 기능 연관 지도">'+
+    '<path d="M61 127c-10-26-4-57 13-78 19-24 50-36 82-34 18-9 42-7 59 4 28-4 56 7 72 29 18 8 31 27 32 48 13 20 11 47-4 65-8 25-30 43-55 50-17 15-42 22-64 17-21 14-52 13-72 0-24 1-47-10-61-29-19-18-26-45-18-68 3-2 8-3 16-4Z" class="brain-outline"/>'+
+    '<path d="M66 119c2-37 29-70 66-84 11-4 23-6 34-6l-2 82-98 8Z" class="'+brainRegionClass('executive',focus)+'"/>'+
+    '<path d="M172 30c49-3 97 24 122 66l-86 28-36-94Z" class="'+brainRegionClass('spatial',focus)+'"/>'+
+    '<path d="M204 130l89-27c8 27 1 57-20 78-15 15-34 23-54 25l-51-48 36-28Z" class="'+brainRegionClass('language',focus)+'"/>'+
+    '<path d="M88 126c2 34 18 65 46 84-25 5-48-5-62-24-15-20-20-42-13-61l29 1Z" class="'+brainRegionClass('language',focus)+'"/>'+
+    '<ellipse cx="159" cy="151" rx="34" ry="20" class="'+brainRegionClass('memory',focus)+'"/>'+
+    '<path d="M259 194c18-2 36 5 46 18-13 15-33 23-52 21-14-1-26-8-34-18 11-12 24-19 40-21Z" class="brain-cerebellum"/>'+
+    '<path d="M221 186c13 10 20 24 20 42" class="brain-stem"/>'+gyri+
+  '</svg></div>';
 }
 function trendValue(row,key){
   if(key==='overall'){const vals=BRAIN_DOMAINS.map(([k])=>clamp(row[k]));return vals.reduce((a,b)=>a+b,0)/vals.length}
@@ -411,14 +429,17 @@ function demoPrepareScenario(){
   S=structuredClone(D);S.version=STATE_VERSION;S.a11y=keepA11y;S.intent=null;S.self=false;S.care=false;S.mode='self';
   demoResultPhase='normal';demoAutoRunning=true;document.documentElement.classList.add('real-app-capture-running');save();
 }
-function demoWarpBaseline(day){
+async function demoWarpBaseline(day){
+  const leaf=A.querySelector('.baseline-calendar-leaf');
+  if(leaf){leaf.classList.add('is-turning-out');await demoWait(180)}
   S.baseline.startedAt=new Date(Date.now()-Math.max(0,day-1)*86400000).toISOString();save();render();demoScrollTop();
+  await demoWait(70);
 }
 async function demoAnimateBaseline(alive,alreadyOnPage=false){
   if(!alreadyOnPage)await demoGo('baseline',450);
   for(let day=alreadyOnPage?2:1;day<=14;day++){
     if(!alive())return false;
-    demoWarpBaseline(day);
+    await demoWarpBaseline(day);
     const hold=day===7?920:day===14?1150:day<=4?300:day<=6?230:165;
     await demoWait(hold);
   }
@@ -648,7 +669,7 @@ page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).lengt
 
 page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 테스트가 필요해요</h1>${notice('아직 결과를 만들 수 없습니다.','기본 테스트와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">기본 테스트 시작</button>`,{title:'첫 상태 참고',narrow:true});const d=initialScores(),avg=Math.round(Object.values(d).reduce((x,y)=>x+y,0)/5),m=statusMeta(avg);return wrap(`<div class="eyebrow">첫 상태 참고</div><h1 class="page-title">오늘의 기능 상태를<br>먼저 참고해보세요</h1><div class="status-hero ${m[1]}"><span>현재 기능 참고</span><strong>${m[0]}</strong><small>기본 테스트 수행과 자가응답을 합친 참고값</small></div><div class="domain-grid">${BRAIN_DOMAINS.map(([k,t,r,icon])=>{const x=statusMeta(d[k]);return `<div class="domain-card"><span class="domain-icon">${icon}</span><div><strong>${t}</strong><small>${r}</small></div><span class="brain-score ${x[1]}">${x[0]}</span></div>`}).join('')}</div>${notice('이 결과는 진단이 아닙니다.','현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다. 14일 동안 생활패턴을 확인한 뒤, 이후 변화를 그 기간과 비교합니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">뇌 기능 연관 지도 보기</button><button class="btn-kimse btn-primary-k" data-go="consent">데이터 수집 동의로 계속</button></div>`,{title:'첫 상태 참고',narrow:true})};
 
-page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>생활반경·외출 리듬 변화 관찰. 브라우저/OS 권한 필요</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 활동·보행 관련 신호 수집</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 브라우저 알림</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의하고 14일 확인 시작</button></form>`,{title:'데이터 이용 동의',narrow:true});
+page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>생활반경·외출 리듬 변화 관찰. 브라우저/OS 권한 필요</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 활동·보행 관련 신호 수집</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 브라우저 알림</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
 
 page['evidence-proof']=()=>wrap(
@@ -704,21 +725,23 @@ function baselineDaySample(day){
 }
 page.baseline=()=>{
   if(!S.baseline.startedAt)return wrap(
-    '<div class="eyebrow">처음 14일</div>'+
-    '<h1 class="page-title">설정을 마치면<br>14일 확인이 시작됩니다</h1>'+
-    '<p class="page-desc">수면·활동·말하기·이동을 확인해 이후 변화와 비교합니다.</p>'+
-    '<button class="btn-kimse btn-primary-k btn-full" data-go="consent">데이터 선택하기</button>',
-    {title:'생활패턴 확인',narrow:true,overview:true}
+    '<div class="eyebrow">AI 생활 패턴 기록</div>'+
+    '<h1 class="page-title">2주간 생활 패턴을<br>기록합니다</h1>'+
+    '<p class="page-desc">수면·활동·말하기·이동을 기록한 뒤 이후 변화를 비교합니다.</p>'+
+    '<button class="btn-kimse btn-primary-k btn-full" data-go="consent">약관 및 데이터 설정</button>',
+    {title:'생활 패턴 기록',narrow:true,overview:true}
   );
   const day=baselineDay(),event=baselineEvent(day),sample=baselineDaySample(day);
   const progress=Array.from({length:14},(_,i)=>'<span class="'+(i<day?'done':'')+(i===day-1?' current':'')+'"></span>').join('');
   return wrap(
-    '<div class="eyebrow">처음 14일</div>'+
-    '<h1 class="page-title">14일 동안<br>생활패턴을 확인합니다</h1>'+
-    '<p class="page-desc">매일 확인한 기록을 모아 이후 변화와 비교합니다.</p>'+
+    '<div class="eyebrow">AI 생활 패턴 기록</div>'+
+    '<h1 class="page-title">2주간 생활 패턴을<br>기록합니다</h1>'+
+    '<p class="page-desc">수면·활동·말하기·이동을 매일 기록해 이후 변화를 비교합니다.</p>'+
     '<div class="baseline-calendar-page" aria-label="14일 중 '+day+'일째">'+
-      '<div class="baseline-calendar-top"><span>생활패턴 확인</span><b>'+day+' / 14</b></div>'+
-      '<div class="baseline-calendar-sheet"><small>'+day+'일째</small><strong>'+day+'</strong><span>DAY</span></div>'+
+      '<div class="baseline-calendar-icon" aria-hidden="true">'+
+        '<span class="calendar-ring left"></span><span class="calendar-ring right"></span>'+
+        '<div class="baseline-calendar-leaf"><strong>'+day+'</strong></div>'+
+      '</div>'+
       '<div class="baseline-day-signals" aria-label="오늘 확인 항목">'+
         '<span><i>'+I('moon')+'</i><small>수면</small><strong>'+sample.sleep+'</strong></span>'+
         '<span><i>'+I('walk')+'</i><small>활동</small><strong>'+sample.activity+'</strong></span>'+
@@ -739,8 +762,8 @@ page['brain-map']=()=>{
   if(!S.initial.completedAt)return wrap('<div class="eyebrow">기능 지도</div><h1 class="page-title">첫 상태 확인을 마치면<br>기능별 변화를 볼 수 있어요</h1>'+notice('아직 기록이 없어요.','기억·주의·언어·공간·일상기능을 먼저 확인해주세요.')+'<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">기본 테스트 시작</button>',{title:'기능 지도',narrow:true,overview:true});
   const d=initialScores(),meta=brainFocusMeta(),m=statusMeta(d[S.brainFocus]);
   return wrap(
-    '<div class="eyebrow">기능별 현재 상태</div>'+
-    '<h1 class="page-title">어느 기능이 달라졌는지<br>한눈에 봅니다</h1>'+
+    '<div class="eyebrow">인지 기능 분석</div>'+
+    '<h1 class="page-title">기억·주의·언어 등<br>기능별 변화를 확인합니다</h1>'+
     '<div class="brain-domain-tabs">'+BRAIN_DOMAINS.map(([k,t,r,icon])=>'<button data-brain-focus="'+k+'" class="'+(S.brainFocus===k?'active':'')+'"><span>'+icon+'</span>'+t+'</button>').join('')+'</div>'+
     brainSvg(S.brainView,S.brainFocus)+
     '<div class="brain-focus-summary"><strong>'+meta[1]+'</strong><span>'+m[0]+'</span><small>'+meta[2]+'와 관련된 변화를 살펴봅니다.</small></div>'+
