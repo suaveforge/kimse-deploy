@@ -773,3 +773,34 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .capture-frame-mode .screen-consent .page-title{font-size:31px!important}
 .capture-frame-mode .screen-initial-check .answer{min-height:58px!important;font-size:18px!important}
 .capture-frame-mode .screen-initial-check .progress-k{margin-bottom:10px!important}
+
+
+/* Release 30 · caption is painted by the actual CropTarget (#app) */
+.capture-frame-mode #app.capture-caption-active::before{
+  content:attr(data-capture-caption);
+  position:absolute!important;
+  top:var(--capture-caption-top)!important;
+  left:50%!important;
+  width:max-content!important;
+  max-width:calc(100% - 36px)!important;
+  padding:9px 14px 10px!important;
+  border-radius:10px!important;
+  background:rgba(0,0,0,.86)!important;
+  color:#fff!important;
+  box-shadow:0 4px 14px rgba(0,0,0,.24)!important;
+  font-size:18px!important;
+  line-height:1.35!important;
+  font-weight:850!important;
+  text-align:center!important;
+  letter-spacing:-.01em!important;
+  white-space:normal!important;
+  z-index:32000!important;
+  pointer-events:none!important;
+  opacity:0!important;
+  transform:translateX(-50%) translateY(8px)!important;
+  transition:opacity .18s ease,transform .18s ease!important;
+}
+.capture-frame-mode #app.capture-caption-active.capture-caption-show::before{
+  opacity:1!important;
+  transform:translateX(-50%) translateY(0)!important;
+}
