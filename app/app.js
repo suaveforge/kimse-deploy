@@ -84,7 +84,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 28<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 29<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -97,6 +97,9 @@ async function demoShowCaption(topic,hold=1000){
   const el=document.createElement('div'),strong=document.createElement('strong');
   el.className='capture-topic-overlay caption-'+(topic.position==='top'?'top':'bottom');
   strong.textContent=topic.title;el.appendChild(strong);A.appendChild(el);
+  const y=(A.scrollTop||0)+(topic.position==='top'?76:Math.max(120,A.clientHeight-92));
+  el.style.setProperty('top',y+'px','important');
+  el.style.setProperty('bottom','auto','important');
   await demoWait(Math.max(280,hold));
   if(el.isConnected){el.classList.add('is-leaving');await demoWait(190);el.remove()}
   return Math.max(280,hold)+190;
@@ -248,9 +251,9 @@ const SIGNAL_LABELS={sleep_minutes:'수면시간',steps:'걸음수',location_rad
 const SIGNAL_ICONS={sleep_minutes:'moon',steps:'walk',location_radius_m:'map-pin',movement_distance_m:'route',outings:'door-exit',motion_active_minutes:'activity',app_active_minutes:'device-mobile',call_count:'phone',call_duration_min:'phone-call',messaging_sessions:'message-circle',task_response_ms:'clock',voice_pause_ratio:'message-dots'};
 const MONITORING_UI_LEVELS={
   stable:{key:'stable',label:'안정',icon:'circle-check',headline:'지금은 지난 14일 범위 안에 있습니다',action:'현재 기록을 이어가세요'},
-  warning:{key:'warning',label:'경고',icon:'alert-triangle',headline:'평소 기준에서 벗어난 항목이 있습니다',action:'기능별 변화를 확인해보세요'},
-  danger:{key:'danger',label:'위험',icon:'alert-triangle',headline:'평소 기준을 벗어났습니다',action:'전문가 상담을 권합니다'},
-  serious:{key:'serious',label:'심각',icon:'alert-triangle',headline:'평소 기준에서 크게 벗어났습니다',action:'의료기관 상담을 권합니다'},
+  warning:{key:'warning',label:'경고',icon:'alert-triangle',headline:'지난 14일 범위에서 벗어난 항목이 있습니다',action:'기능별 변화를 확인해보세요'},
+  danger:{key:'danger',label:'위험',icon:'alert-triangle',headline:'지난 14일 범위를 벗어났습니다',action:'전문가 상담을 권합니다'},
+  serious:{key:'serious',label:'심각',icon:'alert-triangle',headline:'지난 14일 범위에서 크게 벗어났습니다',action:'의료기관 상담을 권합니다'},
   urgent:{key:'urgent',label:'긴급',icon:'alert-triangle',headline:'지금 바로 확인이 필요합니다',action:'보호자와 의료기관에 바로 연락하세요'}
 };
 function monitoringUiStatus(summary,changes=[]){
@@ -408,9 +411,9 @@ async function demoAnimateBaseline(alive,alreadyOnPage=false){
   for(let day=alreadyOnPage?2:1;day<=14;day++){
     if(!alive())return false;
     demoWarpBaseline(day);
-    await demoWait(day<=7?280:165);
+    const hold=day===7?920:day===14?1150:day<=4?300:day<=6?230:165;
+    await demoWait(hold);
   }
-  await demoWait(1000);
   return alive();
 }
 async function demoEvidenceScene(alive){
@@ -421,9 +424,39 @@ async function demoEvidenceScene(alive){
 async function demoTap(selector,after=520){
   const el=$(selector);
   if(!el){await demoWait(after);return false}
+  el.scrollIntoView?.({block:'center',behavior:'smooth'});await demoWait(120);
   const r=el.getBoundingClientRect(),dot=document.createElement('span');
   dot.className='demo-touch-point';dot.style.left=(r.left+r.width/2)+'px';dot.style.top=(r.top+r.height/2)+'px';
-  A.appendChild(dot);await demoWait(180);el.click();await demoWait(after);return true;
+  A.appendChild(dot);await demoWait(170);el.click();dot.classList.add('is-leaving');
+  setTimeout(()=>dot.remove(),220);await demoWait(after);return true;
+}
+async function demoOnboardingSteps(alive){
+  S.onboarding={profileDone:true,initialDone:false,consentDone:false,completed:false};
+  S.initial={...structuredClone(D.initial),step:0,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:false,completedAt:null,domains:null};
+  save();
+  await demoGo('initial-check',1250,{title:'처음 한 번, 몇 가지 질문으로 시작 상태를 확인합니다',position:'bottom',hold:720});if(!alive())return false;
+  if(!await demoTap('[data-initial-next]',260))return false;
+  if(!await demoTap('[data-initial-answer="attention:10"]',280))return false;
+  if(!await demoTap('[data-initial-answer="language:과일"]',280))return false;
+  if(!await demoTap('[data-initial-answer="spatial:no"]',260))return false;
+  if(!await demoTap('[data-initial-answer="daily:no"]',260))return false;
+  demoSetValue('#recall-input','나무 기차 우산');await demoWait(260);
+  if(!await demoTap('#save-recall',420))return false;
+  if(!alive())return false;
+
+  // 음성 화면은 실제 UI를 보여주되, 자동녹화가 OS 마이크 권한 팝업을 띄우지 않도록 강제 녹음은 하지 않는다.
+  await demoShowCaption({title:'말하기도 이후 변화와 비교할 첫 자료가 됩니다',position:'bottom'},720);
+  S.initial.domains={memory:86,executive:84,language:87,spatial:85,daily:88};
+  S.initial.completedAt=new Date().toISOString();S.onboarding.initialDone=true;
+  S.consents={...D.consents,service:true,privacy:true,health:true,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false};
+  save();
+
+  await demoGo('consent',750,{title:'어떤 데이터를 볼지는 직접 선택합니다',position:'top',hold:520});if(!alive())return false;
+  for(const selector of ['#consent-location','#consent-motion','#consent-usage']){
+    if(!await demoTap(selector,210))return false;
+  }
+  if(!await demoTap('#consent-form button[type="submit"]',520))return false;
+  return alive();
 }
 async function demoCycleBrain(alive){
   for(const key of ['memory','executive','language','spatial','daily']){
@@ -461,7 +494,7 @@ function demoInjectHistoryAndChanges(){
     {at:day(5),source:'scenario',memory:88,executive:85,language:87,spatial:84,daily:88},
     {at:day(4),source:'scenario',memory:86,executive:86,language:85,spatial:85,daily:86},
     {at:day(3),source:'scenario',memory:87,executive:84,language:86,spatial:83,daily:87},
-    {at:day(2),source:'scenario',memory:81,executive:79,language:82,spatial:80,daily:83,flag:'attention'},
+    {at:day(2),source:'scenario',memory:81,executive:79,language:82,spatial:80,daily:83,flag:'attention',flagLabel:'수면 감소 · 활동 감소 · 말할 때 멈춤 증가'},
     {at:day(1),source:'scenario',memory:84,executive:82,language:84,spatial:82,daily:85},
     {at:day(0),source:'scenario',memory:83,executive:81,language:85,spatial:83,daily:85}
   ];
@@ -494,23 +527,21 @@ async function runRealAppTour(prepared=false){
     if(!await demoEvidenceScene(alive))return;
 
     // 새 연구가 실제 기준에 어떻게 반영되는지 한 장면으로 보여준다.
-    await demoGo('research-engine',4300,{title:'새 연구가 나오면 지금 기준보다 나은지 다시 확인합니다',position:'bottom',hold:1050});if(!alive())return;
+    await demoGo('research-engine',4300,{title:'연구와 실증 데이터를 계속 확인해 개인별 기준을 조정합니다',position:'bottom',hold:1050});if(!alive())return;
 
-    // 빨리 지나가도 되는 연결 장면.
-    S.initial.step=0;save();await demoGo('initial-check',1500,{title:'처음 한 번, 기억과 주의 상태를 확인합니다',position:'bottom',hold:900});if(!alive())return;
-    await demoGo('voice-check',1500,{title:'말하기도 평소와 비교할 기준을 만듭니다',position:'bottom',hold:900});if(!alive())return;
-    await demoGo('consent',1500,{title:'어떤 데이터를 볼지는 직접 정할 수 있습니다',position:'bottom',hold:900});if(!alive())return;
+    // 실제 질문을 누르고, 실제 동의 항목을 선택하는 과정을 보여준다.
+    if(!await demoOnboardingSteps(alive))return;
 
-    // 1일째부터 실제 시간이 흐르는 것처럼 보여준다.
-    S.baseline.startedAt=new Date().toISOString();save();
-    await demoGo('baseline',1400,{title:'처음 14일은 수면·활동·말하기 패턴을 확인합니다',position:'bottom',hold:900});if(!alive())return;
+    // 동의 완료 직후 1일째부터 시작한다. 날짜만 넘기지 않고 매일 확인 항목과 7일/14일 이벤트를 함께 보여준다.
+    demoScrollTop();
+    await demoShowCaption({title:'설정을 마치면 14일 동안 생활패턴을 확인합니다',position:'bottom'},760);if(!alive())return;
     if(!await demoAnimateBaseline(alive,true))return;
 
     // 오래 보여줄 장면: 탭을 탁탁 누르지 않고 기능 영역이 자연스럽게 이어져 보인다.
     await demoGo('brain-map',1350,{title:'기능별 변화는 나눠서 확인할 수 있습니다',position:'bottom',hold:850});if(!alive())return;
     if(!await demoCycleBrain(alive))return;
 
-    await demoGo('brain-trends',1250,{title:'하루부터 1년까지 흐름을 이어서 봅니다',position:'bottom',hold:800});if(!alive())return;
+    await demoGo('brain-trends',1250,{title:'눈에 띄게 달라진 날은 따로 표시합니다',position:'bottom',hold:800});if(!alive())return;
     if(!await demoCycleTrend(alive))return;
 
     // 결론은 다시 충분히 멈춘다.
@@ -615,7 +646,7 @@ page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="pa
 page['evidence-proof']=()=>wrap(
   '<div class="eyebrow">근거 자료</div>'+
   '<h1 class="page-title">왜 수면·활동·말하기를<br>함께 볼까요?</h1>'+
-  '<p class="page-desc evidence-story-lead">연구에서 확인해 온 생활·인지 신호를, 내 14일 평소와 비교합니다.</p>'+
+  '<p class="page-desc evidence-story-lead">연구에서 확인해 온 생활·인지 신호를 지난 14일 생활패턴과 비교합니다.</p>'+
   '<div class="evidence-story-list">'+
     '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>20년</strong><span>1,409명</span></div><div><strong>장기 생활·건강 위험요인 추적</strong><p>오랜 기간 생활·건강 요인이 치매 위험과 어떻게 이어지는지 추적했습니다.</p><small>CAIDE Dementia Risk Score</small></div></section>'+
     '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>196명</strong><span>국내 검증</span></div><div><strong>기억·주의·언어 기능 검증</strong><p>한국어 환경에서 인지기능 검사의 민감도와 특이도를 확인했습니다.</p><small>MoCA-K Validation</small></div></section>'+
@@ -627,43 +658,60 @@ page['evidence-proof']=()=>wrap(
 );
 
 page['research-engine']=()=>wrap(
-  '<div class="eyebrow">연구 업데이트</div>'+
-  '<h1 class="page-title">새 연구가 나와도<br>바로 기준을 바꾸지 않습니다</h1>'+
-  '<p class="page-desc research-story-lead">지금 쓰는 기준보다 더 잘 맞는지 먼저 확인합니다.</p>'+
-  '<div class="research-story">'+
-    '<div class="research-story-sources">'+
-      '<div class="research-current">'+I('shield-check')+'<span><small>지금 쓰는 기준</small><strong>확인된 기준</strong></span></div>'+
-      '<div class="research-new">'+I('file-search')+'<span><small>새 연구</small><strong>새로운 근거</strong></span></div>'+
+  '<div class="eyebrow">AI 연구 업데이트</div>'+
+  '<h1 class="page-title">새 근거가 쌓일수록<br>개인별 기준을 더 정교하게 맞춥니다</h1>'+
+  '<p class="page-desc research-personal-lead">검증된 논문과 실증 데이터, 공식 가이드라인을 계속 확인합니다.</p>'+
+  '<section class="research-personal-engine">'+
+    '<div class="research-source-stack">'+
+      '<div class="research-source paper">'+I('book-2')+'<span><small>검증된 논문</small><strong>연구 결과</strong></span></div>'+
+      '<div class="research-source field">'+I('chart-dots-3')+'<span><small>실증 데이터</small><strong>실제 관찰 결과</strong></span></div>'+
+      '<div class="research-source guide">'+I('clipboard-check')+'<span><small>공식 가이드</small><strong>권고 기준</strong></span></div>'+
     '</div>'+
-    '<div class="research-compare">'+I('arrows-exchange')+'<strong>지금 기준보다 더 잘 맞는지 확인</strong></div>'+
-    '<div class="research-result">'+I('circle-check')+'<strong>더 나은 경우에만 기준을 바꿉니다</strong></div>'+
-  '</div>'+
-  '<p class="research-story-note">검증된 기준은 유지하고, 더 나은 근거가 확인될 때만 바꿉니다.</p>',
+    '<div class="research-review-gate">'+I('sparkles')+'<strong>AI가 모아 비교</strong><span>정기 검토</span></div>'+
+    '<div class="research-factor-panel">'+
+      '<div class="research-factor-head"><small>개인별 변화 기준</small><strong>더 의미 있는 변화에 무게를 조정</strong></div>'+
+      '<div class="research-factor-row"><span>수면</span><i style="--w:72%"></i></div>'+
+      '<div class="research-factor-row"><span>활동</span><i style="--w:54%"></i></div>'+
+      '<div class="research-factor-row"><span>말하기</span><i style="--w:84%"></i></div>'+
+      '<div class="research-factor-row"><span>이동</span><i style="--w:62%"></i></div>'+
+    '</div>'+
+  '</section>'+
+  '<p class="research-personal-note">사람마다 더 의미 있는 변화가 다르기 때문에, 같은 기준을 그대로 적용하지 않습니다.</p>',
   {title:'연구 업데이트',narrow:true,overview:true}
 );
 
+function baselineEvent(day){
+  if(day>=14)return {tone:'complete',kicker:'14일째',title:'14일 확인 완료',text:'이제 새 기록이 지난 14일과 얼마나 다른지 비교합니다.'};
+  if(day===7)return {tone:'week',kicker:'7일째',title:'첫 주 패턴 확인',text:'7일 동안 반복된 수면·활동·말하기·이동 흐름을 확인합니다.'};
+  if(day>7)return {tone:'second',kicker:'2주차',title:'두 번째 주 확인 중',text:'첫 주와 이어지는 생활 리듬을 계속 확인하고 있습니다.'};
+  return {tone:'daily',kicker:day+'일째',title:'오늘 생활패턴 확인',text:'수면·활동·말하기·이동을 오늘도 확인하고 있습니다.'};
+}
 page.baseline=()=>{
   if(!S.baseline.startedAt)return wrap(
     '<div class="eyebrow">처음 14일</div>'+
-    '<h1 class="page-title">14일 동안<br>생활패턴을 확인합니다</h1>'+
-    '<p class="page-desc">수면·활동·말하기를 확인해 이후 변화와 비교할 기준으로 사용합니다.</p>'+
-    '<button class="btn-kimse btn-primary-k btn-full" data-go="consent">14일 확인 시작</button>',
+    '<h1 class="page-title">설정을 마치면<br>14일 확인이 시작됩니다</h1>'+
+    '<p class="page-desc">수면·활동·말하기·이동을 확인해 이후 변화와 비교합니다.</p>'+
+    '<button class="btn-kimse btn-primary-k btn-full" data-go="consent">데이터 선택하기</button>',
     {title:'생활패턴 확인',narrow:true,overview:true}
   );
-  const day=baselineDay(),pct=Math.round(day/14*100);
+  const day=baselineDay(),event=baselineEvent(day);
   const progress=Array.from({length:14},(_,i)=>'<span class="'+(i<day?'done':'')+(i===day-1?' current':'')+'"></span>').join('');
   return wrap(
     '<div class="eyebrow">처음 14일</div>'+
-    '<h1 class="page-title">생활패턴을<br>확인하고 있습니다</h1>'+
-    '<p class="page-desc">14일이 지나면 이후 변화를 이 기간과 비교합니다.</p>'+
+    '<h1 class="page-title">14일 동안<br>생활패턴을 확인합니다</h1>'+
+    '<p class="page-desc">매일 확인한 기록을 모아 이후 변화와 비교합니다.</p>'+
     '<div class="baseline-calendar-page" aria-label="14일 중 '+day+'일째">'+
       '<div class="baseline-calendar-top"><span>생활패턴 확인</span><b>'+day+' / 14</b></div>'+
       '<div class="baseline-calendar-sheet"><small>'+day+'일째</small><strong>'+day+'</strong><span>DAY</span></div>'+
+      '<div class="baseline-day-signals" aria-label="오늘 확인 항목">'+
+        '<span>'+I('moon')+'수면</span><span>'+I('walk')+'활동</span><span>'+I('message-dots')+'말하기</span><span>'+I('map-pin')+'이동</span>'+
+      '</div>'+
       '<div class="baseline-calendar-progress">'+progress+'</div>'+
     '</div>'+
-    (day>=14?'<div class="baseline-complete-message">'+I('circle-check')+'<div><strong>14일 확인이 끝났습니다</strong><span>이제 이후 변화를 지난 14일과 비교합니다.</span></div></div>':'')+
+    '<div class="baseline-milestone-card '+event.tone+'"><span>'+event.kicker+'</span><div><strong>'+event.title+'</strong><small>'+event.text+'</small></div></div>'+
+    '<div class="baseline-milestone-rail"><span class="'+(day>=1?'on':'')+'"><b>1일</b>시작</span><i></i><span class="'+(day>=7?'on':'')+'"><b>7일</b>첫 주 확인</span><i></i><span class="'+(day>=14?'on':'')+'"><b>14일</b>비교 시작</span></div>'+
     (day>=14?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">최근 변화 보기</button></div>':'')+
-    '<p class="screen-footnote">14일 동안 확인이 끝나기 전에는 변화 알림을 만들지 않습니다.</p>',
+    '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다.</p>',
     {title:'생활패턴 확인',narrow:true,overview:true}
   );
 };
@@ -723,7 +771,7 @@ page['brain-trends']=()=>{
     '<div class="segmented compact-range"><button data-brain-range="day" class="'+(S.brainRange==='day'?'active':'')+'">일</button><button data-brain-range="week" class="'+(S.brainRange==='week'?'active':'')+'">주</button><button data-brain-range="month" class="'+(S.brainRange==='month'?'active':'')+'">월</button><button data-brain-range="year" class="'+(S.brainRange==='year'?'active':'')+'">연</button></div>'+
     '<div class="trend-domain-tabs"><button data-brain-domain="overall" class="'+(key==='overall'?'active':'')+'">전체</button>'+BRAIN_DOMAINS.map(([k,t,r,icon])=>'<button data-brain-domain="'+k+'" class="'+(key===k?'active':'')+'">'+icon+' '+t+'</button>').join('')+'</div>'+
     '<section class="trend-hero one-chart"><div class="trend-hero-head"><div><small>'+rangeLabel+'</small><strong>'+(key==='overall'?'전체 기능':meta[1])+'</strong></div><span>'+rows.length+'회 기록</span></div>'+trendSeriesSvg(key)+'</section>'+
-    (attention?'<div class="trend-attention-note"><span></span><div><strong>평소보다 크게 달라진 날</strong><small>노란 점으로 표시했습니다.</small></div></div>':'')+
+    (attention?'<div class="trend-attention-note"><span></span><div><strong>'+new Date(attention.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})+' · 눈에 띄는 변화</strong><small>'+esc(attention.flagLabel||'평소보다 크게 달라진 기록이 있어 노란 점으로 표시했습니다.')+'</small></div></div>':'')+
     '<p class="screen-footnote">실제 기록만 표시하며 기록이 없는 날짜를 임의로 채우지 않습니다.</p>',
     {title:'변화 흐름',narrow:true,overview:true}
   );

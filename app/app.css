@@ -338,7 +338,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .result-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.result-sync{border:0;background:#edf2f6;color:#4b6177;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:850}
 
 
-/* Release 28 · capture viewport isolation
+/* Release 29 · capture viewport isolation
    Desktop browser media queries follow the outer viewport, not the 450px capture surface.
    Lock capture mode to the same responsive geometry as a real phone so the recorded 9:16 UI cannot inherit desktop grids. */
 .capture-frame-mode .app-header-inner{padding-left:12px!important;padding-right:12px!important;gap:8px!important}
@@ -704,3 +704,72 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .capture-frame-mode.real-app-capture-running #app:has(.screen-caregiver-home) .app-header{display:none!important}
 .capture-frame-mode.real-app-capture-running #app:has(.screen-caregiver-home) .screen-caregiver-home{padding-top:26px!important}
 .capture-frame-mode.real-app-capture-running #app:has(.screen-caregiver-home) .page-title{font-size:34px!important;line-height:1.15!important}
+
+
+/* Release 29 · human-first research, real onboarding taps, meaningful 14-day flow */
+.capture-topic-overlay.caption-top,
+.capture-topic-overlay.caption-bottom{
+  position:absolute!important;bottom:auto!important;margin:0!important;width:calc(100% - 36px)!important;
+  max-width:414px!important;left:50%!important;transform:translateX(-50%) translateY(8px)!important
+}
+.capture-topic-overlay.caption-top.is-leaving,
+.capture-topic-overlay.caption-bottom.is-leaving{transform:translateX(-50%) translateY(8px)!important}
+.capture-topic-overlay.caption-top strong,
+.capture-topic-overlay.caption-bottom strong{font-size:18px!important;line-height:1.35!important}
+.demo-touch-point.is-leaving{opacity:0!important;transform:scale(1.3)!important;transition:opacity .18s ease,transform .18s ease}
+
+.screen-research-engine .page-title{font-size:34px!important;line-height:1.14!important;margin-bottom:10px!important}
+.research-personal-lead{font-size:18px!important;line-height:1.45!important;margin-bottom:15px!important}
+.research-personal-engine{display:grid;grid-template-columns:1fr;gap:11px;margin:12px 0}
+.research-source-stack{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.research-source{display:flex;align-items:center;gap:7px;min-width:0;padding:11px 9px;border:1px solid #dfe7ee;border-radius:16px;background:#fff}
+.research-source i{font-size:24px;flex:0 0 auto}.research-source span{min-width:0}
+.research-source small,.research-source strong{display:block}
+.research-source small{font-size:12px;color:#6f8092}.research-source strong{font-size:15px;line-height:1.2;color:#173151;margin-top:2px}
+.research-source.paper i{color:#2e659b}.research-source.field i{color:#18785f}.research-source.guide i{color:#8a6720}
+.research-review-gate{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:9px;padding:12px 14px;border-radius:17px;background:#173f70;color:#fff}
+.research-review-gate i{font-size:26px}.research-review-gate strong{font-size:18px;line-height:1.25}.research-review-gate span{font-size:13px;font-weight:850;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.15)}
+.research-factor-panel{padding:15px 16px;border:1px solid #dce8e4;border-radius:19px;background:#f4faf7}
+.research-factor-head small,.research-factor-head strong{display:block}.research-factor-head small{font-size:13px;color:#5f756d}.research-factor-head strong{font-size:18px;color:#154f43;margin-top:2px}
+.research-factor-row{display:grid;grid-template-columns:54px 1fr;align-items:center;gap:9px;margin-top:10px}
+.research-factor-row span{font-size:15px;font-weight:850;color:#334e48}
+.research-factor-row i{height:10px;border-radius:999px;background:#d8e7e1;overflow:hidden;position:relative}
+.research-factor-row i:after{content:'';position:absolute;inset:0 auto 0 0;width:var(--w);border-radius:999px;background:#1b8d71}
+.research-personal-note{font-size:16px;line-height:1.42;color:#4f6278;margin:12px 2px 0;text-align:center;font-weight:750}
+.real-app-capture-running .research-source{animation:kimseStoryRise .35s ease both}
+.real-app-capture-running .research-source:nth-child(2){animation-delay:.12s}.real-app-capture-running .research-source:nth-child(3){animation-delay:.24s}
+.real-app-capture-running .research-review-gate{animation:kimseStoryRise .35s .45s ease both}
+.real-app-capture-running .research-factor-panel{animation:kimseStoryRise .4s .85s ease both}
+.real-app-capture-running .research-factor-row i:after{animation:factorGrow .7s 1.1s ease both;transform-origin:left}
+@keyframes factorGrow{from{transform:scaleX(.15)}to{transform:scaleX(1)}}
+
+.baseline-day-signals{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 14px 14px}
+.baseline-day-signals span{display:flex;align-items:center;justify-content:center;gap:4px;min-height:38px;border-radius:12px;background:#f3f7f8;color:#31554d;font-size:13px;font-weight:850}
+.baseline-day-signals i{font-size:17px}
+.baseline-milestone-card{display:grid;grid-template-columns:58px 1fr;align-items:center;gap:12px;margin:10px 0;padding:14px 15px;border-radius:18px;border:1px solid #e0e7ed;background:#f8fafb}
+.baseline-milestone-card>span{display:grid;place-items:center;min-height:48px;border-radius:14px;background:#e9eef2;color:#546677;font-size:14px;font-weight:900}
+.baseline-milestone-card strong,.baseline-milestone-card small{display:block}
+.baseline-milestone-card strong{font-size:18px;line-height:1.25;color:#173151}
+.baseline-milestone-card small{font-size:14px;line-height:1.38;color:#65768a;margin-top:3px}
+.baseline-milestone-card.week{background:#fff8df;border-color:#efd98c}.baseline-milestone-card.week>span{background:#ffe9a4;color:#785a00}
+.baseline-milestone-card.second{background:#f2f7fc;border-color:#d9e5f1}.baseline-milestone-card.second>span{background:#dceafb;color:#315f8e}
+.baseline-milestone-card.complete{background:#eaf6f2;border-color:#bddfd3}.baseline-milestone-card.complete>span{background:#cdebe0;color:#176a59}
+.baseline-milestone-rail{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr;align-items:center;gap:4px;margin:10px 0 2px}
+.baseline-milestone-rail span{text-align:center;font-size:12px;line-height:1.25;color:#8996a4}
+.baseline-milestone-rail span b{display:block;font-size:14px;color:#607185}
+.baseline-milestone-rail span.on{color:#2b695c;font-weight:800}.baseline-milestone-rail span.on b{color:#176a59}
+.baseline-milestone-rail i{height:2px;background:#dbe3e8}
+.real-app-capture-running .baseline-milestone-card{animation:kimseStoryRise .28s ease both}
+.capture-frame-mode .baseline-calendar-sheet{min-height:170px!important}
+.capture-frame-mode .baseline-calendar-sheet strong{font-size:78px!important}
+.capture-frame-mode .baseline-day-signals{padding-bottom:10px!important}
+.capture-frame-mode .baseline-milestone-card{margin:8px 0!important;padding:12px 13px!important}
+.capture-frame-mode .baseline-milestone-card small{font-size:13px!important}
+.capture-frame-mode .baseline-milestone-rail{margin-top:7px!important}
+.capture-frame-mode .screen-baseline .screen-footnote{display:none!important}
+
+.capture-frame-mode .screen-consent .form-stack>button{display:block!important;min-height:56px!important;margin-top:10px!important}
+.capture-frame-mode .screen-consent .consent-panel:last-of-type .consent-row:nth-child(4){display:flex!important}
+.capture-frame-mode .screen-consent .page-title{font-size:31px!important}
+.capture-frame-mode .screen-initial-check .answer{min-height:58px!important;font-size:18px!important}
+.capture-frame-mode .screen-initial-check .progress-k{margin-bottom:10px!important}
