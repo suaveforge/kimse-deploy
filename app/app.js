@@ -84,15 +84,22 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 25<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 26<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
 const SENIOR_ROUTES=new Set(['monitoring-status','research-engine','baseline','brain-map','brain-trends','initial-check','voice-check','consent','caregiver-home']);
-function captureTopicOverlay(){
-  if(!demoAutoRunning||!demoTopic?.title)return '';
-  const pos=demoTopic.position==='top'?'top':'bottom';
-  return '<div class="capture-topic-overlay caption-'+pos+'"><strong>'+esc(demoTopic.title)+'</strong></div>'
+function captureTopicOverlay(){return ''}
+function demoRemoveCaption(){A.querySelectorAll('.capture-topic-overlay').forEach(x=>x.remove())}
+async function demoShowCaption(topic,hold=1000){
+  demoRemoveCaption();
+  if(!demoAutoRunning||!topic?.title)return 0;
+  const el=document.createElement('div'),strong=document.createElement('strong');
+  el.className='capture-topic-overlay caption-'+(topic.position==='top'?'top':'bottom');
+  strong.textContent=topic.title;el.appendChild(strong);A.appendChild(el);
+  await demoWait(Math.max(280,hold));
+  if(el.isConnected){el.classList.add('is-leaving');await demoWait(190);el.remove()}
+  return Math.max(280,hold)+190;
 }
 function wrap(html,o={}){
   const r=route(),screen='screen-'+r.replace(/[^a-z0-9-]/gi,'-'),senior=SENIOR_ROUTES.has(r)?' senior-screen':'';
@@ -371,23 +378,19 @@ function demoScrollTop(){
   else scroller.scrollTo({top:0,left:0,behavior:'instant'});
 }
 async function demoGo(name,after=800,topic=null){
-  if(topic)demoTopic={title:topic.title||'',position:topic.position==='top'?'top':'bottom'};
-  go(name);await demoWait(100);demoScrollTop();
+  demoTopic=topic?{title:topic.title||'',position:topic.position==='top'?'top':'bottom'}:null;
+  go(name);await demoWait(120);demoScrollTop();
   if(!topic){await demoWait(after);return}
-  const hold=Math.min(Number(topic.hold)||1150,Math.max(420,after-230));
-  await demoWait(hold);
-  const caption=document.querySelector('.capture-topic-overlay');
-  if(caption)caption.classList.add('is-leaving');
-  const fade=Math.min(200,Math.max(0,after-hold));
-  if(fade)await demoWait(fade);
+  const hold=Math.min(Number(topic.hold)||1050,Math.max(360,after-260));
+  const spent=await demoShowCaption(demoTopic,hold);
   demoTopic=null;
-  const rest=after-hold-fade;
+  const rest=after-spent;
   if(rest>0)await demoWait(rest);
 }
 function demoRestoreState(){
   const raw=demoOriginalStateJson;demoOriginalStateJson=null;
   try{const x=raw?JSON.parse(raw):{};S=Object.assign(structuredClone(D),x);S.a11y=Object.assign({},D.a11y,x.a11y||{});S.profile=Object.assign({},D.profile,x.profile||{});S.onboarding=Object.assign({},D.onboarding,x.onboarding||{});S.initial=Object.assign({},D.initial,x.initial||{});S.initial.answers=Object.assign({},D.initial.answers,x.initial?.answers||{});S.consents=Object.assign({},D.consents,x.consents||{});S.baseline=Object.assign({},D.baseline,x.baseline||{});S.permissions=Object.assign({},D.permissions,x.permissions||{});S.remote=Object.assign({},D.remote,x.remote||{});S.monitoring=Object.assign({},D.monitoring,x.monitoring||{});if(!Array.isArray(S.monitoring.pending))S.monitoring.pending=[];if(!Array.isArray(S.monitoring.alerts))S.monitoring.alerts=[];if(!Array.isArray(S.brainHistory))S.brainHistory=[];if(raw)localStorage.setItem(K,raw);else localStorage.removeItem(K)}catch{}
-  demoTopic=null;demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running','capture-frame-mode');applyA11y();
+  demoRemoveCaption();demoTopic=null;demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running','capture-frame-mode');applyA11y();
 }
 function demoPrepareScenario(){
   demoOriginalStateJson=localStorage.getItem(K);
@@ -410,45 +413,68 @@ async function demoAnimateBaseline(alive,alreadyOnPage=false){
 }
 function demoSetEvidenceFocus(frame,id){
   try{
-    const doc=frame?.contentDocument;
-    if(!doc)return false;
-    const src=doc.getElementById(id);
-    if(!src)return false;
+    const doc=frame?.contentDocument,src=doc?.getElementById(id);
+    if(!doc||!src)return false;
     let style=doc.getElementById('kimse-video-evidence-style');
     if(!style){
       style=doc.createElement('style');style.id='kimse-video-evidence-style';
       style.textContent=`
         html.kimse-video-evidence,html.kimse-video-evidence body{margin:0!important;background:#fff!important;overflow:hidden!important}
         html.kimse-video-evidence body>.page{display:none!important}
-        #kimse-video-evidence-focus{display:block!important;position:fixed;inset:0;background:#fff;padding:22px 20px;overflow:hidden;font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;color:#17233b}
-        #kimse-video-evidence-focus .card{border:0!important;box-shadow:none!important;margin:0!important}
-        #kimse-video-evidence-focus .card-body{padding:0!important}
-        #kimse-video-evidence-focus .card-header{padding:0 0 16px!important;border:0!important;min-height:0!important}
-        #kimse-video-evidence-focus h2,#kimse-video-evidence-focus .card-title{font-size:28px!important;line-height:1.2!important;font-weight:900!important;color:#10264a!important}
-        #kimse-video-evidence-focus .text-secondary,#kimse-video-evidence-focus small{font-size:16px!important;line-height:1.42!important}
-        #kimse-video-evidence-focus .impact-kicker{font-size:14px!important;margin-bottom:8px!important}
-        #kimse-video-evidence-focus .impact-title{font-size:30px!important;line-height:1.18!important;margin:0 0 14px!important}
-        #kimse-video-evidence-focus .evidence-impact-grid{grid-template-columns:1fr 1fr!important;gap:12px!important}
-        #kimse-video-evidence-focus .impact-proof{padding:14px!important;border-radius:16px!important}
-        #kimse-video-evidence-focus .impact-proof .src{font-size:13px!important}
-        #kimse-video-evidence-focus .impact-proof .num{font-size:34px!important;margin:6px 0!important}
-        #kimse-video-evidence-focus .impact-proof strong{font-size:17px!important;line-height:1.25!important}
-        #kimse-video-evidence-focus .impact-map{font-size:15px!important;gap:7px!important;padding:11px!important}
-        #kimse-video-evidence-focus .impact-bottom{font-size:14px!important;line-height:1.35!important}
-        #kimse-video-evidence-focus table{font-size:17px!important;line-height:1.35!important}
-        #kimse-video-evidence-focus th,#kimse-video-evidence-focus td{padding:12px 8px!important}
-        #kimse-video-evidence-focus[data-focus="factors"] th:nth-child(n+3),#kimse-video-evidence-focus[data-focus="factors"] td:nth-child(n+3){display:none!important}
-        #kimse-video-evidence-focus[data-focus="sources"] .list-group-item{padding:14px 8px!important;font-size:18px!important;line-height:1.3!important}
-        #kimse-video-evidence-focus[data-focus="sources"] .list-group-item:nth-child(n+7){display:none!important}
-        #kimse-video-evidence-focus[data-focus="sources"] .text-secondary{font-size:15px!important;margin-top:3px!important}
+        #kimse-video-evidence-focus{display:block!important;position:fixed;inset:0;background:#fff;padding:28px 24px;overflow:hidden;font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;color:#17233b}
+        #kimse-video-evidence-focus h2{font-size:34px!important;line-height:1.16!important;font-weight:900!important;color:#10264a!important;margin:0 0 22px!important}
+        #kimse-video-evidence-focus .evidence-video-sub{font-size:18px!important;line-height:1.4!important;color:#66768a!important;margin:-10px 0 18px!important}
+        #kimse-video-evidence-focus .evidence-impact-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important}
+        #kimse-video-evidence-focus .impact-proof{padding:18px!important;border-radius:18px!important;border:1px solid #e2e8ee!important;background:#fff!important;min-height:190px!important}
+        #kimse-video-evidence-focus .impact-proof .src{display:block;font-size:14px!important;line-height:1.25!important;color:#6f7f91!important}
+        #kimse-video-evidence-focus .impact-proof .num{font-size:44px!important;line-height:1!important;font-weight:900!important;color:#103f76!important;margin:10px 0 8px!important}
+        #kimse-video-evidence-focus .impact-proof strong{display:block;font-size:20px!important;line-height:1.25!important}
+        #kimse-video-evidence-focus .impact-proof small{display:block;font-size:15px!important;line-height:1.4!important;margin-top:8px!important;color:#53667b!important}
+        #kimse-video-evidence-focus .evidence-video-factor-list{display:grid;gap:13px}
+        #kimse-video-evidence-focus .evidence-video-factor{padding:16px 18px;border-radius:18px;background:#f5f8fb;border:1px solid #e0e7ee}
+        #kimse-video-evidence-focus .evidence-video-factor span{display:block;font-size:14px;font-weight:800;color:#168f73;margin-bottom:5px}
+        #kimse-video-evidence-focus .evidence-video-factor strong{display:block;font-size:22px;line-height:1.25;color:#10264a}
+        #kimse-video-evidence-focus .evidence-video-factor em{display:block;font-size:16px;font-style:normal;color:#5b6c80;margin-top:5px}
+        #kimse-video-evidence-focus .evidence-video-source-list{display:grid;gap:11px}
+        #kimse-video-evidence-focus .evidence-video-source{display:block;text-decoration:none;padding:15px 17px;border-radius:17px;border:1px solid #e0e7ee;background:#fff;color:#10264a}
+        #kimse-video-evidence-focus .evidence-video-source strong{display:block;font-size:20px;line-height:1.25}
+        #kimse-video-evidence-focus .evidence-video-source .text-secondary{font-size:16px!important;line-height:1.35!important;margin-top:4px;color:#627287!important}
       `;
       doc.head.appendChild(style);
     }
     let shell=doc.getElementById('kimse-video-evidence-focus');
     if(!shell){shell=doc.createElement('div');shell.id='kimse-video-evidence-focus';doc.body.appendChild(shell)}
-    shell.dataset.focus=id;shell.replaceChildren(src.cloneNode(true));
+    shell.dataset.focus=id;shell.replaceChildren();
+    if(id==='impact-proof'){
+      const title=doc.createElement('h2');title.textContent='연구에서 확인한 근거';
+      const grid=src.querySelector('.evidence-impact-grid')?.cloneNode(true);
+      shell.append(title);if(grid)shell.append(grid);
+    }else if(id==='factors'){
+      const title=doc.createElement('h2');title.textContent=src.querySelector('.card-title')?.textContent||'근거 팩터 마스터 맵';
+      const sub=doc.createElement('p');sub.className='evidence-video-sub';sub.textContent='낌새가 실제로 보는 변화와 연결된 근거입니다.';
+      const list=doc.createElement('div');list.className='evidence-video-factor-list';
+      const wanted=['지연회상 · 주의 · 집행기능','음성 · pause · prosody · 어휘','수면 · 활동량 · 생활반경 · 루틴','금전관리 · 약속 · 최근사건 · 이동'];
+      const rows=[...src.querySelectorAll('tbody tr')];
+      for(const label of wanted){
+        const row=rows.find(x=>(x.children[1]?.textContent||'').trim()===label);if(!row)continue;
+        const item=doc.createElement('div');item.className='evidence-video-factor';
+        const type=doc.createElement('span'),name=doc.createElement('strong'),authority=doc.createElement('em');
+        type.textContent=(row.children[0]?.textContent||'').trim();
+        name.textContent=(row.children[1]?.textContent||'').trim();
+        authority.textContent='근거 · '+(row.children[3]?.textContent||'').trim();
+        item.append(type,name,authority);list.append(item);
+      }
+      shell.append(title,sub,list);
+    }else if(id==='sources'){
+      const title=doc.createElement('h2');title.textContent='원문 출처';
+      const sub=doc.createElement('p');sub.className='evidence-video-sub';sub.textContent='주요 연구와 공식 가이드라인을 직접 확인할 수 있습니다.';
+      const list=doc.createElement('div');list.className='evidence-video-source-list';
+      const links=[...src.querySelectorAll('.list-group-item')];
+      [0,2,5,6,10].map(i=>links[i]).filter(Boolean).forEach(x=>{const clone=x.cloneNode(true);clone.classList.add('evidence-video-source');list.append(clone)});
+      shell.append(title,sub,list);
+    }else shell.append(src.cloneNode(true));
     doc.documentElement.classList.add('kimse-video-evidence');
-    shell.animate?.([{opacity:.45,transform:'translateY(18px)'},{opacity:1,transform:'translateY(0)'}],{duration:320,easing:'ease-out'});
+    shell.animate?.([{opacity:.35,transform:'translateY(14px)'},{opacity:1,transform:'translateY(0)'}],{duration:280,easing:'ease-out'});
     return true;
   }catch(err){console.warn('KIMSE_EVIDENCE_FOCUS_FAILED',err);return false}
 }
@@ -465,12 +491,9 @@ async function demoAnimateEvidence(alive){
   try{
     const show=async(id,topic,ms)=>{
       if(!alive())return false;
-      demoTopic={title:topic,position:'bottom'};
       demoSetEvidenceFocus(frame,id);
-      const hold=Math.min(900,ms);
-      await demoWait(hold);
-      const cap=document.querySelector('.capture-topic-overlay');if(cap)cap.classList.add('is-leaving');
-      await demoWait(Math.max(0,ms-hold));demoTopic=null;
+      const spent=await demoShowCaption({title:topic,position:'bottom'},Math.min(760,ms-220));
+      const rest=ms-spent;if(rest>0)await demoWait(rest);
       return alive();
     };
     if(!await show('impact-proof','수면·활동·말하기를 함께 보는 근거가 있습니다',1450))return false;
@@ -670,18 +693,18 @@ page['evidence-proof']=()=>(
 
 page['research-engine']=()=>wrap(
   '<div class="eyebrow">연구 업데이트</div>'+
-  '<h1 class="page-title">AI가 새 근거를 찾고<br>현재 기준과 비교합니다</h1>'+
+  '<h1 class="page-title">AI가 새 연구를 찾고<br>현재 기준과 비교합니다</h1>'+
   '<div class="research-human-flow">'+
-    '<div><span>1</span><strong>새 근거를 모읍니다</strong><p>국내외 논문과 가이드라인을 계속 확인합니다.</p></div>'+
-    '<div><span>2</span><strong>가능한 조합을 비교합니다</strong><p>더 도움이 되는 신호 조합이 있는지 따로 봅니다.</p></div>'+
-    '<div><span>3</span><strong>바로 적용하지 않습니다</strong><p>검토가 끝나기 전에는 사용자 결과에 섞지 않습니다.</p></div>'+
+    '<div><span>1</span><strong>새 근거를 모읍니다</strong><p>국내외 연구를 계속 확인합니다.</p></div>'+
+    '<div><span>2</span><strong>가능한 조합을 비교합니다</strong><p>새 조합을 현재 기준과 따로 비교합니다.</p></div>'+
+    '<div><span>3</span><strong>확인된 것만 반영합니다</strong><p>검토 전에는 사용자 결과를 바꾸지 않습니다.</p></div>'+
   '</div>'+
-  '<div class="research-two-lanes">'+
-    '<section><small>현재 사용 중</small><strong>확인된 기준 유지</strong></section>'+
-    '<section><small>검토 중</small><strong>새 조합 별도 비교</strong></section>'+
+  '<div class="research-compare-bar">'+
+    '<div><small>현재 사용 중</small><strong>확인된 기준 유지</strong></div>'+
+    '<span>↔</span>'+
+    '<div><small>별도 검토</small><strong>새 조합 별도 비교</strong></div>'+
   '</div>'+
-  '<div class="research-safe-note"><strong>검토 전에는 사용자 결과를 자동으로 바꾸지 않습니다.</strong></div>'+
-  '<div class="hero-actions"><a class="btn-kimse btn-primary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">실제 근거 보기</a></div>',
+  '<div class="research-safe-note"><strong>새 연구가 나와도 바로 사용자 결과에 섞지 않습니다.</strong></div>',
   {title:'연구 업데이트',narrow:true,overview:true}
 );
 
