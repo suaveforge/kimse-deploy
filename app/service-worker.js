@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260916-release26';
+const CACHE = 'kimse-pwa-20260916-release27';
 const CORE = [
   './',
   './index.html',

@@ -84,7 +84,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 26<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 27<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -411,100 +411,11 @@ async function demoAnimateBaseline(alive,alreadyOnPage=false){
   await demoWait(950);
   return alive();
 }
-function demoSetEvidenceFocus(frame,id){
-  try{
-    const doc=frame?.contentDocument,src=doc?.getElementById(id);
-    if(!doc||!src)return false;
-    let style=doc.getElementById('kimse-video-evidence-style');
-    if(!style){
-      style=doc.createElement('style');style.id='kimse-video-evidence-style';
-      style.textContent=`
-        html.kimse-video-evidence,html.kimse-video-evidence body{margin:0!important;background:#fff!important;overflow:hidden!important}
-        html.kimse-video-evidence body>.page{display:none!important}
-        #kimse-video-evidence-focus{display:block!important;position:fixed;inset:0;background:#fff;padding:28px 24px;overflow:hidden;font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;color:#17233b}
-        #kimse-video-evidence-focus h2{font-size:34px!important;line-height:1.16!important;font-weight:900!important;color:#10264a!important;margin:0 0 22px!important}
-        #kimse-video-evidence-focus .evidence-video-sub{font-size:18px!important;line-height:1.4!important;color:#66768a!important;margin:-10px 0 18px!important}
-        #kimse-video-evidence-focus .evidence-impact-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important}
-        #kimse-video-evidence-focus .impact-proof{padding:18px!important;border-radius:18px!important;border:1px solid #e2e8ee!important;background:#fff!important;min-height:190px!important}
-        #kimse-video-evidence-focus .impact-proof .src{display:block;font-size:14px!important;line-height:1.25!important;color:#6f7f91!important}
-        #kimse-video-evidence-focus .impact-proof .num{font-size:44px!important;line-height:1!important;font-weight:900!important;color:#103f76!important;margin:10px 0 8px!important}
-        #kimse-video-evidence-focus .impact-proof strong{display:block;font-size:20px!important;line-height:1.25!important}
-        #kimse-video-evidence-focus .impact-proof small{display:block;font-size:15px!important;line-height:1.4!important;margin-top:8px!important;color:#53667b!important}
-        #kimse-video-evidence-focus .evidence-video-factor-list{display:grid;gap:13px}
-        #kimse-video-evidence-focus .evidence-video-factor{padding:16px 18px;border-radius:18px;background:#f5f8fb;border:1px solid #e0e7ee}
-        #kimse-video-evidence-focus .evidence-video-factor span{display:block;font-size:14px;font-weight:800;color:#168f73;margin-bottom:5px}
-        #kimse-video-evidence-focus .evidence-video-factor strong{display:block;font-size:22px;line-height:1.25;color:#10264a}
-        #kimse-video-evidence-focus .evidence-video-factor em{display:block;font-size:16px;font-style:normal;color:#5b6c80;margin-top:5px}
-        #kimse-video-evidence-focus .evidence-video-source-list{display:grid;gap:11px}
-        #kimse-video-evidence-focus .evidence-video-source{display:block;text-decoration:none;padding:15px 17px;border-radius:17px;border:1px solid #e0e7ee;background:#fff;color:#10264a}
-        #kimse-video-evidence-focus .evidence-video-source strong{display:block;font-size:20px;line-height:1.25}
-        #kimse-video-evidence-focus .evidence-video-source .text-secondary{font-size:16px!important;line-height:1.35!important;margin-top:4px;color:#627287!important}
-      `;
-      doc.head.appendChild(style);
-    }
-    let shell=doc.getElementById('kimse-video-evidence-focus');
-    if(!shell){shell=doc.createElement('div');shell.id='kimse-video-evidence-focus';doc.body.appendChild(shell)}
-    shell.dataset.focus=id;shell.replaceChildren();
-    if(id==='impact-proof'){
-      const title=doc.createElement('h2');title.textContent='연구에서 확인한 근거';
-      const grid=src.querySelector('.evidence-impact-grid')?.cloneNode(true);
-      shell.append(title);if(grid)shell.append(grid);
-    }else if(id==='factors'){
-      const title=doc.createElement('h2');title.textContent=src.querySelector('.card-title')?.textContent||'근거 팩터 마스터 맵';
-      const sub=doc.createElement('p');sub.className='evidence-video-sub';sub.textContent='낌새가 실제로 보는 변화와 연결된 근거입니다.';
-      const list=doc.createElement('div');list.className='evidence-video-factor-list';
-      const wanted=['지연회상 · 주의 · 집행기능','음성 · pause · prosody · 어휘','수면 · 활동량 · 생활반경 · 루틴','금전관리 · 약속 · 최근사건 · 이동'];
-      const rows=[...src.querySelectorAll('tbody tr')];
-      for(const label of wanted){
-        const row=rows.find(x=>(x.children[1]?.textContent||'').trim()===label);if(!row)continue;
-        const item=doc.createElement('div');item.className='evidence-video-factor';
-        const type=doc.createElement('span'),name=doc.createElement('strong'),authority=doc.createElement('em');
-        type.textContent=(row.children[0]?.textContent||'').trim();
-        name.textContent=(row.children[1]?.textContent||'').trim();
-        authority.textContent='근거 · '+(row.children[3]?.textContent||'').trim();
-        item.append(type,name,authority);list.append(item);
-      }
-      shell.append(title,sub,list);
-    }else if(id==='sources'){
-      const title=doc.createElement('h2');title.textContent='원문 출처';
-      const sub=doc.createElement('p');sub.className='evidence-video-sub';sub.textContent='주요 연구와 공식 가이드라인을 직접 확인할 수 있습니다.';
-      const list=doc.createElement('div');list.className='evidence-video-source-list';
-      const links=[...src.querySelectorAll('.list-group-item')];
-      [0,2,5,6,10].map(i=>links[i]).filter(Boolean).forEach(x=>{const clone=x.cloneNode(true);clone.classList.add('evidence-video-source');list.append(clone)});
-      shell.append(title,sub,list);
-    }else shell.append(src.cloneNode(true));
-    doc.documentElement.classList.add('kimse-video-evidence');
-    shell.animate?.([{opacity:.35,transform:'translateY(14px)'},{opacity:1,transform:'translateY(0)'}],{duration:280,easing:'ease-out'});
-    return true;
-  }catch(err){console.warn('KIMSE_EVIDENCE_FOCUS_FAILED',err);return false}
-}
-async function demoAnimateEvidence(alive){
-  await demoGo('evidence-proof',280,{title:'이 판단에는 실제 연구 근거를 사용합니다',position:'bottom',hold:420});
-  if(!alive())return false;
-  const frame=$('#evidence-live-frame');
-  if(!frame)return alive();
-  for(let i=0;i<16&&alive();i++){
-    try{if(frame.contentDocument?.getElementById('impact-proof'))break}catch{}
-    await demoWait(100);
-  }
-  if(!alive())return false;
-  try{
-    const show=async(id,topic,ms)=>{
-      if(!alive())return false;
-      demoSetEvidenceFocus(frame,id);
-      const spent=await demoShowCaption({title:topic,position:'bottom'},Math.min(760,ms-220));
-      const rest=ms-spent;if(rest>0)await demoWait(rest);
-      return alive();
-    };
-    if(!await show('impact-proof','수면·활동·말하기를 함께 보는 근거가 있습니다',1450))return false;
-    if(!await show('factors','관찰 항목마다 근거를 함께 확인합니다',1350))return false;
-    if(!await show('sources','논문과 가이드라인 원문까지 확인할 수 있습니다',1250))return false;
-  }catch(err){
-    console.warn('KIMSE_EVIDENCE_TOUR_FALLBACK',err);
-    await demoWait(900);
-  }
+async function demoEvidenceScene(alive){
+  await demoGo('evidence-proof',4100,{title:'수면·활동·말하기를 보는 데는 실제 연구 근거가 있습니다',position:'bottom',hold:1050});
   return alive();
 }
+
 async function demoCycleBrain(alive){
   for(const key of ['memory','executive','language','spatial','daily']){
     if(!alive())return false;
@@ -564,11 +475,11 @@ async function runRealAppTour(prepared=false){
     // 첫 장면은 녹화 시작 전에 이미 렌더링해 검은 프리롤과 깨진 첫 프레임을 막는다.
     await demoGo('monitoring-status',4300,{title:'최근 3일 기록을 보면, 전문가 상담이 권장됩니다',position:'bottom',hold:1200});if(!alive())return;
 
-    // 실제 Evidence Registry를 열고 핵심 근거 → 팩터 → 원문 출처 순으로 짧게 이동한다.
-    if(!await demoAnimateEvidence(alive))return;
+    // 근거는 문서 투어가 아니라 한 화면에서 의미를 이해하게 한다.
+    if(!await demoEvidenceScene(alive))return;
 
-    // 오래 보여줄 장면: 성장형 서비스의 차별점을 한 화면에서 이해.
-    await demoGo('research-engine',4400,{title:'새 연구는 바로 적용하지 않고 기존 기준과 먼저 비교합니다',position:'bottom',hold:1200});if(!alive())return;
+    // 새 연구가 실제 기준에 어떻게 반영되는지 한 장면으로 보여준다.
+    await demoGo('research-engine',4300,{title:'새 연구가 나오면 지금 기준보다 나은지 다시 확인합니다',position:'bottom',hold:1050});if(!alive())return;
 
     // 빨리 지나가도 되는 연결 장면.
     S.initial.step=0;save();await demoGo('initial-check',1500,{title:'처음 한 번, 기억과 주의 상태를 확인합니다',position:'bottom',hold:900});if(!alive())return;
@@ -683,28 +594,33 @@ page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="pa
 page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>생활반경·외출 리듬 변화 관찰. 브라우저/OS 권한 필요</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 활동·보행 관련 신호 수집</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 브라우저 알림</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의하고 14일 기준 만들기 시작</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
 
-page['evidence-proof']=()=>(
-  captureTopicOverlay()+
-  '<main id="main" class="evidence-live-page" tabindex="-1">'+
-    '<div class="evidence-live-toolbar"><button class="icon-button" data-back aria-label="이전 화면">'+I('chevron-left')+'</button><strong>근거 자료</strong><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">전체 화면</a></div>'+
-    '<div class="evidence-live-viewer"><iframe id="evidence-live-frame" class="evidence-live-frame" title="낌새 Evidence Registry" src="'+evidenceUrl()+'?embed=1#impact-proof"></iframe></div>'+
-  '</main>'
+page['evidence-proof']=()=>wrap(
+  '<div class="eyebrow">근거 자료</div>'+
+  '<h1 class="page-title">왜 수면·활동·말하기를<br>함께 볼까요?</h1>'+
+  '<p class="page-desc evidence-story-lead">연구에서 확인해 온 생활·인지 신호를, 내 14일 평소와 비교합니다.</p>'+
+  '<div class="evidence-story-list">'+
+    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>20년</strong><span>1,409명</span></div><div><strong>장기 생활·건강 위험요인 추적</strong><p>오랜 기간 생활·건강 요인이 치매 위험과 어떻게 이어지는지 추적했습니다.</p><small>CAIDE Dementia Risk Score</small></div></section>'+
+    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>196명</strong><span>국내 검증</span></div><div><strong>기억·주의·언어 기능 검증</strong><p>한국어 환경에서 인지기능 검사의 민감도와 특이도를 확인했습니다.</p><small>MoCA-K Validation</small></div></section>'+
+    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>118명</strong><span>복수 신호</span></div><div><strong>걷기·말하기·그리기를 함께 분석</strong><p>한 가지 신호보다 여러 신호를 함께 봤을 때 성능이 높았습니다.</p><small>Gait + Speech + Drawing</small></div></section>'+
+  '</div>'+
+  '<div class="evidence-story-conclusion">'+I('route')+'<strong>그래서 한 번의 점수가 아니라, 내 평소에서 달라진 흐름을 봅니다.</strong></div>'+
+  '<div class="hero-actions evidence-registry-link"><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">전체 연구·원문 보기</a></div>',
+  {title:'근거 자료',narrow:true,overview:true}
 );
 
 page['research-engine']=()=>wrap(
   '<div class="eyebrow">연구 업데이트</div>'+
-  '<h1 class="page-title">AI가 새 연구를 찾고<br>현재 기준과 비교합니다</h1>'+
-  '<div class="research-human-flow">'+
-    '<div><span>1</span><strong>새 근거를 모읍니다</strong><p>국내외 연구를 계속 확인합니다.</p></div>'+
-    '<div><span>2</span><strong>가능한 조합을 비교합니다</strong><p>새 조합을 현재 기준과 따로 비교합니다.</p></div>'+
-    '<div><span>3</span><strong>확인된 것만 반영합니다</strong><p>검토 전에는 사용자 결과를 바꾸지 않습니다.</p></div>'+
+  '<h1 class="page-title">새 연구가 나와도<br>바로 기준을 바꾸지 않습니다</h1>'+
+  '<p class="page-desc research-story-lead">지금 쓰는 기준보다 더 잘 맞는지 먼저 확인합니다.</p>'+
+  '<div class="research-story">'+
+    '<div class="research-story-sources">'+
+      '<div class="research-current">'+I('shield-check')+'<span><small>지금 쓰는 기준</small><strong>확인된 기준</strong></span></div>'+
+      '<div class="research-new">'+I('file-search')+'<span><small>새 연구</small><strong>새로운 근거</strong></span></div>'+
+    '</div>'+
+    '<div class="research-compare">'+I('arrows-exchange')+'<strong>지금 기준보다 더 잘 맞는지 확인</strong></div>'+
+    '<div class="research-result">'+I('circle-check')+'<strong>더 나은 경우에만 기준을 바꿉니다</strong></div>'+
   '</div>'+
-  '<div class="research-compare-bar">'+
-    '<div><small>현재 사용 중</small><strong>확인된 기준 유지</strong></div>'+
-    '<span>↔</span>'+
-    '<div><small>별도 검토</small><strong>새 조합 별도 비교</strong></div>'+
-  '</div>'+
-  '<div class="research-safe-note"><strong>새 연구가 나와도 바로 사용자 결과에 섞지 않습니다.</strong></div>',
+  '<p class="research-story-note">검증된 기준은 유지하고, 더 나은 근거가 확인될 때만 바꿉니다.</p>',
   {title:'연구 업데이트',narrow:true,overview:true}
 );
 
@@ -887,7 +803,7 @@ async function loadAdminInquiries(){
 }
 page.settings=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">설정</h1><div class="summary-card"><h3>${S.account.name}</h3><p>${S.account.email}</p></div><div class="list"><a class="list-row" href="#/account">내 프로필 / 역할 관리 ${I('chevron-right')}</a><a class="list-row" href="#/family">가족 / 보호자 관리 ${I('chevron-right')}</a><a class="list-row" href="#/accessibility">접근성 설정 ${I('chevron-right')}</a><a class="list-row" href="#/brain-map">뇌 기능 연관 지도 ${I('chevron-right')}</a><a class="list-row" href="#/brain-trends">기능 변화 일·주·월 그래프 ${I('chevron-right')}</a><a class="list-row" href="#/monitoring-status">개인 변화 관찰 상태 ${I('chevron-right')}</a><a class="list-row" href="#/consent">데이터 수집 / 공유 동의 ${I('chevron-right')}</a><div class="list-row"><span><strong>언어</strong><small>LocalizeHub · 브라우저 언어 자동 감지 / 직접 선택</small></span><localize-switcher project="p45" type="compact" flags="true" label-mode="native" size="sm"></localize-switcher></div><a class="list-row" href="#/plan">구독 관리 ${I('chevron-right')}</a><a class="list-row" href="#/market">치매 케어관 ${I('chevron-right')}</a><a class="list-row" href="#/partnership">사업자 입점 / 제휴 문의 ${I('chevron-right')}</a><a class="list-row" href="${evidenceUrl()}" target="_blank">연구 근거 / Evidence ${I('external-link')}</a></div>`,{title:'설정',narrow:true})};
 function applyA11y(){document.documentElement.classList.toggle('large-text',S.a11y.largeText);document.documentElement.classList.toggle('large-touch',S.a11y.largeTouchTargets);document.documentElement.classList.toggle('high-contrast',S.a11y.highContrast)}
-function render(){applyA11y();let r=route(),f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='evidence-proof')setTimeout(()=>{const frame=$('#evidence-live-frame');if(!frame)return;const focus=()=>demoSetEvidenceFocus(frame,'impact-proof');try{if(frame.contentDocument?.readyState==='complete')focus();else frame.addEventListener('load',focus,{once:true})}catch{}},40);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;if(r!==lastSpokenRoute){lastSpokenRoute=r;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
+function render(){applyA11y();let r=route(),f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;if(r!==lastSpokenRoute){lastSpokenRoute=r;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
 document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');go(t.dataset.go)}if(t.hasAttribute('data-initial-next')){S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('다음 항목으로 이동합니다.');render()}if(t.dataset.initialAnswer){const [k,v]=t.dataset.initialAnswer.split(':');const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes.push(rt);S.initial.answers[k]=v;S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('선택했습니다.');render()}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');history.length>1?history.back():go('start')}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');S.consents.caregiverShare=true;save();if(S.care){S.mode='care';save();go('caregiver-home')}else{go('family')}}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
 document.addEventListener('click',e=>{
   if(e.target.id==='save-recall'){
