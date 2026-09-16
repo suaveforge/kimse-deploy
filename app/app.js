@@ -84,7 +84,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 21<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 22<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -315,7 +315,8 @@ function startPassiveCollectors(){
 }
 function recordAppActive(){if(!monitoringEnabled()||!S.consents.usage)return;const mins=(Date.now()-appSessionStarted)/60000;if(mins>.05)queueSignal('app_active_minutes',mins,'min','pwa');appSessionStarted=Date.now()}
 const DEMO_DURATION_MS=50000;
-let demoRecorder=null,demoRecordStream=null,demoChunks=[],demoDownloadUrl='',demoAutoRunning=false,demoOriginalStateJson=null,demoRunId=0,demoPreviewOnly=false,demoTopic=null;
+const DEMO_CAPTURE_WINDOW=new URLSearchParams(location.search).get('capture')==='1';
+let demoRecorder=null,demoRecordStream=null,demoChunks=[],demoDownloadUrl='',demoAutoRunning=false,demoOriginalStateJson=null,demoRunId=0,demoPreviewOnly=false,demoTopic=null,demoSafetyTimer=null;
 const demoWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function demoSetValue(selector,value){
   const el=$(selector);if(!el)return false;el.scrollIntoView?.({block:'center',behavior:'smooth'});el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));return true;
@@ -444,13 +445,15 @@ async function runRealAppTour(){
     S.mode='self';save();await demoGo('monitoring-status',3400,{kicker:'낌새',title:'평소를 알고 있으면, 작은 변화도 더 빨리 알아챌 수 있습니다'});if(!alive())return;
   }finally{
     if(!alive())return;
-    demoTopic=null;demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running','capture-frame-mode');
+    demoTopic=null;demoAutoRunning=false;
+    // 녹화가 완전히 멈춘 뒤에만 9:16 캡처 레이아웃을 해제한다.
+    // stop() 직전에 레이아웃을 풀면 마지막 프레임이 데스크톱 폭으로 튀며 영상 끝이 깨질 수 있다.
     if(demoRecorder&&demoRecorder.state!=='inactive'){demoRecorder.stop()}
     else{demoRestoreState();go('demo-capture')}
   }
 }
 function stopDemoRecording(){
-  demoRunId++;demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running');
+  demoRunId++;demoAutoRunning=false;
   if(demoRecorder&&demoRecorder.state!=='inactive')demoRecorder.stop();
   else{if(demoRecordStream){demoRecordStream.getTracks().forEach(t=>t.stop());demoRecordStream=null}demoRestoreState();go('demo-capture')}
 }
@@ -462,25 +465,41 @@ async function startDemoCapture(){
     await demoWait(120);
     demoRecordStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:false,preferCurrentTab:true,selfBrowserSurface:'include'});
     const [videoTrack]=demoRecordStream.getVideoTracks();
+    let regionCropped=false;
     if(window.CropTarget?.fromElement&&videoTrack&&typeof videoTrack.cropTo==='function'){
       try{
         const target=await CropTarget.fromElement(A);
         await videoTrack.cropTo(target);
+        regionCropped=true;
       }catch(err){
-        console.warn('KIMSE_REGION_CAPTURE_FALLBACK',err);
+        console.warn('KIMSE_REGION_CAPTURE_FAILED',err);
       }
     }
+    // 일반 데스크톱 탭에서 크롭이 실패한 채 녹화를 계속하면 전체 탭이 저장되어
+    // 9:16 결과가 통째로 무너진다. 전용 450x800 촬영창에서만 whole-tab fallback을 허용한다.
+    if(!regionCropped&&!DEMO_CAPTURE_WINDOW){
+      demoRecordStream.getTracks().forEach(t=>t.stop());demoRecordStream=null;
+      document.documentElement.classList.remove('capture-frame-mode');
+      feedback('세로 영역 크롭을 시작하지 못했습니다. “세로 촬영창 열기”를 누른 뒤 그 창에서 자동촬영을 시작해주세요.','warning');
+      return;
+    }
+    if(videoTrack&&'contentHint' in videoTrack){try{videoTrack.contentHint='detail'}catch{}}
     const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'],mime=types.find(x=>MediaRecorder.isTypeSupported?.(x))||'';
     demoChunks=[];demoPreviewOnly=false;demoRecorder=mime?new MediaRecorder(demoRecordStream,{mimeType:mime,videoBitsPerSecond:4500000}):new MediaRecorder(demoRecordStream,{videoBitsPerSecond:4500000});
     demoRecorder.ondataavailable=e=>{if(e.data&&e.data.size)demoChunks.push(e.data)};
     demoRecorder.onstop=()=>{
+      if(demoSafetyTimer){clearTimeout(demoSafetyTimer);demoSafetyTimer=null}
       if(demoDownloadUrl)URL.revokeObjectURL(demoDownloadUrl);
       const blob=new Blob(demoChunks,{type:demoRecorder?.mimeType||'video/webm'});demoDownloadUrl=URL.createObjectURL(blob);
       if(demoRecordStream){demoRecordStream.getTracks().forEach(t=>t.stop());demoRecordStream=null}
       demoRecorder=null;demoRestoreState();go('demo-capture');setTimeout(()=>{if(route()==='demo-capture')render()},80);
     };
-    demoRecorder.start(500);setTimeout(()=>runRealAppTour(),220);
+    demoRecorder.start(500);
+    demoSafetyTimer=setTimeout(()=>{if(demoRecorder&&demoRecorder.state!=='inactive')stopDemoRecording()},DEMO_DURATION_MS+12000);
+    setTimeout(()=>runRealAppTour(),220);
   }catch{
+    if(demoSafetyTimer){clearTimeout(demoSafetyTimer);demoSafetyTimer=null}
+    if(demoRecordStream){demoRecordStream.getTracks().forEach(t=>t.stop());demoRecordStream=null}
     document.documentElement.classList.remove('capture-frame-mode');
     feedback('화면 공유가 취소되었습니다. 현재 탭을 선택하면 실제 앱 자동조작을 촬영할 수 있습니다.','warning')
   }

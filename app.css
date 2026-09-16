@@ -336,3 +336,44 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 }
 
 .result-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.result-sync{border:0;background:#edf2f6;color:#4b6177;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:850}
+
+
+/* Release 22 · capture viewport isolation
+   Desktop browser media queries follow the outer viewport, not the 450px capture surface.
+   Lock capture mode to the same responsive geometry as a real phone so the recorded 9:16 UI cannot inherit desktop grids. */
+.capture-frame-mode .app-header-inner{padding-left:12px!important;padding-right:12px!important;gap:8px!important}
+.capture-frame-mode .app-header-actions{gap:6px!important}
+.capture-frame-mode .app-header-actions localize-switcher{--lh-switcher-width:78px;min-width:78px!important;max-width:78px!important}
+.capture-frame-mode .brand{font-size:21px!important}
+.capture-frame-mode .brand-sub{font-size:11px!important}
+.capture-frame-mode .page{padding-left:16px!important;padding-right:16px!important;padding-top:24px!important}
+.capture-frame-mode .page:not(.overview-page) .page-title{font-size:28px!important;line-height:1.18!important}
+.capture-frame-mode .card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+.capture-frame-mode .action-card{min-height:126px!important;padding:15px!important}
+.capture-frame-mode .market-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.capture-frame-mode .role-card{grid-template-columns:62px minmax(0,1fr) auto!important}
+.capture-frame-mode .avatar-lg{width:62px!important;height:62px!important}
+.capture-frame-mode .voice-task{grid-template-columns:42px minmax(0,1fr)!important}
+.capture-frame-mode .voice-task .btn-kimse{grid-column:1/-1!important;width:100%!important}
+.capture-frame-mode .memory-words strong{min-height:88px!important;font-size:22px!important}
+.capture-frame-mode .signal-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.capture-frame-mode .domain-card,
+.capture-frame-mode .trend-card-head{grid-template-columns:46px minmax(0,1fr)!important}
+.capture-frame-mode .domain-card .brain-score,
+.capture-frame-mode .trend-card-head .brain-score{grid-column:2!important;justify-self:start!important}
+.capture-frame-mode .monitor-sync-card{grid-template-columns:1fr!important}
+.capture-frame-mode .monitor-sync-card .btn-kimse{grid-row:auto!important;grid-column:auto!important;width:100%!important;margin-top:6px!important}
+.capture-frame-mode .care-alert-card{grid-template-columns:42px minmax(0,1fr)!important}
+.capture-frame-mode .care-alert-card>i{display:none!important}
+.capture-frame-mode .baseline-live-signals{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.capture-frame-mode .overview-page{padding:12px 13px 14px!important}
+.capture-frame-mode .evidence-human-grid{gap:6px!important}
+.capture-frame-mode .evidence-human-grid section{min-height:108px!important;padding:9px!important}
+.capture-frame-mode .research-human-flow{gap:4px!important}
+.capture-frame-mode .research-human-flow>div{padding:8px 7px!important}
+.capture-frame-mode .result-change-grid{gap:5px!important}
+.capture-frame-mode .result-change{padding:9px 5px!important}
+.capture-frame-mode .overview-page .brain-visual{height:214px!important;max-height:214px!important}
+.capture-frame-mode .overview-page .overall-trend{height:190px!important}
+/* The video-only topic strip owns the top edge while recording; the product header sits below it instead of competing at top:0. */
+.capture-frame-mode.real-app-capture-running .app-header{position:relative!important;top:auto!important}
