@@ -804,3 +804,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   opacity:1!important;
   transform:translateX(-50%) translateY(0)!important;
 }
+
+
+/* Release 31 · hook/action separation + slower subtitle fade */
+.capture-frame-mode #app.capture-caption-active::before{
+  transition:opacity .46s ease,transform .46s ease!important;
+}
+.capture-frame-mode #app.capture-caption-active.capture-caption-show::before{
+  opacity:1!important;
+  transform:translateX(-50%) translateY(0)!important;
+}

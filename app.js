@@ -84,7 +84,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 30<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 31<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -105,12 +105,12 @@ async function demoShowCaption(topic,hold=1000){
   A.classList.add('capture-caption-active','caption-'+pos);
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   A.classList.add('capture-caption-show');
-  const live=Math.max(360,hold);
+  const live=Math.max(900,hold);
   await demoWait(live);
   A.classList.remove('capture-caption-show');
-  await demoWait(200);
+  await demoWait(480);
   demoRemoveCaption();
-  return live+200;
+  return live+480;
 }
 function wrap(html,o={}){
   const r=route(),screen='screen-'+r.replace(/[^a-z0-9-]/gi,'-'),senior=SENIOR_ROUTES.has(r)?' senior-screen':'';
@@ -372,7 +372,7 @@ function startPassiveCollectors(){
 function recordAppActive(){if(!monitoringEnabled()||!S.consents.usage)return;const mins=(Date.now()-appSessionStarted)/60000;if(mins>.05)queueSignal('app_active_minutes',mins,'min','pwa');appSessionStarted=Date.now()}
 const DEMO_DURATION_MS=50000;
 const DEMO_CAPTURE_WINDOW=new URLSearchParams(location.search).get('capture')==='1';
-let demoRecorder=null,demoRecordStream=null,demoChunks=[],demoDownloadUrl='',demoAutoRunning=false,demoOriginalStateJson=null,demoRunId=0,demoPreviewOnly=false,demoTopic=null,demoSafetyTimer=null;
+let demoRecorder=null,demoRecordStream=null,demoChunks=[],demoDownloadUrl='',demoAutoRunning=false,demoOriginalStateJson=null,demoRunId=0,demoPreviewOnly=false,demoTopic=null,demoSafetyTimer=null,demoResultPhase='normal';
 const demoWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function demoSetValue(selector,value){
   const el=$(selector);if(!el)return false;el.scrollIntoView?.({block:'center',behavior:'smooth'});el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));return true;
@@ -403,13 +403,13 @@ async function demoGo(name,after=800,topic=null){
 function demoRestoreState(){
   const raw=demoOriginalStateJson;demoOriginalStateJson=null;
   try{const x=raw?JSON.parse(raw):{};S=Object.assign(structuredClone(D),x);S.a11y=Object.assign({},D.a11y,x.a11y||{});S.profile=Object.assign({},D.profile,x.profile||{});S.onboarding=Object.assign({},D.onboarding,x.onboarding||{});S.initial=Object.assign({},D.initial,x.initial||{});S.initial.answers=Object.assign({},D.initial.answers,x.initial?.answers||{});S.consents=Object.assign({},D.consents,x.consents||{});S.baseline=Object.assign({},D.baseline,x.baseline||{});S.permissions=Object.assign({},D.permissions,x.permissions||{});S.remote=Object.assign({},D.remote,x.remote||{});S.monitoring=Object.assign({},D.monitoring,x.monitoring||{});if(!Array.isArray(S.monitoring.pending))S.monitoring.pending=[];if(!Array.isArray(S.monitoring.alerts))S.monitoring.alerts=[];if(!Array.isArray(S.brainHistory))S.brainHistory=[];if(raw)localStorage.setItem(K,raw);else localStorage.removeItem(K)}catch{}
-  demoRemoveCaption();demoTopic=null;demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running','capture-frame-mode');applyA11y();
+  demoRemoveCaption();demoTopic=null;demoResultPhase='normal';demoAutoRunning=false;document.documentElement.classList.remove('real-app-capture-running','capture-frame-mode');applyA11y();
 }
 function demoPrepareScenario(){
   demoOriginalStateJson=localStorage.getItem(K);
   const keepA11y=Object.assign({},S.a11y,{voiceGuidance:false,soundEffects:false});
   S=structuredClone(D);S.version=STATE_VERSION;S.a11y=keepA11y;S.intent=null;S.self=false;S.care=false;S.mode='self';
-  demoAutoRunning=true;document.documentElement.classList.add('real-app-capture-running');save();
+  demoResultPhase='normal';demoAutoRunning=true;document.documentElement.classList.add('real-app-capture-running');save();
 }
 function demoWarpBaseline(day){
   S.baseline.startedAt=new Date(Date.now()-Math.max(0,day-1)*86400000).toISOString();save();render();demoScrollTop();
@@ -528,8 +528,10 @@ async function runRealAppTour(prepared=false){
   if(!prepared){demoPrepareScenario();demoSeedScenario()}
   const alive=()=>demoAutoRunning&&run===demoRunId;
   try{
-    // 첫 장면은 녹화 시작 전에 이미 렌더링해 검은 프리롤과 깨진 첫 프레임을 막는다.
-    await demoGo('monitoring-status',4300,{title:'최근 3일 기록을 보면, 전문가 상담이 권장됩니다',position:'bottom',hold:1200});if(!alive())return;
+    // 첫 장면은 결론을 다 설명하지 않고 결과만 던지는 훅으로 쓴다.
+    demoResultPhase='hook';
+    await demoGo('monitoring-status',4300,{title:'지난 14일과 비교해 확인이 필요한 변화가 보입니다',position:'bottom',hold:1250});if(!alive())return;
+    demoResultPhase='normal';
 
     // 근거는 문서 투어가 아니라 한 화면에서 의미를 이해하게 한다.
     if(!await demoEvidenceScene(alive))return;
@@ -552,12 +554,11 @@ async function runRealAppTour(prepared=false){
     await demoGo('brain-trends',1250,{title:'눈에 띄게 달라진 날은 따로 표시합니다',position:'bottom',hold:800});if(!alive())return;
     if(!await demoCycleTrend(alive))return;
 
-    // 결론은 다시 충분히 멈춘다.
-    await demoGo('monitoring-status',2500,{title:'변화가 커지면 상담이나 보호자 연결로 바로 이어집니다',position:'bottom',hold:1000});if(!alive())return;
-    await demoTap('[data-share-monitoring]',420);if(!alive())return;
-    const careSpent=await demoShowCaption({title:'보호자도 같은 상태를 확인할 수 있습니다',position:'bottom'},900);
-    if(careSpent<2300)await demoWait(2300-careSpent);if(!alive())return;
-    S.mode='self';save();await demoGo('monitoring-status',3600,{title:'지난 14일 생활패턴과 비교하고, 필요한 다음 행동까지 연결합니다',position:'bottom',hold:1100});if(!alive())return;
+    // 끝부분은 보호자 화면을 짧게 거친 뒤, 같은 결과 화면을 '다음 행동'이 보이는 상태로 다시 보여준다.
+    S.mode='care';save();await demoGo('caregiver-home',2300,{title:'필요하면 보호자도 같은 상태를 함께 확인합니다',position:'bottom',hold:1000});if(!alive())return;
+    S.mode='self';demoResultPhase='action';save();
+    await demoGo('monitoring-status',4200,{title:'결과를 본 뒤 상담과 보호자 연결까지 바로 이어집니다',position:'bottom',hold:1300});if(!alive())return;
+    demoResultPhase='normal';
   }finally{
     if(!alive())return;
     demoTopic=null;demoAutoRunning=false;
@@ -747,7 +748,7 @@ page['monitoring-status']=()=>{
     const sign=up?'+':down?'−':'',arrow=up?'arrow-up':down?'arrow-down':'minus';
     return '<div class="result-change direction-'+dir+'"><span class="result-change-label">'+I(SIGNAL_ICONS[x.metric]||'activity')+'<strong>'+esc(SIGNAL_LABELS[x.metric]||x.metric)+'</strong></span><b>'+I(arrow)+' '+sign+Math.abs(pct)+'%</b><small><span>평소 '+esc(formatMonitoringValue(x.metric,x.baseline))+'</span><em>→ 최근 '+esc(formatMonitoringValue(x.metric,x.recent))+'</em></small></div>';
   }).join(''):'';
-  const abnormal=ready&&status.key!=='stable';
+  const abnormal=ready&&status.key!=='stable',captureHook=demoAutoRunning&&demoResultPhase==='hook';
   const supportActions=status.key==='danger'
     ?'<button class="status-action secondary" data-share-monitoring>'+I('users')+'<span>보호자와 공유</span></button><a class="status-action primary" href="tel:18999988">'+I('phone')+'<span>상담센터 연결</span></a>'
     :status.key==='serious'
@@ -761,8 +762,8 @@ page['monitoring-status']=()=>{
     '<p class="page-desc">'+(ready?'지난 14일 생활패턴과 비교했습니다.':'14일이 쌓이기 전에는 변화 알림을 만들지 않습니다.')+'</p>'+
     (ready?'<section class="monitoring-level-card level-'+status.key+'"><div class="monitoring-level-line"><span class="monitoring-level-icon">'+I(status.icon)+'</span><strong>'+status.label+'</strong></div><h2>'+status.action+'</h2></section>':'')+
     (changeHtml?'<div class="result-change-grid">'+changeHtml+'</div>':'<div class="monitoring-stable-note"><strong>현재 확인된 큰 변화가 없습니다.</strong></div>')+
-    (ready?'<h2 class="monitoring-next-title">다음 단계</h2><div class="monitoring-actions">'+supportActions+'</div>':'')+
-    (abnormal?'<button class="monitoring-detail-link" data-go="brain-map">기능별 상세 보기 '+I('chevron-right')+'</button>':'')+
+    (ready&&!captureHook?'<h2 class="monitoring-next-title">다음 단계</h2><div class="monitoring-actions">'+supportActions+'</div>':'')+
+    (abnormal&&!captureHook?'<button class="monitoring-detail-link" data-go="brain-map">기능별 상세 보기 '+I('chevron-right')+'</button>':'')+
     '<p class="screen-footnote">변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',
     {title:'최근 변화',narrow:true,overview:true}
   );
