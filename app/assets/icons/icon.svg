@@ -1,24 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="낌새">
   <defs>
-    <linearGradient id="bg" x1="140" y1="80" x2="880" y2="940" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFF8EF"/>
-      <stop offset="0.56" stop-color="#F1FAF5"/>
-      <stop offset="1" stop-color="#DDF6EE"/>
+    <linearGradient id="bg" x1="80" y1="80" x2="930" y2="950" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF9EE"/>
+      <stop offset=".58" stop-color="#F4FCF8"/>
+      <stop offset="1" stop-color="#CFF7EA"/>
     </linearGradient>
-    <linearGradient id="signal" x1="420" y1="300" x2="690" y2="640" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#2DB394"/>
-      <stop offset="1" stop-color="#157C6C"/>
+    <linearGradient id="leaf" x1="240" y1="700" x2="510" y2="930" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2EB694"/>
+      <stop offset="1" stop-color="#0F7668"/>
+    </linearGradient>
+    <linearGradient id="arc" x1="380" y1="350" x2="700" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#79CFA4"/>
+      <stop offset="1" stop-color="#49AE8A"/>
     </linearGradient>
   </defs>
-  <rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
-  <circle cx="512" cy="512" r="340" fill="#FFFFFF" opacity=".78"/>
-  <path d="M388 708c-72-55-114-145-109-241 6-126 106-231 232-242 112-10 214 49 260 145 24 49 29 104 16 158-11 45-33 81-69 108-24 18-36 41-36 69v42H454v-35c0-39-16-77-66-104Z"
-        fill="#FFFFFF" stroke="#163E45" stroke-width="44" stroke-linejoin="round"/>
-  <path d="M682 409c52 21 89 65 102 116-30-4-59 1-84 15" fill="none" stroke="#163E45" stroke-width="34" stroke-linecap="round"/>
-  <path d="M704 571c-23 24-55 38-92 38" fill="none" stroke="#163E45" stroke-width="34" stroke-linecap="round"/>
-  <circle cx="628" cy="431" r="18" fill="#163E45"/>
-  <path d="M419 445c28-50 95-62 139-23 44-39 111-27 139 23 22 40 11 91-23 121L558 668 442 566c-34-30-45-81-23-121Z" fill="#FF7E72"/>
-  <path d="M315 611c-49-18-86-56-103-105 56-12 115 9 151 52" fill="none" stroke="url(#signal)" stroke-width="44" stroke-linecap="round"/>
-  <circle cx="795" cy="303" r="22" fill="#FF7E72"/>
-  <path d="M835 340l47-41M859 402l58-7" fill="none" stroke="#FF7E72" stroke-width="30" stroke-linecap="round"/>
+  <rect x="34" y="34" width="956" height="956" rx="210" fill="url(#bg)"/>
+  <path d="M34 780C160 690 260 738 354 842c51 56 102 97 171 148H244C128 990 34 896 34 780Z" fill="#A9EFD7" opacity=".28"/>
+  <path d="M695 990c31-146 102-254 295-366v366H695Z" fill="#9CEBD3" opacity=".24"/>
+  <path d="M264 518C244 357 355 226 524 222c158-4 274 96 288 233 6 58 31 91 72 128 26 23 22 62-10 79-22 12-43 16-43 42v78c0 48-39 87-87 87H641v73H425c-36 0-65-29-65-65v-76c0-38-15-66-55-95-30-22-54-67-61-110Z" fill="#FFFFFF" stroke="#0F4553" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M420 468c18-63 72-106 136-110" fill="none" stroke="url(#arc)" stroke-width="38" stroke-linecap="round"/>
+  <path d="M666 516c-2 70-42 126-104 149" fill="none" stroke="url(#arc)" stroke-width="38" stroke-linecap="round"/>
+  <path d="M478 503c22-38 75-49 110-17 35-32 88-21 110 17 18 31 10 70-17 93l-93 81-93-81c-27-23-35-62-17-93Z" fill="#FF6E68"/>
+  <path d="M303 659c77 0 143 37 178 96 31 52 32 112 6 165-33-61-84-103-153-122 30 33 50 71 57 114-74-27-129-82-154-153-12-35-16-69-13-100h79Z" fill="url(#leaf)"/>
+  <path d="M291 697c58 39 101 88 130 148" fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round" opacity=".96"/>
+  <path d="M803 340l32-58M855 390l61-34M867 454l63 8" fill="none" stroke="#FF6E68" stroke-width="30" stroke-linecap="round"/>
 </svg>
