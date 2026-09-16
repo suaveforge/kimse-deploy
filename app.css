@@ -214,7 +214,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:520px){.product-explainer strong{font-size:19px}.baseline-live-signals{grid-template-columns:repeat(2,1fr)}}
 
 /* Release 20 · video topics + research growth engine */
-.capture-topic-overlay{position:sticky;top:0;z-index:1250;margin:0 auto;width:min(100%,450px);padding:10px 16px 11px;background:rgba(10,27,52,.94);color:#fff;backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(10,27,52,.16)}.capture-topic-overlay span{display:block;font-size:10px;font-weight:950;letter-spacing:.08em;opacity:.72}.capture-topic-overlay strong{display:block;font-size:15px;line-height:1.35;margin-top:2px}
+.capture-topic-overlay{position:sticky;top:10px;z-index:1400;margin:10px auto -64px;width:calc(100% - 28px);max-width:422px;padding:9px 12px 10px;background:rgba(0,0,0,.84);color:#fff;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.22);pointer-events:none}.capture-topic-overlay span{display:block;font-size:10px;font-weight:850;letter-spacing:.04em;opacity:.72}.capture-topic-overlay strong{display:block;font-size:15px;line-height:1.35;margin-top:2px;font-weight:800}
 .research-time-rail{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:12px 4px;margin:14px 0 18px;scrollbar-width:none}.research-time-rail::-webkit-scrollbar{display:none}.research-time-rail>i{flex:0 0 26px;height:2px;background:linear-gradient(90deg,#b9c8d7,#6ebda8);position:relative}.research-time-rail>i:after{content:'›';position:absolute;right:-2px;top:-12px;color:#6c8a9d;font-size:20px}.research-time-node{flex:0 0 95px;border:1px solid #dbe4ec;border-radius:16px;background:#fff;padding:10px;box-shadow:0 6px 16px rgba(25,50,92,.04)}.research-time-node span,.research-time-node strong,.research-time-node small{display:block}.research-time-node span{font-size:10px;font-weight:950;color:#7a8a9c}.research-time-node strong{font-size:13px;margin-top:2px;color:#17325c}.research-time-node small{font-size:10px;color:var(--kimse-muted);margin-top:2px}.research-time-node.active{border-color:#8fcdbd;background:#f1fbf7}.research-time-node.now{border-color:#9eb8df;background:#f4f7ff}
 .research-lanes{display:grid;gap:12px}.research-lane{border-radius:22px;padding:16px;border:1px solid var(--kimse-border);background:#fff}.research-lane.active-model{background:linear-gradient(145deg,#eef9f5,#fff)}.research-lane.candidate-model{background:linear-gradient(145deg,#f5f2ff,#fff)}.lane-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.lane-head span{font-size:10px;font-weight:950;letter-spacing:.08em;border-radius:999px;padding:5px 8px;background:#17325c;color:#fff}.lane-head strong{font-size:13px;color:#42566c}.model-chip{border:1px solid #c9e5db;border-radius:16px;background:#fff;padding:12px}.model-chip b,.model-chip small{display:block}.model-chip b{font-size:18px;color:#155d50}.model-chip small{font-size:11px;color:var(--kimse-muted);margin-top:2px}.research-lane p{font-size:12px;color:var(--kimse-muted);line-height:1.45;margin:10px 0 0}
 .candidate-flow{display:flex;align-items:center;gap:5px;overflow-x:auto;scrollbar-width:none;margin-bottom:11px}.candidate-flow::-webkit-scrollbar{display:none}.candidate-flow b{flex:0 0 auto;border-radius:11px;padding:7px 9px;background:#fff;border:1px solid #ddd8ed;font-size:10px}.candidate-flow i{font-style:normal;color:#8f84b4}.candidate-paper{border:1px solid #dad2ef;border-radius:15px;background:#fff;padding:11px;position:relative;overflow:hidden}.candidate-paper:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#7e69bb}.candidate-paper small,.candidate-paper strong,.candidate-paper em{display:block}.candidate-paper small{font-size:10px;color:#7d7593}.candidate-paper strong{font-size:14px;margin:5px 0}.candidate-paper em{font-style:normal;font-size:11px;font-weight:900;color:#6d58aa}
@@ -338,7 +338,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .result-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.result-sync{border:0;background:#edf2f6;color:#4b6177;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:850}
 
 
-/* Release 22 · capture viewport isolation
+/* Release 23 · capture viewport isolation
    Desktop browser media queries follow the outer viewport, not the 450px capture surface.
    Lock capture mode to the same responsive geometry as a real phone so the recorded 9:16 UI cannot inherit desktop grids. */
 .capture-frame-mode .app-header-inner{padding-left:12px!important;padding-right:12px!important;gap:8px!important}
@@ -377,3 +377,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .capture-frame-mode .overview-page .overall-trend{height:190px!important}
 /* The video-only topic strip owns the top edge while recording; the product header sits below it instead of competing at top:0. */
 .capture-frame-mode.real-app-capture-running .app-header{position:relative!important;top:auto!important}
+
+
+/* Release 23 · real Evidence Registry in app/video */
+.evidence-live-page{max-width:760px;margin:0 auto;padding:0;background:#fff;min-height:100vh}
+.evidence-live-toolbar{min-height:64px;padding:8px 12px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;border-bottom:1px solid var(--kimse-border);background:#fff;position:sticky;top:0;z-index:20}
+.evidence-live-toolbar>strong{text-align:center;font-size:17px}
+.evidence-live-toolbar .btn-kimse{min-height:44px;padding:9px 12px;font-size:13px}
+.evidence-live-viewer{height:calc(100vh - 64px);min-height:620px;background:#fff}
+.evidence-live-frame{display:block;width:100%;height:100%;border:0;background:#fff}
+.capture-frame-mode .kimse-app:has(.evidence-live-page){padding-bottom:0!important}
+.capture-frame-mode .evidence-live-page{width:100%;max-width:none;height:800px;min-height:800px}
+.capture-frame-mode .evidence-live-toolbar{display:none}
+.capture-frame-mode .evidence-live-viewer,.capture-frame-mode .evidence-live-frame{height:800px;min-height:800px}
+.real-app-capture-running .evidence-live-page{overflow:hidden}

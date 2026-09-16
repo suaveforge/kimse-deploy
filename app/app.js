@@ -84,7 +84,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 22<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 23<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -362,6 +362,38 @@ async function demoAnimateBaseline(alive){
   await demoWait(950);
   return alive();
 }
+async function demoAnimateEvidence(alive){
+  await demoGo('evidence-proof',350,{kicker:'근거 확인',title:'이 변화들을 왜 보는지 실제 근거 페이지에서 확인합니다'});
+  if(!alive())return false;
+  const frame=$('#evidence-live-frame');
+  if(!frame)return alive();
+  for(let i=0;i<12&&alive();i++){
+    try{if(frame.contentDocument?.getElementById('impact-proof'))break}catch{}
+    await demoWait(120);
+  }
+  if(!alive())return false;
+  try{
+    const doc=frame.contentDocument,win=frame.contentWindow;
+    const show=async(id,topic,ms)=>{
+      if(!alive())return false;
+      demoTopic=topic;
+      const el=doc?.getElementById(id);
+      if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
+      else win?.scrollTo?.({top:0,left:0,behavior:'smooth'});
+      await demoWait(ms);
+      return alive();
+    };
+    win?.scrollTo?.({top:0,left:0,behavior:'instant'});
+    await demoWait(350);
+    if(!await show('impact-proof',{kicker:'왜 이 신호를 보나요?',title:'수면·활동·말하기 같은 변화는 실제 연구 근거와 연결해 봅니다'},1250))return false;
+    if(!await show('factors',{kicker:'어떤 변화를 보나요?',title:'관찰하는 항목과 근거를 한 페이지에서 함께 확인합니다'},1200))return false;
+    if(!await show('sources',{kicker:'출처도 공개합니다',title:'논문과 가이드라인 원문까지 바로 이어집니다'},1100))return false;
+  }catch(err){
+    console.warn('KIMSE_EVIDENCE_TOUR_FALLBACK',err);
+    await demoWait(900);
+  }
+  return alive();
+}
 async function demoCycleBrain(alive){
   for(const key of ['memory','executive','language','spatial','daily']){
     if(!alive())return false;
@@ -417,8 +449,8 @@ async function runRealAppTour(){
     // 오래 보여줄 장면: 처음 보는 사람도 결과 의미를 읽을 수 있게 충분히 멈춘다.
     await demoGo('monitoring-status',4300,{kicker:'최근 변화',title:'지난 2주와 비교했더니 세 가지가 함께 달라졌습니다'});if(!alive())return;
 
-    // 오래 보여줄 장면: 전문용어보다 연구 규모와 실제 검증 맥락이 먼저 읽힌다.
-    await demoGo('evidence-proof',4200,{kicker:'왜 이 신호를 볼까',title:'수면·활동·말하기는 이미 여러 연구에서 반복해 다뤄졌습니다'});if(!alive())return;
+    // 실제 Evidence Registry를 열고 핵심 근거 → 팩터 → 원문 출처 순으로 짧게 이동한다.
+    if(!await demoAnimateEvidence(alive))return;
 
     // 오래 보여줄 장면: 성장형 서비스의 차별점을 한 화면에서 이해.
     await demoGo('research-engine',4400,{kicker:'계속 업데이트되는 기준',title:'새 연구가 나오면 AI가 찾아 기존 기준과 다시 맞춰봅니다'});if(!alive())return;
@@ -531,36 +563,29 @@ page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="pa
 page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>생활반경·외출 리듬 변화 관찰. 브라우저/OS 권한 필요</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 활동·보행 관련 신호 수집</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 브라우저 알림</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의하고 14일 기준 만들기 시작</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
 
-page['evidence-proof']=()=>wrap(
-  '<div class="eyebrow">왜 이 변화를 같이 볼까요?</div>'+
-  '<h1 class="page-title">연구에서 확인한 변화를<br>생활 속에서 이어서 봅니다</h1>'+
-  '<p class="page-desc">논문 이름을 외울 필요는 없습니다. 중요한 건 수면·활동·말하기를 왜 함께 보는지입니다.</p>'+
-  '<div class="evidence-human-grid">'+
-    '<section><strong>20년 뒤 치매 위험을 추적한 장기 연구</strong><small>중년기의 생활·건강 요인이 장기 위험과 어떻게 이어지는지 추적했습니다.</small><em>The Lancet Neurology · 2006</em></section>'+
-    '<section><strong>한국인 196명으로 검증한 인지검사 연구</strong><small>기억·주의·언어·시공간 기능을 한국어 환경에서 검증했습니다.</small><em>MoCA-K validation</em></section>'+
-    '<section><strong>118명에게 보행·음성·그리기를 함께 적용한 실증 연구</strong><small>한 가지 신호만 볼 때보다 여러 신호를 함께 볼 때의 가능성을 확인했습니다.</small><em>Gait + Speech + Drawing · n=118</em></section>'+
-    '<section><strong>30편을 모아 본 생활 속 디지털 신호 연구</strong><small>수면·활동·이동처럼 매일 쌓이는 변화가 연구에서 어떻게 쓰였는지 검토했습니다.</small><em>Passive DHT review · 30 studies</em></section>'+
-  '</div>'+
-  '<div class="plain-journey"><span>연구에서 반복 확인</span><i>→</i><span>내 생활에서 기록</span><i>→</i><span>내 평소와 비교</span></div>'+
-  '<div class="compact-actions"><button class="btn-kimse btn-primary-k" data-go="research-engine">새 연구를 어떻게 반영하나요?</button><a class="btn-kimse btn-secondary-k" href="/evidence/" target="_blank" rel="noopener">논문 원문 보기</a></div>',
-  {title:'연구와 관찰 기준',narrow:true,overview:true}
+page['evidence-proof']=()=>(
+  captureTopicOverlay()+
+  '<main id="main" class="evidence-live-page" tabindex="-1">'+
+    '<div class="evidence-live-toolbar"><button class="icon-button" data-back aria-label="이전 화면">'+I('chevron-left')+'</button><strong>근거 자료</strong><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">전체 화면</a></div>'+
+    '<div class="evidence-live-viewer"><iframe id="evidence-live-frame" class="evidence-live-frame" title="낌새 Evidence Registry" src="'+evidenceUrl()+'?embed=1#impact-proof"></iframe></div>'+
+  '</main>'
 );
 
 page['research-engine']=()=>wrap(
-  '<div class="eyebrow">새 연구가 나오면</div>'+
-  '<h1 class="page-title">낌새의 기준도<br>다시 확인합니다</h1>'+
-  '<p class="page-desc">AI가 새 논문과 실증 결과를 계속 찾아 모으고, 지금 쓰는 기준과 맞춰봅니다.</p>'+
+  '<div class="eyebrow">새 연구가 추가되면</div>'+
+  '<h1 class="page-title">AI가 새 근거를 계속 찾고<br>현재 기준과 비교합니다</h1>'+
+  '<p class="page-desc">새 논문이나 가이드라인이 나왔다고 바로 점수를 바꾸지는 않습니다. 먼저 따로 비교하고, 충분히 확인된 내용만 반영합니다.</p>'+
   '<div class="research-human-flow">'+
-    '<div><span>1</span><strong>새 연구를 찾습니다</strong><small>논문·가이드라인·실증 결과를 계속 확인합니다.</small></div>'+
-    '<i>→</i><div><span>2</span><strong>기존 기준과 대조합니다</strong><small>새 팩터·가중치가 기존 결과와 어떻게 다른지 봅니다.</small></div>'+
-    '<i>→</i><div><span>3</span><strong>뒤에서 먼저 돌려봅니다</strong><small>새 조합은 사용자 결과에 바로 섞지 않고 따로 비교합니다.</small></div>'+
+    '<div><span>1</span><strong>새 근거를 모읍니다</strong><small>논문·가이드라인·실증 결과를 계속 확인합니다.</small></div>'+
+    '<i>→</i><div><span>2</span><strong>가능한 조합을 비교합니다</strong><small>새 팩터와 가중치가 기존 기준과 어떻게 다른지 봅니다.</small></div>'+
+    '<i>→</i><div><span>3</span><strong>사용자 결과와 분리해 확인합니다</strong><small>검토 중인 조합은 바로 사용자 결과에 섞지 않습니다.</small></div>'+
   '</div>'+
   '<div class="research-two-lanes">'+
-    '<section><small>지금 쓰는 기준</small><strong>검증된 기준은 그대로 유지</strong><p>새 논문 하나가 나왔다고 사용자 결과를 바로 바꾸지 않습니다.</p></section>'+
-    '<section><small>새로 시험하는 기준</small><strong>조합과 가중치를 바꿔가며 비교</strong><p>가능성이 높은 조합은 기존 기준과 함께 돌려보고 충분히 확인한 뒤 반영합니다.</p></section>'+
+    '<section><small>현재 사용 중</small><strong>확인된 기준은 그대로 사용</strong><p>새 근거 하나 때문에 이미 쓰는 기준을 바로 바꾸지 않습니다.</p></section>'+
+    '<section><small>검토 중</small><strong>새 조합은 별도로 비교</strong><p>가능성이 있는 조합은 따로 돌려보고 기존 기준보다 나은지 계속 확인합니다.</p></section>'+
   '</div>'+
-  '<div class="recent-review"><span>최근 확인</span><div><strong>고령 사용자에게 더 맞는 위험모델이 있는지 재검토 중</strong><small>BMC Medicine · 2026 · 외부검증 연구 종합</small></div></div>'+
-  '<div class="compact-actions"><button class="btn-kimse btn-primary-k" data-go="evidence-proof">어떤 연구를 쓰는지 보기</button><a class="btn-kimse btn-secondary-k" href="/evidence/" target="_blank" rel="noopener">전체 연구 목록</a></div>',
+  '<div class="recent-review"><span>근거 관리 원칙</span><div><strong>Evidence Registry를 기준으로 관리합니다</strong><small>새 근거는 후보로 먼저 기록하고, 검토 전에는 활성 팩터·가중치를 자동 변경하지 않습니다.</small></div></div>'+
+  '<div class="compact-actions"><a class="btn-kimse btn-primary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">실제 근거 페이지 보기</a></div>',
   {title:'연구 업데이트',narrow:true,overview:true}
 );
 
