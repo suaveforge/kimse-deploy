@@ -719,7 +719,7 @@ page['brain-trends']=()=>{
   return wrap(
     '<div class="eyebrow">날짜별 변화</div>'+
     '<div class="trend-title-row"><h1 class="page-title">'+rangeLabel+' · '+(key==='overall'?'전체 기능':meta[1])+'</h1><span class="trend-delta '+(delta===null?'neutral':delta<0?'down':'up')+'">'+(delta===null?'기록 중':(delta>0?'+':'')+delta+'p')+'</span></div>'+
-    '<p class="page-desc">날짜별 높낮이를 이어서 보고, 변화 폭이 컸던 날은 따로 표시합니다.</p>'+
+    '<p class="page-desc">날짜별 변화를 이어서 보고, 평소보다 크게 달라진 날은 따로 표시합니다.</p>'+
     '<div class="segmented compact-range"><button data-brain-range="day" class="'+(S.brainRange==='day'?'active':'')+'">일</button><button data-brain-range="week" class="'+(S.brainRange==='week'?'active':'')+'">주</button><button data-brain-range="month" class="'+(S.brainRange==='month'?'active':'')+'">월</button><button data-brain-range="year" class="'+(S.brainRange==='year'?'active':'')+'">연</button></div>'+
     '<div class="trend-domain-tabs"><button data-brain-domain="overall" class="'+(key==='overall'?'active':'')+'">전체</button>'+BRAIN_DOMAINS.map(([k,t,r,icon])=>'<button data-brain-domain="'+k+'" class="'+(key===k?'active':'')+'">'+icon+' '+t+'</button>').join('')+'</div>'+
     '<section class="trend-hero one-chart"><div class="trend-hero-head"><div><small>'+rangeLabel+'</small><strong>'+(key==='overall'?'전체 기능':meta[1])+'</strong></div><span>'+rows.length+'회 기록</span></div>'+trendSeriesSvg(key)+'</section>'+
