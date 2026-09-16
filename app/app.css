@@ -814,3 +814,23 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   opacity:1!important;
   transform:translateX(-50%) translateY(0)!important;
 }
+
+
+/* Release 32 · coherent story, day-one baseline, readable daily values */
+.capture-frame-mode #app.capture-caption-active::before{
+  transition:opacity 1.5s ease,transform 1.5s ease!important;
+}
+.baseline-day-signals{grid-template-columns:repeat(2,1fr)!important;gap:8px!important;padding:0 14px 13px!important}
+.baseline-day-signals span{
+  display:grid!important;grid-template-columns:28px 1fr!important;grid-template-rows:auto auto!important;
+  align-items:center!important;justify-content:stretch!important;column-gap:8px!important;
+  min-height:58px!important;padding:9px 10px!important;text-align:left!important
+}
+.baseline-day-signals span>i{grid-row:1/3;display:grid;place-items:center;font-style:normal!important}
+.baseline-day-signals span>i i{font-size:22px!important}
+.baseline-day-signals span>small{display:block;font-size:12px!important;line-height:1.2!important;color:#718194!important;font-weight:800!important}
+.baseline-day-signals span>strong{display:block;font-size:16px!important;line-height:1.25!important;color:#173151!important;font-weight:900!important}
+.capture-frame-mode .baseline-calendar-sheet{min-height:150px!important}
+.capture-frame-mode .baseline-calendar-sheet strong{font-size:72px!important}
+.capture-frame-mode .baseline-day-signals span{min-height:52px!important;padding:7px 9px!important}
+.capture-frame-mode .baseline-day-signals span>strong{font-size:15px!important}

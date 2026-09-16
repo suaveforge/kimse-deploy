@@ -84,7 +84,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 31<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 32<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -108,9 +108,9 @@ async function demoShowCaption(topic,hold=1000){
   const live=Math.max(900,hold);
   await demoWait(live);
   A.classList.remove('capture-caption-show');
-  await demoWait(480);
+  await demoWait(1500);
   demoRemoveCaption();
-  return live+480;
+  return live+1500;
 }
 function wrap(html,o={}){
   const r=route(),screen='screen-'+r.replace(/[^a-z0-9-]/gi,'-'),senior=SENIOR_ROUTES.has(r)?' senior-screen':'';
@@ -441,8 +441,9 @@ async function demoTap(selector,after=520){
 async function demoOnboardingSteps(alive){
   S.onboarding={profileDone:true,initialDone:false,consentDone:false,completed:false};
   S.initial={...structuredClone(D.initial),step:0,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:false,completedAt:null,domains:null};
+  S.baseline.startedAt=null;
   save();
-  await demoGo('initial-check',1250,{title:'처음 한 번, 몇 가지 질문으로 시작 상태를 확인합니다',position:'bottom',hold:720});if(!alive())return false;
+  await demoGo('initial-check',1250,{title:'처음 사용할 때 간단한 질문으로 시작 상태를 확인합니다',position:'bottom',hold:720});if(!alive())return false;
   if(!await demoTap('[data-initial-next]',260))return false;
   if(!await demoTap('[data-initial-answer="attention:10"]',280))return false;
   if(!await demoTap('[data-initial-answer="language:과일"]',280))return false;
@@ -453,13 +454,13 @@ async function demoOnboardingSteps(alive){
   if(!alive())return false;
 
   // 음성 화면은 실제 UI를 보여주되, 자동녹화가 OS 마이크 권한 팝업을 띄우지 않도록 강제 녹음은 하지 않는다.
-  await demoShowCaption({title:'말하기도 이후 변화와 비교할 첫 자료가 됩니다',position:'bottom'},720);
+  await demoShowCaption({title:'기본 질문 뒤에는 말하기 샘플을 한 번 남깁니다',position:'bottom'},720);
   S.initial.domains={memory:86,executive:84,language:87,spatial:85,daily:88};
   S.initial.completedAt=new Date().toISOString();S.onboarding.initialDone=true;
   S.consents={...D.consents,service:true,privacy:true,health:true,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false};
   save();
 
-  await demoGo('consent',750,{title:'어떤 데이터를 볼지는 직접 선택합니다',position:'top',hold:520});if(!alive())return false;
+  await demoGo('consent',750,{title:'이어 확인할 생활 데이터 범위를 직접 선택합니다',position:'top',hold:520});if(!alive())return false;
   for(const selector of ['#consent-location','#consent-motion','#consent-usage']){
     if(!await demoTap(selector,210))return false;
   }
@@ -530,34 +531,32 @@ async function runRealAppTour(prepared=false){
   try{
     // 첫 장면은 결론을 다 설명하지 않고 결과만 던지는 훅으로 쓴다.
     demoResultPhase='hook';
-    await demoGo('monitoring-status',4300,{title:'지난 14일과 비교해 확인이 필요한 변화가 보입니다',position:'bottom',hold:1250});if(!alive())return;
+    await demoGo('monitoring-status',4300,{title:'이 결과는 지난 14일 생활패턴과 최근 기록을 비교해 만든 것입니다',position:'bottom',hold:1250});if(!alive())return;
     demoResultPhase='normal';
 
-    // 근거는 문서 투어가 아니라 한 화면에서 의미를 이해하게 한다.
-    if(!await demoEvidenceScene(alive))return;
-
-    // 새 연구가 실제 기준에 어떻게 반영되는지 한 장면으로 보여준다.
-    await demoGo('research-engine',4300,{title:'연구와 실증 데이터를 계속 확인해 개인별 기준을 조정합니다',position:'bottom',hold:1050});if(!alive())return;
-
-    // 실제 질문을 누르고, 실제 동의 항목을 선택하는 과정을 보여준다.
+    // 훅 다음부터는 실제 사용 순서대로 이어간다.
     if(!await demoOnboardingSteps(alive))return;
 
-    // 동의 완료 직후 1일째부터 시작한다. 날짜만 넘기지 않고 매일 확인 항목과 7일/14일 이벤트를 함께 보여준다.
+    // 동의 완료 후에는 1일째부터 시작한다. 14일 완료 화면을 먼저 노출하지 않는다.
     demoScrollTop();
-    await demoShowCaption({title:'설정을 마치면 14일 동안 생활패턴을 확인합니다',position:'bottom'},760);if(!alive())return;
+    await demoShowCaption({title:'그다음 14일 동안 매일 수면·활동·말하기·이동을 확인합니다',position:'bottom'},760);if(!alive())return;
     if(!await demoAnimateBaseline(alive,true))return;
 
-    // 오래 보여줄 장면: 탭을 탁탁 누르지 않고 기능 영역이 자연스럽게 이어져 보인다.
-    await demoGo('brain-map',1350,{title:'기능별 변화는 나눠서 확인할 수 있습니다',position:'bottom',hold:850});if(!alive())return;
+    // 왜 이 항목들을 보는지 근거를 보여주고, 그 근거가 개인별 기준으로 이어지는 과정을 설명한다.
+    await demoGo('evidence-proof',3900,{title:'이때 보는 항목은 검증된 연구 근거를 바탕으로 정합니다',position:'bottom',hold:1000});if(!alive())return;
+    await demoGo('research-engine',4200,{title:'새 연구와 실증 데이터는 주기적으로 검토해 개인별 중요도를 조정합니다',position:'bottom',hold:1050});if(!alive())return;
+
+    // 14일 이후 실제 상세 분석 화면으로 넘어간다.
+    await demoGo('brain-map',1350,{title:'14일이 쌓이면 기능별 변화를 자세히 확인할 수 있습니다',position:'bottom',hold:850});if(!alive())return;
     if(!await demoCycleBrain(alive))return;
 
-    await demoGo('brain-trends',1250,{title:'눈에 띄게 달라진 날은 따로 표시합니다',position:'bottom',hold:800});if(!alive())return;
+    await demoGo('brain-trends',1250,{title:'눈에 띄게 달라진 날은 관련 신호와 함께 표시합니다',position:'bottom',hold:800});if(!alive())return;
     if(!await demoCycleTrend(alive))return;
 
     // 끝부분은 보호자 화면을 짧게 거친 뒤, 같은 결과 화면을 '다음 행동'이 보이는 상태로 다시 보여준다.
-    S.mode='care';save();await demoGo('caregiver-home',2300,{title:'필요하면 보호자도 같은 상태를 함께 확인합니다',position:'bottom',hold:1000});if(!alive())return;
+    S.mode='care';save();await demoGo('caregiver-home',2300,{title:'필요하면 보호자도 같은 결과를 함께 확인합니다',position:'bottom',hold:1000});if(!alive())return;
     S.mode='self';demoResultPhase='action';save();
-    await demoGo('monitoring-status',4200,{title:'결과를 본 뒤 상담과 보호자 연결까지 바로 이어집니다',position:'bottom',hold:1300});if(!alive())return;
+    await demoGo('monitoring-status',4200,{title:'위험 단계에서는 상담센터와 의료 안내로 바로 이어집니다',position:'bottom',hold:1300});if(!alive())return;
     demoResultPhase='normal';
   }finally{
     if(!alive())return;
@@ -693,7 +692,15 @@ function baselineEvent(day){
   if(day>=14)return {tone:'complete',kicker:'14일째',title:'14일 확인 완료',text:'이제 새 기록이 지난 14일과 얼마나 다른지 비교합니다.'};
   if(day===7)return {tone:'week',kicker:'7일째',title:'첫 주 패턴 확인',text:'7일 동안 반복된 수면·활동·말하기·이동 흐름을 확인합니다.'};
   if(day>7)return {tone:'second',kicker:'2주차',title:'두 번째 주 확인 중',text:'첫 주와 이어지는 생활 리듬을 계속 확인하고 있습니다.'};
-  return {tone:'daily',kicker:day+'일째',title:'오늘 생활패턴 확인',text:'수면·활동·말하기·이동을 오늘도 확인하고 있습니다.'};
+  return {tone:'daily',kicker:day+'일째',title:'오늘 생활패턴 확인',text:'오늘 기록이 쌓이고 있습니다.'};
+}
+function baselineDaySample(day){
+  const sleep=[418,405,431,412,424,397,420,429,414,438,407,421,416,426];
+  const steps=[4860,5320,4710,5480,5030,4520,5190,5580,4970,5260,4680,5410,5120,4890];
+  const pause=[17,18,16,18,17,19,17,16,18,17,19,17,18,17];
+  const distance=[2.5,2.8,2.3,3.0,2.7,2.2,2.6,3.1,2.5,2.9,2.3,2.8,2.6,2.4];
+  const i=Math.max(0,Math.min(13,day-1)),m=sleep[i];
+  return {sleep:Math.floor(m/60)+'시간 '+(m%60)+'분',activity:steps[i].toLocaleString('ko-KR')+'보',speech:'말 멈춤 '+pause[i]+'%',movement:distance[i].toFixed(1)+'km'};
 }
 page.baseline=()=>{
   if(!S.baseline.startedAt)return wrap(
@@ -703,7 +710,7 @@ page.baseline=()=>{
     '<button class="btn-kimse btn-primary-k btn-full" data-go="consent">데이터 선택하기</button>',
     {title:'생활패턴 확인',narrow:true,overview:true}
   );
-  const day=baselineDay(),event=baselineEvent(day);
+  const day=baselineDay(),event=baselineEvent(day),sample=baselineDaySample(day);
   const progress=Array.from({length:14},(_,i)=>'<span class="'+(i<day?'done':'')+(i===day-1?' current':'')+'"></span>').join('');
   return wrap(
     '<div class="eyebrow">처음 14일</div>'+
@@ -713,7 +720,10 @@ page.baseline=()=>{
       '<div class="baseline-calendar-top"><span>생활패턴 확인</span><b>'+day+' / 14</b></div>'+
       '<div class="baseline-calendar-sheet"><small>'+day+'일째</small><strong>'+day+'</strong><span>DAY</span></div>'+
       '<div class="baseline-day-signals" aria-label="오늘 확인 항목">'+
-        '<span>'+I('moon')+'수면</span><span>'+I('walk')+'활동</span><span>'+I('message-dots')+'말하기</span><span>'+I('map-pin')+'이동</span>'+
+        '<span><i>'+I('moon')+'</i><small>수면</small><strong>'+sample.sleep+'</strong></span>'+
+        '<span><i>'+I('walk')+'</i><small>활동</small><strong>'+sample.activity+'</strong></span>'+
+        '<span><i>'+I('message-dots')+'</i><small>말하기</small><strong>'+sample.speech+'</strong></span>'+
+        '<span><i>'+I('map-pin')+'</i><small>이동</small><strong>'+sample.movement+'</strong></span>'+
       '</div>'+
       '<div class="baseline-calendar-progress">'+progress+'</div>'+
     '</div>'+
