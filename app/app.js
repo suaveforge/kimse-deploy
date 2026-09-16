@@ -84,7 +84,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><span class="brand-mark" aria-hidden="true">낌</span><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 32<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 33<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>`<div class="standalone-lang" aria-label="언어 설정"><localize-switcher project="p45" type="compact" flags="true" label-mode="code" size="sm" control-shape="rounded"></localize-switcher></div>`;
 function captureScenarioRibbon(){return ''}
@@ -258,10 +258,10 @@ async function requestSelectedPermissions(){
 const SIGNAL_LABELS={sleep_minutes:'수면시간',steps:'걸음수',location_radius_m:'생활반경',movement_distance_m:'이동거리',outings:'외출',motion_active_minutes:'활동시간',app_active_minutes:'낌새 이용시간',call_count:'통화 횟수',call_duration_min:'통화시간',messaging_sessions:'메신저 활동',task_response_ms:'반응시간',voice_pause_ratio:'말할 때 멈춤'};
 const SIGNAL_ICONS={sleep_minutes:'moon',steps:'walk',location_radius_m:'map-pin',movement_distance_m:'route',outings:'door-exit',motion_active_minutes:'activity',app_active_minutes:'device-mobile',call_count:'phone',call_duration_min:'phone-call',messaging_sessions:'message-circle',task_response_ms:'clock',voice_pause_ratio:'message-dots'};
 const MONITORING_UI_LEVELS={
-  stable:{key:'stable',label:'안정',icon:'circle-check',headline:'지금은 지난 14일 범위 안에 있습니다',action:'현재 기록을 이어가세요'},
-  warning:{key:'warning',label:'경고',icon:'alert-triangle',headline:'지난 14일 범위에서 벗어난 항목이 있습니다',action:'기능별 변화를 확인해보세요'},
-  danger:{key:'danger',label:'위험',icon:'alert-triangle',headline:'지난 14일 범위를 벗어났습니다',action:'전문가 상담을 권합니다'},
-  serious:{key:'serious',label:'심각',icon:'alert-triangle',headline:'지난 14일 범위에서 크게 벗어났습니다',action:'의료기관 상담을 권합니다'},
+  stable:{key:'stable',label:'안정',icon:'circle-check',headline:'최근 기록은 안정적입니다',action:'현재 기록을 이어가세요'},
+  warning:{key:'warning',label:'경고',icon:'alert-triangle',headline:'확인이 필요한 변화가 있습니다',action:'기능별 변화를 확인해보세요'},
+  danger:{key:'danger',label:'위험',icon:'alert-triangle',headline:'전문가 확인이 필요한 변화입니다',action:'전문가 상담을 권합니다'},
+  serious:{key:'serious',label:'심각',icon:'alert-triangle',headline:'빠른 전문가 확인이 필요합니다',action:'의료기관 상담을 권합니다'},
   urgent:{key:'urgent',label:'긴급',icon:'alert-triangle',headline:'지금 바로 확인이 필요합니다',action:'보호자와 의료기관에 바로 연락하세요'}
 };
 function monitoringUiStatus(summary,changes=[]){
@@ -443,7 +443,7 @@ async function demoOnboardingSteps(alive){
   S.initial={...structuredClone(D.initial),step:0,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:false,completedAt:null,domains:null};
   S.baseline.startedAt=null;
   save();
-  await demoGo('initial-check',1250,{title:'처음 사용할 때 간단한 질문으로 시작 상태를 확인합니다',position:'bottom',hold:720});if(!alive())return false;
+  await demoGo('initial-check',1250,{title:'앱 설치 후 초기 상태 확인',position:'bottom',hold:720});if(!alive())return false;
   if(!await demoTap('[data-initial-next]',260))return false;
   if(!await demoTap('[data-initial-answer="attention:10"]',280))return false;
   if(!await demoTap('[data-initial-answer="language:과일"]',280))return false;
@@ -454,13 +454,13 @@ async function demoOnboardingSteps(alive){
   if(!alive())return false;
 
   // 음성 화면은 실제 UI를 보여주되, 자동녹화가 OS 마이크 권한 팝업을 띄우지 않도록 강제 녹음은 하지 않는다.
-  await demoShowCaption({title:'기본 질문 뒤에는 말하기 샘플을 한 번 남깁니다',position:'bottom'},720);
+  await demoShowCaption({title:'초기 상태 확인 · 말하기',position:'bottom'},720);
   S.initial.domains={memory:86,executive:84,language:87,spatial:85,daily:88};
   S.initial.completedAt=new Date().toISOString();S.onboarding.initialDone=true;
   S.consents={...D.consents,service:true,privacy:true,health:true,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false};
   save();
 
-  await demoGo('consent',750,{title:'이어 확인할 생활 데이터 범위를 직접 선택합니다',position:'top',hold:520});if(!alive())return false;
+  await demoGo('consent',750,{title:'앱 설치 후 약관 동의',position:'top',hold:520});if(!alive())return false;
   for(const selector of ['#consent-location','#consent-motion','#consent-usage']){
     if(!await demoTap(selector,210))return false;
   }
@@ -531,7 +531,7 @@ async function runRealAppTour(prepared=false){
   try{
     // 첫 장면은 결론을 다 설명하지 않고 결과만 던지는 훅으로 쓴다.
     demoResultPhase='hook';
-    await demoGo('monitoring-status',4300,{title:'이 결과는 지난 14일 생활패턴과 최근 기록을 비교해 만든 것입니다',position:'bottom',hold:1250});if(!alive())return;
+    await demoGo('monitoring-status',4300,{title:'최근 생활 패턴 변화 감지',position:'bottom',hold:1250});if(!alive())return;
     demoResultPhase='normal';
 
     // 훅 다음부터는 실제 사용 순서대로 이어간다.
@@ -539,24 +539,24 @@ async function runRealAppTour(prepared=false){
 
     // 동의 완료 후에는 1일째부터 시작한다. 14일 완료 화면을 먼저 노출하지 않는다.
     demoScrollTop();
-    await demoShowCaption({title:'그다음 14일 동안 매일 수면·활동·말하기·이동을 확인합니다',position:'bottom'},760);if(!alive())return;
+    await demoShowCaption({title:'2주간 생활 패턴 기록',position:'bottom'},760);if(!alive())return;
     if(!await demoAnimateBaseline(alive,true))return;
 
     // 왜 이 항목들을 보는지 근거를 보여주고, 그 근거가 개인별 기준으로 이어지는 과정을 설명한다.
-    await demoGo('evidence-proof',3900,{title:'이때 보는 항목은 검증된 연구 근거를 바탕으로 정합니다',position:'bottom',hold:1000});if(!alive())return;
-    await demoGo('research-engine',4200,{title:'새 연구와 실증 데이터는 주기적으로 검토해 개인별 중요도를 조정합니다',position:'bottom',hold:1050});if(!alive())return;
+    await demoGo('evidence-proof',3900,{title:'분석 기준 · 검증된 연구 근거',position:'bottom',hold:1000});if(!alive())return;
+    await demoGo('research-engine',4200,{title:'AI 기반 개인별 분석 기준 조정',position:'bottom',hold:1050});if(!alive())return;
 
     // 14일 이후 실제 상세 분석 화면으로 넘어간다.
-    await demoGo('brain-map',1350,{title:'14일이 쌓이면 기능별 변화를 자세히 확인할 수 있습니다',position:'bottom',hold:850});if(!alive())return;
+    await demoGo('brain-map',1350,{title:'14일 이후 상세 분석',position:'bottom',hold:850});if(!alive())return;
     if(!await demoCycleBrain(alive))return;
 
-    await demoGo('brain-trends',1250,{title:'눈에 띄게 달라진 날은 관련 신호와 함께 표시합니다',position:'bottom',hold:800});if(!alive())return;
+    await demoGo('brain-trends',1250,{title:'변화가 큰 날 상세 확인',position:'bottom',hold:800});if(!alive())return;
     if(!await demoCycleTrend(alive))return;
 
     // 끝부분은 보호자 화면을 짧게 거친 뒤, 같은 결과 화면을 '다음 행동'이 보이는 상태로 다시 보여준다.
-    S.mode='care';save();await demoGo('caregiver-home',2300,{title:'필요하면 보호자도 같은 결과를 함께 확인합니다',position:'bottom',hold:1000});if(!alive())return;
+    S.mode='care';save();await demoGo('caregiver-home',2300,{title:'필요 시 보호자 공유',position:'bottom',hold:1000});if(!alive())return;
     S.mode='self';demoResultPhase='action';save();
-    await demoGo('monitoring-status',4200,{title:'위험 단계에서는 상담센터와 의료 안내로 바로 이어집니다',position:'bottom',hold:1300});if(!alive())return;
+    await demoGo('monitoring-status',4200,{title:'위험 단계 · 상담 및 의료기관 연결',position:'bottom',hold:1300});if(!alive())return;
     demoResultPhase='normal';
   }finally{
     if(!alive())return;
@@ -756,7 +756,7 @@ page['monitoring-status']=()=>{
   const changeHtml=changes.length?changes.slice(0,3).map(x=>{
     const pct=x.relative_change==null?0:Math.round(Number(x.relative_change)*100),up=pct>0,down=pct<0,dir=up?'up':down?'down':'flat';
     const sign=up?'+':down?'−':'',arrow=up?'arrow-up':down?'arrow-down':'minus';
-    return '<div class="result-change direction-'+dir+'"><span class="result-change-label">'+I(SIGNAL_ICONS[x.metric]||'activity')+'<strong>'+esc(SIGNAL_LABELS[x.metric]||x.metric)+'</strong></span><b>'+I(arrow)+' '+sign+Math.abs(pct)+'%</b><small><span>평소 '+esc(formatMonitoringValue(x.metric,x.baseline))+'</span><em>→ 최근 '+esc(formatMonitoringValue(x.metric,x.recent))+'</em></small></div>';
+    return '<div class="result-change direction-'+dir+'"><span class="result-change-label">'+I(SIGNAL_ICONS[x.metric]||'activity')+'<strong>'+esc(SIGNAL_LABELS[x.metric]||x.metric)+'</strong></span><b>'+I(arrow)+' '+sign+Math.abs(pct)+'%</b><small><span>14일 평균 '+esc(formatMonitoringValue(x.metric,x.baseline))+'</span><em>→ 최근 '+esc(formatMonitoringValue(x.metric,x.recent))+'</em></small></div>';
   }).join(''):'';
   const abnormal=ready&&status.key!=='stable',captureHook=demoAutoRunning&&demoResultPhase==='hook';
   const supportActions=status.key==='danger'
