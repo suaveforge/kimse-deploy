@@ -9,6 +9,7 @@ on:
       - 'index.html'
       - 'app.js'
       - 'app.css'
+      - 'capture-polish.css'
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'assets/**'
@@ -23,96 +24,59 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Allow Pages to settle
-        run: sleep 20
+        run: sleep 25
       - name: Install Playwright Chromium
         run: |
           npm install playwright --no-save --no-fund --no-audit
           npx playwright install --with-deps chromium
-      - name: Run live app QA and record actual tour
+      - name: Verify live app and record actual tour
         run: |
           mkdir -p artifacts/screens artifacts/video artifacts/frames
           cat > /tmp/kimse-live-qa.cjs <<'NODE'
-          const { chromium } = require(process.cwd() + '/node_modules/playwright');
-          const fs = require('fs');
-          const path = require('path');
-          const BASE = 'https://kimse.suaveforge.com/';
-          const OUT = path.resolve('artifacts');
-          const log = { base: BASE, startedAt: new Date().toISOString(), checks: [], timeline: [], console: [], errors: [] };
-          const ok = (name, detail='') => { log.checks.push({name, ok:true, detail}); console.log('PASS', name, detail); };
-          const fail = (name, detail='') => { log.checks.push({name, ok:false, detail}); throw new Error(name + ': ' + detail); };
-          const assert = (cond, name, detail='') => cond ? ok(name, detail) : fail(name, detail);
-          const safeName = s => String(s||'x').replace(/[^a-z0-9가-힣_-]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,70) || 'x';
-          (async()=>{
-            const browser = await chromium.launch({headless:true});
-            try {
-              const qa = await browser.newContext({viewport:{width:450,height:800}, deviceScaleFactor:1});
-              const page = await qa.newPage();
-              page.on('console', m => log.console.push({type:m.type(), text:m.text(), at:Date.now()}));
-              page.on('pageerror', e => log.errors.push({type:'pageerror', text:String(e), at:Date.now()}));
-              const req = qa.request;
-              const [rootRes, jsRes, swRes, manifestRes, iconRes] = await Promise.all([
-                req.get(BASE, {timeout:20000}), req.get(BASE+'app.js', {timeout:20000}), req.get(BASE+'service-worker.js', {timeout:20000}), req.get(BASE+'manifest.webmanifest', {timeout:20000}), req.get(BASE+'assets/icons/icon.svg', {timeout:20000})
-              ]);
-              assert(rootRes.ok(), 'live-root-http', String(rootRes.status()));
-              assert(jsRes.ok(), 'live-app-js-http', String(jsRes.status()));
-              assert(swRes.ok(), 'live-service-worker-http', String(swRes.status()));
-              assert(manifestRes.ok(), 'live-manifest-http', String(manifestRes.status()));
-              assert(iconRes.ok(), 'live-icon-http', String(iconRes.status()));
-              const rootHtml = await rootRes.text(), js = await jsRes.text(), sw = await swRes.text(), manifest = await manifestRes.text(), icon = await iconRes.text();
-              assert(!rootHtml.includes('localize-switcher') && !rootHtml.includes('localizehub-runtime') && !rootHtml.includes('localizehub.suaveforge.com'), 'localize-removed-from-live-app-shell');
-              assert(!js.includes('<localize-switcher'), 'localize-switcher-removed-from-live-app-js');
-              assert(!sw.includes('localizehub-runtime') && sw.includes('release36'), 'service-worker-release36-without-localize');
-              assert(manifest.includes('./assets/icons/icon.svg') && manifest.includes('icon-maskable-source.svg'), 'manifest-points-to-current-icons');
-              assert(icon.includes('#FF6E68') && icon.includes('#0F4553') && icon.includes('M303 659'), 'redesigned-icon-live-bytes');
-              await page.route('https://api-kimse.suaveforge.com/**', route => route.abort('failed'));
-              await page.goto(BASE+'#/consent', {waitUntil:'domcontentloaded', timeout:30000});
-              await page.evaluate(() => localStorage.setItem('kimse.p0.state', JSON.stringify({version:9,account:{name:'실화면 QA',email:'qa@example.com'},intent:'self',self:true,care:false,mode:'self',onboarding:{profileDone:true,initialDone:true,consentDone:false,completed:false},initial:{step:5,answers:{attention:'10',language:'과일',spatial:'no',daily:'no'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},baseline:{startedAt:null},permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},brainHistory:[]})));
-              await page.reload({waitUntil:'domcontentloaded'});
-              await page.waitForSelector('#consent-form', {timeout:15000});
-              assert((await page.locator('localize-switcher').count())===0, 'no-localize-component-in-live-consent');
-              await page.screenshot({path:path.join(OUT,'screens','01-consent-live.png')});
-              for (const id of ['#consent-service','#consent-privacy','#consent-health']) await page.check(id);
-              for (const id of ['#consent-microphone','#consent-location','#consent-motion','#consent-usage','#consent-notifications','#consent-caregiver']) if (await page.locator(id).isChecked()) await page.uncheck(id);
-              await page.locator('#consent-form button[type="submit"]').click();
-              await page.waitForFunction(() => location.hash === '#/home', null, {timeout:15000});
-              const homeText = await page.locator('#app').innerText();
-              assert(homeText.includes('생활패턴 확인 중') && homeText.includes('오늘은 1/14일째예요') && homeText.includes('14일 진행 보기'), 'consent-lands-home-day1');
-              await page.screenshot({path:path.join(OUT,'screens','02-after-consent-home.png')});
-              await page.getByRole('button',{name:'14일 진행 보기'}).click();
-              await page.waitForFunction(() => location.hash === '#/baseline');
-              const baselineDay = (await page.locator('.baseline-calendar-leaf strong').innerText()).trim();
-              const baselineText = await page.locator('#app').innerText();
-              assert(baselineDay==='1', 'baseline-detail-starts-day1', baselineDay);
-              assert(!baselineText.includes('14일 확인 완료'), 'day14-not-preexposed-on-day1');
-              await page.screenshot({path:path.join(OUT,'screens','03-baseline-day1.png')});
-              await qa.close();
-              const rec = await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1,recordVideo:{dir:path.join(OUT,'video'),size:{width:450,height:800}}});
-              const p = await rec.newPage();
-              p.on('console', m => log.console.push({type:m.type(), text:m.text(), at:Date.now(), phase:'capture'}));
-              p.on('pageerror', e => log.errors.push({type:'pageerror', text:String(e), at:Date.now(), phase:'capture'}));
-              await p.goto(BASE+'?capture=1#/demo-capture', {waitUntil:'domcontentloaded', timeout:30000});
-              await p.waitForSelector('#demo-preview', {timeout:15000});
-              await p.evaluate(() => document.documentElement.classList.add('capture-frame-mode'));
-              await p.screenshot({path:path.join(OUT,'screens','10-capture-controller.png')});
-              let stopped=false,polling=false,lastRoute='',lastCaption='',shot=20;
-              const poll=setInterval(async()=>{if(stopped||polling)return;polling=true;try{const s=await p.evaluate(()=>({hash:location.hash,caption:document.querySelector('#app')?.dataset?.captureCaption||'',day:document.querySelector('.baseline-calendar-leaf strong')?.textContent?.trim()||'',milestone:document.querySelector('.baseline-milestone-card strong')?.textContent?.trim()||'',attention:document.querySelector('.trend-attention-note small')?.textContent?.trim()||'',text:(document.querySelector('#app')?.innerText||'').slice(0,1200)}));log.timeline.push({t:Date.now(),...s});const routeChanged=s.hash!==lastRoute,captionChanged=!!s.caption&&s.caption!==lastCaption;if(routeChanged||captionChanged||s.day==='7'||s.day==='14'){const tag=[s.hash.replace('#/','')||'root',s.caption,s.day?('day'+s.day):'',s.milestone].filter(Boolean).join('-');await p.screenshot({path:path.join(OUT,'screens',String(shot++).padStart(2,'0')+'-'+safeName(tag)+'.png')});}lastRoute=s.hash;if(s.caption)lastCaption=s.caption;}catch(e){log.errors.push({type:'poll',text:String(e),at:Date.now()});}finally{polling=false;}},300);
-              const video=p.video();
-              await p.locator('#demo-preview').click();
-              await p.waitForFunction(() => location.hash !== '#/demo-capture', null, {timeout:8000});
-              await p.waitForFunction(() => location.hash === '#/demo-capture', null, {timeout:100000});
-              await p.waitForTimeout(800);stopped=true;clearInterval(poll);while(polling)await p.waitForTimeout(50);
-              const uniqueCaptions=[...new Set(log.timeline.map(x=>x.caption).filter(Boolean))];
-              const baselineDays=[...new Set(log.timeline.filter(x=>x.hash==='#/baseline').map(x=>Number(x.day)).filter(Number.isFinite))];
-              assert(uniqueCaptions.length>=8,'capture-captions-rendered-in-live-dom',uniqueCaptions.join(' | '));
-              assert(baselineDays.length>=12&&baselineDays[0]===1&&baselineDays.includes(7)&&baselineDays.includes(14),'baseline-day-sequence-recorded',baselineDays.join(','));
-              assert(log.timeline.some(x=>x.day==='7'&&x.milestone.includes('첫 주 패턴 확인')),'day7-event-visible');
-              assert(log.timeline.some(x=>x.day==='14'&&x.milestone.includes('14일 확인 완료')),'day14-event-visible');
-              assert(log.timeline.some(x=>x.hash==='#/brain-trends'&&x.attention.includes('수면 감소')&&x.attention.includes('활동 감소')&&x.attention.includes('말할 때 멈춤 증가')),'trend-attention-day-explanation-visible');
-              await rec.close();
-              fs.copyFileSync(await video.path(),path.join(OUT,'kimse-live-tour.webm'));
-              log.uniqueCaptions=uniqueCaptions;log.baselineDays=baselineDays;log.finishedAt=new Date().toISOString();fs.writeFileSync(path.join(OUT,'live-qa.json'),JSON.stringify(log,null,2));
-            } finally { await browser.close(); }
-          })().catch(e=>{log.errors.push({type:'fatal',text:String(e.stack||e),at:Date.now()});fs.writeFileSync(path.join(OUT,'live-qa.json'),JSON.stringify(log,null,2));console.error(e);process.exit(1);});
+          const {chromium}=require(process.cwd()+'/node_modules/playwright');
+          const fs=require('fs'),path=require('path');
+          const BASE='https://kimse.suaveforge.com/',OUT=path.resolve('artifacts');
+          const log={base:BASE,startedAt:new Date().toISOString(),checks:[],timeline:[],errors:[]};
+          const check=(v,n,d='')=>{log.checks.push({name:n,ok:!!v,detail:d});if(!v)throw Error(n+': '+d);console.log('PASS',n,d)};
+          const save=()=>fs.writeFileSync(path.join(OUT,'live-qa.json'),JSON.stringify(log,null,2));
+          (async()=>{const browser=await chromium.launch({headless:true});try{
+            const qa=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1}),p=await qa.newPage(),req=qa.request;
+            const names=['','app.js','service-worker.js','manifest.webmanifest','assets/icons/icon.svg','capture-polish.css'];
+            const rs=await Promise.all(names.map(x=>req.get(BASE+x,{timeout:20000})));rs.forEach((r,i)=>check(r.ok(),'live-http-'+(names[i]||'root'),String(r.status())));
+            const [html,js,sw,manifest,icon,polish]=await Promise.all(rs.map(r=>r.text()));
+            check(!html.includes('localize-switcher')&&!html.includes('localizehub-runtime'),'main-app-localize-removed');
+            check(!js.includes('<localize-switcher'),'main-js-localize-removed');
+            check(sw.includes('release37')&&sw.includes('capture-polish.css')&&!sw.includes('localizehub-runtime'),'release37-cache-live');
+            check(manifest.includes('icon.svg')&&manifest.includes('icon-maskable-source.svg'),'manifest-icons-live');
+            check(icon.includes('#FF6E68')&&icon.includes('#0F4553')&&icon.includes('M303 659'),'redesigned-icon-live');
+            check(polish.includes('.screen-brain-trends')&&polish.includes('top:12px'),'caption-safe-zone-live');
+            await p.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
+            await p.goto(BASE+'#/consent',{waitUntil:'domcontentloaded',timeout:30000});
+            await p.evaluate(()=>localStorage.setItem('kimse.p0.state',JSON.stringify({version:9,account:{name:'실화면 QA',email:'qa@example.com'},intent:'self',self:true,care:false,mode:'self',onboarding:{profileDone:true,initialDone:true,consentDone:false,completed:false},initial:{step:5,answers:{attention:'10',language:'과일',spatial:'no',daily:'no'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},baseline:{startedAt:null},permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},brainHistory:[]})));
+            await p.reload({waitUntil:'domcontentloaded'});await p.waitForSelector('#consent-form',{timeout:15000});
+            check(await p.locator('localize-switcher').count()===0,'no-localize-live-dom');
+            await p.screenshot({path:path.join(OUT,'screens','01-consent.png')});
+            for(const id of ['#consent-service','#consent-privacy','#consent-health'])await p.check(id);
+            for(const id of ['#consent-microphone','#consent-location','#consent-motion','#consent-usage','#consent-notifications','#consent-caregiver'])if(await p.locator(id).isChecked())await p.uncheck(id);
+            await p.locator('#consent-form button[type="submit"]').click();await p.waitForFunction(()=>location.hash==='#/home',null,{timeout:15000});
+            const ht=await p.locator('#app').innerText();check(ht.includes('생활패턴 확인 중')&&ht.includes('오늘은 1/14일째예요'),'consent-home-day1');
+            await p.getByRole('button',{name:'14일 진행 보기'}).click();await p.waitForFunction(()=>location.hash==='#/baseline');
+            check((await p.locator('.baseline-calendar-leaf strong').innerText()).trim()==='1','baseline-start-day1');
+            check(!(await p.locator('#app').innerText()).includes('14일 확인 완료'),'day14-not-preexposed');
+            await qa.close();
+
+            const rec=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1,recordVideo:{dir:path.join(OUT,'video'),size:{width:450,height:800}}}),v=await rec.newPage();
+            await v.goto(BASE+'?capture=1#/demo-capture',{waitUntil:'domcontentloaded',timeout:30000});await v.waitForSelector('#demo-preview',{timeout:15000});await v.evaluate(()=>document.documentElement.classList.add('capture-frame-mode'));
+            const video=v.video();let stop=false,busy=false,last='',shot=10;
+            const timer=setInterval(async()=>{if(stop||busy)return;busy=true;try{const s=await v.evaluate(()=>({hash:location.hash,caption:document.querySelector('#app')?.dataset?.captureCaption||'',day:document.querySelector('.baseline-calendar-leaf strong')?.textContent?.trim()||'',milestone:document.querySelector('.baseline-milestone-card strong')?.textContent?.trim()||'',attention:document.querySelector('.trend-attention-note small')?.textContent?.trim()||'',captionTop:getComputedStyle(document.querySelector('#app'),'::before').top}));log.timeline.push({t:Date.now(),...s});if(s.hash!==last||s.day==='7'||s.day==='14'){await v.screenshot({path:path.join(OUT,'screens',String(shot++).padStart(2,'0')+'-'+(s.hash.replace('#/','')||'root')+(s.day?'-day'+s.day:'')+'.png')});last=s.hash}}catch(e){log.errors.push(String(e))}finally{busy=false}},250);
+            await v.locator('#demo-preview').click();await v.waitForFunction(()=>location.hash!=='#/demo-capture',null,{timeout:8000});await v.waitForFunction(()=>location.hash==='#/demo-capture',null,{timeout:100000});await v.waitForTimeout(1000);stop=true;clearInterval(timer);while(busy)await v.waitForTimeout(50);
+            const caps=[...new Set(log.timeline.map(x=>x.caption).filter(Boolean))],days=[...new Set(log.timeline.filter(x=>x.hash==='#/baseline').map(x=>Number(x.day)).filter(Number.isFinite))];
+            check(caps.length>=8,'captions-rendered',caps.join(' | '));check(days[0]===1&&days.includes(7)&&days.includes(14)&&days.length>=12,'day1-to-day14',days.join(','));
+            check(log.timeline.some(x=>x.day==='7'&&x.milestone.includes('첫 주 패턴 확인')),'day7-event');check(log.timeline.some(x=>x.day==='14'&&x.milestone.includes('14일 확인 완료')),'day14-event');
+            check(log.timeline.some(x=>x.hash==='#/brain-trends'&&x.attention.includes('수면 감소')&&x.attention.includes('활동 감소')&&x.attention.includes('말할 때 멈춤 증가')),'trend-attention-note');
+            check(log.timeline.some(x=>['#/brain-map','#/brain-trends'].includes(x.hash)&&x.caption&&parseFloat(x.captionTop)<=20),'dense-caption-safe-zone');
+            await rec.close();fs.copyFileSync(await video.path(),path.join(OUT,'kimse-live-tour.webm'));log.captions=caps;log.days=days;log.finishedAt=new Date().toISOString();save();
+          }finally{await browser.close()}})().catch(e=>{log.errors.push(String(e.stack||e));save();console.error(e);process.exit(1)});
           NODE
           node /tmp/kimse-live-qa.cjs
       - name: Extract frames from actual WEBM
