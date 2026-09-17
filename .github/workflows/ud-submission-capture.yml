@@ -1,0 +1,145 @@
+name: KIMSE Live Capture QA - UD Submission Capture
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ud-submission-capture.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ud-submission-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify live PASS deployment assets
+        run: |
+          set -e
+          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.css?ud=1' | grep -Fq ':root{--kimse-primary:#12735e}'
+          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.css?ud=2' | grep -Fq '.app-footer{color:var(--kimse-muted)}'
+          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.js?ud=3' | grep -Fq 'brain-map-a11y-summary'
+          echo 'PASS live accessibility assets'
+      - name: Install Playwright Chromium
+        run: |
+          npm install playwright --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Capture six submission PNGs from live service
+        run: |
+          mkdir -p submission-capture
+          cat > /tmp/kimse-ud-capture.cjs <<'NODE'
+          const {chromium}=require(process.cwd()+'/node_modules/playwright');
+          const path=require('path');
+          const BASE='https://kimse.suaveforge.com/';
+          const OUT=path.resolve('submission-capture');
+          const baseState={
+            version:9,
+            account:{name:'공모전 시연',email:''},
+            intent:'self',self:true,care:true,mode:'self',
+            caregivers:[{name:'가족 보호자',relation:'자녀'}],
+            onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+            initial:{step:5,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:true,completedAt:'2026-09-17T00:00:00+09:00',domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},
+            consents:{service:true,privacy:true,health:true,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:true},
+            baseline:{startedAt:new Date(Date.now()-15*86400000).toISOString()},
+            permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
+            monitoring:{pending:[],summary:{status:'READY',baseline_days:14,baseline_target_days:14,level:'ATTENTION',changes:[{metric:'sleep_minutes',baseline:425,recent:336,relative_change:-0.2094,changed:true},{metric:'steps',baseline:5120,recent:3460,relative_change:-0.3242,changed:true},{metric:'voice_pause_ratio',baseline:0.18,recent:0.23,relative_change:0.2778,changed:true}],metrics:[],interpretation:'현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.'},alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},
+            brainHistory:[{at:'2026-09-15T09:00:00+09:00',memory:86,executive:84,language:87,spatial:85,daily:88},{at:'2026-09-16T09:00:00+09:00',memory:84,executive:82,language:84,spatial:84,daily:87},{at:'2026-09-17T09:00:00+09:00',memory:80,executive:79,language:80,spatial:83,daily:85,flag:'attention',flagLabel:'수면 감소 · 활동 감소 · 말할 때 멈춤 증가'}],
+            a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,captions:true,largeTouchTargets:false,colorIcons:true,screenReader:true,reduceMotion:false}
+          };
+          const clone=(o)=>JSON.parse(JSON.stringify(o));
+          const stateWith=(a11y={})=>{const s=clone(baseState);s.a11y={...s.a11y,...a11y};return s};
+          const checks=[];
+          const check=(v,n,d='')=>{if(!v)throw Error(n+': '+d);checks.push(n);console.log('PASS',n,d)};
+          const routeSpec={
+            accessibility:{wait:'.screen-accessibility',anchor:null},
+            'monitoring-status':{wait:'.screen-monitoring-status',anchor:'.monitoring-level-card'},
+            'brain-trends':{wait:'.overall-trend',anchor:'.overall-trend'},
+            'brain-map':{wait:'.brain-visual',anchor:'.brain-visual'}
+          };
+          async function capture(browser,{file,route,a11y={},mode='normal'}){
+            const context=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:1});
+            await context.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),stateWith(a11y));
+            await context.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
+            const page=await context.newPage();
+            try{
+              await page.goto(BASE+'#/'+route,{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForSelector(routeSpec[route].wait,{timeout:15000});
+              await page.evaluate(async()=>{if(document.fonts?.ready)await document.fonts.ready});
+              await page.waitForTimeout(250);
+              check(await page.locator('localize-switcher').count()===0,'no-localize-'+file);
+              const bodyText=await page.locator('body').innerText();
+              check(!bodyText.includes('@')&&!/010[-\s]?\d{3,4}[-\s]?\d{4}/.test(bodyText),'no-personal-data-'+file);
+              if(route==='accessibility'){
+                for(const k of ['largeText','highContrast','largeTouchTargets','reduceMotion'])check(await page.locator(`input[data-a11y="${k}"]`).count()===1,'settings-'+k);
+                await page.evaluate(()=>window.scrollTo(0,0));
+              } else if(route==='monitoring-status'){
+                check(await page.locator('#monitoring-a11y-summary').count()===1,'monitoring-semantic-'+file);
+                check(await page.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-'+file);
+                const y=await page.evaluate(()=>{
+                  const level=document.querySelector('.monitoring-level-card');
+                  if(!level)return 0;
+                  const r=level.getBoundingClientRect();
+                  return Math.max(0,window.scrollY+r.top-82);
+                });
+                await page.evaluate(y=>window.scrollTo(0,y),y);
+              } else if(route==='brain-trends'){
+                check(await page.locator('#brain-trends-a11y-summary').count()===1,'trends-semantic');
+                check(await page.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()>=1,'trends-linked');
+                const y=await page.evaluate(()=>{const el=document.querySelector('.overall-trend');if(!el)return 0;const r=el.getBoundingClientRect();return Math.max(0,window.scrollY+r.top-170)});
+                await page.evaluate(y=>window.scrollTo(0,y),y);
+              } else if(route==='brain-map'){
+                check(await page.locator('#brain-map-a11y-summary').count()===1,'map-semantic');
+                check(await page.locator('.brain-visual[aria-describedby="brain-map-a11y-summary"]').count()>=1,'map-linked');
+                const y=await page.evaluate(()=>{const el=document.querySelector('.brain-visual');if(!el)return 0;const r=el.getBoundingClientRect();return Math.max(0,window.scrollY+r.top-185)});
+                await page.evaluate(y=>window.scrollTo(0,y),y);
+              }
+              if(a11y.highContrast)check(await page.evaluate(()=>document.documentElement.classList.contains('high-contrast')),'high-contrast-applied-'+file);
+              if(a11y.largeText)check(await page.evaluate(()=>document.documentElement.classList.contains('large-text')),'large-text-applied-'+file);
+              await page.waitForTimeout(150);
+              await page.screenshot({path:path.join(OUT,file),type:'png',fullPage:false,animations:'disabled'});
+              const size=await page.evaluate(()=>({w:innerWidth,h:innerHeight,route:location.hash}));
+              check(size.w===430&&size.h===932,'viewport-'+file,JSON.stringify(size));
+              console.log('CAPTURED',file,route,mode);
+            } finally { await context.close(); }
+          }
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            try{
+              await capture(browser,{file:'01_accessibility_settings.png',route:'accessibility'});
+              await capture(browser,{file:'02_monitoring_normal.png',route:'monitoring-status'});
+              await capture(browser,{file:'03_brain_trends.png',route:'brain-trends'});
+              await capture(browser,{file:'04_brain_map.png',route:'brain-map'});
+              await capture(browser,{file:'05_monitoring_high_contrast.png',route:'monitoring-status',a11y:{highContrast:true},mode:'high-contrast'});
+              await capture(browser,{file:'06_monitoring_large_text.png',route:'monitoring-status',a11y:{largeText:true},mode:'large-text'});
+            } finally { await browser.close(); }
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/kimse-ud-capture.cjs
+      - name: Verify exact file set and PNG dimensions
+        run: |
+          set -e
+          expected='01_accessibility_settings.png 02_monitoring_normal.png 03_brain_trends.png 04_brain_map.png 05_monitoring_high_contrast.png 06_monitoring_large_text.png'
+          test "$(find submission-capture -maxdepth 1 -type f -name '*.png' | wc -l)" -eq 6
+          for f in $expected; do
+            test -s "submission-capture/$f"
+            python3 - "$f" <<'PY'
+          import struct,sys,pathlib
+          p=pathlib.Path('submission-capture')/sys.argv[1]
+          b=p.read_bytes()
+          assert b[:8]==b'\x89PNG\r\n\x1a\n', p
+          w,h=struct.unpack('>II',b[16:24])
+          assert (w,h)==(430,932), (p,w,h)
+          print('PASS PNG',p,w,h,len(b))
+          PY
+          done
+          sha256sum submission-capture/*.png
+      - name: Upload UD submission capture pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-ud-submission-capture
+          path: submission-capture/*.png
+          if-no-files-found: error
+          retention-days: 14
