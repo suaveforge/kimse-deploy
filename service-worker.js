@@ -1,10 +1,12 @@
-const CACHE = 'kimse-pwa-20260917-release37';
+const CACHE = 'kimse-pwa-20260917-release38';
 const CORE = [
   './',
   './index.html',
   './app.css',
   './capture-polish.css',
+  './accessibility-enhancements.css',
   './app.js',
+  './accessibility-enhancements.js',
   './manifest.webmanifest',
   './assets/icons/icon.svg',
   './assets/icons/icon-maskable-source.svg'
