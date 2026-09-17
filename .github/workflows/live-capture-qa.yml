@@ -53,10 +53,10 @@ jobs:
             check(icon.includes('#FF6E68')&&icon.includes('#0F4553')&&icon.includes('M303 659'),'redesigned-icon-live');
             check(polish.includes('.screen-brain-trends')&&polish.includes('top:12px'),'caption-safe-zone-live');
             check(a11yCss.includes('.a11y-only')&&a11yCss.includes('.user-reduced-motion')&&a11yCss.includes('.large-text .screen-monitoring-status'),'a11y-css-live');
-            check(a11yJs.includes('ALWAYS_ON_KEYS')&&a11yJs.includes('monitoring-a11y-summary')&&a11yJs.includes('brain-trends-a11y-summary'),'a11y-js-live');
+            check(a11yJs.includes('ALWAYS_ON_KEYS')&&a11yJs.includes('monitoring-a11y-summary')&&a11yJs.includes('brain-trends-a11y-summary')&&a11yJs.includes("svg.setAttribute('aria-describedby',summary.id)"),'a11y-js-live');
             await p.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
             await p.goto(BASE+'#/consent',{waitUntil:'domcontentloaded',timeout:30000});
-            await p.evaluate(()=>localStorage.setItem('kimse.p0.state',JSON.stringify({version:9,account:{name:'실화면 QA',email:'qa@example.com'},intent:'self',self:true,care:false,mode:'self',onboarding:{profileDone:true,initialDone:true,consentDone:false,completed:false},initial:{step:5,answers:{attention:'10',language:'과일',spatial:'no',daily:'no'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},baseline:{startedAt:null},permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},brainHistory:[],a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:true,captions:true,largeTouchTargets:false,colorIcons:true,screenReader:true,reduceMotion:false}})));
+            await p.evaluate(()=>localStorage.setItem('kimse.p0.state',JSON.stringify({version:9,account:{name:'실화면 QA',email:'qa@example.com'},intent:'self',self:true,care:false,mode:'self',onboarding:{profileDone:true,initialDone:true,consentDone:false,completed:false},initial:{step:5,answers:{attention:'10',language:'과일',spatial:'no',daily:'no'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},baseline:{startedAt:null},permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},brainHistory:[{at:'2026-09-15T09:00:00+09:00',memory:86,executive:84,language:87,spatial:85,daily:88},{at:'2026-09-16T09:00:00+09:00',memory:84,executive:82,language:84,spatial:84,daily:87},{at:'2026-09-17T09:00:00+09:00',memory:80,executive:79,language:80,spatial:83,daily:85,flag:'attention'}],a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:true,captions:true,largeTouchTargets:false,colorIcons:true,screenReader:true,reduceMotion:false}})));
             await p.reload({waitUntil:'domcontentloaded'});await p.waitForSelector('#consent-form',{timeout:15000});
             check(await p.locator('localize-switcher').count()===0,'no-localize-live-dom');
             await p.screenshot({path:path.join(OUT,'screens','01-consent.png')});
@@ -73,27 +73,39 @@ jobs:
             check(await p.locator('input[data-a11y="largeText"]').count()===1&&await p.locator('input[data-a11y="highContrast"]').count()===1&&await p.locator('input[data-a11y="largeTouchTargets"]').count()===1&&await p.locator('input[data-a11y="reduceMotion"]').count()===1,'real-a11y-controls-visible');
             check(await p.locator('.accessibility-basics').count()===1,'always-on-a11y-basics-visible');
             await p.screenshot({path:path.join(OUT,'screens','02-accessibility.png'),fullPage:true});
+            await p.locator('input[data-a11y="largeText"]').check();await p.waitForTimeout(50);
+            await p.locator('input[data-a11y="highContrast"]').check();await p.waitForTimeout(50);
+            await p.locator('input[data-a11y="reduceMotion"]').check();await p.waitForTimeout(100);
+            check(await p.evaluate(()=>document.documentElement.classList.contains('large-text')),'large-text-applied-live');
+            check(await p.evaluate(()=>document.documentElement.classList.contains('high-contrast')),'high-contrast-applied-live');
+            check(await p.evaluate(()=>document.documentElement.classList.contains('user-reduced-motion')),'user-reduced-motion-applied-live');
+            await p.screenshot({path:path.join(OUT,'screens','02b-accessibility-large-highcontrast.png'),fullPage:true});
+            await p.keyboard.press('Tab');
+            check(await p.evaluate(()=>document.activeElement&&document.activeElement!==document.body),'keyboard-focus-reachable');
 
             await p.goto(BASE+'#/monitoring-status',{waitUntil:'domcontentloaded'});await p.waitForSelector('.screen-monitoring-status',{timeout:15000});await p.waitForTimeout(100);
             check(await p.locator('#monitoring-a11y-summary').count()===1,'monitoring-semantic-summary');
             check((await p.locator('#monitoring-a11y-summary').innerText()).length>40,'monitoring-semantic-summary-content');
-            await p.screenshot({path:path.join(OUT,'screens','03-monitoring.png'),fullPage:true});
+            check(await p.locator('.result-change[aria-label]').count()>=3,'monitoring-noncolor-change-labels');
+            await p.screenshot({path:path.join(OUT,'screens','03-monitoring-large-highcontrast.png'),fullPage:true});
 
             await p.goto(BASE+'#/brain-trends',{waitUntil:'domcontentloaded'});await p.waitForSelector('.screen-brain-trends',{timeout:15000});await p.waitForTimeout(100);
             check(await p.locator('#brain-trends-a11y-summary').count()===1,'brain-trends-semantic-summary');
+            check(await p.locator('.overall-trend').count()>=1,'brain-trends-chart-present');
             check(await p.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()>=1,'brain-trends-chart-linked-summary');
-            await p.screenshot({path:path.join(OUT,'screens','04-brain-trends.png'),fullPage:true});
+            await p.screenshot({path:path.join(OUT,'screens','04-brain-trends-large-highcontrast.png'),fullPage:true});
             await qa.close();
 
             const rec=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1,recordVideo:{dir:path.join(OUT,'video'),size:{width:450,height:800}}}),v=await rec.newPage();
             await v.goto(BASE+'?capture=1#/demo-capture',{waitUntil:'domcontentloaded',timeout:30000});await v.waitForSelector('#demo-preview',{timeout:15000});await v.evaluate(()=>document.documentElement.classList.add('capture-frame-mode'));
             const video=v.video();let stop=false,busy=false,last='',shot=10;
-            const timer=setInterval(async()=>{if(stop||busy)return;busy=true;try{const s=await v.evaluate(()=>({hash:location.hash,caption:document.querySelector('#app')?.dataset?.captureCaption||'',day:document.querySelector('.baseline-calendar-leaf strong')?.textContent?.trim()||'',milestone:document.querySelector('.baseline-milestone-card strong')?.textContent?.trim()||'',attention:document.querySelector('.trend-attention-note small')?.textContent?.trim()||'',captionTop:getComputedStyle(document.querySelector('#app'),'::before').top}));log.timeline.push({t:Date.now(),...s});if(s.hash!==last||s.day==='7'||s.day==='14'){await v.screenshot({path:path.join(OUT,'screens',String(shot++).padStart(2,'0')+'-'+(s.hash.replace('#/','')||'root')+(s.day?'-day'+s.day:'')+'.png')});last=s.hash}}catch(e){log.errors.push(String(e))}finally{busy=false}},250);
+            const timer=setInterval(async()=>{if(stop||busy)return;busy=true;try{const s=await v.evaluate(()=>({hash:location.hash,caption:document.querySelector('#app')?.dataset?.captureCaption||'',day:document.querySelector('.baseline-calendar-leaf strong')?.textContent?.trim()||'',milestone:document.querySelector('.baseline-milestone-card strong')?.textContent?.trim()||'',attention:document.querySelector('.trend-attention-note small')?.textContent?.trim()||'',captionTop:getComputedStyle(document.querySelector('#app'),'::before').top,trendLinked:!!document.querySelector('.overall-trend[aria-describedby="brain-trends-a11y-summary"]')}));log.timeline.push({t:Date.now(),...s});if(s.hash!==last||s.day==='7'||s.day==='14'){await v.screenshot({path:path.join(OUT,'screens',String(shot++).padStart(2,'0')+'-'+(s.hash.replace('#/','')||'root')+(s.day?'-day'+s.day:'')+'.png')});last=s.hash}}catch(e){log.errors.push(String(e))}finally{busy=false}},250);
             await v.locator('#demo-preview').click();await v.waitForFunction(()=>location.hash!=='#/demo-capture',null,{timeout:8000});await v.waitForFunction(()=>location.hash==='#/demo-capture',null,{timeout:100000});await v.waitForTimeout(1000);stop=true;clearInterval(timer);while(busy)await v.waitForTimeout(50);
             const caps=[...new Set(log.timeline.map(x=>x.caption).filter(Boolean))],days=[...new Set(log.timeline.filter(x=>x.hash==='#/baseline').map(x=>Number(x.day)).filter(Number.isFinite))];
             check(caps.length>=8,'captions-rendered',caps.join(' | '));check(days[0]===1&&days.includes(7)&&days.includes(14)&&days.length>=12,'day1-to-day14',days.join(','));
             check(log.timeline.some(x=>x.day==='7'&&x.milestone.includes('첫 주 패턴 확인')),'day7-event');check(log.timeline.some(x=>x.day==='14'&&x.milestone.includes('14일 확인 완료')),'day14-event');
             check(log.timeline.some(x=>x.hash==='#/brain-trends'&&x.attention.includes('수면 감소')&&x.attention.includes('활동 감소')&&x.attention.includes('말할 때 멈춤 증가')),'trend-attention-note');
+            check(log.timeline.some(x=>x.hash==='#/brain-trends'&&x.trendLinked),'capture-brain-trends-semantic-link');
             check(log.timeline.some(x=>['#/brain-map','#/brain-trends'].includes(x.hash)&&x.caption&&parseFloat(x.captionTop)<=20),'dense-caption-safe-zone');
             await rec.close();fs.copyFileSync(await video.path(),path.join(OUT,'kimse-live-tour.webm'));log.captions=caps;log.days=days;log.finishedAt=new Date().toISOString();save();
           }finally{await browser.close()}})().catch(e=>{log.errors.push(String(e.stack||e));save();console.error(e);process.exit(1)});
