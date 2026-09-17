@@ -79,7 +79,7 @@ function enhanceBrainMap(screen){
   const selection=clean(screen.querySelector('.brain-focus-summary')?.textContent||screen.querySelector('.brain-focus-head')?.textContent);
   const foot=clean(screen.querySelector('.screen-footnote')?.textContent);
   const summary=setTextSummary(screen,'brain-map-a11y-summary','인지 기능 지도 요약',[selection,foot]);
-  screen.querySelectorAll('.brain-visual').forEach(svg=>{
+  screen.querySelectorAll('.brain-visual,[role="img"][aria-label*="인지 기능 연관 지도"]').forEach(svg=>{
     svg.setAttribute('aria-describedby',summary.id);
     svg.setAttribute('aria-label','선택한 인지 기능과 관련된 기능 연관 지도');
   });
