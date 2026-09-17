@@ -1,0 +1,10 @@
+/* Capture-only subtitle safe zones.
+   Dense analysis screens keep the post-production subtitle over the low-value
+   header strip instead of covering graph notes, brain controls, or next-step CTAs. */
+.capture-frame-mode #app.capture-caption-active:has(.screen-evidence-proof)::before,
+.capture-frame-mode #app.capture-caption-active:has(.screen-research-engine)::before,
+.capture-frame-mode #app.capture-caption-active:has(.screen-brain-map)::before,
+.capture-frame-mode #app.capture-caption-active:has(.screen-brain-trends)::before,
+.capture-frame-mode #app.capture-caption-active:has(.screen-monitoring-status .monitoring-actions)::before{
+  top:12px!important;
+}
