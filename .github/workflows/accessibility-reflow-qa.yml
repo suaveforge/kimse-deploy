@@ -20,6 +20,18 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Wait for live accessibility asset
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'aria-label*="인지 기능 연관 지도"'; then
+              echo "Live Release 38 accessibility asset is ready."
+              exit 0
+            fi
+            echo "Waiting for GitHub Pages propagation ($i/30)..."
+            sleep 5
+          done
+          echo "Live accessibility asset did not propagate in time."
+          exit 1
       - name: Install Playwright Chromium
         run: |
           npm install playwright --no-save --no-fund --no-audit
