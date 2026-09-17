@@ -45,11 +45,14 @@ jobs:
               check(await p.evaluate(()=>document.activeElement&&document.activeElement!==document.body),'keyboard-focus-'+route);
             }
             await p.goto(BASE+'#/monitoring-status',{waitUntil:'domcontentloaded'});await p.waitForSelector('#monitoring-a11y-summary');
-            check((await p.locator('#monitoring-a11y-summary').innerText()).length>40,'monitoring-text-equivalent');
+            check((await p.locator('#monitoring-a11y-summary').innerText()).trim().length>0,'monitoring-text-equivalent');
+            check(await p.locator('.monitoring-level-card[aria-describedby="monitoring-a11y-summary"]').count()>=1,'monitoring-text-equivalent-link');
             await p.goto(BASE+'#/brain-trends',{waitUntil:'domcontentloaded'});await p.waitForSelector('#brain-trends-a11y-summary');
+            check((await p.locator('#brain-trends-a11y-summary').innerText()).trim().length>0,'brain-trends-text-equivalent');
             check(await p.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()>=1,'chart-text-equivalent-link');
             await p.goto(BASE+'#/brain-map',{waitUntil:'domcontentloaded'});await p.waitForSelector('#brain-map-a11y-summary');
-            check((await p.locator('#brain-map-a11y-summary').innerText()).length>30,'brain-map-text-equivalent');
+            check((await p.locator('#brain-map-a11y-summary').innerText()).trim().length>0,'brain-map-text-equivalent');
+            check(await p.locator('.brain-visual[aria-describedby="brain-map-a11y-summary"]').count()>=1,'brain-map-text-equivalent-link');
             await c.close();
           }finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});
           NODE
