@@ -10,6 +10,8 @@ on:
       - 'app.js'
       - 'app.css'
       - 'capture-polish.css'
+      - 'accessibility-enhancements.css'
+      - 'accessibility-enhancements.js'
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'assets/**'
@@ -41,18 +43,20 @@ jobs:
           const save=()=>fs.writeFileSync(path.join(OUT,'live-qa.json'),JSON.stringify(log,null,2));
           (async()=>{const browser=await chromium.launch({headless:true});try{
             const qa=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1}),p=await qa.newPage(),req=qa.request;
-            const names=['','app.js','service-worker.js','manifest.webmanifest','assets/icons/icon.svg','capture-polish.css'];
+            const names=['','app.js','service-worker.js','manifest.webmanifest','assets/icons/icon.svg','capture-polish.css','accessibility-enhancements.css','accessibility-enhancements.js'];
             const rs=await Promise.all(names.map(x=>req.get(BASE+x,{timeout:20000})));rs.forEach((r,i)=>check(r.ok(),'live-http-'+(names[i]||'root'),String(r.status())));
-            const [html,js,sw,manifest,icon,polish]=await Promise.all(rs.map(r=>r.text()));
+            const [html,js,sw,manifest,icon,polish,a11yCss,a11yJs]=await Promise.all(rs.map(r=>r.text()));
             check(!html.includes('localize-switcher')&&!html.includes('localizehub-runtime'),'main-app-localize-removed');
             check(!js.includes('<localize-switcher'),'main-js-localize-removed');
-            check(sw.includes('release37')&&sw.includes('capture-polish.css')&&!sw.includes('localizehub-runtime'),'release37-cache-live');
+            check(sw.includes('release38')&&sw.includes('capture-polish.css')&&sw.includes('accessibility-enhancements.css')&&sw.includes('accessibility-enhancements.js')&&!sw.includes('localizehub-runtime'),'release38-cache-live');
             check(manifest.includes('icon.svg')&&manifest.includes('icon-maskable-source.svg'),'manifest-icons-live');
             check(icon.includes('#FF6E68')&&icon.includes('#0F4553')&&icon.includes('M303 659'),'redesigned-icon-live');
             check(polish.includes('.screen-brain-trends')&&polish.includes('top:12px'),'caption-safe-zone-live');
+            check(a11yCss.includes('.a11y-only')&&a11yCss.includes('.user-reduced-motion')&&a11yCss.includes('.large-text .screen-monitoring-status'),'a11y-css-live');
+            check(a11yJs.includes('ALWAYS_ON_KEYS')&&a11yJs.includes('monitoring-a11y-summary')&&a11yJs.includes('brain-trends-a11y-summary'),'a11y-js-live');
             await p.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
             await p.goto(BASE+'#/consent',{waitUntil:'domcontentloaded',timeout:30000});
-            await p.evaluate(()=>localStorage.setItem('kimse.p0.state',JSON.stringify({version:9,account:{name:'실화면 QA',email:'qa@example.com'},intent:'self',self:true,care:false,mode:'self',onboarding:{profileDone:true,initialDone:true,consentDone:false,completed:false},initial:{step:5,answers:{attention:'10',language:'과일',spatial:'no',daily:'no'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},baseline:{startedAt:null},permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},brainHistory:[]})));
+            await p.evaluate(()=>localStorage.setItem('kimse.p0.state',JSON.stringify({version:9,account:{name:'실화면 QA',email:'qa@example.com'},intent:'self',self:true,care:false,mode:'self',onboarding:{profileDone:true,initialDone:true,consentDone:false,completed:false},initial:{step:5,answers:{attention:'10',language:'과일',spatial:'no',daily:'no'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},baseline:{startedAt:null},permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},brainHistory:[],a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:true,captions:true,largeTouchTargets:false,colorIcons:true,screenReader:true,reduceMotion:false}})));
             await p.reload({waitUntil:'domcontentloaded'});await p.waitForSelector('#consent-form',{timeout:15000});
             check(await p.locator('localize-switcher').count()===0,'no-localize-live-dom');
             await p.screenshot({path:path.join(OUT,'screens','01-consent.png')});
@@ -63,6 +67,22 @@ jobs:
             await p.getByRole('button',{name:'14일 진행 보기'}).click();await p.waitForFunction(()=>location.hash==='#/baseline');
             check((await p.locator('.baseline-calendar-leaf strong').innerText()).trim()==='1','baseline-start-day1');
             check(!(await p.locator('#app').innerText()).includes('14일 확인 완료'),'day14-not-preexposed');
+
+            await p.goto(BASE+'#/accessibility',{waitUntil:'domcontentloaded'});await p.waitForSelector('.screen-accessibility',{timeout:15000});await p.waitForTimeout(100);
+            check(await p.locator('input[data-a11y="captions"],input[data-a11y="colorIcons"],input[data-a11y="screenReader"]').count()===0,'no-fake-always-on-a11y-toggles');
+            check(await p.locator('input[data-a11y="largeText"]').count()===1&&await p.locator('input[data-a11y="highContrast"]').count()===1&&await p.locator('input[data-a11y="largeTouchTargets"]').count()===1&&await p.locator('input[data-a11y="reduceMotion"]').count()===1,'real-a11y-controls-visible');
+            check(await p.locator('.accessibility-basics').count()===1,'always-on-a11y-basics-visible');
+            await p.screenshot({path:path.join(OUT,'screens','02-accessibility.png'),fullPage:true});
+
+            await p.goto(BASE+'#/monitoring-status',{waitUntil:'domcontentloaded'});await p.waitForSelector('.screen-monitoring-status',{timeout:15000});await p.waitForTimeout(100);
+            check(await p.locator('#monitoring-a11y-summary').count()===1,'monitoring-semantic-summary');
+            check((await p.locator('#monitoring-a11y-summary').innerText()).length>40,'monitoring-semantic-summary-content');
+            await p.screenshot({path:path.join(OUT,'screens','03-monitoring.png'),fullPage:true});
+
+            await p.goto(BASE+'#/brain-trends',{waitUntil:'domcontentloaded'});await p.waitForSelector('.screen-brain-trends',{timeout:15000});await p.waitForTimeout(100);
+            check(await p.locator('#brain-trends-a11y-summary').count()===1,'brain-trends-semantic-summary');
+            check(await p.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()>=1,'brain-trends-chart-linked-summary');
+            await p.screenshot({path:path.join(OUT,'screens','04-brain-trends.png'),fullPage:true});
             await qa.close();
 
             const rec=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1,recordVideo:{dir:path.join(OUT,'video'),size:{width:450,height:800}}}),v=await rec.newPage();
