@@ -8,3 +8,14 @@
 .capture-frame-mode #app.capture-caption-active:has(.screen-monitoring-status .monitoring-actions)::before{
   top:12px!important;
 }
+
+/* The subtitle temporarily owns the center of that header strip.  Hide only
+   the redundant screen-name label while the post-production caption is visible;
+   navigation and all product content remain untouched. */
+.capture-frame-mode #app.capture-caption-active:has(.screen-evidence-proof) .app-header-inner>strong,
+.capture-frame-mode #app.capture-caption-active:has(.screen-research-engine) .app-header-inner>strong,
+.capture-frame-mode #app.capture-caption-active:has(.screen-brain-map) .app-header-inner>strong,
+.capture-frame-mode #app.capture-caption-active:has(.screen-brain-trends) .app-header-inner>strong,
+.capture-frame-mode #app.capture-caption-active:has(.screen-monitoring-status .monitoring-actions) .app-header-inner>strong{
+  opacity:0!important;
+}
