@@ -1,0 +1,54 @@
+name: KIMSE Accessibility Reflow QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/accessibility-reflow-qa.yml'
+      - 'app.js'
+      - 'app.css'
+      - 'accessibility-enhancements.css'
+      - 'accessibility-enhancements.js'
+
+permissions:
+  contents: read
+
+jobs:
+  accessibility-reflow-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright Chromium
+        run: |
+          npm install playwright --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Verify narrow reflow and keyboard access
+        run: |
+          cat > /tmp/kimse-a11y-reflow.cjs <<'NODE'
+          const {chromium}=require(process.cwd()+'/node_modules/playwright');
+          const BASE='https://kimse.suaveforge.com/';
+          const check=(v,n,d='')=>{if(!v)throw Error(n+': '+d);console.log('PASS',n,d)};
+          (async()=>{const b=await chromium.launch({headless:true});try{
+            const c=await b.newContext({viewport:{width:225,height:800},deviceScaleFactor:1});
+            const p=await c.newPage();
+            await p.goto(BASE+'#/start',{waitUntil:'domcontentloaded',timeout:30000});
+            await p.evaluate(()=>localStorage.setItem('kimse.p0.state',JSON.stringify({version:9,account:{name:'접근성 QA',email:'qa@example.com'},intent:'self',self:true,care:true,mode:'self',caregivers:[{name:'가족 보호자',relation:'자녀'}],onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},initial:{step:5,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:true,domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},consents:{service:true,privacy:true,health:true,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:true},baseline:{startedAt:new Date(Date.now()-15*86400000).toISOString()},monitoring:{pending:[],summary:{status:'READY',level:'ATTENTION',changes:[{metric:'sleep_minutes',baseline:425,recent:336,relative_change:-0.2094,changed:true},{metric:'steps',baseline:5120,recent:3460,relative_change:-0.3242,changed:true},{metric:'voice_pause_ratio',baseline:.18,recent:.23,relative_change:.2778,changed:true}]},alerts:[]},brainHistory:[{at:'2026-09-15T09:00:00+09:00',memory:86,executive:84,language:87,spatial:85,daily:88},{at:'2026-09-16T09:00:00+09:00',memory:84,executive:82,language:84,spatial:84,daily:87},{at:'2026-09-17T09:00:00+09:00',memory:80,executive:79,language:80,spatial:83,daily:85,flag:'attention'}],a11y:{largeText:true,highContrast:true,largeTouchTargets:true,voiceGuidance:false,soundEffects:false,captions:true,colorIcons:true,screenReader:true,reduceMotion:true}})));
+            for(const route of ['accessibility','monitoring-status','brain-map','brain-trends']){
+              await p.goto(BASE+'#/'+route,{waitUntil:'domcontentloaded'});await p.waitForSelector('#main',{timeout:15000});await p.waitForTimeout(120);
+              const m=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,main:document.querySelector('#main')?.scrollWidth||0,mainc:document.querySelector('#main')?.clientWidth||0,large:document.documentElement.classList.contains('large-text'),contrast:document.documentElement.classList.contains('high-contrast'),reduced:document.documentElement.classList.contains('user-reduced-motion')}));
+              check(m.sw<=m.cw+1,'no-page-horizontal-overflow-'+route,JSON.stringify(m));
+              check(m.main<=m.mainc+1,'no-main-horizontal-overflow-'+route,JSON.stringify(m));
+              check(m.large&&m.contrast&&m.reduced,'preferences-active-'+route);
+              await p.keyboard.press('Tab');
+              check(await p.evaluate(()=>document.activeElement&&document.activeElement!==document.body),'keyboard-focus-'+route);
+            }
+            await p.goto(BASE+'#/monitoring-status',{waitUntil:'domcontentloaded'});await p.waitForSelector('#monitoring-a11y-summary');
+            check((await p.locator('#monitoring-a11y-summary').innerText()).length>40,'monitoring-text-equivalent');
+            await p.goto(BASE+'#/brain-trends',{waitUntil:'domcontentloaded'});await p.waitForSelector('#brain-trends-a11y-summary');
+            check(await p.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()>=1,'chart-text-equivalent-link');
+            await c.close();
+          }finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/kimse-a11y-reflow.cjs
