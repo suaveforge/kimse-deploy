@@ -28,8 +28,8 @@ jobs:
         run: |
           for i in $(seq 1 40); do
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?qa=${GITHUB_SHA}-${i}" | grep -Fq "const VERSION='39'" && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39 · premium universal UX' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux3'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.3 · board-ready mobile composition' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux4'; then
               echo "Live Release 39 premium UX is ready."
               exit 0
             fi
@@ -94,10 +94,12 @@ jobs:
               if(route==='brain-trends'){
                 await p.waitForSelector('#brain-trends-a11y-summary');check(await p.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()===1,'trend-summary-link');
                 check(await p.locator('button[data-brain-range][aria-pressed="true"]').count()===1,'trend-range-state');check(await p.locator('button[data-brain-domain][aria-pressed="true"]').count()===1,'trend-domain-state');
+                check(await p.evaluate(()=>[...document.querySelectorAll('.trend-domain-tabs button')].every(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth})),'trend-tabs-within-viewport');
               }
               if(route==='brain-map'){
                 await p.waitForSelector('#brain-map-a11y-summary');check(await p.locator('.brain-visual[aria-describedby="brain-map-a11y-summary"]').count()===1,'brain-map-summary-link');
                 check(await p.locator('button[data-brain-focus][aria-pressed="true"]').count()===1,'brain-focus-state');check(await p.locator('button[data-brain-view][aria-pressed="true"]').count()===1,'brain-view-state');
+                check(await p.evaluate(()=>{const c=document.querySelector('.brain-map-controls');if(!c)return false;const r=c.getBoundingClientRect();return r.right<=innerWidth&&r.bottom<=innerHeight+1}),'brain-map-controls-in-viewport');
               }
               await shot(p,route+'.png');await ctx.close();
             }

@@ -25,9 +25,9 @@ jobs:
           for i in $(seq 1 40); do
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.css?ud=${GITHUB_SHA}-${i}" | grep -Fq ':root{--kimse-primary:#12735e}' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'brain-map-a11y-summary' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?ud=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.2 · mobile single-frame monitoring composition' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?ud=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.3 · board-ready mobile composition' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'deltaValue' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux3'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux4'; then
               echo "Live Release 39 submission assets are ready."
               exit 0
             fi
@@ -108,14 +108,14 @@ jobs:
                 await page.waitForSelector('.trend-chart-legend',{timeout:15000});
                 check(await page.locator('#brain-trends-a11y-summary').count()===1,'trends-semantic');
                 check(await page.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()>=1,'trends-linked');
-                const y=await page.evaluate(()=>{const el=document.querySelector('.overall-trend');if(!el)return 0;const r=el.getBoundingClientRect();return Math.max(0,window.scrollY+r.top-170)});
-                await page.evaluate(y=>window.scrollTo(0,y),y);
+                check(await page.evaluate(()=>[...document.querySelectorAll('.trend-domain-tabs button')].every(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0})),'trends-tabs-visible');
+                await page.evaluate(()=>window.scrollTo(0,0));
               } else if(route==='brain-map'){
                 await page.waitForSelector('.brain-map-stage',{timeout:15000});
                 check(await page.locator('#brain-map-a11y-summary').count()===1,'map-semantic');
                 check(await page.locator('.brain-visual[aria-describedby="brain-map-a11y-summary"]').count()>=1,'map-linked');
-                const y=await page.evaluate(()=>{const el=document.querySelector('.brain-visual');if(!el)return 0;const r=el.getBoundingClientRect();return Math.max(0,window.scrollY+r.top-185)});
-                await page.evaluate(y=>window.scrollTo(0,y),y);
+                check(await page.evaluate(()=>{const c=document.querySelector('.brain-map-controls');if(!c)return false;const r=c.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight+1}),'map-controls-visible');
+                await page.evaluate(()=>window.scrollTo(0,0));
               }
               if(a11y.highContrast)check(await page.evaluate(()=>document.documentElement.classList.contains('high-contrast')),'high-contrast-applied-'+file);
               if(a11y.largeText)check(await page.evaluate(()=>document.documentElement.classList.contains('large-text')),'large-text-applied-'+file);
