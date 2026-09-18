@@ -24,7 +24,10 @@ function enhanceMonitoring(screen){
   const titleCopy=make('div','monitoring-title-copy');
   titleCopy.append(title,desc);
   titleRow.append(titleCopy);
-  if(level){const chip=make('span','monitoring-period-chip','14일 기준');titleRow.append(chip)}
+  if(level){
+    const chip=make('span','monitoring-period-chip','14일 기준');
+    if(eyebrow)eyebrow.append(chip);else titleRow.append(chip);
+  }
   eyebrow?.after(titleRow);
 
   const journey=make('section','monitoring-journey');
@@ -139,9 +142,9 @@ function enhanceTrends(screen){
   title.textContent=(domain||'전체 기능')+'의 변화';
   heading.append(title,desc);
   row.prepend(heading);
+  const deltaValue=clean(delta?.textContent);
   if(delta){
-    const value=clean(delta.textContent);
-    delta.innerHTML='<small>'+range+'</small><strong>'+value+'</strong>';
+    delta.innerHTML='<small>'+range+'</small><strong>'+deltaValue+'</strong>';
   }
   const rangeBox=screen.querySelector('.compact-range'),tabs=screen.querySelector('.trend-domain-tabs');
   if(rangeBox&&tabs){
@@ -158,7 +161,7 @@ function enhanceTrends(screen){
     const count=clean(heroHead.querySelector(':scope > span')?.textContent);
     const small=heroHead.querySelector('small');
     if(small&&count)small.textContent=clean(small.textContent)+' · '+count;
-    const numeric=parseInt(String(value).replace(/[^\d-]/g,''),10);
+    const numeric=parseInt(String(deltaValue).replace(/[^\d-]/g,''),10);
     const reading=Number.isFinite(numeric)?(numeric<=-4?'최근 기록이 평소보다 낮아지는 흐름입니다.':numeric>=4?'최근 기록이 평소보다 높아지는 흐름입니다.':'최근 기록은 큰 흔들림 없이 이어지고 있습니다.'):'기록이 쌓이면 변화 흐름을 보여드립니다.';
     const old=heroHead.querySelector(':scope > span');if(old){old.className='trend-reading';old.textContent=reading}
     if(svg&&!hero.querySelector('.trend-chart-legend'))svg.after(make('div','trend-chart-legend','<span><i></i>기록 흐름</span><span><i class="attention"></i>눈에 띈 날</span>'));

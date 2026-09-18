@@ -20,15 +20,22 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Verify live PASS deployment assets
+      - name: Wait for live Release 39 submission assets
         run: |
-          set -e
-          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.css?ud=1' | grep -Fq ':root{--kimse-primary:#12735e}'
-          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.css?ud=2' | grep -Fq '.app-footer{color:var(--kimse-muted)}'
-          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.js?ud=3' | grep -Fq 'brain-map-a11y-summary'
-          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/premium-ux.css?ud=4' | grep -Fq 'Release 39 · premium universal UX'
-          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/premium-ux.js?ud=5' | grep -Fq "const VERSION='39'"
-          echo 'PASS live accessibility assets'
+          for i in $(seq 1 40); do
+            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.css?ud=${GITHUB_SHA}-${i}" | grep -Fq ':root{--kimse-primary:#12735e}' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'brain-map-a11y-summary' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?ud=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.2 · mobile single-frame monitoring composition' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'deltaValue' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux2'; then
+              echo "Live Release 39 submission assets are ready."
+              exit 0
+            fi
+            echo "Waiting for Pages propagation ($i/40)..."
+            sleep 5
+          done
+          echo "Live submission assets did not propagate in time."
+          exit 1
       - name: Install Playwright Chromium
         run: |
           npm install playwright --no-save --no-fund --no-audit
