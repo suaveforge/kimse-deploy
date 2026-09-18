@@ -1,0 +1,173 @@
+name: KIMSE UD Print Capture @3x
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ud-submission-print-capture.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  capture-print:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify live final product markers
+        run: |
+          set -e
+          for i in $(seq 1 30); do
+            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?print=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.5 · product-first universal readable floor' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.css?print=${GITHUB_SHA}-${i}" | grep -Fq ':root{--kimse-primary:#12735e}' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?print=${GITHUB_SHA}-${i}" | grep -Fq 'brain-map-a11y-summary'; then
+              echo "Final live product ready"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Final live product markers not found"
+          exit 1
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install playwright --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+
+      - name: Capture print-grade UD PNGs
+        run: |
+          mkdir -p submission-capture-print
+          cat > /tmp/kimse-print-capture.cjs <<'NODE'
+          const {chromium}=require(process.cwd()+'/node_modules/playwright');
+          const path=require('path');
+          const fs=require('fs');
+          const BASE='https://kimse.suaveforge.com/';
+          const OUT=path.resolve('submission-capture-print');
+          const baseState={
+            version:9,
+            account:{name:'공모전 시연',email:''},
+            intent:'self',self:true,care:true,mode:'self',
+            caregivers:[{name:'가족 보호자',relation:'자녀'}],
+            onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+            initial:{step:5,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:true,completedAt:'2026-09-17T00:00:00+09:00',domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},
+            consents:{service:true,privacy:true,health:true,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:true},
+            baseline:{startedAt:new Date(Date.now()-15*86400000).toISOString()},
+            permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
+            monitoring:{pending:[],summary:{status:'READY',baseline_days:14,baseline_target_days:14,level:'ATTENTION',changes:[
+              {metric:'sleep_minutes',baseline:425,recent:336,relative_change:-0.2094,changed:true},
+              {metric:'steps',baseline:5120,recent:3460,relative_change:-0.3242,changed:true},
+              {metric:'voice_pause_ratio',baseline:0.18,recent:0.23,relative_change:0.2778,changed:true}
+            ],metrics:[],interpretation:'현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.'},alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},
+            brainHistory:[
+              {at:'2026-09-15T09:00:00+09:00',memory:86,executive:84,language:87,spatial:85,daily:88},
+              {at:'2026-09-16T09:00:00+09:00',memory:84,executive:82,language:84,spatial:84,daily:87},
+              {at:'2026-09-17T09:00:00+09:00',memory:80,executive:79,language:80,spatial:83,daily:85,flag:'attention',flagLabel:'수면 감소 · 활동 감소 · 말할 때 멈춤 증가'}
+            ],
+            a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,captions:true,largeTouchTargets:false,colorIcons:true,screenReader:true,reduceMotion:false}
+          };
+          const clone=o=>JSON.parse(JSON.stringify(o));
+          const stateWith=a11y=>{const s=clone(baseState);s.a11y={...s.a11y,...a11y};return s};
+          const specs=[
+            {file:'01_accessibility_settings@3x.png',route:'accessibility',a11y:{}},
+            {file:'02_monitoring_normal@3x.png',route:'monitoring-status',a11y:{}},
+            {file:'03_brain_trends@3x.png',route:'brain-trends',a11y:{}},
+            {file:'04_brain_map@3x.png',route:'brain-map',a11y:{}},
+            {file:'05_monitoring_high_contrast@3x.png',route:'monitoring-status',a11y:{highContrast:true}},
+            {file:'06_monitoring_large_text@3x.png',route:'monitoring-status',a11y:{largeText:true}}
+          ];
+          const waitSel={
+            accessibility:'.screen-accessibility',
+            'monitoring-status':'.screen-monitoring-status',
+            'brain-trends':'.overall-trend',
+            'brain-map':'.brain-visual'
+          };
+          async function snap(browser,spec){
+            const context=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:3});
+            await context.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),stateWith(spec.a11y));
+            await context.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
+            const page=await context.newPage();
+            await page.goto(BASE+'#/'+spec.route,{waitUntil:'domcontentloaded',timeout:30000});
+            await page.waitForSelector(waitSel[spec.route],{timeout:15000});
+            await page.evaluate(async()=>{if(document.fonts?.ready)await document.fonts.ready});
+            await page.waitForFunction(()=>document.querySelector('#main')?.dataset?.premiumUx==='39',{timeout:15000});
+            await page.waitForTimeout(900);
+
+            const bodyText=await page.locator('body').innerText();
+            if(bodyText.includes('@') || /010[-\s]?\d{3,4}[-\s]?\d{4}/.test(bodyText)) throw new Error('personal data visible');
+
+            if(spec.route==='accessibility'){
+              await page.evaluate(()=>{
+                window.scrollTo(0,0);
+                const card=document.querySelector('.accessibility-control-card');
+                const header=document.querySelector('.app-header');
+                if(!card)return;
+                const headerBottom=(header?.getBoundingClientRect().bottom||0)+4;
+                const r=card.getBoundingClientRect();
+                if(r.bottom>innerHeight-8){
+                  const need=r.bottom-(innerHeight-8);
+                  const keepTop=Math.max(0,r.top-headerBottom);
+                  window.scrollBy(0,Math.min(need,keepTop));
+                }
+              });
+            } else if(spec.route==='monitoring-status'){
+              await page.evaluate(()=>window.scrollTo(0,0));
+              if(spec.a11y.largeText){
+                await page.evaluate(()=>{
+                  const c=document.querySelector('.monitoring-conclusion');
+                  if(!c)return;
+                  const header=document.querySelector('.app-header')?.getBoundingClientRect().height||0;
+                  const top=c.getBoundingClientRect().top+window.scrollY-header-500;
+                  window.scrollTo(0,Math.max(0,top));
+                });
+              }
+            } else {
+              await page.evaluate(()=>window.scrollTo(0,0));
+            }
+            await page.waitForTimeout(300);
+            const metrics=await page.evaluate(()=>({
+              iw:innerWidth,ih:innerHeight,
+              sw:document.documentElement.scrollWidth,
+              cw:document.documentElement.clientWidth,
+              large:document.documentElement.classList.contains('large-text'),
+              contrast:document.documentElement.classList.contains('high-contrast')
+            }));
+            if(metrics.sw>metrics.cw+1) throw new Error('horizontal overflow '+JSON.stringify(metrics));
+            const out=path.join(OUT,spec.file);
+            await page.screenshot({path:out,type:'png',fullPage:false,animations:'disabled'});
+            await context.close();
+            return metrics;
+          }
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const result={deployProduct:'3f08e745f1abe61f30c67d6a2d5c1dfb5d8859d2',viewport:'430x932',deviceScaleFactor:3,files:[]};
+            for(const spec of specs){
+              const m=await snap(browser,spec);
+              result.files.push({file:spec.file,...m});
+              console.log('CAPTURED',spec.file,JSON.stringify(m));
+            }
+            await browser.close();
+            fs.writeFileSync(path.join(OUT,'capture-manifest.json'),JSON.stringify(result,null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/kimse-print-capture.cjs
+
+      - name: Verify PNG pixel dimensions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          for p in sorted(Path('submission-capture-print').glob('*.png')):
+              with p.open('rb') as f:
+                  sig=f.read(24)
+              w,h=struct.unpack('>II',sig[16:24])
+              print(p.name,w,h,p.stat().st_size)
+              assert (w,h)==(1290,2796), (p,w,h)
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kimse-ud-submission-capture-print
+          path: submission-capture-print
+          retention-days: 14
