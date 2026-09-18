@@ -41,7 +41,7 @@ jobs:
               css_ok=1
             fi
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?qa=${GITHUB_SHA}-${i}" | grep -Fq "const VERSION='39'" && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39 · premium universal UX'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.5 · product-first universal readable floor'; then
               premium_ok=1
             fi
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-3-govtech-p0'; then
@@ -75,7 +75,37 @@ jobs:
           const rgb=s=>{const m=String(s).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);if(!m)throw Error('Unsupported color '+s);return [+m[1],+m[2],+m[3]]};
           const lum=s=>{const [r,g,b]=rgb(s).map(channel);return .2126*r+.7152*g+.0722*b};
           const ratio=(fg,bg)=>{const a=lum(fg),b=lum(bg),hi=Math.max(a,b),lo=Math.min(a,b);return (hi+.05)/(lo+.05)};
+          const auditState=(a11y={})=>{const s=JSON.parse(JSON.stringify(state));s.a11y={...s.a11y,largeText:false,highContrast:false,largeTouchTargets:false,reduceMotion:false,...a11y};return s};
+          async function auditReadableFloor(browser,route,label,a11y={}){
+            const c=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:1});
+            await c.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),auditState(a11y));
+            const p=await c.newPage();
+            try{
+              await p.goto(BASE+'#/'+route,{waitUntil:'domcontentloaded',timeout:30000});
+              await p.waitForSelector('.screen-'+route,{timeout:15000});await p.waitForTimeout(220);
+              const result=await p.evaluate(route=>{
+                const root=document.querySelector('.screen-'+route);
+                const visible=el=>{
+                  if(!el||el.closest('.a11y-only,[aria-hidden="true"]'))return false;
+                  const s=getComputedStyle(el),r=el.getBoundingClientRect();
+                  return s.display!=='none'&&s.visibility!=='hidden'&&s.visibility!=='collapse'&&parseFloat(s.opacity||'1')>0&&r.width>0&&r.height>0;
+                };
+                const textOffenders=[...root.querySelectorAll('*')].filter(el=>{
+                  if(!visible(el))return false;
+                  const direct=[...el.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent||'').join(' ').trim();
+                  return direct&&parseFloat(getComputedStyle(el).fontSize)<14;
+                }).map(el=>({tag:el.tagName.toLowerCase(),cls:String(el.className||'').slice(0,100),text:[...el.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent||'').join(' ').trim().slice(0,80),size:parseFloat(getComputedStyle(el).fontSize)}));
+                const targetOffenders=[...root.querySelectorAll('button,a[href],input:not([type="hidden"]),select,textarea,[role="button"],[role="switch"],[tabindex]:not([tabindex="-1"])')].filter(visible).map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName.toLowerCase(),cls:String(el.className||'').slice(0,100),label:(el.getAttribute('aria-label')||el.textContent||'').trim().slice(0,80),w:r.width,h:r.height}}).filter(x=>x.w<44||x.h<44);
+                return {textOffenders,targetOffenders,sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,mw:root.scrollWidth,mc:root.clientWidth,large:document.documentElement.classList.contains('large-text')};
+              },route);
+              check(result.textOffenders.length===0,'visible-text-floor-'+route+'-'+label,JSON.stringify(result.textOffenders));
+              check(result.targetOffenders.length===0,'touch-target-floor-'+route+'-'+label,JSON.stringify(result.targetOffenders));
+              check(result.sw<=result.cw+1&&result.mw<=result.mc+1,'mobile-no-horizontal-overflow-'+route+'-'+label,JSON.stringify(result));
+              if(a11y.largeText)check(result.large,'mobile-large-text-active-'+route);
+            }finally{await c.close()}
+          }
           (async()=>{const b=await chromium.launch({headless:true});try{
+            for(const spec of [{label:'normal',a11y:{}},{label:'large-text',a11y:{largeText:true}}])for(const route of ['accessibility','monitoring-status','brain-map','brain-trends'])await auditReadableFloor(b,route,spec.label,spec.a11y);
             const c=await b.newContext({viewport:{width:225,height:800},deviceScaleFactor:1});
             await c.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),state);
             const p=await c.newPage();

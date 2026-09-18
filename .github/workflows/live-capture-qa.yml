@@ -59,7 +59,7 @@ jobs:
             check(polish.includes('.screen-brain-trends')&&polish.includes('top:12px'),'caption-safe-zone-live');
             check(a11yCss.includes('.a11y-only')&&a11yCss.includes('.user-reduced-motion')&&a11yCss.includes('.large-text .screen-monitoring-status'),'a11y-css-live');
             check(a11yJs.includes('ALWAYS_ON_KEYS')&&a11yJs.includes('monitoring-a11y-summary')&&a11yJs.includes('brain-trends-a11y-summary')&&a11yJs.includes("svg.setAttribute('aria-describedby',summary.id)"),'a11y-js-live');
-            check(premiumCss.includes('Release 39 · premium universal UX')&&premiumCss.includes('.monitoring-journey')&&premiumCss.includes('.brain-map-stage'),'premium-ux-css-live');
+            check(premiumCss.includes('Release 39.5 · product-first universal readable floor')&&premiumCss.includes('.monitoring-journey')&&premiumCss.includes('.brain-map-stage'),'premium-ux-css-live');
             check(premiumJs.includes("const VERSION='39'")&&premiumJs.includes('monitoring-journey')&&premiumJs.includes('trend-chart-legend'),'premium-ux-live');
             check(govCss.includes('GovTech P0')&&govCss.includes('.gov-public-actions'),'govtech-p0-css-live');
             check(govJs.includes('치매상담콜센터')&&govJs.includes('facility_list.aspx'),'govtech-p0-live');

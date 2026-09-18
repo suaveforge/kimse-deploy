@@ -30,7 +30,7 @@ jobs:
         run: |
           for i in $(seq 1 40); do
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?qa=${GITHUB_SHA}-${i}" | grep -Fq "const VERSION='39'" && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.3 · board-ready mobile composition' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.5 · product-first universal readable floor' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?qa=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?qa=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-3-govtech-p0'; then
@@ -97,7 +97,7 @@ jobs:
                 check(await p.locator('.monitoring-level-card[aria-describedby="monitoring-a11y-summary"]').count()===1,'monitoring-summary-link');
                 const txt=await p.locator('.monitoring-journey').innerText();for(const t of ['14일의 평소','오늘의 변화','변화의 의미','다음 행동'])check(txt.includes(t),'monitoring-story-'+t);
                 const minType=await p.evaluate(()=>Math.min(...[...document.querySelectorAll('.result-change small,.monitoring-level-note,.monitoring-level-top>small,.monitoring-level-badge>strong,.monitoring-detail-link,.screen-footnote')].filter(el=>getComputedStyle(el).display!=='none').map(el=>parseFloat(getComputedStyle(el).fontSize))));
-                check(minType>=12,'mobile-readable-secondary-type',String(minType));
+                check(minType>=14,'mobile-readable-secondary-type',String(minType));
               }
               if(route==='brain-trends'){
                 await p.waitForSelector('#brain-trends-a11y-summary');check(await p.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()===1,'trend-summary-link');
