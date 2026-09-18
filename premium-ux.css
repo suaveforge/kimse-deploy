@@ -445,3 +445,44 @@ body{background:linear-gradient(180deg,#fffdfa 0%,var(--kimse-ivory) 52%,#f7f4ed
     margin-top:1px!important;
   }
 }
+
+
+/* Release 39.3 mobile accessibility frame fit */
+@media(max-width:520px){
+  .screen-accessibility{padding-top:14px!important}
+  .accessibility-hero{
+    grid-template-columns:50px minmax(0,1fr)!important;
+    gap:12px!important;
+    margin-bottom:12px!important;
+  }
+  .accessibility-hero-icon{
+    width:50px!important;
+    height:50px!important;
+    border-radius:16px!important;
+  }
+  .accessibility-hero-icon i{font-size:28px!important}
+  .accessibility-hero .page-title{
+    font-size:32px!important;
+    margin:2px 0 4px!important;
+  }
+  .accessibility-hero .page-desc{
+    font-size:15px!important;
+    line-height:1.4!important;
+  }
+  .accessibility-card-head{
+    padding:14px 2px 9px!important;
+  }
+  .a11y-setting-row{
+    min-height:72px!important;
+  }
+  .screen-accessibility .accessibility-basics{
+    margin-top:8px!important;
+    padding:10px 14px!important;
+  }
+  .screen-accessibility .accessibility-basics h2{
+    margin-bottom:2px!important;
+  }
+  .screen-accessibility .accessibility-basic-row{
+    padding:5px 0!important;
+  }
+}
