@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const STATE_KEY='kimse.p0.state';
 const ALWAYS_ON_KEYS=new Set(['captions','colorIcons','screenReader']);
-const RELEASE_LABEL='Updated 2026.09.17 · Release 38';
+const RELEASE_LABEL='Updated 2026.09.18 · Release 39.3';
 const clean=t=>String(t||'').replace(/\s+/g,' ').trim();
 const readState=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')}catch{return {}}};
 function applyPreferenceClasses(){

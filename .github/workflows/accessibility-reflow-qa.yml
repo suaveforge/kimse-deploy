@@ -41,7 +41,7 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39 · premium universal UX'; then
               premium_ok=1
             fi
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux4'; then
+            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux5'; then
               sw_ok=1
             fi
             if [ "$js_ok" = "1" ] && [ "$css_ok" = "1" ] && [ "$premium_ok" = "1" ] && [ "$sw_ok" = "1" ]; then

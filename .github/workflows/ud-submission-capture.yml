@@ -27,7 +27,7 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'brain-map-a11y-summary' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?ud=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.3 · board-ready mobile composition' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'deltaValue' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux4'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux5'; then
               echo "Live Release 39 submission assets are ready."
               exit 0
             fi
