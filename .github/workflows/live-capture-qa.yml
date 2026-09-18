@@ -81,14 +81,26 @@ jobs:
             check(await p.locator('input[data-a11y="captions"],input[data-a11y="colorIcons"],input[data-a11y="screenReader"]').count()===0,'no-fake-always-on-a11y-toggles');
             check(await p.locator('input[data-a11y="largeText"]').count()===1&&await p.locator('input[data-a11y="highContrast"]').count()===1&&await p.locator('input[data-a11y="largeTouchTargets"]').count()===1&&await p.locator('input[data-a11y="reduceMotion"]').count()===1,'real-a11y-controls-visible');
             check(await p.locator('.accessibility-basics').count()===1,'always-on-a11y-basics-visible');
-            await p.screenshot({path:path.join(OUT,'screens','02-accessibility.png'),fullPage:true});
+            await p.evaluate(()=>window.scrollTo(0,0));
+            await p.screenshot({path:path.join(OUT,'screens','02-accessibility.png')});
             await p.locator('input[data-a11y="largeText"]').check();await p.waitForTimeout(50);
             await p.locator('input[data-a11y="highContrast"]').check();await p.waitForTimeout(50);
             await p.locator('input[data-a11y="reduceMotion"]').check();await p.waitForTimeout(100);
             check(await p.evaluate(()=>document.documentElement.classList.contains('large-text')),'large-text-applied-live');
             check(await p.evaluate(()=>document.documentElement.classList.contains('high-contrast')),'high-contrast-applied-live');
             check(await p.evaluate(()=>document.documentElement.classList.contains('user-reduced-motion')),'user-reduced-motion-applied-live');
-            await p.screenshot({path:path.join(OUT,'screens','02b-accessibility-large-highcontrast.png'),fullPage:true});
+            await p.evaluate(()=>{
+              const basics=document.querySelector('.accessibility-basics');
+              if(!basics)return;
+              const bottom=basics.getBoundingClientRect().bottom+window.scrollY;
+              window.scrollTo(0,Math.max(0,bottom-innerHeight+14));
+            });
+            await p.waitForTimeout(160);
+            check(await p.evaluate(()=>{
+              const h=document.querySelector('.app-header')?.getBoundingClientRect();
+              return !!h&&h.top===0&&h.bottom>0&&h.bottom<innerHeight/3;
+            }),'accessibility-live-header-single-viewport');
+            await p.screenshot({path:path.join(OUT,'screens','02b-accessibility-large-highcontrast.png')});
             await p.keyboard.press('Tab');
             check(await p.evaluate(()=>document.activeElement&&document.activeElement!==document.body),'keyboard-focus-reachable');
 
