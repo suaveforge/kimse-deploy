@@ -412,3 +412,36 @@ body{background:linear-gradient(180deg,#fffdfa 0%,var(--kimse-ivory) 52%,#f7f4ed
     word-break:break-word!important;
   }
 }
+
+
+/* Release 39.3 final evidence framing: keep non-interactive accessibility basics complete on one mobile frame
+   without shrinking interactive controls or body copy below the existing accessible type scale. */
+@media(max-width:520px){
+  .screen-accessibility .accessibility-basics{
+    margin-top:10px!important;
+    padding:12px 14px!important;
+    border-radius:20px!important;
+  }
+  .screen-accessibility .accessibility-basics h2{
+    margin-bottom:4px!important;
+  }
+  .screen-accessibility .accessibility-basic-row{
+    grid-template-columns:36px 1fr!important;
+    gap:9px!important;
+    padding:6px 0!important;
+  }
+  .screen-accessibility .accessibility-basic-row>i{
+    width:36px!important;
+    height:36px!important;
+    border-radius:11px!important;
+    font-size:20px!important;
+  }
+  .screen-accessibility .accessibility-basic-row strong{
+    font-size:15px!important;
+  }
+  .screen-accessibility .accessibility-basic-row small{
+    font-size:13px!important;
+    line-height:1.35!important;
+    margin-top:1px!important;
+  }
+}
