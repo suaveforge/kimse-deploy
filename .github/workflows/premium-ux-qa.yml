@@ -116,7 +116,7 @@ jobs:
               const m=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,mw:document.querySelector('#main')?.scrollWidth||0,mc:document.querySelector('#main')?.clientWidth||0}));
               check(m.sw<=m.cw+1&&m.mw<=m.mc+1,'reflow-200pct-equivalent-'+route,JSON.stringify(m));await ctx.close();
             }
-            const gray=await open(browser,'monitoring-status');await gray.p.evaluate(()=>document.documentElement.style.filter='grayscale(1)');const g=await gray.p.locator('#main').innerText();check(g.includes('위험')&&g.includes('보호자')&&g.includes('상담센터'),'grayscale-meaning-retained');await shot(gray.p,'monitoring-grayscale.png');await gray.ctx.close();
+            const gray=await open(browser,'monitoring-status');await gray.p.evaluate(()=>document.documentElement.style.filter='grayscale(1)');const g=await gray.p.locator('#main').innerText();check(g.includes('위험')&&g.includes('보호자')&&(g.includes('치매상담콜센터')||g.includes('1899-9988')),'grayscale-meaning-retained');await shot(gray.p,'monitoring-grayscale.png');await gray.ctx.close();
             const dc=await browser.newContext({viewport:{width:450,height:800}}),dp=await dc.newPage();await dp.goto(BASE+'#/demo-capture',{waitUntil:'domcontentloaded',timeout:30000});await dp.waitForSelector('#demo-preview',{timeout:15000});check(await dp.locator('#demo-preview').count()===1,'demo-capture-entry');await dc.close();
             log.finishedAt=new Date().toISOString();fs.writeFileSync(path.join(OUT,'qa.json'),JSON.stringify(log,null,2));
           }finally{await browser.close()}})().catch(e=>{log.errors.push(String(e.stack||e));fs.writeFileSync(path.join(OUT,'qa.json'),JSON.stringify(log,null,2));console.error(e);process.exit(1)});
