@@ -12,6 +12,8 @@ on:
       - 'accessibility-enhancements.js'
       - 'premium-ux.css'
       - 'premium-ux.js'
+      - 'govtech-p0.css'
+      - 'govtech-p0.js'
       - 'service-worker.js'
 
 permissions:
@@ -30,6 +32,7 @@ jobs:
             css_ok=0
             premium_ok=0
             sw_ok=0
+            gov_ok=0
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'aria-label*="인지 기능 연관 지도"'; then
               js_ok=1
             fi
@@ -41,10 +44,14 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39 · premium universal UX'; then
               premium_ok=1
             fi
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux5'; then
+            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-3-govtech-p0'; then
               sw_ok=1
             fi
-            if [ "$js_ok" = "1" ] && [ "$css_ok" = "1" ] && [ "$premium_ok" = "1" ] && [ "$sw_ok" = "1" ]; then
+            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?qa=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?qa=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions'; then
+              gov_ok=1
+            fi
+            if [ "$js_ok" = "1" ] && [ "$css_ok" = "1" ] && [ "$premium_ok" = "1" ] && [ "$sw_ok" = "1" ] && [ "$gov_ok" = "1" ]; then
               echo "Live accessibility and premium UX assets are ready."
               exit 0
             fi

@@ -14,6 +14,8 @@ on:
       - 'accessibility-enhancements.js'
       - 'premium-ux.css'
       - 'premium-ux.js'
+      - 'govtech-p0.css'
+      - 'govtech-p0.js'
 
 permissions:
   contents: read
@@ -29,7 +31,9 @@ jobs:
           for i in $(seq 1 40); do
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?qa=${GITHUB_SHA}-${i}" | grep -Fq "const VERSION='39'" && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.3 · board-ready mobile composition' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux5'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?qa=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?qa=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions' && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-3-govtech-p0'; then
               echo "Live Release 39 premium UX is ready."
               exit 0
             fi

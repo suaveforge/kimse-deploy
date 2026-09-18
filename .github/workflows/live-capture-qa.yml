@@ -14,6 +14,8 @@ on:
       - 'accessibility-enhancements.js'
       - 'premium-ux.css'
       - 'premium-ux.js'
+      - 'govtech-p0.css'
+      - 'govtech-p0.js'
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'assets/**'
@@ -45,13 +47,13 @@ jobs:
           const save=()=>fs.writeFileSync(path.join(OUT,'live-qa.json'),JSON.stringify(log,null,2));
           (async()=>{const browser=await chromium.launch({headless:true});try{
             const qa=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1}),p=await qa.newPage(),req=qa.request;
-            const names=['','app.js','service-worker.js','manifest.webmanifest','assets/icons/icon.svg','capture-polish.css','accessibility-enhancements.css','accessibility-enhancements.js','premium-ux.css','premium-ux.js'];
+            const names=['','app.js','service-worker.js','manifest.webmanifest','assets/icons/icon.svg','capture-polish.css','accessibility-enhancements.css','accessibility-enhancements.js','premium-ux.css','premium-ux.js','govtech-p0.css','govtech-p0.js'];
             const rs=await Promise.all(names.map(x=>req.get(BASE+x,{timeout:20000})));rs.forEach((r,i)=>check(r.ok(),'live-http-'+(names[i]||'root'),String(r.status())));
-            const [html,js,sw,manifest,icon,polish,a11yCss,a11yJs,premiumCss,premiumJs]=await Promise.all(rs.map(r=>r.text()));
+            const [html,js,sw,manifest,icon,polish,a11yCss,a11yJs,premiumCss,premiumJs,govCss,govJs]=await Promise.all(rs.map(r=>r.text()));
             check(!html.includes('localize-switcher')&&!html.includes('localizehub-runtime'),'main-app-localize-removed');
             check(!html.includes('\\\\n  <link')&&!html.includes('\\\\n  <script'),'product-shell-no-stray-newline');
             check(!js.includes('<localize-switcher'),'main-js-localize-removed');
-            check(sw.includes('release39-premium-ux5')&&sw.includes('capture-polish.css')&&sw.includes('accessibility-enhancements.css')&&sw.includes('accessibility-enhancements.js')&&sw.includes('premium-ux.css')&&sw.includes('premium-ux.js')&&!sw.includes('localizehub-runtime'),'release39-cache-live');
+            check(sw.includes('release39-3-govtech-p0')&&sw.includes('capture-polish.css')&&sw.includes('accessibility-enhancements.css')&&sw.includes('accessibility-enhancements.js')&&sw.includes('premium-ux.css')&&sw.includes('premium-ux.js')&&sw.includes('govtech-p0.css')&&sw.includes('govtech-p0.js')&&!sw.includes('localizehub-runtime'),'release39-cache-live');
             check(manifest.includes('icon.svg')&&manifest.includes('icon-maskable-source.svg'),'manifest-icons-live');
             check(icon.includes('#FF6E68')&&icon.includes('#0F4553')&&icon.includes('M303 659'),'redesigned-icon-live');
             check(polish.includes('.screen-brain-trends')&&polish.includes('top:12px'),'caption-safe-zone-live');
@@ -59,6 +61,8 @@ jobs:
             check(a11yJs.includes('ALWAYS_ON_KEYS')&&a11yJs.includes('monitoring-a11y-summary')&&a11yJs.includes('brain-trends-a11y-summary')&&a11yJs.includes("svg.setAttribute('aria-describedby',summary.id)"),'a11y-js-live');
             check(premiumCss.includes('Release 39 · premium universal UX')&&premiumCss.includes('.monitoring-journey')&&premiumCss.includes('.brain-map-stage'),'premium-ux-css-live');
             check(premiumJs.includes("const VERSION='39'")&&premiumJs.includes('monitoring-journey')&&premiumJs.includes('trend-chart-legend'),'premium-ux-live');
+            check(govCss.includes('GovTech P0')&&govCss.includes('.gov-public-actions'),'govtech-p0-css-live');
+            check(govJs.includes('치매상담콜센터')&&govJs.includes('facility_list.aspx'),'govtech-p0-live');
             await p.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
             await p.goto(BASE+'#/consent',{waitUntil:'domcontentloaded',timeout:30000});
             await p.evaluate(()=>localStorage.setItem('kimse.p0.state',JSON.stringify({version:9,account:{name:'실화면 QA',email:'qa@example.com'},intent:'self',self:true,care:true,mode:'self',caregivers:[{name:'가족 보호자',relation:'자녀'}],onboarding:{profileDone:true,initialDone:true,consentDone:false,completed:false},initial:{step:5,answers:{attention:'10',language:'과일',spatial:'no',daily:'no'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:true},baseline:{startedAt:null},permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},monitoring:{pending:[],summary:{status:'READY',baseline_days:14,baseline_target_days:14,level:'ATTENTION',changes:[{metric:'sleep_minutes',baseline:425,recent:336,relative_change:-0.2094,changed:true},{metric:'steps',baseline:5120,recent:3460,relative_change:-0.3242,changed:true},{metric:'voice_pause_ratio',baseline:0.18,recent:0.23,relative_change:0.2778,changed:true}],metrics:[],interpretation:'현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.'},alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},brainHistory:[{at:'2026-09-15T09:00:00+09:00',memory:86,executive:84,language:87,spatial:85,daily:88},{at:'2026-09-16T09:00:00+09:00',memory:84,executive:82,language:84,spatial:84,daily:87},{at:'2026-09-17T09:00:00+09:00',memory:80,executive:79,language:80,spatial:83,daily:85,flag:'attention',flagLabel:'수면 감소 · 활동 감소 · 말할 때 멈춤 증가'}],a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:true,captions:true,largeTouchTargets:false,colorIcons:true,screenReader:true,reduceMotion:false}})));
