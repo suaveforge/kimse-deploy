@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   capture-print:
@@ -171,3 +172,21 @@ jobs:
           name: kimse-ud-submission-capture-print
           path: submission-capture-print
           retention-days: 14
+
+      - name: Report print capture run to Issue 18
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BODY=$(cat <<EOF
+          ## 인쇄용 @3x 실서비스 캡처 완료
+          - workflow run ID: ${{ github.run_id }}
+          - workflow head SHA: ${{ github.sha }}
+          - captured product baseline: `3f08e745f1abe61f30c67d6a2d5c1dfb5d8859d2`
+          - artifact: `kimse-ud-submission-capture-print`
+          - CSS viewport: `430×932`
+          - deviceScaleFactor: `3`
+          - PNG dimensions: `1290×2796` × 6
+          - 제품 UI/데이터/레이아웃 변경 없음. 실서비스 출력 해상도만 상향.
+          EOF
+          )
+          gh api repos/suaveforge/kimse/issues/18/comments -f body="$BODY"
