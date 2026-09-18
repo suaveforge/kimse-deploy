@@ -482,7 +482,7 @@ async function demoOnboardingSteps(alive){
   save();
 
   await demoGo('consent',750,{title:'앱 설치 후 약관 동의',position:'top',hold:520});if(!alive())return false;
-  for(const selector of ['#consent-location','#consent-motion','#consent-usage']){
+  for(const selector of ['#consent-location','#consent-motion','#consent-usage','#consent-caregiver']){
     if(!await demoTap(selector,210))return false;
   }
   if(!await demoTap('#consent-form button[type="submit"]',520))return false;
