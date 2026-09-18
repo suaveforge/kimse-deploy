@@ -1,12 +1,16 @@
-const CACHE = 'kimse-pwa-20260918-release39-premium-ux5';
+const CACHE = 'kimse-pwa-20260918-release39-3-govtech-p0';
 const CORE = [
   './',
   './index.html',
   './app.css',
   './capture-polish.css',
-  './accessibility-enhancements.css',\n  './premium-ux.css',
+  './accessibility-enhancements.css',
+  './premium-ux.css',
+  './govtech-p0.css',
   './app.js',
-  './accessibility-enhancements.js',\n  './premium-ux.js',
+  './accessibility-enhancements.js',
+  './premium-ux.js',
+  './govtech-p0.js',
   './manifest.webmanifest',
   './assets/icons/icon.svg',
   './assets/icons/icon-maskable-source.svg'
