@@ -104,7 +104,10 @@ function enhanceDemoCapture(screen){
 }
 function updateRelease(screen){
   const foot=screen.querySelector('.app-footer');
-  if(foot){const lines=clean(foot.textContent).replace(/^Updated\s+\S+\s+·\s+Release\s+\d+\s*/,'');const html=RELEASE_LABEL+'<br>'+lines;if(foot.innerHTML!==html)foot.innerHTML=html}
+  if(!foot)return;
+  const disclaimer='의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.';
+  const html=RELEASE_LABEL+'<br>'+disclaimer;
+  if(foot.innerHTML!==html)foot.innerHTML=html;
 }
 function enhance(){
   applyPreferenceClasses();

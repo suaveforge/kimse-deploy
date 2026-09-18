@@ -89,6 +89,8 @@ jobs:
                 check(await p.locator('input[data-a11y="largeText"],input[data-a11y="highContrast"],input[data-a11y="largeTouchTargets"],input[data-a11y="reduceMotion"]').count()===4,'real-a11y-controls');
                 check(await p.locator('input[data-a11y="captions"],input[data-a11y="colorIcons"],input[data-a11y="screenReader"]').count()===0,'no-fake-a11y-controls');
                 check(await p.locator('.a11y-setting-row label').count()>=6,'a11y-setting-names');
+                const footer=await p.locator('.app-footer').innerText();
+                check((footer.match(/Release 39\.3/g)||[]).length===1&&!footer.includes('.3.3'),'footer-release-normalized',footer);
               }
               if(route==='monitoring-status'){
                 await p.waitForSelector('#monitoring-a11y-summary');check(await p.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-labels');
