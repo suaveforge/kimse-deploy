@@ -103,21 +103,20 @@ jobs:
               if(route==='accessibility'){
                 for(const k of ['largeText','highContrast','largeTouchTargets','reduceMotion'])check(await page.locator(`input[data-a11y="${k}"]`).count()===1,'settings-'+k);
                 await page.evaluate(()=>{
-                  const basics=document.querySelector('.accessibility-basics');
-                  const header=document.querySelector('.app-header');
-                  if(!basics)return;
-                  const bottom=basics.getBoundingClientRect().bottom+window.scrollY;
-                  window.scrollTo(0,Math.max(0,bottom-innerHeight+14));
+                  const card=document.querySelector('.accessibility-control-card');
+                  if(!card)return;
+                  const bottom=card.getBoundingClientRect().bottom+window.scrollY;
+                  window.scrollTo(0,Math.max(0,bottom-innerHeight+18));
                 });
                 await page.waitForTimeout(160);
                 check(await page.evaluate(()=>{
                   const card=document.querySelector('.accessibility-control-card');
-                  const basics=document.querySelector('.accessibility-basics');
+                  const hero=document.querySelector('.accessibility-hero');
                   const header=document.querySelector('.app-header');
-                  if(!card||!basics)return false;
+                  if(!card||!hero)return false;
                   const topLimit=(header?.getBoundingClientRect().height||0)+4;
-                  const a=card.getBoundingClientRect(),b=basics.getBoundingClientRect();
-                  return a.top>=topLimit-1&&b.bottom<=innerHeight+1;
+                  const a=card.getBoundingClientRect(),h=hero.getBoundingClientRect();
+                  return a.top>=topLimit-1&&a.bottom<=innerHeight+1&&h.bottom>topLimit;
                 }),'accessibility-capture-framing-'+file);
               } else if(route==='monitoring-status'){
                 await page.waitForSelector('.monitoring-journey',{timeout:15000});
