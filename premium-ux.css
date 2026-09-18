@@ -486,3 +486,21 @@ body{background:linear-gradient(180deg,#fffdfa 0%,var(--kimse-ivory) 52%,#f7f4ed
     padding:5px 0!important;
   }
 }
+
+
+/* Final freeze · minimum readable secondary type on board-ready mobile screens.
+   Preserve the same product hierarchy without using tiny helper text to make the composition fit. */
+@media(min-width:361px) and (max-width:520px){
+  .screen-monitoring-status .result-change-label strong{font-size:13px!important}
+  .screen-monitoring-status .result-change small{font-size:12px!important;line-height:1.42!important}
+  .screen-monitoring-status .monitoring-level-top>small{font-size:12px!important}
+  .screen-monitoring-status .monitoring-level-badge>strong{font-size:12px!important}
+  .screen-monitoring-status .monitoring-level-note{font-size:13px!important;line-height:1.42!important}
+  .screen-monitoring-status .status-action>span small{display:none!important}
+  .screen-monitoring-status .status-action>span strong{font-size:14px!important;line-height:1.3!important}
+  .screen-monitoring-status .monitoring-detail-link{font-size:13px!important}
+  .screen-monitoring-status .screen-footnote{font-size:12px!important;line-height:1.4!important}
+  .screen-brain-trends .trend-domain-tabs button{font-size:13px!important}
+  .screen-brain-map .brain-focus-summary p{font-size:13px!important;line-height:1.42!important}
+  .screen-brain-map .screen-footnote{font-size:12.5px!important;line-height:1.42!important}
+}

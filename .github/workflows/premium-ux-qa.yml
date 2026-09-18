@@ -96,6 +96,8 @@ jobs:
                 await p.waitForSelector('#monitoring-a11y-summary');check(await p.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-labels');
                 check(await p.locator('.monitoring-level-card[aria-describedby="monitoring-a11y-summary"]').count()===1,'monitoring-summary-link');
                 const txt=await p.locator('.monitoring-journey').innerText();for(const t of ['14일의 평소','오늘의 변화','변화의 의미','다음 행동'])check(txt.includes(t),'monitoring-story-'+t);
+                const minType=await p.evaluate(()=>Math.min(...[...document.querySelectorAll('.result-change small,.monitoring-level-note,.monitoring-level-top>small,.monitoring-level-badge>strong,.monitoring-detail-link,.screen-footnote')].filter(el=>getComputedStyle(el).display!=='none').map(el=>parseFloat(getComputedStyle(el).fontSize))));
+                check(minType>=12,'mobile-readable-secondary-type',String(minType));
               }
               if(route==='brain-trends'){
                 await p.waitForSelector('#brain-trends-a11y-summary');check(await p.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()===1,'trend-summary-link');

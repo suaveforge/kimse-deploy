@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260918-release39-3-govtech-p0-final9';
+const CACHE = 'kimse-pwa-20260918-release39-3-govtech-p0-final10';
 const CORE = [
   './',
   './index.html',
