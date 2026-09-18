@@ -29,7 +29,7 @@ jobs:
           for i in $(seq 1 40); do
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?qa=${GITHUB_SHA}-${i}" | grep -Fq "const VERSION='39'" && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39 · premium universal UX' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux2'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux3'; then
               echo "Live Release 39 premium UX is ready."
               exit 0
             fi
@@ -72,8 +72,10 @@ jobs:
             await ctx.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
             const p=await ctx.newPage();await p.goto(BASE+'#/'+route,{waitUntil:'domcontentloaded',timeout:30000});await p.waitForSelector('#main',{timeout:15000});await p.waitForSelector(marker[route],{timeout:15000});await p.waitForTimeout(320);return {ctx,p};
           }
-          async function shot(p,name){await p.evaluate(()=>window.scrollTo(0,0));await p.screenshot({path:path.join(OUT,'screens',name),type:'png',fullPage:false,animations:'disabled'});log.screens.push(name)}
+          async function shot(p,name){await p.evaluate(()=>{window.scrollTo(0,0);document.activeElement?.blur?.()});await p.waitForTimeout(80);await p.screenshot({path:path.join(OUT,'screens',name),type:'png',fullPage:false,animations:'disabled'});log.screens.push(name)}
           (async()=>{const browser=await chromium.launch({headless:true});try{
+            const shell=await (await (await browser.newContext()).request.get(BASE,{timeout:20000})).text();
+            check(!shell.includes('\\n  <link')&&!shell.includes('\\n  <script'),'product-shell-no-stray-newline');
             for(const route of ['accessibility','monitoring-status','brain-trends','brain-map']){
               const {ctx,p}=await open(browser,route);
               check(await p.evaluate(()=>document.querySelector('#main')?.dataset.premiumUx==='39'),'premium-layer-'+route);

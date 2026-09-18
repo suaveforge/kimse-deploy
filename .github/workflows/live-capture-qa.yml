@@ -49,8 +49,9 @@ jobs:
             const rs=await Promise.all(names.map(x=>req.get(BASE+x,{timeout:20000})));rs.forEach((r,i)=>check(r.ok(),'live-http-'+(names[i]||'root'),String(r.status())));
             const [html,js,sw,manifest,icon,polish,a11yCss,a11yJs,premiumCss,premiumJs]=await Promise.all(rs.map(r=>r.text()));
             check(!html.includes('localize-switcher')&&!html.includes('localizehub-runtime'),'main-app-localize-removed');
+            check(!html.includes('\\\\n  <link')&&!html.includes('\\\\n  <script'),'product-shell-no-stray-newline');
             check(!js.includes('<localize-switcher'),'main-js-localize-removed');
-            check(sw.includes('release39-premium-ux2')&&sw.includes('capture-polish.css')&&sw.includes('accessibility-enhancements.css')&&sw.includes('accessibility-enhancements.js')&&sw.includes('premium-ux.css')&&sw.includes('premium-ux.js')&&!sw.includes('localizehub-runtime'),'release39-cache-live');
+            check(sw.includes('release39-premium-ux3')&&sw.includes('capture-polish.css')&&sw.includes('accessibility-enhancements.css')&&sw.includes('accessibility-enhancements.js')&&sw.includes('premium-ux.css')&&sw.includes('premium-ux.js')&&!sw.includes('localizehub-runtime'),'release39-cache-live');
             check(manifest.includes('icon.svg')&&manifest.includes('icon-maskable-source.svg'),'manifest-icons-live');
             check(icon.includes('#FF6E68')&&icon.includes('#0F4553')&&icon.includes('M303 659'),'redesigned-icon-live');
             check(polish.includes('.screen-brain-trends')&&polish.includes('top:12px'),'caption-safe-zone-live');

@@ -27,7 +27,7 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'brain-map-a11y-summary' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?ud=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.2 · mobile single-frame monitoring composition' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'deltaValue' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux2'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'release39-premium-ux3'; then
               echo "Live Release 39 submission assets are ready."
               exit 0
             fi
@@ -81,7 +81,18 @@ jobs:
               await page.goto(BASE+'#/'+route,{waitUntil:'domcontentloaded',timeout:30000});
               await page.waitForSelector(routeSpec[route].wait,{timeout:15000});
               await page.evaluate(async()=>{if(document.fonts?.ready)await document.fonts.ready});
-              await page.waitForTimeout(250);
+              await page.waitForFunction(()=>{
+                const main=document.querySelector('#main');
+                return main?.dataset?.premiumUx==='39';
+              },{timeout:15000});
+              await page.waitForTimeout(700);
+              await page.waitForFunction(()=>{
+                const main=document.querySelector('#main');
+                if(main?.dataset?.premiumUx!=='39')return false;
+                const r=location.hash.replace('#/','');
+                const marker=r==='monitoring-status'?'.monitoring-journey':r==='brain-trends'?'.trend-chart-legend':r==='brain-map'?'.brain-map-stage':r==='accessibility'?'.accessibility-hero':null;
+                return !marker||!!document.querySelector(marker);
+              },{timeout:15000});
               check(await page.locator('localize-switcher').count()===0,'no-localize-'+file);
               const bodyText=await page.locator('body').innerText();
               check(!bodyText.includes('@')&&!/010[-\s]?\d{3,4}[-\s]?\d{4}/.test(bodyText),'no-personal-data-'+file);
@@ -108,7 +119,11 @@ jobs:
               }
               if(a11y.highContrast)check(await page.evaluate(()=>document.documentElement.classList.contains('high-contrast')),'high-contrast-applied-'+file);
               if(a11y.largeText)check(await page.evaluate(()=>document.documentElement.classList.contains('large-text')),'large-text-applied-'+file);
-              await page.waitForTimeout(150);
+              await page.waitForTimeout(350);
+              check(await page.evaluate(()=>{
+                const main=document.querySelector('#main');
+                return main?.dataset?.premiumUx==='39';
+              }),'premium-stable-'+file);
               await page.screenshot({path:path.join(OUT,file),type:'png',fullPage:false,animations:'disabled'});
               const size=await page.evaluate(()=>({w:innerWidth,h:innerHeight,route:location.hash}));
               check(size.w===430&&size.h===932,'viewport-'+file,JSON.stringify(size));
