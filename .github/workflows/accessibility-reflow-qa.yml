@@ -10,6 +10,8 @@ on:
       - 'app.css'
       - 'accessibility-enhancements.css'
       - 'accessibility-enhancements.js'
+      - 'premium-ux.css'
+      - 'premium-ux.js'
       - 'service-worker.js'
 
 permissions:
@@ -26,6 +28,7 @@ jobs:
           for i in $(seq 1 30); do
             js_ok=0
             css_ok=0
+            premium_ok=0
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'aria-label*="인지 기능 연관 지도"'; then
               js_ok=1
             fi
@@ -33,8 +36,12 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.css?qa=${GITHUB_SHA}-${i}" | grep -Fq '.app-footer{color:var(--kimse-muted)}'; then
               css_ok=1
             fi
-            if [ "$js_ok" = "1" ] && [ "$css_ok" = "1" ]; then
-              echo "Live accessibility assets and contrast fixes are ready."
+            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?qa=${GITHUB_SHA}-${i}" | grep -Fq "const VERSION='39'" && \
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39 · premium universal UX'; then
+              premium_ok=1
+            fi
+            if [ "$js_ok" = "1" ] && [ "$css_ok" = "1" ] && [ "$premium_ok" = "1" ]; then
+              echo "Live accessibility and premium UX assets are ready."
               exit 0
             fi
             echo "Waiting for GitHub Pages propagation ($i/30)..."

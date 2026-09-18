@@ -6,6 +6,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/ud-submission-capture.yml'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'premium-ux.css'
+      - 'premium-ux.js'
 
 permissions:
   contents: read
@@ -22,6 +26,8 @@ jobs:
           curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.css?ud=1' | grep -Fq ':root{--kimse-primary:#12735e}'
           curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.css?ud=2' | grep -Fq '.app-footer{color:var(--kimse-muted)}'
           curl -fsSL --max-time 20 'https://kimse.suaveforge.com/accessibility-enhancements.js?ud=3' | grep -Fq 'brain-map-a11y-summary'
+          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/premium-ux.css?ud=4' | grep -Fq 'Release 39 · premium universal UX'
+          curl -fsSL --max-time 20 'https://kimse.suaveforge.com/premium-ux.js?ud=5' | grep -Fq "const VERSION='39'"
           echo 'PASS live accessibility assets'
       - name: Install Playwright Chromium
         run: |
@@ -76,21 +82,18 @@ jobs:
                 for(const k of ['largeText','highContrast','largeTouchTargets','reduceMotion'])check(await page.locator(`input[data-a11y="${k}"]`).count()===1,'settings-'+k);
                 await page.evaluate(()=>window.scrollTo(0,0));
               } else if(route==='monitoring-status'){
+                await page.waitForSelector('.monitoring-journey',{timeout:15000});
                 check(await page.locator('#monitoring-a11y-summary').count()===1,'monitoring-semantic-'+file);
                 check(await page.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-'+file);
-                const y=await page.evaluate(()=>{
-                  const level=document.querySelector('.monitoring-level-card');
-                  if(!level)return 0;
-                  const r=level.getBoundingClientRect();
-                  return Math.max(0,window.scrollY+r.top-82);
-                });
-                await page.evaluate(y=>window.scrollTo(0,y),y);
+                await page.evaluate(()=>window.scrollTo(0,0));
               } else if(route==='brain-trends'){
+                await page.waitForSelector('.trend-chart-legend',{timeout:15000});
                 check(await page.locator('#brain-trends-a11y-summary').count()===1,'trends-semantic');
                 check(await page.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()>=1,'trends-linked');
                 const y=await page.evaluate(()=>{const el=document.querySelector('.overall-trend');if(!el)return 0;const r=el.getBoundingClientRect();return Math.max(0,window.scrollY+r.top-170)});
                 await page.evaluate(y=>window.scrollTo(0,y),y);
               } else if(route==='brain-map'){
+                await page.waitForSelector('.brain-map-stage',{timeout:15000});
                 check(await page.locator('#brain-map-a11y-summary').count()===1,'map-semantic');
                 check(await page.locator('.brain-visual[aria-describedby="brain-map-a11y-summary"]').count()>=1,'map-linked');
                 const y=await page.evaluate(()=>{const el=document.querySelector('.brain-visual');if(!el)return 0;const r=el.getBoundingClientRect();return Math.max(0,window.scrollY+r.top-185)});
