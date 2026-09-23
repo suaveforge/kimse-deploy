@@ -471,7 +471,7 @@ async function syncMonitoring(){
 function parseSleepMinutes(v){const s=String(v||'');let m=0;const h=s.match(/(\d+(?:\.\d+)?)\s*시간/),mm=s.match(/(\d+)\s*분/);if(h)m+=Number(h[1])*60;if(mm)m+=Number(mm[1]);if(!m&&/^\d+(?:\.\d+)?$/.test(s.trim()))m=Number(s)*60;return m>0?m:null}
 function parseSteps(v){const n=Number(String(v||'').replace(/[^\d.]/g,''));return Number.isFinite(n)&&n>0?n:null}
 function haversine(a,b){const R=6371000,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lon-a.lon)*p,x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-let runtimeLocationDay='',runtimeFirstLocation=null,runtimeLastLocation=null,locationWatchId=null,motionAccumMs=0,motionLastFlush=Date.now(),appSessionStarted=Date.now(),collectorsStarted=false,motionListenerAttached=false,gravityMagnitude=null,collectorFlushTimer=null,nativeStepCollectorStarted=false,nativeStepRemove=null;
+let runtimeLocationDay='',runtimeFirstLocation=null,runtimeLastLocation=null,locationWatchId=null,motionAccumMs=0,motionLastFlush=Date.now(),appSessionStarted=Date.now(),collectorsStarted=false,motionListenerAttached=false,gravityMagnitude=null,collectorFlushTimer=null,nativeStepCollectorStarted=false,nativeStepRemove=null,nativeStepLastQueuedAt=0,nativeStepLastQueuedValue=-1;
 function handleLocationPosition(pos){
   if(!monitoringEnabled()||!S.consents.location||document.hidden)return;
   const accuracy=Number(pos?.coords?.accuracy)||0;
@@ -543,12 +543,19 @@ function onDeviceMotion(e){
   if(dynamicMag>1.2)motionAccumMs+=interval;
   if(now-motionLastFlush>=60000)flushMotionActivity();
 }
+function queueNativeStepSnapshot(force=false){
+  const steps=Number(S.monitoring.liveSteps);if(!monitoringEnabled()||!Number.isFinite(steps))return;
+  const now=Date.now(),delta=nativeStepLastQueuedValue<0?Infinity:Math.abs(steps-nativeStepLastQueuedValue);
+  if(!force&&now-nativeStepLastQueuedAt<30000&&delta<20)return;
+  nativeStepLastQueuedAt=now;nativeStepLastQueuedValue=steps;
+  queueSignal('steps',steps,'count','native-pedometer',{provider:S.monitoring.liveStepProvider||'native-pedometer',realtime:true});
+}
 function acceptNativeSteps(payload){
   const steps=Math.max(0,Math.round(Number(payload?.steps)));
   if(!Number.isFinite(steps))return;
   const provider=String(payload?.provider||'native-pedometer');
-  S.monitoring.liveSteps=steps;S.monitoring.liveStepProvider=provider;S.monitoring.liveStepAt=payload?.observedAt||new Date().toISOString();
-  queueSignal('steps',steps,'count','native-pedometer',{provider,realtime:true});
+  S.monitoring.liveSteps=steps;S.monitoring.liveStepProvider=provider;S.monitoring.liveStepAt=payload?.observedAt||new Date().toISOString();save();
+  queueNativeStepSnapshot(false);
   if(['health','report','collection-status'].includes(route()))render();
 }
 async function collectNativeBridgeSignals(){
@@ -1277,11 +1284,11 @@ document.addEventListener('click',async e=>{if(e.target.id!=='partner-submit')re
 
 window.addEventListener('hashchange',render);window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');startPassiveCollectors();flushSignals();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
 document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)}else{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}}});
-window.addEventListener('pagehide',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
+window.addEventListener('pagehide',()=>{recordAppActive();flushMotionActivity();queueNativeStepSnapshot(true);stopLocationWatch();flushSignals(true)});
 window.addEventListener('pageshow',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});
-document.addEventListener('freeze',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
+document.addEventListener('freeze',()=>{recordAppActive();flushMotionActivity();queueNativeStepSnapshot(true);stopLocationWatch();flushSignals(true)});
 document.addEventListener('resume',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});
-window.addEventListener('beforeunload',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
+window.addEventListener('beforeunload',()=>{recordAppActive();flushMotionActivity();queueNativeStepSnapshot(true);stopLocationWatch();flushSignals(true)});
 async function bootstrap(){
   await loadEvidenceModel();
   if('serviceWorker'in navigator){try{await navigator.serviceWorker.register('./service-worker.js')}catch{}}
