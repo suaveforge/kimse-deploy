@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "2026-09-23.2",
+  "schemaVersion": "2026-09-23.3",
   "updated": "2026-09-23",
   "governance": {
     "principle": "근거 페이지를 단일 기준으로 사용하며 앱은 이 레지스트리의 활성 모델을 읽어 계산합니다.",
     "activeModelChanges": "새 논문·가이드라인·규제 이슈는 먼저 changeReview에 후보로 표시하고, 근거 검토 전 활성 팩터·가중치를 자동 변경하지 않습니다.",
-    "questionRule": "앱에서 사용자에게 묻는 조사·과제 항목은 이 레지스트리에 근거 역할과 출처가 등록되어야 합니다. 검증도구 원문을 그대로 쓰지 않은 KIMSE 자체 문항은 임상 점수로 환산하지 않고 개인 baseline 또는 맥락 정보로만 사용합니다.",
+    "questionRule": "앱에서 사용자에게 묻는 조사·과제 항목은 이 레지스트리에 근거 역할과 출처가 등록되어야 합니다. 검증도구 원문을 그대로 쓰지 않은 KIMSE 자체 문항은 임상 점수로 환산하지 않고 개인 baseline 또는 맥락 정보로만 사용합니다. 앱 코드와 레지스트리의 조사 컨트롤/과제 키 일치 여부를 CI에서 검사해 미등록 문항이 배포되지 않도록 합니다.",
     "customTaskRule": "KIMSE 자체 과제는 원 연구의 과제 패러다임·측정영역을 설계 근거로 사용할 수 있지만, 원 도구의 민감도·특이도·cutoff를 KIMSE 과제 성능으로 주장하지 않습니다."
   },
   "activeModel": {
@@ -490,7 +490,8 @@
         "evidence": "CAIDE Model 1",
         "source": "Kivipelto et al. 2006",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
-        "use": "CAIDE 연령 구간 입력"
+        "use": "CAIDE 연령 구간 입력",
+        "appControlId": "profile-birth"
       },
       {
         "id": "sex",
@@ -500,7 +501,8 @@
         "evidence": "CAIDE Model 1",
         "source": "Kivipelto et al. 2006",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
-        "use": "CAIDE 성별 입력"
+        "use": "CAIDE 성별 입력",
+        "appControlId": "profile-sex"
       },
       {
         "id": "education",
@@ -510,7 +512,8 @@
         "evidence": "CAIDE Model 1",
         "source": "Kivipelto et al. 2006",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
-        "use": "CAIDE 교육기간 구간 입력"
+        "use": "CAIDE 교육기간 구간 입력",
+        "appControlId": "profile-education"
       },
       {
         "id": "activity",
@@ -520,7 +523,8 @@
         "evidence": "CAIDE Model 1",
         "source": "Kivipelto et al. 2006 / FINGER CAIDE operationalization",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8277089/",
-        "use": "20–30분 이상, 숨참·땀을 동반하는 활동을 주 2회 이상이면 active"
+        "use": "20–30분 이상, 숨참·땀을 동반하는 활동을 주 2회 이상이면 active",
+        "appControlId": "profile-activity"
       },
       {
         "id": "living",
@@ -530,7 +534,8 @@
         "evidence": "ANU-ADRI social network/engagement",
         "source": "Anstey et al. 2014 validation",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
-        "use": "사회관계 5개 영역 중 living arrangements. 단독 ANU-ADRI 점수로 환산하지 않음"
+        "use": "사회관계 5개 영역 중 living arrangements. 단독 ANU-ADRI 점수로 환산하지 않음",
+        "appControlId": "profile-living"
       },
       {
         "id": "socialSupport",
@@ -540,7 +545,8 @@
         "evidence": "ANU-ADRI social network quality",
         "source": "ANU-ADRI validation / HUNT operationalization",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
-        "use": "사회망의 질 맥락. KIMSE 자체 축약문항이므로 원 점수로 환산하지 않음"
+        "use": "사회망의 질 맥락. KIMSE 자체 축약문항이므로 원 점수로 환산하지 않음",
+        "appControlId": "profile-social-support"
       },
       {
         "id": "socialActivity",
@@ -550,7 +556,8 @@
         "evidence": "ANU-ADRI social activities",
         "source": "ANU-ADRI validation",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
-        "use": "사회적 참여 맥락. 단독 위험점수로 사용하지 않음"
+        "use": "사회적 참여 맥락. 단독 위험점수로 사용하지 않음",
+        "appControlId": "profile-social-activity"
       },
       {
         "id": "sleepHours",
@@ -560,7 +567,8 @@
         "evidence": "Passive DHT",
         "source": "Matias et al. 2026 systematic review",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13324020/",
-        "use": "개인 수면 baseline. LIBRA2 수면장애 점수로 자동 환산하지 않음"
+        "use": "개인 수면 baseline. LIBRA2 수면장애 점수로 자동 환산하지 않음",
+        "appControlId": "profile-sleep"
       },
       {
         "id": "sleepDisturbance",
@@ -570,7 +578,8 @@
         "evidence": "LIBRA2 sleep disturbance",
         "source": "LIBRA2 / dementia risk-index operationalization",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12501341/",
-        "use": "잠들기 어려움·수면 유지 어려움·조기각성의 반복 빈도를 맥락으로 기록"
+        "use": "잠들기 어려움·수면 유지 어려움·조기각성의 반복 빈도를 맥락으로 기록",
+        "appControlId": "profile-sleep-disturbance"
       },
       {
         "id": "hearing",
@@ -580,7 +589,8 @@
         "evidence": "Lancet 2024 · LIBRA2",
         "source": "Livingston et al. 2024",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/39096926/",
-        "use": "청력저하 위험요인 맥락. 현재 KIMSE 축약 자가문항을 임상 청력검사로 간주하지 않음"
+        "use": "청력저하 위험요인 맥락. 현재 KIMSE 축약 자가문항을 임상 청력검사로 간주하지 않음",
+        "appControlId": "profile-hearing"
       }
     ]
   },
@@ -594,7 +604,9 @@
         "evidence": "MoCA-K의 지연회상 영역 + 일반 신경심리 기억 과제",
         "source": "Lee et al. 2008 Korean MoCA validation",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/18474719/",
-        "implementation": "KIMSE 자체 3단어 세트. 회상 개수만 원자료로 저장하며 MoCA 점수/cutoff로 환산하지 않음"
+        "implementation": "KIMSE 자체 3단어 세트. 회상 개수만 원자료로 저장하며 MoCA 점수/cutoff로 환산하지 않음",
+        "appControlId": "recall-input",
+        "storage": "initial.recall"
       },
       {
         "id": "serial_subtraction",
@@ -603,7 +615,9 @@
         "evidence": "Yamada et al. 2021 multimodal behavioral study",
         "source": "Yamada et al. 2021",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8609704/",
-        "implementation": "원 연구가 subtraction speech task를 사용한 과제 패러다임을 바탕으로 KIMSE 자체 문항 구성. 정답 여부·반응시간만 저장"
+        "implementation": "원 연구가 subtraction speech task를 사용한 과제 패러다임을 바탕으로 KIMSE 자체 문항 구성. 정답 여부·반응시간만 저장",
+        "answerKey": "subtraction",
+        "storage": "initial.answers.subtraction"
       },
       {
         "id": "functional_events",
@@ -612,7 +626,9 @@
         "evidence": "FAQ6 functional deficit domain",
         "source": "Devanand et al. 2017",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
-        "implementation": "FAQ6에서 예후와 연관된 기능영역을 바탕으로 한 KIMSE 자체 자가관찰 문항. FAQ6 점수로 부르지 않음"
+        "implementation": "FAQ6에서 예후와 연관된 기능영역을 바탕으로 한 KIMSE 자체 자가관찰 문항. FAQ6 점수로 부르지 않음",
+        "answerKey": "events",
+        "storage": "initial.answers.events"
       },
       {
         "id": "functional_finance",
@@ -621,7 +637,9 @@
         "evidence": "FAQ6 finances domains",
         "source": "Devanand et al. 2017",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
-        "implementation": "KIMSE 자체 자가관찰 문항. 가능하면 향후 보호자 informant 응답으로 보강"
+        "implementation": "KIMSE 자체 자가관찰 문항. 가능하면 향후 보호자 informant 응답으로 보강",
+        "answerKey": "finances",
+        "storage": "initial.answers.finances"
       },
       {
         "id": "functional_travel",
@@ -630,7 +648,9 @@
         "evidence": "FAQ6 travel domain",
         "source": "Devanand et al. 2017",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
-        "implementation": "KIMSE 자체 자가관찰 문항. 공간기억 검사 점수로 사용하지 않음"
+        "implementation": "KIMSE 자체 자가관찰 문항. 공간기억 검사 점수로 사용하지 않음",
+        "answerKey": "travel",
+        "storage": "initial.answers.travel"
       },
       {
         "id": "speech_spontaneous",
@@ -639,7 +659,12 @@
         "evidence": "Speech biomarkers / Yamada multimodal",
         "source": "Yamada et al. 2021; Heitz et al. 2026",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8609704/",
-        "implementation": "말의 pause·acoustic·linguistic feature를 개인 baseline으로 비교"
+        "implementation": "말의 pause·acoustic·linguistic feature를 개인 baseline으로 비교",
+        "voicePromptIndexes": [
+          0,
+          1
+        ],
+        "storage": "initial.voiceSamples"
       },
       {
         "id": "speech_semantic_fluency",
@@ -648,7 +673,11 @@
         "evidence": "semantic verbal fluency task",
         "source": "Yamada et al. 2021",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8609704/",
-        "implementation": "동물 이름 말하기. 원 연구의 분류 정확도를 KIMSE 성능으로 전용하지 않음"
+        "implementation": "동물 이름 말하기. 원 연구의 분류 정확도를 KIMSE 성능으로 전용하지 않음",
+        "voicePromptIndexes": [
+          2
+        ],
+        "storage": "initial.voiceSamples"
       }
     ]
   }
