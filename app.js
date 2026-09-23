@@ -459,7 +459,10 @@ async function syncMonitoringPreferences(){
 function handleMonitoringAlert(alert){
   if(!alert||!alert.id||S.monitoring.alerts.some(x=>x.id===alert.id))return;
   S.monitoring.alerts.unshift(alert);S.monitoring.alerts=S.monitoring.alerts.slice(0,30);save();
-  if(S.consents.notifications&&'Notification'in window&&Notification.permission==='granted'){try{new Notification('낌새 · 최근 변화가 보여요',{body:alert.summary||'평소와 다른 변화가 함께 관찰되었습니다.',tag:'kimse-change-'+alert.id})}catch{}}
+  if(S.consents.notifications&&'Notification'in window&&Notification.permission==='granted'){
+    const fallback=()=>{try{new Notification('낌새 · 최근 변화가 보여요',{body:alert.summary||'평소와 다른 변화가 함께 관찰되었습니다.',tag:'kimse-change-'+alert.id})}catch{}};
+    if(window.KIMSE_PUSH?.status)window.KIMSE_PUSH.status().then(x=>{if(!x?.active)fallback()}).catch(fallback);else fallback();
+  }
 }
 async function flushSignals(keepalive=false){
   if(!monitoringEnabled()||!navigator.onLine||!S.monitoring.pending.length)return false;
