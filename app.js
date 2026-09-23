@@ -555,7 +555,9 @@ function onDeviceMotion(e){
   if(now-motionLastFlush>=60000)flushMotionActivity();
 }
 function queueNativeStepSnapshot(force=false){
-  const steps=Number(S.monitoring.liveSteps);if(!monitoringEnabled()||!Number.isFinite(steps))return;
+  const raw=S.monitoring.liveSteps;
+  if(!monitoringEnabled()||!S.consents.motion||!window.KIMSE_NATIVE?.isNative?.()||raw===null||raw===undefined||raw==='')return;
+  const steps=Number(raw);if(!Number.isFinite(steps))return;
   const now=Date.now(),delta=nativeStepLastQueuedValue<0?Infinity:Math.abs(steps-nativeStepLastQueuedValue);
   if(!force&&now-nativeStepLastQueuedAt<30000&&delta<20)return;
   nativeStepLastQueuedAt=now;nativeStepLastQueuedValue=steps;
