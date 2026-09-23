@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260923-release40-live-sensors-4';
+const CACHE = 'kimse-pwa-20260923-release41-authhub-1';
 const CORE = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const CORE = [
   './premium-ux.css',
   './govtech-p0.css',
   './app.js',
+  './authhub.js',
   './accessibility-enhancements.js',
   './premium-ux.js',
   './govtech-p0.js',
