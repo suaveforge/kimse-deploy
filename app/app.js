@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),A=$('#app'),N=$('#announcer'),O=$('#offline-banner'),K='kimse.p0.state',MODEL_CACHE='kimse.evidence.model.cache';
-const STATE_VERSION=9;
-const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mode:'self',caregivers:[],alertRecipients:[],plan:'FREE',q:0,answers:[],med:false,mood:'',
+const STATE_VERSION=10;
+const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mode:'self',caregivers:[],caregiverInvites:[],callSchedules:[],alertRecipients:[],plan:'FREE',q:0,answers:[],med:false,mood:'',
   medicines:[],
   health:{sleep:'',steps:'',pressure:'',memo:''},
   schedule:[],
@@ -12,7 +12,8 @@ const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mo
   baseline:{startedAt:null},
   permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
   remote:{accountId:'',subjectId:'',token:''},
-  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false},
+  auth:{lastError:'',pending:false,authhubUserId:''},
+  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},daily:{date:'',movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0,locationInitialized:false,motionInitialized:false}},
   brainView:'side',brainRange:'week',brainFocus:'memory',brainTrendDomain:'overall',brainHistory:[],
   selectedTraining:'memory',trainingResult:null,selectedHealth:'sleep',marketCategory:'all',marketSearch:'',marketItem:null,marketFavorites:[],partnerStatus:null,
   a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,captions:true,largeTouchTargets:true,colorIcons:true,screenReader:true,reduceMotion:false}};
@@ -28,10 +29,20 @@ if((Number(stored.version)||0)<STATE_VERSION){
   }
   if(Array.isArray(S.schedule))S.schedule=S.schedule.filter(x=>!['s1','s2'].includes(x.id));
   if(S.mood==='좋아요')S.mood='';
+  if(S.monitoring&&typeof S.monitoring==='object'){
+    if(Array.isArray(S.monitoring.pending))S.monitoring.pending=S.monitoring.pending.filter(x=>x?.metric!=='foreground_steps_estimate');
+    if(S.monitoring.lastObserved&&typeof S.monitoring.lastObserved==='object'){
+      delete S.monitoring.lastObserved.foreground_steps_estimate;
+      delete S.monitoring.lastObserved.foreground_steps;
+    }
+    if(S.monitoring.daily&&typeof S.monitoring.daily==='object')delete S.monitoring.daily.foregroundSteps;
+  }
   S.version=STATE_VERSION;
   localStorage.setItem(K,JSON.stringify(S));
 }
 S.a11y=Object.assign({},D.a11y,stored.a11y||{});
+if(!Array.isArray(S.caregiverInvites))S.caregiverInvites=[];
+if(!Array.isArray(S.callSchedules))S.callSchedules=[];
 if(!Array.isArray(S.medicines))S.medicines=structuredClone(D.medicines);
 if(!S.health||typeof S.health!=='object')S.health=structuredClone(D.health);
 if(!Array.isArray(S.schedule))S.schedule=structuredClone(D.schedule);
@@ -44,7 +55,8 @@ S.consents=Object.assign({},D.consents,S.consents||{});
 S.baseline=Object.assign({},D.baseline,S.baseline||{});
 S.permissions=Object.assign({},D.permissions,S.permissions||{});
 S.remote=Object.assign({},D.remote,S.remote||{});
-S.monitoring=Object.assign({},D.monitoring,S.monitoring||{});if(!Array.isArray(S.monitoring.pending))S.monitoring.pending=[];if(!Array.isArray(S.monitoring.alerts))S.monitoring.alerts=[];
+S.auth=Object.assign({},D.auth,S.auth||{});
+S.monitoring=Object.assign({},D.monitoring,S.monitoring||{});if(!Array.isArray(S.monitoring.pending))S.monitoring.pending=[];if(!Array.isArray(S.monitoring.alerts))S.monitoring.alerts=[];S.monitoring.lastObserved=Object.assign({},D.monitoring.lastObserved,S.monitoring.lastObserved||{});S.monitoring.daily=Object.assign({},D.monitoring.daily,S.monitoring.daily||{});
 if(!Array.isArray(S.initial.responseTimes))S.initial.responseTimes=[];
 if(!Array.isArray(S.brainHistory))S.brainHistory=[];
 if(!['top','side'].includes(S.brainView))S.brainView='side';
@@ -75,6 +87,52 @@ async function loadEvidenceModel(){
 }
 const assessmentScore=()=>Q.reduce((sum,q,i)=>{const o=q.options[S.answers[i]];return sum+(o?Number(o.points)||0:0)},0);
 const API='https://api-kimse.suaveforge.com';
+const AUTH=()=>window.KIMSE_AUTH||null;
+function authNextRoute(){
+  if(!S.self&&!S.care&&!S.intent)return 'role';
+  if(S.care&&!S.self)return 'caregiver-home';
+  if(!S.onboarding.profileDone)return 'onboarding-profile';
+  if(!S.onboarding.initialDone)return 'initial-check';
+  if(!S.onboarding.completed)return 'consent';
+  return 'home';
+}
+async function createRemoteSelfSubjectIfNeeded(){
+  if(!S.remote.accountId||S.remote.subjectId||!S.self)return true;
+  const r=await fetch(API+'/api/v1/subjects/self',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account_id:S.remote.accountId})});
+  if(!r.ok)throw new Error('KIMSE_SUBJECT_LINK_'+r.status);
+  const subject=await r.json();
+  S.remote.subjectId=subject.care_subject_id;
+  save();
+  return true;
+}
+async function establishKimseAuth(authResult=null){
+  const auth=AUTH();
+  if(!auth)throw new Error('AUTHHUB_CLIENT_UNAVAILABLE');
+  const accessToken=authResult?.accessToken||await auth.accessToken();
+  if(!accessToken)throw new Error('AUTHHUB_LOGIN_REQUIRED');
+  const r=await fetch(API+'/api/v1/auth/authhub/session',{method:'POST',headers:{Authorization:'Bearer '+accessToken}});
+  if(!r.ok)throw new Error('KIMSE_AUTH_EXCHANGE_'+r.status);
+  const data=await r.json(),contexts=Array.isArray(data.contexts)?data.contexts:[];
+  const selfContext=contexts.find(x=>x.role==='SELF'),careContexts=contexts.filter(x=>x.role==='CAREGIVER');
+  S.account={name:data.display_name||authResult?.user?.displayName||authResult?.user?.email||'낌새 사용자',email:data.email||authResult?.user?.email||''};
+  S.auth.authhubUserId=data.authhub_user_id||authResult?.user?.id||'';
+  S.auth.lastError='';S.auth.pending=false;
+  S.self=!!selfContext||S.self||['self','both'].includes(S.intent);
+  S.care=careContexts.length>0||S.care||['care','both'].includes(S.intent);
+  S.mode=S.care&&!S.self?'care':'self';
+  S.remote={accountId:data.id,subjectId:selfContext?.care_subject_id||'',token:data.access_token||''};
+  save();
+  await createRemoteSelfSubjectIfNeeded();
+  return data;
+}
+async function mountAuthHubSocial(){
+  const root=$('#authhub-social');if(!root)return;
+  const auth=AUTH();if(!auth){root.innerHTML='<div class="notice danger"><strong>인증 모듈을 불러오지 못했습니다.</strong>잠시 뒤 다시 시도해주세요.</div>';return}
+  root.innerHTML='<div class="authhub-loading">로그인 수단을 불러오는 중…</div>';
+  try{await auth.mountSocial(root)}
+  catch(err){S.auth.lastError='AuthHub 연결을 확인해주세요.';save();root.innerHTML='<div class="notice danger"><strong>로그인 수단을 불러오지 못했습니다.</strong>네트워크 연결 또는 AuthHub 프로젝트 설정을 확인해주세요.</div>'}
+}
+
 let audioCtx=null,lastSpokenRoute='',lastFeedbackAt=0;
 const ensureAudio=()=>{if(!S.a11y.soundEffects)return null;try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch{return null}};
 const tone=(kind='tap')=>{const ctx=ensureAudio();if(!ctx)return;try{const play=()=>{const o=ctx.createOscillator(),g=ctx.createGain();const hz=kind==='success'?660:kind==='warning'?260:440;o.frequency.value=hz;g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.07,ctx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.12);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.13)};if(ctx.state==='suspended')ctx.resume().then(play).catch(()=>{});else play()}catch{}};
@@ -263,15 +321,20 @@ async function startVoiceRecording(index){
 }
 function stopVoiceRecording(){if(voiceRecorder&&voiceRecorder.state==='recording')voiceRecorder.stop()}
 async function requestSelectedPermissions(){
-  if(S.consents.location&&navigator.geolocation){
-    await new Promise(resolve=>navigator.geolocation.getCurrentPosition(()=>{S.permissions.location='granted';resolve()},()=>{S.permissions.location='denied';resolve()},{enableHighAccuracy:false,timeout:5000,maximumAge:300000}));
-  }
+  const waits=[];
   if(S.consents.motion&&typeof DeviceMotionEvent!=='undefined'){
-    try{if(typeof DeviceMotionEvent.requestPermission==='function')S.permissions.motion=(await DeviceMotionEvent.requestPermission())==='granted'?'granted':'denied';else S.permissions.motion='available'}catch{S.permissions.motion='denied'}
+    try{
+      if(typeof DeviceMotionEvent.requestPermission==='function')waits.push(DeviceMotionEvent.requestPermission().then(v=>{S.permissions.motion=v==='granted'?'granted':'denied'}).catch(()=>{S.permissions.motion='denied'}));
+      else S.permissions.motion='available';
+    }catch{S.permissions.motion='denied'}
   }
   if(S.consents.notifications&&'Notification'in window){
-    try{S.permissions.notifications=await Notification.requestPermission()}catch{S.permissions.notifications='denied'}
+    try{waits.push(Promise.resolve(Notification.requestPermission()).then(v=>{S.permissions.notifications=v}).catch(()=>{S.permissions.notifications='denied'}))}catch{S.permissions.notifications='denied'}
   }
+  if(S.consents.location&&navigator.geolocation){
+    waits.push(new Promise(resolve=>navigator.geolocation.getCurrentPosition(()=>{S.permissions.location='granted';resolve()},()=>{S.permissions.location='denied';resolve()},{enableHighAccuracy:false,timeout:5000,maximumAge:300000})));
+  }
+  await Promise.all(waits);save();
 }
 const SIGNAL_LABELS={sleep_minutes:'수면시간',steps:'걸음수',location_radius_m:'생활반경',movement_distance_m:'이동거리',outings:'외출',motion_active_minutes:'활동시간',app_active_minutes:'낌새 이용시간',call_count:'통화 횟수',call_duration_min:'통화시간',messaging_sessions:'메신저 활동',task_response_ms:'반응시간',voice_pause_ratio:'말할 때 멈춤'};
 const SIGNAL_ICONS={sleep_minutes:'moon',steps:'walk',location_radius_m:'map-pin',movement_distance_m:'route',outings:'door-exit',motion_active_minutes:'activity',app_active_minutes:'device-mobile',call_count:'phone',call_duration_min:'phone-call',messaging_sessions:'message-circle',task_response_ms:'clock',voice_pause_ratio:'message-dots'};
@@ -304,24 +367,74 @@ function formatMonitoringValue(metric,value){
 }
 const signalId=()=>window.crypto&&crypto.randomUUID?crypto.randomUUID():'sig-'+Date.now()+'-'+Math.random().toString(36).slice(2);
 const monitoringEnabled=()=>!!(S.onboarding.completed&&S.consents.service&&S.consents.privacy&&S.consents.health);
+const localDayKey=(d=new Date())=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+function ensureMonitoringDay(){
+  const today=localDayKey(),current=S.monitoring.daily||{};
+  if(current.date!==today)S.monitoring.daily={...D.monitoring.daily,date:today};
+  return S.monitoring.daily;
+}
+function noteObserved(metric,value,unit='',source='pwa'){
+  S.monitoring.lastObserved[metric]={value:Number(value),unit:unit||null,source,at:new Date().toISOString(),day:localDayKey()};
+}
 function queueSignal(metric,value,unit='',source='pwa',metadata={}){
   const n=Number(value);if(!monitoringEnabled()||!Number.isFinite(n))return;
+  noteObserved(metric,n,unit,source);
   S.monitoring.pending.push({client_event_id:signalId(),source,metric,value:n,unit:unit||null,metadata,observed_at:new Date().toISOString()});
   if(S.monitoring.pending.length>300)S.monitoring.pending=S.monitoring.pending.slice(-300);save();
 }
 async function ensureRemoteIdentity(){
-  if(S.remote.accountId&&S.remote.subjectId&&S.remote.token)return true;
-  if(!S.account||!navigator.onLine)return false;
-  try{
-    const a=await fetch(API+'/api/v1/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({display_name:S.account.name,email:S.account.email||null})});
-    if(!a.ok)throw new Error('signup '+a.status);const account=await a.json();
-    const s=await fetch(API+'/api/v1/subjects/self',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account_id:account.id})});
-    if(!s.ok)throw new Error('subject '+s.status);const subject=await s.json();
-    S.remote={accountId:account.id,subjectId:subject.care_subject_id,token:account.access_token||''};S.monitoring.lastSyncError='';save();
-    return !!S.remote.token;
-  }catch{S.monitoring.lastSyncError='서버 계정 연결 실패';save();return false}
+  if(S.remote.accountId&&S.remote.token){
+    try{await createRemoteSelfSubjectIfNeeded();return true}catch{S.monitoring.lastSyncError='사용자 기록 연결 실패';save();return false}
+  }
+  if(!AUTH()?.session?.())return false;
+  try{await establishKimseAuth();S.monitoring.lastSyncError='';save();return true}
+  catch{S.monitoring.lastSyncError='AuthHub 계정 연결 실패';save();return false}
 }
 const remoteHeaders=()=>({'X-KIMSE-ACCOUNT-TOKEN':S.remote.token,'Content-Type':'application/json'});
+async function syncFamilyData(renderAfter=true){
+  if(!S.remote.accountId||!S.remote.subjectId||!S.remote.token||!navigator.onLine)return false;
+  const base=API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId);
+  const query='?account_id='+encodeURIComponent(S.remote.accountId);
+  try{
+    const [cg,iv,sc]=await Promise.all([
+      fetch(base+'/caregivers'+query,{headers:remoteHeaders()}),
+      fetch(base+'/caregiver-invites'+query,{headers:remoteHeaders()}),
+      fetch(base+'/call-schedules'+query,{headers:remoteHeaders()})
+    ]);
+    if(!cg.ok||!iv.ok||!sc.ok)throw new Error('family sync');
+    const caregivers=(await cg.json()).map(x=>({accountId:x.account_id,name:x.display_name||x.email||'보호자',email:x.email||'',relation:x.relation_label||'가족'}));
+    const invites=(await iv.json()).map(x=>({id:x.id,email:x.invited_email,relation:x.relation_label||'가족',status:x.status,invitedAt:x.invited_at}));
+    const schedules=await sc.json();
+    const before=JSON.stringify([S.caregivers,S.caregiverInvites,S.callSchedules]);
+    const after=JSON.stringify([caregivers,invites,schedules]);
+    if(before!==after){
+      S.caregivers=caregivers;S.caregiverInvites=invites;S.callSchedules=schedules;save();
+      if(renderAfter&&['family','family-call'].includes(route()))render();
+    }
+    return true;
+  }catch{return false}
+}
+async function inviteCaregiver(email,relation){
+  if(!await ensureRemoteIdentity()||!S.remote.subjectId)throw new Error('SUBJECT_REQUIRED');
+  const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/caregiver-invites',{
+    method:'POST',headers:remoteHeaders(),body:JSON.stringify({account_id:S.remote.accountId,email,relation_label:relation||null})
+  });
+  if(!r.ok)throw new Error('INVITE_'+r.status);
+  await syncFamilyData(false);
+  return r.json();
+}
+async function saveFamilyCallSchedule(caregiverAccountId,intervalDays,firstDueAt=''){
+  if(!await ensureRemoteIdentity()||!S.remote.subjectId)throw new Error('SUBJECT_REQUIRED');
+  const body={account_id:S.remote.accountId,caregiver_account_id:caregiverAccountId,interval_days:Number(intervalDays)||14};
+  if(firstDueAt)body.first_due_at=new Date(firstDueAt).toISOString();
+  const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/call-schedules',{
+    method:'POST',headers:remoteHeaders(),body:JSON.stringify(body)
+  });
+  if(!r.ok)throw new Error('CALL_SCHEDULE_'+r.status);
+  await syncFamilyData(false);
+  return r.json();
+}
+
 async function startRemoteMonitoring(){
   if(!await ensureRemoteIdentity())return false;
   try{
@@ -335,12 +448,12 @@ function handleMonitoringAlert(alert){
   S.monitoring.alerts.unshift(alert);S.monitoring.alerts=S.monitoring.alerts.slice(0,30);save();
   if(S.consents.notifications&&'Notification'in window&&Notification.permission==='granted'){try{new Notification('낌새 · 최근 변화가 보여요',{body:alert.summary||'평소와 다른 변화가 함께 관찰되었습니다.',tag:'kimse-change-'+alert.id})}catch{}}
 }
-async function flushSignals(){
+async function flushSignals(keepalive=false){
   if(!monitoringEnabled()||!navigator.onLine||!S.monitoring.pending.length)return false;
   if(!await startRemoteMonitoring())return false;
   const batch=S.monitoring.pending.slice(0,100);
   try{
-    const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/signals/batch',{method:'POST',headers:remoteHeaders(),body:JSON.stringify({account_id:S.remote.accountId,events:batch})});
+    const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/signals/batch',{method:'POST',headers:remoteHeaders(),body:JSON.stringify({account_id:S.remote.accountId,events:batch}),keepalive:!!keepalive});
     if(!r.ok)throw new Error('signals '+r.status);const x=await r.json(),ids=new Set(x.client_event_ids||[]);
     S.monitoring.pending=S.monitoring.pending.filter(e=>!ids.has(e.client_event_id));S.monitoring.lastFlushAt=new Date().toISOString();S.monitoring.lastSyncError='';if(x.alert)handleMonitoringAlert(x.alert);save();return true;
   }catch{S.monitoring.lastSyncError='관찰 데이터 전송 대기 중';save();return false}
@@ -356,38 +469,104 @@ async function syncMonitoring(){
 function parseSleepMinutes(v){const s=String(v||'');let m=0;const h=s.match(/(\d+(?:\.\d+)?)\s*시간/),mm=s.match(/(\d+)\s*분/);if(h)m+=Number(h[1])*60;if(mm)m+=Number(mm[1]);if(!m&&/^\d+(?:\.\d+)?$/.test(s.trim()))m=Number(s)*60;return m>0?m:null}
 function parseSteps(v){const n=Number(String(v||'').replace(/[^\d.]/g,''));return Number.isFinite(n)&&n>0?n:null}
 function haversine(a,b){const R=6371000,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lon-a.lon)*p,x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-let runtimeLocationDay='',runtimeFirstLocation=null,runtimeLastLocation=null,locationTimer=null,motionAccumMs=0,motionLastFlush=Date.now(),appSessionStarted=Date.now(),collectorsStarted=false;
+let runtimeLocationDay='',runtimeFirstLocation=null,runtimeLastLocation=null,locationWatchId=null,motionAccumMs=0,motionLastFlush=Date.now(),appSessionStarted=Date.now(),collectorsStarted=false,motionListenerAttached=false,gravityMagnitude=null,collectorFlushTimer=null;
+function handleLocationPosition(pos){
+  if(!monitoringEnabled()||!S.consents.location||document.hidden)return;
+  const accuracy=Number(pos?.coords?.accuracy)||0;
+  if(!pos?.coords||!Number.isFinite(pos.coords.latitude)||!Number.isFinite(pos.coords.longitude)||accuracy>150)return;
+  const p={lat:Number(pos.coords.latitude),lon:Number(pos.coords.longitude),at:Date.now()},day=localDayKey(),daily=ensureMonitoringDay();
+  if(runtimeLocationDay!==day){runtimeLocationDay=day;runtimeFirstLocation=p;runtimeLastLocation=null}
+  if(!runtimeFirstLocation)runtimeFirstLocation=p;
+  if(!daily.locationInitialized){
+    daily.locationInitialized=true;
+    queueSignal('movement_distance_m',0,'m','geolocation',{foreground:true,daily_presence:true});
+    queueSignal('location_radius_m',0,'m','geolocation',{foreground:true,daily_presence:true});
+    queueSignal('outings',0,'count','geolocation',{foreground:true,daily_presence:true});
+  }
+  if(runtimeLastLocation){
+    const distance=haversine(runtimeLastLocation,p),elapsed=Math.max(1,(p.at-runtimeLastLocation.at)/1000),speed=distance/elapsed,jitterFloor=Math.max(5,Math.min(35,accuracy*.5));
+    if(Number.isFinite(distance)&&distance>=jitterFloor&&distance<50000&&speed<=55){
+      daily.movementDistanceM+=distance;
+      queueSignal('movement_distance_m',distance,'m','geolocation',{accuracy:Math.round(accuracy),foreground:true});
+    }
+  }
+  const radius=haversine(runtimeFirstLocation,p);
+  if(Number.isFinite(radius)&&radius>daily.locationRadiusM){
+    daily.locationRadiusM=radius;
+    queueSignal('location_radius_m',radius,'m','geolocation',{accuracy:Math.round(accuracy),foreground:true});
+  }
+  if(Number.isFinite(radius)&&radius>=200&&daily.outings<1){
+    daily.outings=1;
+    queueSignal('outings',1,'count','geolocation',{threshold_m:200,foreground:true});
+  }
+  runtimeLastLocation=p;S.permissions.location='granted';noteObserved('location_fix',1,'fix','geolocation');save();flushSignals();
+}
+function handleLocationError(err){
+  if(Number(err?.code)===1)S.permissions.location='denied';
+  S.monitoring.lastSyncError=Number(err?.code)===1?'위치 권한이 꺼져 있습니다.':'현재 위치 신호를 가져오지 못했습니다.';
+  save();
+}
+function startLocationWatch(){
+  if(!monitoringEnabled()||!S.consents.location||S.permissions.location!=='granted'||!navigator.geolocation||document.hidden)return;
+  if(locationWatchId!==null)return;
+  try{locationWatchId=navigator.geolocation.watchPosition(handleLocationPosition,handleLocationError,{enableHighAccuracy:false,timeout:15000,maximumAge:60000})}catch{handleLocationError({code:2})}
+}
+function stopLocationWatch(){
+  if(locationWatchId===null||!navigator.geolocation)return;
+  try{navigator.geolocation.clearWatch(locationWatchId)}catch{}
+  locationWatchId=null;
+}
 function collectLocationOnce(){
   if(!monitoringEnabled()||!S.consents.location||S.permissions.location!=='granted'||!navigator.geolocation)return;
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const p={lat:pos.coords.latitude,lon:pos.coords.longitude},day=new Date().toISOString().slice(0,10);
-    if(runtimeLocationDay!==day){runtimeLocationDay=day;runtimeFirstLocation=p;runtimeLastLocation=null}if(!runtimeFirstLocation)runtimeFirstLocation=p;
-    if(runtimeLastLocation){const d=haversine(runtimeLastLocation,p);if(Number.isFinite(d)&&d>=3&&d<50000)queueSignal('movement_distance_m',d,'m','geolocation',{accuracy:Math.round(pos.coords.accuracy||0)})}
-    const radius=haversine(runtimeFirstLocation,p);if(Number.isFinite(radius))queueSignal('location_radius_m',radius,'m','geolocation',{accuracy:Math.round(pos.coords.accuracy||0)});runtimeLastLocation=p;flushSignals();
-  },()=>{}, {enableHighAccuracy:false,timeout:8000,maximumAge:300000});
+  navigator.geolocation.getCurrentPosition(handleLocationPosition,handleLocationError,{enableHighAccuracy:false,timeout:8000,maximumAge:300000});
+}
+function flushMotionActivity(){
+  if(motionAccumMs>=1000){
+    const ms=motionAccumMs,daily=ensureMonitoringDay();motionAccumMs=0;daily.motionActiveMs+=ms;
+    queueSignal('motion_active_minutes',ms/60000,'min','devicemotion',{foreground:true});
+  }
+  motionLastFlush=Date.now();save();
 }
 function onDeviceMotion(e){
-  if(!monitoringEnabled()||!S.consents.motion)return;const a=e.acceleration;if(!a)return;const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),interval=Math.max(10,Math.min(1000,Number(e.interval)||100));if(mag>1.2)motionAccumMs+=interval;
-  if(Date.now()-motionLastFlush>300000){if(motionAccumMs>1000)queueSignal('motion_active_minutes',motionAccumMs/60000,'min','devicemotion');motionAccumMs=0;motionLastFlush=Date.now();flushSignals()}
-}
-async function analyzeVoiceBlob(blob){
-  try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;const ctx=new C(),buf=await ctx.decodeAudioData(await blob.arrayBuffer()),data=buf.getChannelData(0),sr=buf.sampleRate,frame=Math.max(1,Math.floor(sr*.02)),rms=[];
-    for(let i=0;i<data.length;i+=frame){let s=0,n=0;for(let j=i;j<Math.min(i+frame,data.length);j++){s+=data[j]*data[j];n++}rms.push(Math.sqrt(s/Math.max(1,n)))}
-    const sorted=rms.slice().sort((a,b)=>a-b),med=sorted[Math.floor(sorted.length/2)]||0,threshold=Math.max(.008,med*.35),pause=rms.filter(x=>x<threshold).length/Math.max(1,rms.length),mean=rms.reduce((a,b)=>a+b,0)/Math.max(1,rms.length);try{await ctx.close()}catch{}return {pauseRatio:Number(pause.toFixed(4)),rms:Number(mean.toFixed(5))};
-  }catch{return null}
-}
-function queueInitialSignals(){
-  if(S.monitoring.initialSignalsQueued)return;for(const ms of S.initial.responseTimes||[])if(Number.isFinite(Number(ms)))queueSignal('task_response_ms',Number(ms),'ms','initial-test');
-  for(const v of S.initial.voiceSamples||[]){if(!v)continue;queueSignal('voice_duration_s',Number(v.durationSec)||0,'s','initial-voice');if(v.features&&v.features.pauseRatio!=null)queueSignal('voice_pause_ratio',v.features.pauseRatio,'ratio','initial-voice');if(v.features&&v.features.rms!=null)queueSignal('voice_rms',v.features.rms,'rms','initial-voice')}S.monitoring.initialSignalsQueued=true;save();
+  if(!monitoringEnabled()||!S.consents.motion||document.hidden)return;
+  const linear=e.acceleration,withGravity=e.accelerationIncludingGravity;let dynamicMag=0;
+  if(linear&&[linear.x,linear.y,linear.z].some(v=>Number.isFinite(Number(v)))){
+    dynamicMag=Math.sqrt((Number(linear.x)||0)**2+(Number(linear.y)||0)**2+(Number(linear.z)||0)**2);
+  }else if(withGravity){
+    const raw=Math.sqrt((Number(withGravity.x)||0)**2+(Number(withGravity.y)||0)**2+(Number(withGravity.z)||0)**2);
+    gravityMagnitude=gravityMagnitude==null?raw:gravityMagnitude*.9+raw*.1;dynamicMag=Math.abs(raw-gravityMagnitude);
+  }else return;
+  const interval=Math.max(10,Math.min(1000,Number(e.interval)||100)),now=Date.now(),daily=ensureMonitoringDay();
+  if(!daily.motionInitialized){daily.motionInitialized=true;queueSignal('motion_active_minutes',0,'min','devicemotion',{foreground:true,daily_presence:true})}
+  if(dynamicMag>1.2)motionAccumMs+=interval;
+  if(now-motionLastFlush>=60000)flushMotionActivity();
 }
 async function collectNativeBridgeSignals(){
   if(!monitoringEnabled()||!window.KIMSE_NATIVE||typeof window.KIMSE_NATIVE.getDailySignals!=='function')return;try{const rows=await window.KIMSE_NATIVE.getDailySignals();if(Array.isArray(rows))for(const x of rows){if(x&&x.metric&&Number.isFinite(Number(x.value)))queueSignal(x.metric,Number(x.value),x.unit||'','native',{provider:x.provider||'device'})}flushSignals()}catch{}
 }
-function startPassiveCollectors(){
-  if(collectorsStarted||!monitoringEnabled())return;collectorsStarted=true;if(S.consents.usage){queueSignal('app_sessions',1,'count','pwa');appSessionStarted=Date.now()}
-  if(S.consents.location&&S.permissions.location==='granted'){collectLocationOnce();locationTimer=setInterval(collectLocationOnce,10*60*1000)}if(S.consents.motion&&['granted','available'].includes(S.permissions.motion))window.addEventListener('devicemotion',onDeviceMotion,{passive:true});collectNativeBridgeSignals();setTimeout(flushSignals,500);
+function configureMotionCollector(){
+  const should=monitoringEnabled()&&S.consents.motion&&['granted','available'].includes(S.permissions.motion);
+  if(should&&!motionListenerAttached){window.addEventListener('devicemotion',onDeviceMotion,{passive:true});motionListenerAttached=true}
+  if(!should&&motionListenerAttached){window.removeEventListener('devicemotion',onDeviceMotion);motionListenerAttached=false;motionAccumMs=0;motionLastFlush=Date.now();save()}
 }
-function recordAppActive(){if(!monitoringEnabled()||!S.consents.usage)return;const mins=(Date.now()-appSessionStarted)/60000;if(mins>.05)queueSignal('app_active_minutes',mins,'min','pwa');appSessionStarted=Date.now()}
+function recordAppActive(){
+  if(!monitoringEnabled()||!S.consents.usage){appSessionStarted=Date.now();return}
+  const ms=Date.now()-appSessionStarted;if(ms>3000){const daily=ensureMonitoringDay();daily.appActiveMs+=ms;queueSignal('app_active_minutes',ms/60000,'min','pwa',{foreground:true})}
+  appSessionStarted=Date.now();
+}
+function startPassiveCollectors(){
+  if(!monitoringEnabled())return;
+  ensureMonitoringDay();
+  if(!collectorsStarted){
+    collectorsStarted=true;
+    if(S.consents.usage)queueSignal('app_sessions',1,'count','pwa',{foreground:true});
+    collectNativeBridgeSignals();
+    collectorFlushTimer=setInterval(()=>{if(document.hidden)return;recordAppActive();flushMotionActivity();startLocationWatch();flushSignals()},60000);
+  }
+  configureMotionCollector();
+  if(S.consents.location&&S.permissions.location==='granted')startLocationWatch();else stopLocationWatch();
+  setTimeout(flushSignals,500);
+}
 const DEMO_DURATION_MS=50000;
 const DEMO_CAPTURE_WINDOW=new URLSearchParams(location.search).get('capture')==='1';
 let demoRecorder=null,demoRecordStream=null,demoChunks=[],demoDownloadUrl='',demoAutoRunning=false,demoOriginalStateJson=null,demoRunId=0,demoPreviewOnly=false,demoTopic=null,demoSafetyTimer=null,demoResultPhase='normal';
@@ -482,7 +661,7 @@ async function demoOnboardingSteps(alive){
   save();
 
   await demoGo('consent',750,{title:'앱 설치 후 약관 동의',position:'top',hold:520});if(!alive())return false;
-  for(const selector of ['#consent-location','#consent-motion','#consent-usage']){
+  for(const selector of ['#consent-location','#consent-motion','#consent-usage','#consent-caregiver']){
     if(!await demoTap(selector,210))return false;
   }
   if(!await demoTap('#consent-form button[type="submit"]',520))return false;
@@ -650,7 +829,11 @@ const page={};
 page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 50초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·기본검사·동의·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>최근 변화</span><i>→</i><span>연구</span><i>→</i><span>계속 업데이트</span><i>→</i><span>처음 상태</span><i>→</i><span>1→14일</span><i>→</i><span>변화 흐름</span><i>→</i><span>가족</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 자동촬영 시작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-50s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">녹화 시작 때 공유창에서 반드시 “현재 탭”을 선택하세요. Chrome에서는 앱 영역만 9:16 세로로 자동 크롭해 녹화합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
 page.start=()=>wrap(`<section class="hero"><img class="hero-logo" src="./assets/icons/icon.svg" alt="낌새 로고"><div class="eyebrow">오늘도, 변화를 먼저 알아차리는</div><h1>낌새</h1><p>작은 관심이 큰 안심이 됩니다.<br>나와 가족의 인지·생활 변화를 쉽고 꾸준하게 기록해요.</p><div class="hero-actions">${btn('시작하기','role')}${btn('로그인','auth','btn-secondary-k')}</div></section>${notice('접근성을 기본으로 설계했어요.','큰 글씨, 큰 터치 영역, 색상+아이콘, 화면 읽기와 음성 안내를 지원합니다.')}`,{nohead:true,narrow:true});
 page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','👵','제가 사용해요','내 건강을 스스로 관리해요.','bg-blue'],['care','👩','가족을 돌보고 있어요','가족의 상태를 함께 살펴봐요.','bg-pink'],['both','👵👩','둘 다 사용해요','내 건강도 챙기고 가족도 돌봐요.','bg-purple']].map(x=>`<button class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg">${x[1]}</span><span><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}${notice('계정은 하나, 역할은 여러 개.','보호자로 시작해도 나중에 사용자 역할을 추가할 수 있어요.')}`,{title:'역할 선택',narrow:true});
-page.auth=()=>wrap(`<div class="eyebrow">가입 2/3</div><h1 class="page-title">간편하게 시작하세요</h1><div class="form-stack"><div class="field"><label for="name">이름</label><input id="name" value="${S.account?.name||''}" placeholder="이름"></div><div class="field"><label for="email">이메일</label><input id="email" type="email" value="${S.account?.email||''}" placeholder="name@example.com"></div><button id="signup" class="btn-kimse btn-primary-k">이메일로 시작하기</button></div>`,{title:'회원가입 / 로그인',narrow:true});
+page.auth=()=>{
+  const pending=AUTH()?.pendingVerification?.(),err=S.auth?.lastError||'';
+  if(pending)return wrap(`<div class="eyebrow">이메일 확인</div><h1 class="page-title">보내드린 인증번호를<br>입력해주세요</h1><p class="page-desc">${esc(pending.challenge?.maskedEmail||pending.user?.email||'입력한 이메일')}로 인증번호를 보냈습니다.</p>${err?notice('확인이 필요해요.',esc(err)):''}<div class="form-stack"><div class="field"><label for="authhub-code">인증번호</label><input id="authhub-code" inputmode="numeric" autocomplete="one-time-code" placeholder="인증번호"></div><button id="authhub-verify" class="btn-kimse btn-primary-k">인증하고 계속</button></div>`,{title:'이메일 확인',narrow:true});
+  return wrap(`<div class="eyebrow">AuthHub 계정</div><h1 class="page-title">낌새 계정으로<br>안전하게 시작하세요</h1><p class="page-desc">이메일 또는 사용 가능한 소셜 계정으로 로그인할 수 있습니다.</p>${err?notice('로그인 확인',esc(err)):''}<div class="form-stack"><div class="field"><label for="name">이름 <small>새 계정 만들 때 사용</small></label><input id="name" autocomplete="name" value="${esc(S.account?.name||'')}" placeholder="이름"></div><div class="field"><label for="email">이메일</label><input id="email" type="email" autocomplete="email" value="${esc(S.account?.email||'')}" placeholder="name@example.com"></div><div class="field"><label for="auth-password">비밀번호</label><input id="auth-password" type="password" minlength="10" autocomplete="current-password" placeholder="10자 이상"></div><button id="authhub-login" class="btn-kimse btn-primary-k">로그인</button><button id="authhub-signup" class="btn-kimse btn-secondary-k">새 계정 만들기</button></div><div class="auth-divider"><span>또는</span></div><div id="authhub-social" aria-live="polite"></div>`,{title:'회원가입 / 로그인',narrow:true});
+};
 
 page['onboarding-profile']=()=>wrap(`<div class="eyebrow">처음 설정 1/4</div><h1 class="page-title">처음 비교에 필요한<br>기본정보를 알려주세요</h1><p class="page-desc">처음 상태와 앞으로의 변화를 비교할 때 필요한 최소 정보입니다.</p><form id="profile-form" class="form-stack"><div class="field"><label for="profile-birth">출생연도</label><input id="profile-birth" inputmode="numeric" value="${esc(S.profile.birthYear)}" placeholder="예: 1956"></div><div class="field"><label for="profile-sex">성별</label><select id="profile-sex"><option value="">선택</option><option value="female" ${S.profile.sex==='female'?'selected':''}>여성</option><option value="male" ${S.profile.sex==='male'?'selected':''}>남성</option><option value="other" ${S.profile.sex==='other'?'selected':''}>기타 / 응답하지 않음</option></select></div><div class="field"><label for="profile-education">교육기간</label><select id="profile-education"><option value="">선택</option><option value="lt7" ${S.profile.education==='lt7'?'selected':''}>7년 미만</option><option value="7to9" ${S.profile.education==='7to9'?'selected':''}>7~9년</option><option value="gte10" ${S.profile.education==='gte10'?'selected':''}>10년 이상</option></select></div><div class="field"><label for="profile-living">함께 사는 사람</label><select id="profile-living"><option value="">선택</option><option value="alone" ${S.profile.living==='alone'?'selected':''}>혼자 거주</option><option value="family" ${S.profile.living==='family'?'selected':''}>가족과 거주</option><option value="other" ${S.profile.living==='other'?'selected':''}>기타</option></select></div><div class="field"><label for="profile-sleep">평소 수면시간</label><input id="profile-sleep" value="${esc(S.profile.sleepHours)}" placeholder="예: 7시간"></div><div class="field"><label for="profile-activity">평소 외출·걷기</label><select id="profile-activity"><option value="">선택</option><option value="frequent" ${S.profile.activity==='frequent'?'selected':''}>주 5회 이상</option><option value="some" ${S.profile.activity==='some'?'selected':''}>주 2~4회</option><option value="low" ${S.profile.activity==='low'?'selected':''}>주 1회 이하</option></select></div><div class="field"><label for="profile-hearing">대화할 때 청력이 불편한가요?</label><select id="profile-hearing"><option value="">선택</option><option value="no" ${S.profile.hearing==='no'?'selected':''}>거의 불편하지 않음</option><option value="some" ${S.profile.hearing==='some'?'selected':''}>가끔 불편함</option><option value="yes" ${S.profile.hearing==='yes'?'selected':''}>자주 불편함</option></select></div><button class="btn-kimse btn-primary-k" type="submit">기본 테스트로 계속</button></form>`,{title:'기본정보',narrow:true});
 
@@ -669,7 +852,7 @@ page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).lengt
 
 page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 테스트가 필요해요</h1>${notice('아직 결과를 만들 수 없습니다.','기본 테스트와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">기본 테스트 시작</button>`,{title:'첫 상태 참고',narrow:true});const d=initialScores(),avg=Math.round(Object.values(d).reduce((x,y)=>x+y,0)/5),m=statusMeta(avg);return wrap(`<div class="eyebrow">첫 상태 참고</div><h1 class="page-title">오늘의 기능 상태를<br>먼저 참고해보세요</h1><div class="status-hero ${m[1]}"><span>현재 기능 참고</span><strong>${m[0]}</strong><small>기본 테스트 수행과 자가응답을 합친 참고값</small></div><div class="domain-grid">${BRAIN_DOMAINS.map(([k,t,r,icon])=>{const x=statusMeta(d[k]);return `<div class="domain-card"><span class="domain-icon">${icon}</span><div><strong>${t}</strong><small>${r}</small></div><span class="brain-score ${x[1]}">${x[0]}</span></div>`}).join('')}</div>${notice('이 결과는 진단이 아닙니다.','현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다. 14일 동안 생활패턴을 확인한 뒤, 이후 변화를 그 기간과 비교합니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">뇌 기능 연관 지도 보기</button><button class="btn-kimse btn-primary-k" data-go="consent">데이터 수집 동의로 계속</button></div>`,{title:'첫 상태 참고',narrow:true})};
 
-page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>생활반경·외출 리듬 변화 관찰. 브라우저/OS 권한 필요</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 활동·보행 관련 신호 수집</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 브라우저 알림</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
+page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 움직임과 활동시간 신호를 수집합니다. 일일 걸음수는 네이티브 앱에서 기기 건강 데이터를 연결해 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 브라우저 알림</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
 
 page['evidence-proof']=()=>wrap(
@@ -715,13 +898,32 @@ function baselineEvent(day){
   if(day>7)return {tone:'second',kicker:'2주차',title:'두 번째 주 확인 중',text:'첫 주와 이어지는 생활 리듬을 계속 확인하고 있습니다.'};
   return {tone:'daily',kicker:day+'일째',title:'오늘 생활패턴 확인',text:'오늘 기록이 쌓이고 있습니다.'};
 }
-function baselineDaySample(day){
-  const sleep=[418,405,431,412,424,397,420,429,414,438,407,421,416,426];
-  const steps=[4860,5320,4710,5480,5030,4520,5190,5580,4970,5260,4680,5410,5120,4890];
-  const pause=[17,18,16,18,17,19,17,16,18,17,19,17,18,17];
-  const distance=[2.5,2.8,2.3,3.0,2.7,2.2,2.6,3.1,2.5,2.9,2.3,2.8,2.6,2.4];
-  const i=Math.max(0,Math.min(13,day-1)),m=sleep[i];
-  return {sleep:Math.floor(m/60)+'시간 '+(m%60)+'분',activity:steps[i].toLocaleString('ko-KR')+'보',speech:'말 멈춤 '+pause[i]+'%',movement:distance[i].toFixed(1)+'km'};
+function observedToday(metric){
+  const x=S.monitoring.lastObserved?.[metric];return x&&x.day===localDayKey()?x:null;
+}
+function monitoringTodaySnapshot(){
+  const d=ensureMonitoringDay(),sleep=observedToday('sleep_minutes'),manualSteps=observedToday('steps'),voice=observedToday('voice_pause_ratio');
+  const activity=manualSteps?formatMonitoringValue('steps',manualSteps.value):d.motionActiveMs>=60000?Math.round(d.motionActiveMs/60000)+'분 활동':'수집 대기';
+  return {
+    sleep:sleep?formatMonitoringValue('sleep_minutes',sleep.value):'기록 없음',
+    activity,
+    speech:voice?'말 멈춤 '+Math.round(Number(voice.value)*100)+'%':'샘플 없음',
+    movement:d.movementDistanceM>0?formatMonitoringValue('movement_distance_m',d.movementDistanceM):'수집 대기'
+  };
+}
+function collectionStateRows(){
+  const d=ensureMonitoringDay(),locOn=S.consents.location,motionOn=S.consents.motion,usageOn=S.consents.usage;
+  const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?(d.locationInitialized?'수집 중':'위치 신호 대기'):'권한 확인 전';
+  const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?(d.motionInitialized?'수집 중':'센서 신호 대기'):'권한 확인 전';
+  const voiceCount=(S.initial.voiceSamples||[]).filter(Boolean).length;
+  return [
+    row('📍 위치·이동',locState,'<strong>'+Math.round(d.movementDistanceM).toLocaleString('ko-KR')+'m</strong>'),
+    row('🧭 생활반경',locState,'<strong>'+Math.round(d.locationRadiusM).toLocaleString('ko-KR')+'m</strong>'),
+    row('🚪 외출 신호',locState,'<strong>'+(d.outings?'확인됨':'아직 없음')+'</strong>'),
+    row('🚶 움직임·활동',motionState,'<strong>'+Math.round(d.motionActiveMs/60000)+'분</strong>'),
+    row('📱 낌새 사용',usageOn?'수집 중':'동의 안 함','<strong>'+Math.round(d.appActiveMs/60000)+'분</strong>'),
+    row('🎙️ 음성 샘플',S.consents.microphone?'사용자 실행 시 수집':'동의 안 함','<strong>'+voiceCount+'개</strong>')
+  ].join('');
 }
 page.baseline=()=>{
   if(!S.baseline.startedAt)return wrap(
@@ -731,12 +933,12 @@ page.baseline=()=>{
     '<button class="btn-kimse btn-primary-k btn-full" data-go="consent">약관 및 데이터 설정</button>',
     {title:'생활 패턴 기록',narrow:true,overview:true}
   );
-  const day=baselineDay(),event=baselineEvent(day),sample=baselineDaySample(day);
+  const day=baselineDay(),event=baselineEvent(day),sample=monitoringTodaySnapshot();
   const progress=Array.from({length:14},(_,i)=>'<span class="'+(i<day?'done':'')+(i===day-1?' current':'')+'"></span>').join('');
   return wrap(
     '<div class="eyebrow">AI 생활 패턴 기록</div>'+
     '<h1 class="page-title">2주간 생활 패턴을<br>기록합니다</h1>'+
-    '<p class="page-desc">수면·활동·말하기·이동을 매일 기록해 이후 변화를 비교합니다.</p>'+
+    '<p class="page-desc">실제로 수집되거나 직접 기록한 수면·활동·말하기·이동만 쌓아 이후 변화를 비교합니다.</p>'+
     '<div class="baseline-calendar-page" aria-label="14일 중 '+day+'일째">'+
       '<div class="baseline-calendar-icon" aria-hidden="true">'+
         '<span class="calendar-ring left"></span><span class="calendar-ring right"></span>'+
@@ -753,7 +955,8 @@ page.baseline=()=>{
     '<div class="baseline-milestone-card '+event.tone+'"><span>'+event.kicker+'</span><div><strong>'+event.title+'</strong><small>'+event.text+'</small></div></div>'+
     '<div class="baseline-milestone-rail"><span class="'+(day>=1?'on':'')+'"><b>1일</b>시작</span><i></i><span class="'+(day>=7?'on':'')+'"><b>7일</b>첫 주 확인</span><i></i><span class="'+(day>=14?'on':'')+'"><b>14일</b>비교 시작</span></div>'+
     (day>=14?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">최근 변화 보기</button></div>':'')+
-    '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다.</p>',
+    '<div class="hero-actions"><button class="btn-kimse btn-secondary-k btn-full" data-go="collection-status">오늘 수집 상태 확인</button></div>'+
+    '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다. 앱을 닫은 동안의 위치·움직임은 현재 PWA에서 계속 측정할 수 없습니다.</p>',
     {title:'생활패턴 확인',narrow:true,overview:true}
   );
 };
@@ -797,8 +1000,22 @@ page['monitoring-status']=()=>{
     (changeHtml?'<div class="result-change-grid">'+changeHtml+'</div>':'<div class="monitoring-stable-note"><strong>현재 확인된 큰 변화가 없습니다.</strong></div>')+
     (ready&&!captureHook?'<h2 class="monitoring-next-title">다음 단계</h2><div class="monitoring-actions">'+supportActions+'</div>':'')+
     (abnormal&&!captureHook?'<button class="monitoring-detail-link" data-go="brain-map">기능별 상세 보기 '+I('chevron-right')+'</button>':'')+
+    '<button class="monitoring-detail-link" data-go="collection-status">실제 수집 상태 보기 '+I('chevron-right')+'</button>'+
     '<p class="screen-footnote">변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',
     {title:'최근 변화',narrow:true,overview:true}
+  );
+};
+page['collection-status']=()=>{
+  const d=ensureMonitoringDay(),pending=S.monitoring.pending.length,last=S.monitoring.lastFlushAt?fmtDate(S.monitoring.lastFlushAt):'아직 없음';
+  return wrap(
+    '<div class="eyebrow">오늘 · 실제 수집 상태</div>'+
+    '<h1 class="page-title">지금 들어오는 생활 신호를<br>직접 확인할 수 있어요</h1>'+
+    '<p class="page-desc">현재 PWA가 실제로 받은 값만 표시합니다. 앱을 닫으면 위치·움직임 센서 수집은 계속되지 않습니다.</p>'+
+    '<div class="list">'+collectionStateRows()+'</div>'+
+    '<div class="summary-card"><h3>서버 동기화</h3><p>전송 대기 '+pending+'건 · 마지막 전송 '+esc(last)+'</p>'+(S.monitoring.lastSyncError?'<p>'+esc(S.monitoring.lastSyncError)+'</p>':'')+'</div>'+
+    '<div class="hero-actions"><button id="sync-monitoring" class="btn-kimse btn-primary-k btn-full">지금 동기화</button><button class="btn-kimse btn-secondary-k btn-full" data-go="consent">수집 동의·권한 확인</button></div>'+
+    '<p class="screen-footnote">현재 PWA에서는 이동거리·생활반경·활동시간을 수집된 범위에서 서버 비교에 사용합니다. 일일 걸음수는 네이티브 앱의 기기 건강 데이터 연동값을 사용합니다.</p>',
+    {title:'수집 상태',narrow:true}
   );
 };
 page['brain-trends']=()=>{
@@ -840,8 +1057,18 @@ page.health=()=>wrap(`<h1 class="page-title">건강 기록</h1><div class="summa
 page['health-detail']=()=>{const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',x=HEALTH_META[k];return wrap(`<div class="eyebrow">${x[0]} ${x[1]}</div><h1 class="page-title">${x[1]} 기록 수정</h1><div class="form-stack"><div class="field"><label for="health-value">${x[1]} 값</label><input id="health-value" value="${S.health[k]||''}" placeholder="${k==='sleep'?'예: 7시간 30분':k==='steps'?'예: 4,320 걸음':'예: 120 / 80'}"></div><div class="field"><label for="health-memo">메모</label><textarea id="health-memo" rows="4" placeholder="특이사항이 있으면 적어주세요.">${S.health.memo||''}</textarea></div><button id="save-health" class="btn-kimse btn-primary-k">저장하기</button></div>`,{title:x[1]+' 기록',narrow:true})};
 page['caregiver-home']=()=>{if(!demo())return accountRequired();const alert=S.monitoring.alerts[0],careStatus=monitoringUiStatus(S.monitoring.summary,S.monitoring.summary?.changes||[]);return wrap(`<span class="context-chip caregiver">보호자 화면</span><h1 class="page-title">가족도 같은 상태를<br>확인할 수 있습니다</h1>${alert?`<button class="care-alert-card level-${careStatus.key}" data-go="monitoring-status"><span class="care-alert-symbol">${I(careStatus.icon)}</span><span><strong>${careStatus.label} · ${careStatus.action}</strong><em>최근 변화 확인하기 →</em></span>${I('chevron-right')}</button>`:''}<div class="summary-card bg-pink"><h3>공유된 정보</h3><p>사용자가 동의한 상태 요약만 보호자에게 표시됩니다.</p></div><div class="card-grid caregiver-tools">${[['📊','상태 요약','report'],['🚨','비상 알림','emergency'],['📅','일정 관리','care-schedule'],['👨‍👩‍👧','가족 관리','family']].map(x=>`<a class="action-card" href="#/${x[2]}"><span class="icon">${x[0]}</span><strong>${x[1]}</strong></a>`).join('')}</div><div class="caregiver-tools"><h2 class="section-title">내 기능도 사용하기</h2><button class="btn-kimse btn-blue-k btn-full" data-add-role="self">내 건강 관리 사용자 역할 추가/이동</button></div>`,{back:false,bottom:true,care:true,active:'caregiver-home',overview:true})};
 page['care-schedule']=()=>wrap(`<h1 class="page-title">가족 일정 관리</h1><p class="page-desc">복약·안부·진료 같은 가족 일정을 한곳에 적어둘 수 있어요.</p><div class="list">${S.schedule.map(x=>row('📅 '+x.title,x.date,'예정')).join('')}</div><h2 class="section-title">일정 추가</h2><div class="form-stack"><div class="field"><label for="schedule-title">일정</label><input id="schedule-title" placeholder="예: 병원 동행"></div><div class="field"><label for="schedule-date">날짜/시간</label><input id="schedule-date" placeholder="예: 9월 16일 10:30"></div><button id="add-schedule" class="btn-kimse btn-primary-k">일정 추가</button></div>`,{title:'일정 관리',narrow:true});
-page.family=()=>wrap(`<h1 class="page-title">가족 연결 관리</h1><div class="summary-card bg-blue"><h3>보호자 ${S.caregivers.length}명 연결</h3><p>가족 연결과 역할 관리는 구독 여부와 관계없이 사용할 수 있어요.</p></div><div class="list">${S.caregivers.map((x,i)=>row(x.name,i?'자녀':'배우자','연결됨')).join('')||'<div class="empty-state"><h3>연결된 보호자가 없어요</h3></div>'}</div><button class="btn-kimse btn-primary-k btn-full mt-3" data-go="family-add">+ 보호자 추가하기</button>`,{title:'가족 연결 관리',narrow:true});
-page['family-add']=()=>wrap(`<h1 class="page-title">보호자 연결 추가</h1><div class="form-stack"><div class="field"><label for="family-name">이름</label><input id="family-name" placeholder="예: 김○○"></div><div class="field"><label for="family-relation">관계</label><input id="family-relation" placeholder="예: 배우자, 자녀"></div><button id="save-family" class="btn-kimse btn-primary-k">연결 정보 저장</button></div>${notice('가족 연결 정보','가족 연결 정보와 비상알림 수신자는 별도로 관리됩니다. 실제 알림을 받을 사람은 비상 알림 메뉴에서 등록해주세요.')}`,{title:'보호자 추가',narrow:true});
+page.family=()=>{
+  const connected=S.caregivers||[],pending=(S.caregiverInvites||[]).filter(x=>x.status==='PENDING'),schedule=S.callSchedules?.[0];
+  return wrap(`<h1 class="page-title">가족 연결 관리</h1><div class="summary-card bg-blue"><h3>보호자 ${connected.length}명 연결</h3><p>초대받은 보호자가 자신의 AuthHub 계정으로 로그인하면 실제 보호자 계정으로 연결됩니다.</p></div><div class="list">${connected.map(x=>row(x.name,(x.relation||'가족')+(x.email?' · '+x.email:''),'연결됨')).join('')||'<div class="empty-state"><h3>연결된 보호자가 없어요</h3><p>이메일로 보호자를 초대할 수 있습니다.</p></div>'}</div>${pending.length?'<h2 class="section-title">초대 대기</h2><div class="list">'+pending.map(x=>row(x.email,x.relation||'가족','대기 중')).join('')+'</div>':''}<div class="hero-actions"><button class="btn-kimse btn-primary-k btn-full" data-go="family-add">+ 보호자 초대하기</button>${connected.length?'<button class="btn-kimse btn-secondary-k btn-full" data-go="family-call">정기 안부 통화 설정'+(schedule?' · '+schedule.interval_days+'일':'')+'</button>':''}</div>`,{title:'가족 연결 관리',narrow:true});
+};
+page['family-add']=()=>wrap(`<h1 class="page-title">보호자 계정 초대</h1><p class="page-desc">보호자가 AuthHub에서 사용하는 이메일 주소로 연결합니다.</p><div class="form-stack"><div class="field"><label for="family-email">보호자 이메일</label><input id="family-email" type="email" autocomplete="email" placeholder="family@example.com"></div><div class="field"><label for="family-relation">관계</label><input id="family-relation" placeholder="예: 배우자, 자녀"></div><button id="save-family" class="btn-kimse btn-primary-k">보호자 초대</button></div>${notice('실제 계정 연결','초대된 이메일의 보호자가 로그인하면 CareSubject의 CAREGIVER 멤버십으로 연결됩니다.')}`,{title:'보호자 초대',narrow:true});
+page['family-call']=()=>{
+  const caregivers=S.caregivers||[],schedules=S.callSchedules||[];
+  if(!caregivers.length)return wrap(`<h1 class="page-title">정기 안부 통화</h1>${notice('보호자 연결이 먼저 필요합니다.','실제 보호자 계정이 연결된 뒤 통화 일정을 만들 수 있습니다.')}<button class="btn-kimse btn-primary-k btn-full" data-go="family-add">보호자 초대하기</button>`,{title:'정기 안부 통화',narrow:true});
+  const options=caregivers.map(x=>'<option value="'+esc(x.accountId)+'">'+esc(x.name)+' · '+esc(x.relation||'가족')+'</option>').join('');
+  const scheduleRows=schedules.length?schedules.map(x=>row(esc(x.caregiver_name||x.caregiver_email||'보호자'),x.interval_days+'일마다 · 다음 '+fmtDate(x.next_due_at),'활성')).join(''):'<div class="empty-state"><h3>아직 통화 일정이 없어요</h3></div>';
+  return wrap(`<div class="eyebrow">기본 14일</div><h1 class="page-title">가족 안부 통화를<br>정기적으로 이어가요</h1><p class="page-desc">7일·14일·30일 중 선택할 수 있으며 통화 전 양쪽의 녹음·AI 분석 동의를 다시 확인합니다.</p><div class="list">${scheduleRows}</div><h2 class="section-title">일정 설정</h2><div class="form-stack"><div class="field"><label for="call-caregiver">보호자</label><select id="call-caregiver">${options}</select></div><div class="field"><label for="call-interval">통화 주기</label><select id="call-interval"><option value="7">7일마다</option><option value="14" selected>14일마다</option><option value="30">30일마다</option></select></div><div class="field"><label for="call-first-due">첫 통화 예정 <small>비워두면 선택한 주기 뒤</small></label><input id="call-first-due" type="datetime-local"></div><button id="save-call-schedule" class="btn-kimse btn-primary-k">통화 일정 저장</button></div><p class="screen-footnote">통화 일정은 실제 연결된 사용자·보호자 계정에 저장됩니다. 통화 버튼은 실제 통화 전송 계층이 연결된 뒤에만 표시합니다.</p>`,{title:'정기 안부 통화',narrow:true});
+};
 page.report=()=>{const meds=S.medicines.length?`${S.medicines.filter(x=>x.taken).length} / ${S.medicines.length}개 복용 기록`:'기록 없음';const rows=[row('🙂 오늘 기분','직접 기록한 값',S.mood||'기록 없음'),row('🌙 수면','직접 기록한 값',S.health.sleep||'기록 없음'),row('🚶 활동량','직접 기록한 값',S.health.steps||'기록 없음'),row('❤️ 혈압','직접 기록한 값',S.health.pressure||'기록 없음'),row('💊 복약','등록된 약 기준',meds)].join('');return wrap(`<h1 class="page-title">상태 리포트</h1><p class="page-desc">입력한 기록만 보여드립니다. 임의의 점수나 변화율을 만들지 않습니다.</p><div class="summary-card">${rows}</div>${notice('지속되는 변화가 걱정된다면','의료기관 상담을 권합니다. 낌새는 진단을 대신하지 않습니다.')}`,{title:'상태 리포트',narrow:true})};
 page.emergency=()=>wrap(`<h1 class="page-title">비상 알림</h1><div class="summary-card bg-pink"><h3>비상상태 알림 수신자 ${S.alertRecipients.length}명</h3><p>수신자 1인까지 무료이며, 2인째부터 구독이 적용됩니다.</p></div><div class="list">${S.alertRecipients.map((x,i)=>row(x.name,i?'추가 수신자':'무료 수신자','알림 받음')).join('')||'<div class="empty-state"><h3>등록된 비상알림 수신자가 없어요</h3></div>'}</div><button class="btn-kimse btn-primary-k btn-full mt-3" data-go="alert-add">+ 비상알림 수신자 추가</button>${notice('가족 연결과는 별개예요.','보호자 역할을 추가하는 것 자체에는 이 구독 제한을 적용하지 않습니다.')}`,{title:'비상 알림',narrow:true});
 page['alert-add']=()=>wrap(`<h1 class="page-title">비상알림 수신자 추가</h1><div class="form-stack"><div class="field"><label for="alert-name">이름</label><input id="alert-name" placeholder="예: 김○○"></div><div class="field"><label for="alert-relation">관계</label><input id="alert-relation" placeholder="예: 자녀"></div><div class="field"><label for="alert-phone">연락처</label><input id="alert-phone" inputmode="tel" placeholder="010-0000-0000"></div><button id="save-alert" class="btn-kimse btn-primary-k">수신자 저장</button></div>`,{title:'비상알림 수신자',narrow:true});
@@ -918,9 +1145,9 @@ async function loadAdminInquiries(){
     box.innerHTML='<div class="notice danger"><strong>문의함을 불러오지 못했습니다.</strong>잠시 뒤 다시 시도해주세요.</div>';
   }
 }
-page.settings=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">설정</h1><div class="summary-card"><h3>${S.account.name}</h3><p>${S.account.email}</p></div><div class="list"><a class="list-row" href="#/account">내 프로필 / 역할 관리 ${I('chevron-right')}</a><a class="list-row" href="#/family">가족 / 보호자 관리 ${I('chevron-right')}</a><a class="list-row" href="#/accessibility">접근성 설정 ${I('chevron-right')}</a><a class="list-row" href="#/brain-map">뇌 기능 연관 지도 ${I('chevron-right')}</a><a class="list-row" href="#/brain-trends">기능별 변화 흐름 보기 ${I('chevron-right')}</a><a class="list-row" href="#/monitoring-status">개인 변화 관찰 상태 ${I('chevron-right')}</a><a class="list-row" href="#/consent">데이터 수집 / 공유 동의 ${I('chevron-right')}</a><a class="list-row" href="#/plan">구독 관리 ${I('chevron-right')}</a><a class="list-row" href="#/market">치매 케어관 ${I('chevron-right')}</a><a class="list-row" href="#/partnership">사업자 입점 / 제휴 문의 ${I('chevron-right')}</a><a class="list-row" href="${evidenceUrl()}" target="_blank">연구 근거 / Evidence ${I('external-link')}</a></div>`,{title:'설정',narrow:true})};
+page.settings=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">설정</h1><div class="summary-card"><h3>${S.account.name}</h3><p>${S.account.email}</p></div><div class="list"><a class="list-row" href="#/account">내 프로필 / 역할 관리 ${I('chevron-right')}</a><a class="list-row" href="#/family">가족 / 보호자 관리 ${I('chevron-right')}</a><a class="list-row" href="#/accessibility">접근성 설정 ${I('chevron-right')}</a><a class="list-row" href="#/brain-map">뇌 기능 연관 지도 ${I('chevron-right')}</a><a class="list-row" href="#/brain-trends">기능별 변화 흐름 보기 ${I('chevron-right')}</a><a class="list-row" href="#/monitoring-status">개인 변화 관찰 상태 ${I('chevron-right')}</a><a class="list-row" href="#/collection-status">실제 수집 상태 ${I('chevron-right')}</a><a class="list-row" href="#/consent">데이터 수집 / 공유 동의 ${I('chevron-right')}</a><a class="list-row" href="#/plan">구독 관리 ${I('chevron-right')}</a><a class="list-row" href="#/market">치매 케어관 ${I('chevron-right')}</a><a class="list-row" href="#/partnership">사업자 입점 / 제휴 문의 ${I('chevron-right')}</a><a class="list-row" href="${evidenceUrl()}" target="_blank">연구 근거 / Evidence ${I('external-link')}</a></div>`,{title:'설정',narrow:true})};
 function applyA11y(){document.documentElement.classList.toggle('large-text',S.a11y.largeText);document.documentElement.classList.toggle('large-touch',S.a11y.largeTouchTargets);document.documentElement.classList.toggle('high-contrast',S.a11y.highContrast)}
-function render(){applyA11y();let r=route(),f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;if(r!==lastSpokenRoute){lastSpokenRoute=r;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
+function render(){applyA11y();let r=route(),f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();if(r==='auth')setTimeout(mountAuthHubSocial,20);if(['family','family-call'].includes(r))setTimeout(()=>syncFamilyData(true),30);setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;if(r!==lastSpokenRoute){lastSpokenRoute=r;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
 document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');go(t.dataset.go)}if(t.hasAttribute('data-initial-next')){S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('다음 항목으로 이동합니다.');render()}if(t.dataset.initialAnswer){const [k,v]=t.dataset.initialAnswer.split(':');const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes.push(rt);S.initial.answers[k]=v;S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('선택했습니다.');render()}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');history.length>1?history.back():go('start')}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');S.consents.caregiverShare=true;save();if(S.care){S.mode='care';save();go('caregiver-home')}else{go('family')}}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
 document.addEventListener('click',e=>{
   if(e.target.id==='save-recall'){
@@ -950,11 +1177,64 @@ document.addEventListener('submit',async e=>{
     feedback('설정을 저장했습니다. 생활 패턴 기록을 시작합니다.','success');await requestSelectedPermissions();await startRemoteMonitoring();queueInitialSignals();startPassiveCollectors();flushSignals();save();go('home');return;
   }
 });
+async function completeAuthHubLogin(result){
+  if(result?.pendingApproval){S.auth.lastError='관리자 승인 후 사용할 수 있는 계정입니다.';save();render();return false}
+  if(result?.verificationRequired){S.auth.lastError=result.deliveryPending?'인증메일 발송이 지연되고 있습니다. 잠시 뒤 다시 시도해주세요.':'';save();render();return false}
+  await establishKimseAuth(result);
+  feedback('계정 연결이 완료되었습니다.','success');
+  go(authNextRoute());
+  return true;
+}
+async function runAuthHubPassword(mode){
+  const auth=AUTH();if(!auth){S.auth.lastError='인증 모듈을 불러오지 못했습니다.';save();render();return}
+  const email=$('#email')?.value.trim()||'',password=$('#auth-password')?.value||'',name=$('#name')?.value.trim()||'';
+  if(!email||!password){feedback('이메일과 비밀번호를 입력해주세요.','warning');return}
+  if(password.length<10){feedback('비밀번호는 10자 이상 입력해주세요.','warning');return}
+  if(mode==='signup'&&!name){feedback('새 계정을 만들 때는 이름을 입력해주세요.','warning');return}
+  S.auth.pending=true;S.auth.lastError='';save();
+  ['authhub-login','authhub-signup'].forEach(id=>{const b=$('#'+id);if(b)b.disabled=true});
+  try{
+    const result=mode==='signup'?await auth.signup({email,password,displayName:name}):await auth.login({email,password});
+    await completeAuthHubLogin(result);
+  }catch(err){
+    const map={invalid_credentials:'이메일 또는 비밀번호를 확인해주세요.',invalid_signup:'이메일과 비밀번호 조건을 확인해주세요.',signup_not_available:'현재 새 계정 만들기를 사용할 수 없습니다.',email_login_not_available:'현재 이메일 로그인을 사용할 수 없습니다.',existing_account_authentication_required:'이미 다른 로그인 방식으로 가입된 계정입니다.'};
+    S.auth.lastError=map[err.message]||'로그인을 완료하지 못했습니다. 잠시 뒤 다시 시도해주세요.';S.auth.pending=false;save();render();
+  }
+}
+document.addEventListener('click',async e=>{
+  if(e.target.id==='authhub-login'){await runAuthHubPassword('login');return}
+  if(e.target.id==='authhub-signup'){await runAuthHubPassword('signup');return}
+  if(e.target.id==='authhub-verify'){
+    const code=$('#authhub-code')?.value.trim()||'';if(!code){feedback('인증번호를 입력해주세요.','warning');return}
+    e.target.disabled=true;
+    try{const result=await AUTH().verifyEmail(code);await completeAuthHubLogin(result)}
+    catch(err){S.auth.lastError=err.message==='invalid_verification_code'?'인증번호를 다시 확인해주세요.':'이메일 인증을 완료하지 못했습니다.';save();render()}
+    return;
+  }
+});
 document.addEventListener('pointerdown',()=>{ensureAudio()},{capture:true,passive:true});
 document.addEventListener('touchend',()=>{ensureAudio()},{capture:true,passive:true});
 document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#/"]');if(a)tone('tap')});
 document.addEventListener('change',e=>{if(e.target.dataset.a11y){S.a11y[e.target.dataset.a11y]=e.target.checked;save();render();feedback(e.target.closest('.switch-row').innerText+(e.target.checked?' 켰습니다':' 껐습니다'),e.target.checked?'success':'tap')}});
-document.addEventListener('click',e=>{if(e.target.id==='signup'){const name=$('#name').value.trim(),email=$('#email').value.trim();if(!name||!email){feedback('이름과 이메일을 입력해주세요.','warning');return}S.account={name,email};S.version=STATE_VERSION;S.mode=S.intent==='care'?'care':'self';save();tone('success');go(S.mode==='care'&&!S.self?'caregiver-home':'onboarding-profile')}if(e.target.id==='begin'){tone('tap');S.q=0;S.answers=[];save();go('assessment')}if(e.target.id==='next'){if(S.answers[S.q]===undefined)return;if(S.q>=Q.length-1){feedback('결과를 확인합니다.');go('result')}else{S.q++;save();feedback((S.q+1)+'번째 문항입니다.');render()}}if(e.target.id==='save-family'){const name=$('#family-name').value.trim(),relation=$('#family-relation').value.trim();if(!name){feedback('이름을 입력해주세요.','warning');return}S.caregivers.push({name,relation:relation||'가족'});save();feedback('보호자 연결 정보를 저장했습니다.','success');go('family')}if(e.target.id==='save-alert'){const name=$('#alert-name').value.trim(),relation=$('#alert-relation').value.trim(),phone=$('#alert-phone').value.trim();if(!name||!phone){feedback('이름과 연락처를 입력해주세요.','warning');return}if(S.alertRecipients.length>=1&&S.plan!=='PREMIUM'){feedback('비상알림 수신자 2인째부터 구독이 필요합니다.','warning');go('plan')}else{S.alertRecipients.push({name,relation:relation||'가족',phone});save();feedback('비상알림 수신자를 저장했습니다.','success');go('emergency')}}if(e.target.id==='save-med'){const name=$('#med-name').value.trim(),time=$('#med-time').value||'08:00',note=$('#med-note').value.trim();if(!name){feedback('약 이름을 입력해주세요.','warning');return}S.medicines.push({id:'m'+Date.now(),name,time,note,taken:false});save();feedback('약을 등록했습니다.','success');go('medication')}if(e.target.id==='save-health'){const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',v=$('#health-value').value.trim();if(!v){feedback('기록할 값을 입력해주세요.','warning');return}S.health[k]=v;S.health.memo=$('#health-memo').value.trim();save();if(k==='sleep'){const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health')}if(k==='steps'){const n=parseSteps(v);if(n)queueSignal('steps',n,'count','manual-health')}flushSignals();feedback(HEALTH_META[k][1]+' 기록을 저장했습니다.','success');go('health')}if(e.target.id==='add-schedule'){const title=$('#schedule-title').value.trim(),date=$('#schedule-date').value.trim();if(!title||!date){feedback('일정과 날짜/시간을 입력해주세요.','warning');return}S.schedule.push({id:'s'+Date.now(),title,date});save();feedback('가족 일정을 추가했습니다.','success');render()}});
+document.addEventListener('click',e=>{if(e.target.id==='begin'){tone('tap');S.q=0;S.answers=[];save();go('assessment')}if(e.target.id==='next'){if(S.answers[S.q]===undefined)return;if(S.q>=Q.length-1){feedback('결과를 확인합니다.');go('result')}else{S.q++;save();feedback((S.q+1)+'번째 문항입니다.');render()}}if(e.target.id==='save-alert'){const name=$('#alert-name').value.trim(),relation=$('#alert-relation').value.trim(),phone=$('#alert-phone').value.trim();if(!name||!phone){feedback('이름과 연락처를 입력해주세요.','warning');return}if(S.alertRecipients.length>=1&&S.plan!=='PREMIUM'){feedback('비상알림 수신자 2인째부터 구독이 필요합니다.','warning');go('plan')}else{S.alertRecipients.push({name,relation:relation||'가족',phone});save();feedback('비상알림 수신자를 저장했습니다.','success');go('emergency')}}if(e.target.id==='save-med'){const name=$('#med-name').value.trim(),time=$('#med-time').value||'08:00',note=$('#med-note').value.trim();if(!name){feedback('약 이름을 입력해주세요.','warning');return}S.medicines.push({id:'m'+Date.now(),name,time,note,taken:false});save();feedback('약을 등록했습니다.','success');go('medication')}if(e.target.id==='save-health'){const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',v=$('#health-value').value.trim();if(!v){feedback('기록할 값을 입력해주세요.','warning');return}S.health[k]=v;S.health.memo=$('#health-memo').value.trim();save();if(k==='sleep'){const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health')}if(k==='steps'){const n=parseSteps(v);if(n)queueSignal('steps',n,'count','manual-health')}flushSignals();feedback(HEALTH_META[k][1]+' 기록을 저장했습니다.','success');go('health')}if(e.target.id==='add-schedule'){const title=$('#schedule-title').value.trim(),date=$('#schedule-date').value.trim();if(!title||!date){feedback('일정과 날짜/시간을 입력해주세요.','warning');return}S.schedule.push({id:'s'+Date.now(),title,date});save();feedback('가족 일정을 추가했습니다.','success');render()}});
+document.addEventListener('click',async e=>{
+  if(e.target.id==='save-family'){
+    const email=$('#family-email')?.value.trim()||'',relation=$('#family-relation')?.value.trim()||'';
+    if(!email||!email.includes('@')){feedback('보호자 이메일을 확인해주세요.','warning');return}
+    e.target.disabled=true;
+    try{await inviteCaregiver(email,relation);feedback('보호자 초대를 저장했습니다. 상대방이 해당 이메일로 로그인하면 연결됩니다.','success');go('family')}
+    catch{feedback('보호자 초대를 저장하지 못했습니다. 계정 연결 상태를 확인해주세요.','warning');e.target.disabled=false}
+    return;
+  }
+  if(e.target.id==='save-call-schedule'){
+    const caregiver=$('#call-caregiver')?.value||'',interval=Number($('#call-interval')?.value||14),due=$('#call-first-due')?.value||'';
+    if(!caregiver){feedback('보호자를 선택해주세요.','warning');return}
+    e.target.disabled=true;
+    try{await saveFamilyCallSchedule(caregiver,interval,due);feedback('정기 안부 통화 일정을 저장했습니다.','success');render()}
+    catch{feedback('통화 일정을 저장하지 못했습니다. 실제 보호자 연결 상태를 확인해주세요.','warning');e.target.disabled=false}
+    return;
+  }
+});
 document.addEventListener('submit',e=>{if(e.target.id==='market-search-form'){e.preventDefault();S.marketSearch=$('#market-search')?.value.trim()||'';save();feedback(S.marketSearch?'검색 결과를 보여드립니다.':'전체 항목을 보여드립니다.');render()}});
 document.addEventListener('click',e=>{if(e.target.id==='market-search-clear'){S.marketSearch='';save();feedback('검색어를 지웠습니다.');render()}});
 document.addEventListener('click',e=>{if(e.target.id==='demo-preview'){playDemoTimeline()}if(e.target.id==='demo-record'){startDemoCapture()}if(e.target.id==='demo-stop'){stopDemoRecording()}if(e.target.id==='demo-window'){const u=location.origin+location.pathname+'?capture=1#/demo-capture';window.open(u,'kimseDemoCapture','popup=yes,width=450,height=800,resizable=yes,scrollbars=no')}});
@@ -962,9 +1242,23 @@ document.addEventListener('click',async e=>{if(e.target.id==='sync-monitoring'){
 document.addEventListener('click',async e=>{if(e.target.id==='admin-login'){const token=$('#admin-token').value.trim();if(!token){feedback('운영자 접근 코드를 입력해주세요.','warning');return}e.target.disabled=true;e.target.textContent='확인 중…';try{const r=await fetch(API+'/api/v1/admin/partner-inquiries?limit=1',{headers:{'X-KIMSE-ADMIN-TOKEN':token}});if(r.status===401||r.status===403){feedback('운영자 접근 코드를 다시 확인해주세요.','warning');return}if(!r.ok)throw new Error('HTTP '+r.status);sessionStorage.setItem('kimse.admin.token',token);feedback('운영자 인증이 확인되었습니다.','success');render()}catch{feedback('운영자 문의함에 연결하지 못했습니다. 잠시 뒤 다시 시도해주세요.','warning')}finally{if(e.target?.isConnected){e.target.disabled=false;e.target.textContent='문의함 열기'}}return}if(e.target.id==='admin-logout'){sessionStorage.removeItem('kimse.admin.token');feedback('운영자 문의함에서 로그아웃했습니다.');render();return}const statusBtn=e.target.closest('[data-admin-status]');if(statusBtn){const token=sessionStorage.getItem('kimse.admin.token');if(!token)return;statusBtn.disabled=true;try{const r=await fetch(API+'/api/v1/admin/partner-inquiries/'+encodeURIComponent(statusBtn.dataset.inquiryId)+'/status',{method:'POST',headers:{'Content-Type':'application/json','X-KIMSE-ADMIN-TOKEN':token},body:JSON.stringify({status:statusBtn.dataset.adminStatus})});if(!r.ok)throw new Error('HTTP '+r.status);feedback('문의 상태를 변경했습니다.','success');await loadAdminInquiries()}catch{feedback('문의 상태 변경에 실패했습니다.','warning');statusBtn.disabled=false}}});
 document.addEventListener('click',async e=>{if(e.target.id!=='partner-submit')return;const company=$('#partner-company').value.trim(),contact=$('#partner-name').value.trim(),email=$('#partner-email').value.trim(),message=$('#partner-message').value.trim();if(!company||!contact||!email||message.length<10||!$('#partner-consent').checked){feedback('회사명, 담당자, 이메일, 10자 이상의 제안 내용과 개인정보 동의를 확인해주세요.','warning');return}e.target.disabled=true;e.target.textContent='접수 중…';try{const r=await fetch(API+'/api/v1/partner-inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({inquiry_type:$('#partner-type').value,company_name:company,contact_name:contact,email,phone:$('#partner-phone').value.trim()||null,website_url:$('#partner-web').value.trim()||null,category:$('#partner-category').value,message})});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();S.partnerStatus={id:data.id,at:data.created_at,company};save();feedback('입점·제휴 문의가 정상 접수되었습니다.','success');A.innerHTML=wrap(`<h1 class="page-title">문의가 접수됐어요</h1>${notice('접수 완료',company+' 담당자님의 제안을 저장했습니다. 검토 후 입력한 이메일로 연락드릴 수 있습니다.')}<button class="btn-kimse btn-primary-k btn-full" data-go="market">케어관으로 돌아가기</button>`,{title:'문의 접수',narrow:true})}catch(err){feedback('접수에 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.','warning');e.target.disabled=false;e.target.textContent='문의 접수'}});
 
-window.addEventListener('hashchange',render);window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');flushSignals();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
-document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushSignals()}else{appSessionStarted=Date.now();if(monitoringEnabled())syncMonitoring()}});
-window.addEventListener('beforeunload',()=>{recordAppActive()});
-async function bootstrap(){await loadEvidenceModel();render();if(monitoringEnabled()){queueInitialSignals();await startRemoteMonitoring();startPassiveCollectors();await syncMonitoring()}if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}
+window.addEventListener('hashchange',render);window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');startPassiveCollectors();flushSignals();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
+document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)}else{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}}});
+window.addEventListener('pagehide',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
+window.addEventListener('pageshow',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});
+document.addEventListener('freeze',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
+document.addEventListener('resume',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});
+window.addEventListener('beforeunload',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
+async function bootstrap(){
+  await loadEvidenceModel();
+  try{
+    const oauth=await AUTH()?.consumeOAuthCallback?.();
+    if(oauth?.pendingApproval){S.auth.lastError='관리자 승인 후 사용할 수 있는 계정입니다.';save();go('auth')}
+    else if(oauth?.accessToken){await establishKimseAuth(oauth);S.auth.lastError='';save();go(authNextRoute())}
+  }catch(err){S.auth.lastError='소셜 로그인을 완료하지 못했습니다.';save();go('auth')}
+  render();
+  if(monitoringEnabled()){queueInitialSignals();await startRemoteMonitoring();startPassiveCollectors();await syncMonitoring()}
+  if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))
+}
 bootstrap();
 })();
