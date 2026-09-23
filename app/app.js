@@ -1,11 +1,11 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),A=$('#app'),N=$('#announcer'),O=$('#offline-banner'),K='kimse.p0.state',MODEL_CACHE='kimse.evidence.model.cache';
-const STATE_VERSION=11;
+const STATE_VERSION=12;
 const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mode:'self',caregivers:[],caregiverInvites:[],callSchedules:[],alertRecipients:[],plan:'FREE',q:0,answers:[],med:false,mood:'',
   medicines:[],
   health:{sleep:'',steps:'',pressure:'',memo:''},
   schedule:[],
-  profile:{birthYear:'',sex:'',education:'',living:'',sleepHours:'',activity:'',hearing:'',conditions:''},
+  profile:{birthYear:'',sex:'',education:'',living:'',socialSupport:'',socialActivity:'',sleepHours:'',sleepDisturbance:'',activity:'',hearing:'',conditions:''},
   onboarding:{profileDone:false,initialDone:false,consentDone:false,completed:false},
   initial:{step:0,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:false,completedAt:null,domains:null},
   consents:{service:false,privacy:false,health:false,microphone:true,location:false,motion:false,usage:true,notifications:false,caregiverShare:false},
@@ -37,6 +37,8 @@ if((Number(stored.version)||0)<STATE_VERSION){
     }
     if(S.monitoring.daily&&typeof S.monitoring.daily==='object')delete S.monitoring.daily.foregroundSteps;
   }
+  if(S.initial&&typeof S.initial==='object')S.initial.domains=null;
+  if(Array.isArray(S.brainHistory))S.brainHistory=S.brainHistory.filter(x=>x?.source!=='initial');
   S.version=STATE_VERSION;
   localStorage.setItem(K,JSON.stringify(S));
 }
@@ -183,8 +185,8 @@ const PARTNER_TYPE_LABEL={PRODUCT:'상품 입점',SERVICE:'서비스 제휴',AD:
 const PARTNER_STATUS_LABEL={RECEIVED:'신규',REVIEWING:'검토중',CONTACTED:'회신완료',HOLD:'보류',CLOSED:'종료'};
 
 const VOICE_PROMPTS=[
-  '오늘 아침부터 지금까지 무엇을 하셨는지 편하게 말씀해주세요.',
-  '최근 기억에 남는 일을 순서대로 설명해주세요.',
+  '오늘 또는 최근 며칠 동안 있었던 일을 편하게 말씀해주세요.',
+  '최근 기억에 남는 일을 시간 순서대로 설명해주세요.',
   '생각나는 동물 이름을 가능한 많이 말씀해주세요.'
 ];
 const BRAIN_DOMAINS=[
@@ -203,16 +205,11 @@ function baselineDay(){
 }
 const baselineComplete=()=>baselineDay()>=14;
 function initialScores(){
-  if(S.initial.domains)return S.initial.domains;
-  const a=S.initial.answers||{},words=['나무','기차','우산'],r=String(S.initial.recall||'').replace(/\s/g,'');
-  const recalled=words.filter(w=>r.includes(w)).length;
-  return {
-    memory:clamp(55+recalled*15),
-    executive:a.attention==='10'?88:62,
-    language:a.language==='과일'?88:62,
-    spatial:a.spatial==='no'?88:a.spatial==='sometimes'?72:58,
-    daily:a.daily==='no'?90:a.daily==='sometimes'?74:56
-  };
+  return S.initial.domains&&typeof S.initial.domains==='object'?S.initial.domains:null;
+}
+function initialRecallCount(){
+  const words=['나무','기차','우산'],r=String(S.initial.recall||'').replace(/\s/g,'');
+  return words.filter(w=>r.includes(w)).length;
 }
 function statusMeta(score){
   score=clamp(score);
@@ -221,7 +218,8 @@ function statusMeta(score){
   return ['추가 확인 권장','alert'];
 }
 function addBrainSnapshot(source='initial'){
-  const d=initialScores(),at=new Date().toISOString(),last=S.brainHistory[S.brainHistory.length-1];
+  const d=initialScores();if(!d)return;
+  const at=new Date().toISOString(),last=S.brainHistory[S.brainHistory.length-1];
   if(last&&last.source===source&&String(last.at||'').slice(0,10)===at.slice(0,10))return;
   S.brainHistory.push({at,source,...d});
   S.brainHistory=S.brainHistory.slice(-730);
@@ -253,8 +251,8 @@ function brainRegionClass(key,focus){
   return 'region '+key+(key===focus?' is-focus':' is-muted');
 }
 function brainSvg(view='side',focus=S.brainFocus){
-  const d=initialScores(),meta=brainFocusMeta(focus),m=statusMeta(d[focus]??Object.values(d).reduce((a,b)=>a+b,0)/5);
-  const focusHead='<div class="brain-focus-head"><span class="domain-icon">'+meta[3]+'</span><div><small>'+meta[2]+'</small><strong>'+meta[1]+'</strong></div><span class="brain-score '+m[1]+'">'+m[0]+'</span></div>';
+  const d=initialScores(),meta=brainFocusMeta(focus),m=d?statusMeta(d[focus]??Object.values(d).reduce((a,b)=>a+b,0)/5):null;
+  const focusHead='<div class="brain-focus-head"><span class="domain-icon">'+meta[3]+'</span><div><small>'+meta[2]+'</small><strong>'+meta[1]+'</strong></div>'+(m?'<span class="brain-score '+m[1]+'">'+m[0]+'</span>':'<span class="brain-score stable">근거 영역</span>')+'</div>';
   const gyri='<path d="M92 72c24-21 57-27 85-16M75 104c29-19 65-21 94-6M82 142c29-17 61-18 90-4M194 62c25 2 49 13 68 31M207 95c27 4 51 17 66 36M205 158c25 4 47 15 61 31" class="brain-gyrus"/>';
   if(view==='top')return '<div class="brain-visual-wrap focus-'+focus+'">'+focusHead+'<svg class="brain-visual" viewBox="0 0 360 250" role="img" aria-label="위에서 본 인지 기능 연관 지도">'+
     '<path d="M177 31c-21-14-48-17-70-7-28 12-48 36-52 65-5 31 6 59 27 80 21 22 50 36 95 48V31Z" class="brain-outline"/>'+
@@ -459,7 +457,10 @@ async function syncMonitoringPreferences(){
 function handleMonitoringAlert(alert){
   if(!alert||!alert.id||S.monitoring.alerts.some(x=>x.id===alert.id))return;
   S.monitoring.alerts.unshift(alert);S.monitoring.alerts=S.monitoring.alerts.slice(0,30);save();
-  if(S.consents.notifications&&'Notification'in window&&Notification.permission==='granted'){try{new Notification('낌새 · 최근 변화가 보여요',{body:alert.summary||'평소와 다른 변화가 함께 관찰되었습니다.',tag:'kimse-change-'+alert.id})}catch{}}
+  if(S.consents.notifications&&'Notification'in window&&Notification.permission==='granted'){
+    const fallback=()=>{try{new Notification('낌새 · 최근 변화가 보여요',{body:alert.summary||'평소와 다른 변화가 함께 관찰되었습니다.',tag:'kimse-change-'+alert.id})}catch{}};
+    if(window.KIMSE_PUSH?.status)window.KIMSE_PUSH.status().then(x=>{if(!x?.active)fallback()}).catch(fallback);else fallback();
+  }
 }
 async function flushSignals(keepalive=false){
   if(!monitoringEnabled()||!navigator.onLine||!S.monitoring.pending.length)return false;
@@ -555,7 +556,9 @@ function onDeviceMotion(e){
   if(now-motionLastFlush>=60000)flushMotionActivity();
 }
 function queueNativeStepSnapshot(force=false){
-  const steps=Number(S.monitoring.liveSteps);if(!monitoringEnabled()||!Number.isFinite(steps))return;
+  const raw=S.monitoring.liveSteps;
+  if(!monitoringEnabled()||!S.consents.motion||!window.KIMSE_NATIVE?.isNative?.()||raw===null||raw===undefined||raw==='')return;
+  const steps=Number(raw);if(!Number.isFinite(steps))return;
   const now=Date.now(),delta=nativeStepLastQueuedValue<0?Infinity:Math.abs(steps-nativeStepLastQueuedValue);
   if(!force&&now-nativeStepLastQueuedAt<30000&&delta<20)return;
   nativeStepLastQueuedAt=now;nativeStepLastQueuedValue=steps;
@@ -694,10 +697,10 @@ async function demoOnboardingSteps(alive){
   save();
   await demoGo('initial-check',1250,{title:'앱 설치 후 초기 상태 확인',position:'bottom',hold:720});if(!alive())return false;
   if(!await demoTap('[data-initial-next]',260))return false;
-  if(!await demoTap('[data-initial-answer="attention:10"]',280))return false;
-  if(!await demoTap('[data-initial-answer="language:과일"]',280))return false;
-  if(!await demoTap('[data-initial-answer="spatial:no"]',260))return false;
-  if(!await demoTap('[data-initial-answer="daily:no"]',260))return false;
+  if(!await demoTap('[data-initial-answer="subtraction:79"]',280))return false;
+  if(!await demoTap('[data-initial-answer="events:no"]',280))return false;
+  if(!await demoTap('[data-initial-answer="finances:no"]',260))return false;
+  if(!await demoTap('[data-initial-answer="travel:no"]',260))return false;
   demoSetValue('#recall-input','나무 기차 우산');await demoWait(260);
   if(!await demoTap('#save-recall',420))return false;
   if(!alive())return false;
@@ -767,7 +770,7 @@ function demoInjectHistoryAndChanges(){
 function demoSeedScenario(){
   S.account={name:'시연 사용자',email:'demo@kimse.app'};S.self=true;S.care=true;S.mode='self';
   S.onboarding={profileDone:true,initialDone:true,consentDone:true,completed:true};
-  S.initial={...D.initial,step:5,answers:{attention:'10',language:'과일',spatial:'no',daily:'no'},recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}};
+  S.initial={...D.initial,step:5,answers:{subtraction:'79',events:'no',finances:'no',travel:'no'},recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}};
   S.consents={...D.consents,service:true,privacy:true,health:true,microphone:true,location:true,motion:true,usage:true,caregiverShare:true};
   S.brainFocus='memory';S.brainTrendDomain='overall';
   S.baseline.startedAt=new Date(Date.now()-13*86400000).toISOString();
@@ -884,22 +887,34 @@ page.auth=()=>{
   return wrap(`<div class="eyebrow">AuthHub 계정</div><h1 class="page-title">낌새 계정으로<br>안전하게 시작하세요</h1><p class="page-desc">이메일 또는 사용 가능한 소셜 계정으로 로그인할 수 있습니다.</p>${err?notice('로그인 확인',esc(err)):''}<div class="form-stack"><div class="field"><label for="name">이름 <small>새 계정 만들 때 사용</small></label><input id="name" autocomplete="name" value="${esc(S.account?.name||'')}" placeholder="이름"></div><div class="field"><label for="email">이메일</label><input id="email" type="email" autocomplete="email" value="${esc(S.account?.email||'')}" placeholder="name@example.com"></div><div class="field"><label for="auth-password">비밀번호</label><input id="auth-password" type="password" minlength="10" autocomplete="current-password" placeholder="10자 이상"></div><button id="authhub-login" class="btn-kimse btn-primary-k">로그인</button><button id="authhub-signup" class="btn-kimse btn-secondary-k">새 계정 만들기</button></div><div class="auth-divider"><span>또는</span></div><div id="authhub-social" aria-live="polite"></div>`,{title:'회원가입 / 로그인',narrow:true});
 };
 
-page['onboarding-profile']=()=>wrap(`<div class="eyebrow">처음 설정 1/4</div><h1 class="page-title">처음 비교에 필요한<br>기본정보를 알려주세요</h1><p class="page-desc">처음 상태와 앞으로의 변화를 비교할 때 필요한 최소 정보입니다.</p><form id="profile-form" class="form-stack"><div class="field"><label for="profile-birth">출생연도</label><input id="profile-birth" inputmode="numeric" value="${esc(S.profile.birthYear)}" placeholder="예: 1956"></div><div class="field"><label for="profile-sex">성별</label><select id="profile-sex"><option value="">선택</option><option value="female" ${S.profile.sex==='female'?'selected':''}>여성</option><option value="male" ${S.profile.sex==='male'?'selected':''}>남성</option><option value="other" ${S.profile.sex==='other'?'selected':''}>기타 / 응답하지 않음</option></select></div><div class="field"><label for="profile-education">교육기간</label><select id="profile-education"><option value="">선택</option><option value="lt7" ${S.profile.education==='lt7'?'selected':''}>7년 미만</option><option value="7to9" ${S.profile.education==='7to9'?'selected':''}>7~9년</option><option value="gte10" ${S.profile.education==='gte10'?'selected':''}>10년 이상</option></select></div><div class="field"><label for="profile-living">함께 사는 사람</label><select id="profile-living"><option value="">선택</option><option value="alone" ${S.profile.living==='alone'?'selected':''}>혼자 거주</option><option value="family" ${S.profile.living==='family'?'selected':''}>가족과 거주</option><option value="other" ${S.profile.living==='other'?'selected':''}>기타</option></select></div><div class="field"><label for="profile-sleep">평소 수면시간</label><input id="profile-sleep" value="${esc(S.profile.sleepHours)}" placeholder="예: 7시간"></div><div class="field"><label for="profile-activity">평소 외출·걷기</label><select id="profile-activity"><option value="">선택</option><option value="frequent" ${S.profile.activity==='frequent'?'selected':''}>주 5회 이상</option><option value="some" ${S.profile.activity==='some'?'selected':''}>주 2~4회</option><option value="low" ${S.profile.activity==='low'?'selected':''}>주 1회 이하</option></select></div><div class="field"><label for="profile-hearing">대화할 때 청력이 불편한가요?</label><select id="profile-hearing"><option value="">선택</option><option value="no" ${S.profile.hearing==='no'?'selected':''}>거의 불편하지 않음</option><option value="some" ${S.profile.hearing==='some'?'selected':''}>가끔 불편함</option><option value="yes" ${S.profile.hearing==='yes'?'selected':''}>자주 불편함</option></select></div><button class="btn-kimse btn-primary-k" type="submit">기본 테스트로 계속</button></form>`,{title:'기본정보',narrow:true});
+page['onboarding-profile']=()=>wrap(`<div class="eyebrow">처음 설정 1/4 · 근거 연결 조사</div><h1 class="page-title">처음 비교에 필요한<br>기본정보를 알려주세요</h1><p class="page-desc">각 항목은 Evidence Registry에 출처와 사용 목적이 등록되어 있습니다. 검증된 점수 입력과 개인 baseline·맥락 정보는 서로 섞어 점수화하지 않습니다.</p><form id="profile-form" class="form-stack">
+<div class="field"><label for="profile-birth">출생연도 <small>CAIDE</small></label><input id="profile-birth" inputmode="numeric" value="${esc(S.profile.birthYear)}" placeholder="예: 1956"></div>
+<div class="field"><label for="profile-sex">성별 <small>CAIDE</small></label><select id="profile-sex"><option value="">선택</option><option value="female" ${S.profile.sex==='female'?'selected':''}>여성</option><option value="male" ${S.profile.sex==='male'?'selected':''}>남성</option><option value="other" ${S.profile.sex==='other'?'selected':''}>기타 / 응답하지 않음</option></select></div>
+<div class="field"><label for="profile-education">정규 교육기간 <small>CAIDE</small></label><select id="profile-education"><option value="">선택</option><option value="lt7" ${S.profile.education==='lt7'?'selected':''}>0~6년</option><option value="7to9" ${S.profile.education==='7to9'?'selected':''}>7~9년</option><option value="gte10" ${S.profile.education==='gte10'?'selected':''}>10년 이상</option></select></div>
+<div class="field"><label for="profile-activity">여가 신체활동 <small>CAIDE 원 정의</small></label><select id="profile-activity"><option value="">선택</option><option value="active" ${S.profile.activity==='active'?'selected':''}>20~30분 이상, 숨이 차고 땀이 날 정도의 활동을 주 2회 이상</option><option value="inactive" ${S.profile.activity==='inactive'?'selected':''}>주 2회 미만 또는 해당 활동을 하지 않음</option></select><small>CAIDE의 활동/비활동 구분을 그대로 묻습니다.</small></div>
+<div class="field"><label for="profile-living">현재 거주형태 <small>ANU-ADRI 사회관계 영역</small></label><select id="profile-living"><option value="">선택</option><option value="alone" ${S.profile.living==='alone'?'selected':''}>혼자 거주</option><option value="partner_family" ${S.profile.living==='partner_family'?'selected':''}>배우자·가족과 거주</option><option value="other" ${S.profile.living==='other'?'selected':''}>기타</option></select></div>
+<div class="field"><label for="profile-social-support">도움을 요청하거나 속마음을 이야기할 사람이 있나요? <small>ANU-ADRI 사회망 질</small></label><select id="profile-social-support"><option value="">선택</option><option value="both" ${S.profile.socialSupport==='both'?'selected':''}>도움을 줄 사람과 이야기할 사람이 모두 있음</option><option value="one" ${S.profile.socialSupport==='one'?'selected':''}>둘 중 하나만 있음</option><option value="none" ${S.profile.socialSupport==='none'?'selected':''}>둘 다 거의 없음</option></select></div>
+<div class="field"><label for="profile-social-activity">모임·종교·동호회·지역활동 같은 사회활동에 얼마나 참여하나요? <small>ANU-ADRI 사회활동</small></label><select id="profile-social-activity"><option value="">선택</option><option value="weekly" ${S.profile.socialActivity==='weekly'?'selected':''}>주 1회 이상</option><option value="monthly" ${S.profile.socialActivity==='monthly'?'selected':''}>월 1~3회</option><option value="rare" ${S.profile.socialActivity==='rare'?'selected':''}>드물게</option><option value="never" ${S.profile.socialActivity==='never'?'selected':''}>거의 참여하지 않음</option></select></div>
+<div class="field"><label for="profile-sleep">평소 수면시간 <small>Passive DHT baseline</small></label><input id="profile-sleep" value="${esc(S.profile.sleepHours)}" placeholder="예: 7시간"></div>
+<div class="field"><label for="profile-sleep-disturbance">잠들기 어렵거나, 자주 깨고 다시 잠들기 어렵거나, 너무 일찍 깨는 일이 얼마나 자주 있나요? <small>LIBRA2 수면장애 맥락</small></label><select id="profile-sleep-disturbance"><option value="">선택</option><option value="rare" ${S.profile.sleepDisturbance==='rare'?'selected':''}>주 1회 이하</option><option value="sometimes" ${S.profile.sleepDisturbance==='sometimes'?'selected':''}>주 2~3회</option><option value="frequent" ${S.profile.sleepDisturbance==='frequent'?'selected':''}>주 4회 이상</option></select></div>
+<div class="field"><label for="profile-hearing">대화할 때 청력이 불편한가요? <small>Lancet 2024 · LIBRA2</small></label><select id="profile-hearing"><option value="">선택</option><option value="no" ${S.profile.hearing==='no'?'selected':''}>거의 불편하지 않음</option><option value="some" ${S.profile.hearing==='some'?'selected':''}>가끔 불편함</option><option value="yes" ${S.profile.hearing==='yes'?'selected':''}>자주 불편함</option></select></div>
+<div class="alert alert-info"><strong>점수 사용 원칙</strong><br>CAIDE 원 변수만 CAIDE 점수에 사용합니다. 사회관계·수면·청력 축약 문항은 현재 임상 점수로 환산하지 않습니다.</div>
+<button class="btn-kimse btn-primary-k" type="submit">초기 과제로 계속</button></form>`,{title:'기본정보',narrow:true});
 
 page['initial-check']=()=>{
-  const s=Math.min(5,Math.max(0,Number(S.initial.step)||0)),a=S.initial.answers||{};
-  const top=`<div class="eyebrow">처음 설정 2/4 · 기본 테스트 ${s+1}/6</div><div class="progress-k mt-2"><span style="width:${(s+1)/6*100}%"></span></div>`;
-  if(s===0)return wrap(top+`<h1 class="page-title">세 단어를 기억해주세요</h1><div class="memory-words"><strong>나무</strong><strong>기차</strong><strong>우산</strong></div><p class="page-desc">잠시 뒤 다시 여쭤볼게요. 지금은 외우려고 너무 애쓰지 않아도 됩니다.</p><button class="btn-kimse btn-primary-k btn-full" data-initial-next>기억했어요</button>`,{title:'기억 시작',narrow:true});
-  if(s===1)return wrap(top+`<div class="eyebrow mt-4">주의·실행</div><h1 class="page-title">2, 4, 6, 8 다음 숫자는?</h1><div class="answer-grid">${['10','9','12','6'].map(v=>`<button class="answer" data-initial-answer="attention:${v}">${v}</button>`).join('')}</div>`,{title:'주의·실행',narrow:true});
-  if(s===2)return wrap(top+`<div class="eyebrow mt-4">언어</div><h1 class="page-title">사과와 배는 어떤 종류인가요?</h1><div class="answer-grid">${['과일','동물','교통수단','가구'].map(v=>`<button class="answer" data-initial-answer="language:${v}">${v}</button>`).join('')}</div>`,{title:'언어',narrow:true});
-  if(s===3)return wrap(top+`<div class="eyebrow mt-4">공간·이동</div><h1 class="page-title">최근 익숙한 길이나 장소에서 방향이 헷갈린 적이 있나요?</h1><div class="answer-grid">${[['no','거의 없어요'],['sometimes','가끔 있어요'],['often','자주 있어요']].map(v=>`<button class="answer" data-initial-answer="spatial:${v[0]}">${v[1]}</button>`).join('')}</div>`,{title:'공간·이동',narrow:true});
-  if(s===4)return wrap(top+`<div class="eyebrow mt-4">일상기능</div><h1 class="page-title">최근 약속이나 복약 시간을 놓치는 일이 있었나요?</h1><div class="answer-grid">${[['no','거의 없어요'],['sometimes','가끔 있어요'],['often','자주 있어요']].map(v=>`<button class="answer" data-initial-answer="daily:${v[0]}">${v[1]}</button>`).join('')}</div>`,{title:'일상기능',narrow:true});
-  return wrap(top+`<div class="eyebrow mt-4">지연회상</div><h1 class="page-title">처음 보여드린 세 단어를<br>기억나는 만큼 적어주세요</h1><p class="page-desc">순서는 상관없습니다.</p><div class="form-stack"><div class="field"><label for="recall-input">기억나는 단어</label><input id="recall-input" value="${esc(S.initial.recall)}" placeholder="예: 나무, …"></div><button id="save-recall" class="btn-kimse btn-primary-k">음성 테스트로 계속</button></div>`,{title:'지연회상',narrow:true});
+  const s=Math.min(5,Math.max(0,Number(S.initial.step)||0));
+  const top=`<div class="eyebrow">처음 설정 2/4 · 연구 근거 기반 baseline ${s+1}/6</div><div class="progress-k mt-2"><span style="width:${(s+1)/6*100}%"></span></div>`;
+  if(s===0)return wrap(top+`<h1 class="page-title">세 단어를 기억해주세요</h1><div class="memory-words"><strong>나무</strong><strong>기차</strong><strong>우산</strong></div><p class="page-desc">잠시 뒤 다시 묻습니다. KIMSE 자체 3단어 과제로, 임상검사 점수로 환산하지 않고 다음 측정과 비교할 원자료만 남깁니다.</p><button class="btn-kimse btn-primary-k btn-full" data-initial-next>기억했어요</button>`,{title:'기억 baseline',narrow:true});
+  if(s===1)return wrap(top+`<div class="eyebrow mt-4">연속 뺄셈 · Yamada 2021 과제 패러다임</div><h1 class="page-title">100에서 7을 세 번 빼면<br>마지막 숫자는 무엇인가요?</h1><div class="answer-grid">${['79','81','83','77'].map(v=>`<button class="answer" data-initial-answer="subtraction:${v}">${v}</button>`).join('')}</div><p class="screen-footnote">정답 여부와 반응시간을 개인 baseline으로 저장합니다. 원 연구의 진단 정확도를 낌새에 그대로 적용하지 않습니다.</p>`,{title:'주의·실행 baseline',narrow:true});
+  if(s===2)return wrap(top+`<div class="eyebrow mt-4">일상기능 · FAQ6 근거영역</div><h1 class="page-title">최근 4주 동안<br>약속이나 최근 일을 기억하는 게 평소보다 어려웠나요?</h1><div class="answer-grid">${[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>`<button class="answer" data-initial-answer="events:${v[0]}">${v[1]}</button>`).join('')}</div><p class="screen-footnote">FAQ6에서 예후와 연관된 기능영역을 바탕으로 만든 KIMSE 자가관찰 문항이며 FAQ6 점수는 아닙니다.</p>`,{title:'사건·약속 기억',narrow:true});
+  if(s===3)return wrap(top+`<div class="eyebrow mt-4">일상기능 · FAQ6 근거영역</div><h1 class="page-title">최근 4주 동안<br>계산·청구서·돈 관리를 하는 게 평소보다 어려웠나요?</h1><div class="answer-grid">${[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>`<button class="answer" data-initial-answer="finances:${v[0]}">${v[1]}</button>`).join('')}</div><p class="screen-footnote">금전관리 기능영역의 변화를 기록할 뿐 임상 점수로 환산하지 않습니다.</p>`,{title:'금전관리 변화',narrow:true});
+  if(s===4)return wrap(top+`<div class="eyebrow mt-4">일상기능 · FAQ6 근거영역</div><h1 class="page-title">최근 4주 동안<br>익숙한 곳으로 외출하거나 이동하는 게 평소보다 어려웠나요?</h1><div class="answer-grid">${[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>`<button class="answer" data-initial-answer="travel:${v[0]}">${v[1]}</button>`).join('')}</div><p class="screen-footnote">자가관찰 기능문항입니다. 공간기억 검사나 FAQ6 원점수로 해석하지 않습니다.</p>`,{title:'외출·이동 기능',narrow:true});
+  return wrap(top+`<div class="eyebrow mt-4">지연회상 · 개인 baseline</div><h1 class="page-title">처음 보여드린 세 단어를<br>기억나는 만큼 적어주세요</h1><p class="page-desc">순서는 상관없습니다. 회상 개수만 원자료로 저장하고 임상 cutoff를 적용하지 않습니다.</p><div class="form-stack"><div class="field"><label for="recall-input">기억나는 단어</label><input id="recall-input" value="${esc(S.initial.recall)}" placeholder="예: 나무, …"></div><button id="save-recall" class="btn-kimse btn-primary-k">음성 baseline으로 계속</button></div>`,{title:'지연회상 baseline',narrow:true});
 };
 
-page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).length,recording=!!voiceRecorder;return wrap(`<div class="eyebrow">처음 설정 3/4 · 음성 기준 만들기</div><h1 class="page-title">말하는 습관도<br>비교 기준이 됩니다</h1><p class="page-desc">내용을 평가하려는 것이 아니라 말의 속도·멈춤·표현 변화 등을 장기적으로 비교하기 위한 첫 음성 샘플입니다.</p><div class="voice-task-list">${VOICE_PROMPTS.map((p,i)=>{const v=S.initial.voiceSamples[i];const active=recording&&voiceTask===i;return `<section class="voice-task ${v?'done':''}"><div class="voice-index">${v?'✓':i+1}</div><div><strong>${p}</strong><small>${v?`녹음 완료 · ${v.durationSec}초 · 이 기기에 저장`:'30초 이상 편하게 말해주세요.'}</small></div><button class="btn-kimse ${active?'btn-danger-k':'btn-blue-k'} compact-btn" data-voice-task="${i}" ${recording&&!active?'disabled':''}>${active?'녹음 종료':v?'다시 녹음':'녹음 시작'}</button></section>`}).join('')}</div>${S.permissions.microphone==='denied'?notice('마이크 권한이 꺼져 있어요.','브라우저 사이트 설정에서 마이크를 허용하면 다시 녹음할 수 있습니다.'):''}<div class="hero-actions"><button id="finish-voice" class="btn-kimse btn-primary-k" ${done<3?'disabled':''}>첫 상태 결과 보기</button><button id="skip-voice" class="btn-kimse btn-secondary-k">음성 없이 계속</button></div>${notice('개인정보 원칙','현재 음성 원본은 서버로 전송하지 않고 이 기기의 전용 저장공간에 보관합니다. 향후 분석·연구 전송은 별도 동의를 받습니다.')}`,{title:'음성 기준',narrow:true})};
+page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).length,recording=!!voiceRecorder;return wrap(`<div class="eyebrow">처음 설정 3/4 · Yamada 2021 / Speech biomarker 근거</div><h1 class="page-title">말하는 습관도<br>개인 baseline이 됩니다</h1><p class="page-desc">자발화·사건 설명·의미 유창성 과제에서 말의 멈춤·음향 특징 등을 장기 비교합니다. 원 연구의 진단 정확도를 낌새 성능으로 사용하지 않습니다.</p><div class="voice-task-list">${VOICE_PROMPTS.map((p,i)=>{const v=S.initial.voiceSamples[i];const active=recording&&voiceTask===i;return `<section class="voice-task ${v?'done':''}"><div class="voice-index">${v?'✓':i+1}</div><div><strong>${p}</strong><small>${v?`녹음 완료 · ${v.durationSec}초 · 이 기기에 저장`:'30초 이상 편하게 말해주세요.'}</small></div><button class="btn-kimse ${active?'btn-danger-k':'btn-blue-k'} compact-btn" data-voice-task="${i}" ${recording&&!active?'disabled':''}>${active?'녹음 종료':v?'다시 녹음':'녹음 시작'}</button></section>`}).join('')}</div>${S.permissions.microphone==='denied'?notice('마이크 권한이 꺼져 있어요.','브라우저 사이트 설정에서 마이크를 허용하면 다시 녹음할 수 있습니다.'):''}<div class="hero-actions"><button id="finish-voice" class="btn-kimse btn-primary-k" ${done<3?'disabled':''}>첫 상태 결과 보기</button><button id="skip-voice" class="btn-kimse btn-secondary-k">음성 없이 계속</button></div>${notice('개인정보 원칙','현재 음성 원본은 서버로 전송하지 않고 이 기기의 전용 저장공간에 보관합니다. 향후 분석·연구 전송은 별도 동의를 받습니다.')}`,{title:'음성 기준',narrow:true})};
 
-page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 테스트가 필요해요</h1>${notice('아직 결과를 만들 수 없습니다.','기본 테스트와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">기본 테스트 시작</button>`,{title:'첫 상태 참고',narrow:true});const d=initialScores(),avg=Math.round(Object.values(d).reduce((x,y)=>x+y,0)/5),m=statusMeta(avg);return wrap(`<div class="eyebrow">첫 상태 참고</div><h1 class="page-title">오늘의 기능 상태를<br>먼저 참고해보세요</h1><div class="status-hero ${m[1]}"><span>현재 기능 참고</span><strong>${m[0]}</strong><small>기본 테스트 수행과 자가응답을 합친 참고값</small></div><div class="domain-grid">${BRAIN_DOMAINS.map(([k,t,r,icon])=>{const x=statusMeta(d[k]);return `<div class="domain-card"><span class="domain-icon">${icon}</span><div><strong>${t}</strong><small>${r}</small></div><span class="brain-score ${x[1]}">${x[0]}</span></div>`}).join('')}</div>${notice('이 결과는 진단이 아닙니다.','현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다. 14일 동안 생활패턴을 확인한 뒤, 이후 변화를 그 기간과 비교합니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">뇌 기능 연관 지도 보기</button><button class="btn-kimse btn-primary-k" data-go="consent">데이터 수집 동의로 계속</button></div>`,{title:'첫 상태 참고',narrow:true})};
+page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 확인이 필요해요</h1>${notice('아직 기준을 만들 수 없습니다.','초기 과제와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">초기 과제 시작</button>`,{title:'첫 상태 참고',narrow:true});const a=S.initial.answers||{},recall=initialRecallCount(),rt=(S.initial.responseTimes||[])[0];const freq=v=>v==='no'?'평소와 비슷함':v==='some'?'가끔 어려움':v==='often'?'자주 어려움':'기록 없음';return wrap(`<div class="eyebrow">연구 근거 기반 · 개인 baseline</div><h1 class="page-title">오늘의 원자료를<br>비교 기준으로 저장했어요</h1><p class="page-desc">낌새 자체 과제를 임상 점수로 환산하지 않습니다. 다음 측정에서 같은 종류의 원자료와 반응시간 변화를 비교합니다.</p><div class="list">${row('🧠 지연회상','KIMSE 3단어 과제 · 임상 cutoff 없음','<strong>'+recall+' / 3개</strong>')}${row('➖ 연속 뺄셈','Yamada 2021 과제 패러다임','<strong>'+(a.subtraction==='79'?'정답':'응답 기록')+(rt?' · '+Math.round(rt/100)/10+'초':'')+'</strong>')}${row('📅 사건·약속 기억','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.events)+'</strong>')}${row('💳 금전관리','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.finances)+'</strong>')}${row('🧭 외출·이동','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.travel)+'</strong>')}${row('🗣️ 음성 샘플','자발화·의미유창성 연구 기반','<strong>'+S.initial.voiceSamples.filter(Boolean).length+'개</strong>')}</div>${notice('해석 원칙','이 값만으로 정상·이상·치매 여부를 판정하지 않습니다. 현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">관찰 영역 보기</button><button class="btn-kimse btn-primary-k" data-go="consent">데이터 수집 동의로 계속</button></div>`,{title:'첫 상태 참고',narrow:true})};
 
 page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 움직임과 활동시간 신호를 수집합니다. 일일 걸음수는 네이티브 앱에서 기기 건강 데이터를 연결해 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 지원 기기에서는 앱을 닫아도 푸시 알림을 받습니다.</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
@@ -1011,17 +1026,17 @@ page.baseline=()=>{
 };
 
 page['brain-map']=()=>{
-  if(!S.initial.completedAt)return wrap('<div class="eyebrow">기능 지도</div><h1 class="page-title">첫 상태 확인을 마치면<br>기능별 변화를 볼 수 있어요</h1>'+notice('아직 기록이 없어요.','기억·주의·언어·공간·일상기능을 먼저 확인해주세요.')+'<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">기본 테스트 시작</button>',{title:'기능 지도',narrow:true,overview:true});
-  const d=initialScores(),meta=brainFocusMeta(),m=statusMeta(d[S.brainFocus]);
+  if(!S.initial.completedAt)return wrap('<div class="eyebrow">기능 지도</div><h1 class="page-title">첫 상태 확인을 마치면<br>관찰 영역을 볼 수 있어요</h1>'+notice('아직 기록이 없어요.','연구 근거에 연결된 초기 과제를 먼저 진행해주세요.')+'<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">초기 과제 시작</button>',{title:'기능 지도',narrow:true,overview:true});
+  const d=initialScores(),meta=brainFocusMeta(),m=d?statusMeta(d[S.brainFocus]):null;
   return wrap(
-    '<div class="eyebrow">인지 기능 분석</div>'+
-    '<h1 class="page-title">기억·주의·언어 등<br>기능별 변화를 확인합니다</h1>'+
+    '<div class="eyebrow">근거 기반 관찰 영역</div>'+
+    '<h1 class="page-title">기억·주의·언어 등<br>무엇을 관찰하는지 보여줍니다</h1>'+
     '<div class="brain-domain-tabs">'+BRAIN_DOMAINS.map(([k,t,r,icon])=>'<button data-brain-focus="'+k+'" class="'+(S.brainFocus===k?'active':'')+'"><span>'+icon+'</span>'+t+'</button>').join('')+'</div>'+
     brainSvg(S.brainView,S.brainFocus)+
-    '<div class="brain-focus-summary"><strong>'+meta[1]+'</strong><span>'+m[0]+'</span><small>'+meta[2]+'와 관련된 변화를 살펴봅니다.</small></div>'+
+    '<div class="brain-focus-summary"><strong>'+meta[1]+'</strong><span>'+(m?m[0]:'개인 점수 미산출')+'</span><small>'+meta[2]+'와 관련된 변화 영역입니다. KIMSE 자체 초기문항을 임상 점수로 환산하지 않습니다.</small></div>'+
     '<div class="brain-view-switch"><button data-brain-view="side" class="'+(S.brainView==='side'?'active':'')+'">옆면</button><button data-brain-view="top" class="'+(S.brainView==='top'?'active':'')+'">윗면</button></div>'+
-    '<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="brain-trends">시간 변화 보기</button></div>'+
-    '<p class="screen-footnote">뇌영상 검사가 아니라, 기록된 인지·생활 변화와 관련된 기능을 이해하기 위한 지도입니다.</p>',
+    (S.brainHistory.length?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="brain-trends">시간 변화 보기</button></div>':'')+
+    '<p class="screen-footnote">뇌영상 검사나 진단 점수가 아니라, 근거 레지스트리에 연결된 관찰 영역을 설명하는 지도입니다.</p>',
     {title:'기능 지도',narrow:true,overview:true}
   );
 };
@@ -1207,16 +1222,16 @@ document.addEventListener('click',e=>{
   }
   if(e.target.id==='finish-voice'||e.target.id==='skip-voice'){
     if(e.target.id==='skip-voice'){S.initial.voiceSkipped=true}
-    S.initial.domains=initialScores();S.initial.completedAt=new Date().toISOString();S.onboarding.initialDone=true;addBrainSnapshot('initial');save();feedback('첫 상태 참고 결과를 만들었습니다.','success');go('initial-result');return;
+    S.initial.domains=null;S.initial.completedAt=new Date().toISOString();S.onboarding.initialDone=true;save();feedback('개인 비교용 첫 기준을 저장했습니다.','success');go('initial-result');return;
   }
 });
 document.addEventListener('submit',async e=>{
   if(e.target.id==='profile-form'){
     e.preventDefault();
-    const birth=$('#profile-birth')?.value.trim()||'',sex=$('#profile-sex')?.value||'',education=$('#profile-education')?.value||'',living=$('#profile-living')?.value||'',sleep=$('#profile-sleep')?.value.trim()||'',activity=$('#profile-activity')?.value||'',hearing=$('#profile-hearing')?.value||'';
+    const birth=$('#profile-birth')?.value.trim()||'',sex=$('#profile-sex')?.value||'',education=$('#profile-education')?.value||'',activity=$('#profile-activity')?.value||'',living=$('#profile-living')?.value||'',socialSupport=$('#profile-social-support')?.value||'',socialActivity=$('#profile-social-activity')?.value||'',sleep=$('#profile-sleep')?.value.trim()||'',sleepDisturbance=$('#profile-sleep-disturbance')?.value||'',hearing=$('#profile-hearing')?.value||'';
     const year=Number(birth),thisYear=new Date().getFullYear();
-    if(!year||year<thisYear-120||year>thisYear-18||!sex||!education||!living||!sleep||!activity||!hearing){feedback('기본정보 항목을 모두 확인해주세요.','warning');return}
-    S.profile={...S.profile,birthYear:birth,sex,education,living,sleepHours:sleep,activity,hearing};S.onboarding.profileDone=true;S.initial.step=0;save();feedback('기본정보를 저장했습니다.','success');go('initial-check');return;
+    if(!year||year<thisYear-120||year>thisYear-18||!sex||!education||!activity||!living||!socialSupport||!socialActivity||!sleep||!sleepDisturbance||!hearing){feedback('근거 연결 기본정보 항목을 모두 확인해주세요.','warning');return}
+    S.profile={...S.profile,birthYear:birth,sex,education,activity,living,socialSupport,socialActivity,sleepHours:sleep,sleepDisturbance,hearing};S.onboarding.profileDone=true;S.initial.step=0;save();feedback('기본정보를 저장했습니다.','success');go('initial-check');return;
   }
   if(e.target.id==='consent-form'){
     e.preventDefault();
