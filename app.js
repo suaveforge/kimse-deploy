@@ -278,8 +278,8 @@ async function requestSelectedPermissions(){
   }
   await Promise.all(waits);save();
 }
-const SIGNAL_LABELS={sleep_minutes:'수면시간',steps:'걸음수',foreground_steps:'앱 실행 중 추정 걸음',location_radius_m:'생활반경',movement_distance_m:'이동거리',outings:'외출',motion_active_minutes:'활동시간',app_active_minutes:'낌새 이용시간',call_count:'통화 횟수',call_duration_min:'통화시간',messaging_sessions:'메신저 활동',task_response_ms:'반응시간',voice_pause_ratio:'말할 때 멈춤'};
-const SIGNAL_ICONS={sleep_minutes:'moon',steps:'walk',foreground_steps:'walk',location_radius_m:'map-pin',movement_distance_m:'route',outings:'door-exit',motion_active_minutes:'activity',app_active_minutes:'device-mobile',call_count:'phone',call_duration_min:'phone-call',messaging_sessions:'message-circle',task_response_ms:'clock',voice_pause_ratio:'message-dots'};
+const SIGNAL_LABELS={sleep_minutes:'수면시간',steps:'걸음수',foreground_steps_estimate:'앱 실행 중 추정 걸음',location_radius_m:'생활반경',movement_distance_m:'이동거리',outings:'외출',motion_active_minutes:'활동시간',app_active_minutes:'낌새 이용시간',call_count:'통화 횟수',call_duration_min:'통화시간',messaging_sessions:'메신저 활동',task_response_ms:'반응시간',voice_pause_ratio:'말할 때 멈춤'};
+const SIGNAL_ICONS={sleep_minutes:'moon',steps:'walk',foreground_steps_estimate:'walk',location_radius_m:'map-pin',movement_distance_m:'route',outings:'door-exit',motion_active_minutes:'activity',app_active_minutes:'device-mobile',call_count:'phone',call_duration_min:'phone-call',messaging_sessions:'message-circle',task_response_ms:'clock',voice_pause_ratio:'message-dots'};
 const MONITORING_UI_LEVELS={
   stable:{key:'stable',label:'안정',icon:'circle-check',headline:'최근 기록은 안정적입니다',action:'현재 기록을 이어가세요'},
   warning:{key:'warning',label:'경고',icon:'alert-triangle',headline:'확인이 필요한 변화가 있습니다',action:'기능별 변화를 확인해보세요'},
@@ -350,12 +350,12 @@ function handleMonitoringAlert(alert){
   S.monitoring.alerts.unshift(alert);S.monitoring.alerts=S.monitoring.alerts.slice(0,30);save();
   if(S.consents.notifications&&'Notification'in window&&Notification.permission==='granted'){try{new Notification('낌새 · 최근 변화가 보여요',{body:alert.summary||'평소와 다른 변화가 함께 관찰되었습니다.',tag:'kimse-change-'+alert.id})}catch{}}
 }
-async function flushSignals(){
+async function flushSignals(keepalive=false){
   if(!monitoringEnabled()||!navigator.onLine||!S.monitoring.pending.length)return false;
   if(!await startRemoteMonitoring())return false;
   const batch=S.monitoring.pending.slice(0,100);
   try{
-    const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/signals/batch',{method:'POST',headers:remoteHeaders(),body:JSON.stringify({account_id:S.remote.accountId,events:batch})});
+    const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/signals/batch',{method:'POST',headers:remoteHeaders(),body:JSON.stringify({account_id:S.remote.accountId,events:batch}),keepalive:!!keepalive});
     if(!r.ok)throw new Error('signals '+r.status);const x=await r.json(),ids=new Set(x.client_event_ids||[]);
     S.monitoring.pending=S.monitoring.pending.filter(e=>!ids.has(e.client_event_id));S.monitoring.lastFlushAt=new Date().toISOString();S.monitoring.lastSyncError='';if(x.alert)handleMonitoringAlert(x.alert);save();return true;
   }catch{S.monitoring.lastSyncError='관찰 데이터 전송 대기 중';save();return false}
@@ -439,13 +439,13 @@ function onDeviceMotion(e){
     gravityMagnitude=gravityMagnitude==null?raw:gravityMagnitude*.9+raw*.1;dynamicMag=Math.abs(raw-gravityMagnitude);
   }else return;
   const interval=Math.max(10,Math.min(1000,Number(e.interval)||100)),now=Date.now(),daily=ensureMonitoringDay();
-  if(!daily.motionInitialized){daily.motionInitialized=true;queueSignal('motion_active_minutes',0,'min','devicemotion',{foreground:true,daily_presence:true})}
+  if(!daily.motionInitialized){daily.motionInitialized=true;queueSignal('motion_active_minutes',0,'min','devicemotion',{foreground:true,daily_presence:true});queueSignal('foreground_steps_estimate',0,'count','pwa-motion-estimate',{foreground:true,daily_presence:true})}
   if(dynamicMag>1.2)motionAccumMs+=interval;
   const high=dynamicMag>1.75;
   if(high&&!motionStepHigh&&now-lastStepAt>=280){
     daily.foregroundSteps+=1;lastStepAt=now;
     noteObserved('foreground_steps',daily.foregroundSteps,'count','pwa-motion-estimate');
-    if(daily.foregroundSteps%10===0||now-lastStepSavedAt>=60000){lastStepSavedAt=now;save()}
+    if(daily.foregroundSteps%10===0||now-lastStepSavedAt>=60000){lastStepSavedAt=now;queueSignal('foreground_steps_estimate',daily.foregroundSteps,'count','pwa-motion-estimate',{foreground:true,estimated:true});save()}
   }
   motionStepHigh=dynamicMag>.9;
   if(now-motionLastFlush>=60000)flushMotionActivity();
@@ -818,8 +818,8 @@ function monitoringTodaySnapshot(){
 }
 function collectionStateRows(){
   const d=ensureMonitoringDay(),locOn=S.consents.location,motionOn=S.consents.motion,usageOn=S.consents.usage;
-  const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?'수집 중':'권한 확인 전';
-  const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?'수집 중':'권한 확인 전';
+  const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?(d.locationInitialized?'수집 중':'위치 신호 대기'):'권한 확인 전';
+  const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?(d.motionInitialized?'수집 중':'센서 신호 대기'):'권한 확인 전';
   const voiceCount=(S.initial.voiceSamples||[]).filter(Boolean).length;
   return [
     row('📍 위치·이동',locState,'<strong>'+Math.round(d.movementDistanceM).toLocaleString('ko-KR')+'m</strong>'),
@@ -1086,8 +1086,12 @@ document.addEventListener('click',async e=>{if(e.target.id==='admin-login'){cons
 document.addEventListener('click',async e=>{if(e.target.id!=='partner-submit')return;const company=$('#partner-company').value.trim(),contact=$('#partner-name').value.trim(),email=$('#partner-email').value.trim(),message=$('#partner-message').value.trim();if(!company||!contact||!email||message.length<10||!$('#partner-consent').checked){feedback('회사명, 담당자, 이메일, 10자 이상의 제안 내용과 개인정보 동의를 확인해주세요.','warning');return}e.target.disabled=true;e.target.textContent='접수 중…';try{const r=await fetch(API+'/api/v1/partner-inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({inquiry_type:$('#partner-type').value,company_name:company,contact_name:contact,email,phone:$('#partner-phone').value.trim()||null,website_url:$('#partner-web').value.trim()||null,category:$('#partner-category').value,message})});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();S.partnerStatus={id:data.id,at:data.created_at,company};save();feedback('입점·제휴 문의가 정상 접수되었습니다.','success');A.innerHTML=wrap(`<h1 class="page-title">문의가 접수됐어요</h1>${notice('접수 완료',company+' 담당자님의 제안을 저장했습니다. 검토 후 입력한 이메일로 연락드릴 수 있습니다.')}<button class="btn-kimse btn-primary-k btn-full" data-go="market">케어관으로 돌아가기</button>`,{title:'문의 접수',narrow:true})}catch(err){feedback('접수에 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.','warning');e.target.disabled=false;e.target.textContent='문의 접수'}});
 
 window.addEventListener('hashchange',render);window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');startPassiveCollectors();flushSignals();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
-document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals()}else{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}}});
-window.addEventListener('beforeunload',()=>{recordAppActive();flushMotionActivity();stopLocationWatch()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)}else{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}}});
+window.addEventListener('pagehide',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
+window.addEventListener('pageshow',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});
+document.addEventListener('freeze',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
+document.addEventListener('resume',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});
+window.addEventListener('beforeunload',()=>{recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)});
 async function bootstrap(){await loadEvidenceModel();render();if(monitoringEnabled()){queueInitialSignals();await startRemoteMonitoring();startPassiveCollectors();await syncMonitoring()}if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}
 bootstrap();
 })();
