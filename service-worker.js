@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260923-release42-webpush';
+const CACHE = 'kimse-pwa-20260923-release42-native-pedometer-1';
 const CORE = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const CORE = [
   './premium-ux.css',
   './govtech-p0.css',
   './app.js',
+  './native-bridge.js',
   './authhub.js',
   './push.js',
   './accessibility-enhancements.js',
