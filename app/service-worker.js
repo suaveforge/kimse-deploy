@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260923-release42-native-pedometer-2';
+const CACHE = 'kimse-pwa-20260923-release43-monitoring-integrity';
 const CORE = [
   './',
   './index.html',
