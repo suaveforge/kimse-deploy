@@ -381,7 +381,8 @@ function noteObserved(metric,value,unit='',source='pwa'){
 function queueSignal(metric,value,unit='',source='pwa',metadata={}){
   const n=Number(value);if(!monitoringEnabled()||!Number.isFinite(n))return;
   noteObserved(metric,n,unit,source);
-  S.monitoring.pending.push({client_event_id:signalId(),source,metric,value:n,unit:unit||null,metadata,observed_at:new Date().toISOString()});
+  const eventMetadata={...(metadata||{}),local_day:localDayKey()};
+  S.monitoring.pending.push({client_event_id:signalId(),source,metric,value:n,unit:unit||null,metadata:eventMetadata,observed_at:new Date().toISOString()});
   if(S.monitoring.pending.length>300)S.monitoring.pending=S.monitoring.pending.slice(-300);save();
 }
 async function ensureRemoteIdentity(){
@@ -444,6 +445,16 @@ async function startRemoteMonitoring(){
     if(!r.ok)throw new Error('monitoring '+r.status);const x=await r.json();
     if(x.baseline_started_at&&!S.baseline.startedAt)S.baseline.startedAt=x.baseline_started_at;S.monitoring.lastSyncError='';save();return true;
   }catch{S.monitoring.lastSyncError='모니터링 시작 동기화 실패';save();return false}
+}
+async function syncMonitoringPreferences(){
+  if(!monitoringEnabled()||!navigator.onLine||!await ensureRemoteIdentity())return false;
+  try{
+    const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/monitoring/preferences',{
+      method:'POST',headers:remoteHeaders(),body:JSON.stringify({account_id:S.remote.accountId,caregiver_share_enabled:!!S.consents.caregiverShare})
+    });
+    if(!r.ok)throw new Error('preferences '+r.status);
+    return true;
+  }catch{S.monitoring.lastSyncError='보호자 공유 설정을 동기화하지 못했습니다.';save();return false}
 }
 function handleMonitoringAlert(alert){
   if(!alert||!alert.id||S.monitoring.alerts.some(x=>x.id===alert.id))return;
@@ -1214,7 +1225,7 @@ document.addEventListener('submit',async e=>{
     S.consents.microphone=!!$('#consent-microphone')?.checked;S.consents.location=!!$('#consent-location')?.checked;S.consents.motion=!!$('#consent-motion')?.checked;S.consents.usage=!!$('#consent-usage')?.checked;S.consents.notifications=!!$('#consent-notifications')?.checked;S.consents.caregiverShare=!!$('#consent-caregiver')?.checked;
     S.onboarding.consentDone=true;S.onboarding.completed=true;if(!S.baseline.startedAt)S.baseline.startedAt=new Date().toISOString();save();
     if(demoAutoRunning){go('baseline');return}
-    feedback('설정을 저장했습니다. 생활 패턴 기록을 시작합니다.','success');await requestSelectedPermissions();await startRemoteMonitoring();await window.KIMSE_PUSH?.sync?.();queueInitialSignals();startPassiveCollectors();flushSignals();save();go('home');return;
+    feedback('설정을 저장했습니다. 생활 패턴 기록을 시작합니다.','success');await requestSelectedPermissions();await startRemoteMonitoring();await syncMonitoringPreferences();await window.KIMSE_PUSH?.sync?.();queueInitialSignals();startPassiveCollectors();flushSignals();save();go('home');return;
   }
 });
 async function completeAuthHubLogin(result){
@@ -1282,7 +1293,7 @@ document.addEventListener('click',async e=>{if(e.target.id==='sync-monitoring'){
 document.addEventListener('click',async e=>{if(e.target.id==='admin-login'){const token=$('#admin-token').value.trim();if(!token){feedback('운영자 접근 코드를 입력해주세요.','warning');return}e.target.disabled=true;e.target.textContent='확인 중…';try{const r=await fetch(API+'/api/v1/admin/partner-inquiries?limit=1',{headers:{'X-KIMSE-ADMIN-TOKEN':token}});if(r.status===401||r.status===403){feedback('운영자 접근 코드를 다시 확인해주세요.','warning');return}if(!r.ok)throw new Error('HTTP '+r.status);sessionStorage.setItem('kimse.admin.token',token);feedback('운영자 인증이 확인되었습니다.','success');render()}catch{feedback('운영자 문의함에 연결하지 못했습니다. 잠시 뒤 다시 시도해주세요.','warning')}finally{if(e.target?.isConnected){e.target.disabled=false;e.target.textContent='문의함 열기'}}return}if(e.target.id==='admin-logout'){sessionStorage.removeItem('kimse.admin.token');feedback('운영자 문의함에서 로그아웃했습니다.');render();return}const statusBtn=e.target.closest('[data-admin-status]');if(statusBtn){const token=sessionStorage.getItem('kimse.admin.token');if(!token)return;statusBtn.disabled=true;try{const r=await fetch(API+'/api/v1/admin/partner-inquiries/'+encodeURIComponent(statusBtn.dataset.inquiryId)+'/status',{method:'POST',headers:{'Content-Type':'application/json','X-KIMSE-ADMIN-TOKEN':token},body:JSON.stringify({status:statusBtn.dataset.adminStatus})});if(!r.ok)throw new Error('HTTP '+r.status);feedback('문의 상태를 변경했습니다.','success');await loadAdminInquiries()}catch{feedback('문의 상태 변경에 실패했습니다.','warning');statusBtn.disabled=false}}});
 document.addEventListener('click',async e=>{if(e.target.id!=='partner-submit')return;const company=$('#partner-company').value.trim(),contact=$('#partner-name').value.trim(),email=$('#partner-email').value.trim(),message=$('#partner-message').value.trim();if(!company||!contact||!email||message.length<10||!$('#partner-consent').checked){feedback('회사명, 담당자, 이메일, 10자 이상의 제안 내용과 개인정보 동의를 확인해주세요.','warning');return}e.target.disabled=true;e.target.textContent='접수 중…';try{const r=await fetch(API+'/api/v1/partner-inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({inquiry_type:$('#partner-type').value,company_name:company,contact_name:contact,email,phone:$('#partner-phone').value.trim()||null,website_url:$('#partner-web').value.trim()||null,category:$('#partner-category').value,message})});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();S.partnerStatus={id:data.id,at:data.created_at,company};save();feedback('입점·제휴 문의가 정상 접수되었습니다.','success');A.innerHTML=wrap(`<h1 class="page-title">문의가 접수됐어요</h1>${notice('접수 완료',company+' 담당자님의 제안을 저장했습니다. 검토 후 입력한 이메일로 연락드릴 수 있습니다.')}<button class="btn-kimse btn-primary-k btn-full" data-go="market">케어관으로 돌아가기</button>`,{title:'문의 접수',narrow:true})}catch(err){feedback('접수에 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.','warning');e.target.disabled=false;e.target.textContent='문의 접수'}});
 
-window.addEventListener('hashchange',render);window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');startPassiveCollectors();flushSignals();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
+window.addEventListener('hashchange',render);window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');startPassiveCollectors();flushSignals();syncMonitoringPreferences();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
 document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)}else{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}}});
 window.addEventListener('pagehide',()=>{recordAppActive();flushMotionActivity();queueNativeStepSnapshot(true);stopLocationWatch();flushSignals(true)});
 window.addEventListener('pageshow',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});
@@ -1298,7 +1309,7 @@ async function bootstrap(){
     else if(oauth?.accessToken){await establishKimseAuth(oauth);S.auth.lastError='';save();go(authNextRoute())}
   }catch(err){S.auth.lastError='소셜 로그인을 완료하지 못했습니다.';save();go('auth')}
   render();
-  if(monitoringEnabled()){queueInitialSignals();await startRemoteMonitoring();if(S.consents.notifications)await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();await syncMonitoring()}
+  if(monitoringEnabled()){queueInitialSignals();await startRemoteMonitoring();await syncMonitoringPreferences();if(S.consents.notifications)await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();await syncMonitoring()}
 }
 bootstrap();
 })();
