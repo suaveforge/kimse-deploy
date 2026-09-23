@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),A=$('#app'),N=$('#announcer'),O=$('#offline-banner'),K='kimse.p0.state',MODEL_CACHE='kimse.evidence.model.cache';
-const STATE_VERSION=10;
+const STATE_VERSION=11;
 const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mode:'self',caregivers:[],caregiverInvites:[],callSchedules:[],alertRecipients:[],plan:'FREE',q:0,answers:[],med:false,mood:'',
   medicines:[],
   health:{sleep:'',steps:'',pressure:'',memo:''},
@@ -13,7 +13,7 @@ const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mo
   permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
   remote:{accountId:'',subjectId:'',token:''},
   auth:{lastError:'',pending:false,authhubUserId:''},
-  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},daily:{date:'',movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0,locationInitialized:false,motionInitialized:false}},
+  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},liveSteps:null,liveStepProvider:'',liveStepAt:'',daily:{date:'',movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0,locationInitialized:false,motionInitialized:false}},
   brainView:'side',brainRange:'week',brainFocus:'memory',brainTrendDomain:'overall',brainHistory:[],
   selectedTraining:'memory',trainingResult:null,selectedHealth:'sleep',marketCategory:'all',marketSearch:'',marketItem:null,marketFavorites:[],partnerStatus:null,
   a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,captions:true,largeTouchTargets:true,colorIcons:true,screenReader:true,reduceMotion:false}};
@@ -56,7 +56,7 @@ S.baseline=Object.assign({},D.baseline,S.baseline||{});
 S.permissions=Object.assign({},D.permissions,S.permissions||{});
 S.remote=Object.assign({},D.remote,S.remote||{});
 S.auth=Object.assign({},D.auth,S.auth||{});
-S.monitoring=Object.assign({},D.monitoring,S.monitoring||{});if(!Array.isArray(S.monitoring.pending))S.monitoring.pending=[];if(!Array.isArray(S.monitoring.alerts))S.monitoring.alerts=[];S.monitoring.lastObserved=Object.assign({},D.monitoring.lastObserved,S.monitoring.lastObserved||{});S.monitoring.daily=Object.assign({},D.monitoring.daily,S.monitoring.daily||{});
+S.monitoring=Object.assign({},D.monitoring,S.monitoring||{});if(!Array.isArray(S.monitoring.pending))S.monitoring.pending=[];if(!Array.isArray(S.monitoring.alerts))S.monitoring.alerts=[];S.monitoring.lastObserved=Object.assign({},D.monitoring.lastObserved,S.monitoring.lastObserved||{});S.monitoring.daily=Object.assign({},D.monitoring.daily,S.monitoring.daily||{});if(!Number.isFinite(Number(S.monitoring.liveSteps)))S.monitoring.liveSteps=null;
 if(!Array.isArray(S.initial.responseTimes))S.initial.responseTimes=[];
 if(!Array.isArray(S.brainHistory))S.brainHistory=[];
 if(!['top','side'].includes(S.brainView))S.brainView='side';
@@ -322,7 +322,9 @@ async function startVoiceRecording(index){
 function stopVoiceRecording(){if(voiceRecorder&&voiceRecorder.state==='recording')voiceRecorder.stop()}
 async function requestSelectedPermissions(){
   const waits=[];
-  if(S.consents.motion&&typeof DeviceMotionEvent!=='undefined'){
+  if(S.consents.motion&&window.KIMSE_NATIVE?.isNative?.()){
+    waits.push(window.KIMSE_NATIVE.requestStepPermission().then(v=>{S.permissions.motion=v?.granted?'granted':v?.available===false?'unsupported':'denied'}).catch(()=>{S.permissions.motion='denied'}));
+  }else if(S.consents.motion&&typeof DeviceMotionEvent!=='undefined'){
     try{
       if(typeof DeviceMotionEvent.requestPermission==='function')waits.push(DeviceMotionEvent.requestPermission().then(v=>{S.permissions.motion=v==='granted'?'granted':'denied'}).catch(()=>{S.permissions.motion='denied'}));
       else S.permissions.motion='available';
@@ -469,7 +471,7 @@ async function syncMonitoring(){
 function parseSleepMinutes(v){const s=String(v||'');let m=0;const h=s.match(/(\d+(?:\.\d+)?)\s*시간/),mm=s.match(/(\d+)\s*분/);if(h)m+=Number(h[1])*60;if(mm)m+=Number(mm[1]);if(!m&&/^\d+(?:\.\d+)?$/.test(s.trim()))m=Number(s)*60;return m>0?m:null}
 function parseSteps(v){const n=Number(String(v||'').replace(/[^\d.]/g,''));return Number.isFinite(n)&&n>0?n:null}
 function haversine(a,b){const R=6371000,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lon-a.lon)*p,x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-let runtimeLocationDay='',runtimeFirstLocation=null,runtimeLastLocation=null,locationWatchId=null,motionAccumMs=0,motionLastFlush=Date.now(),appSessionStarted=Date.now(),collectorsStarted=false,motionListenerAttached=false,gravityMagnitude=null,collectorFlushTimer=null;
+let runtimeLocationDay='',runtimeFirstLocation=null,runtimeLastLocation=null,locationWatchId=null,motionAccumMs=0,motionLastFlush=Date.now(),appSessionStarted=Date.now(),collectorsStarted=false,motionListenerAttached=false,gravityMagnitude=null,collectorFlushTimer=null,nativeStepCollectorStarted=false,nativeStepRemove=null;
 function handleLocationPosition(pos){
   if(!monitoringEnabled()||!S.consents.location||document.hidden)return;
   const accuracy=Number(pos?.coords?.accuracy)||0;
@@ -541,8 +543,36 @@ function onDeviceMotion(e){
   if(dynamicMag>1.2)motionAccumMs+=interval;
   if(now-motionLastFlush>=60000)flushMotionActivity();
 }
+function acceptNativeSteps(payload){
+  const steps=Math.max(0,Math.round(Number(payload?.steps)));
+  if(!Number.isFinite(steps))return;
+  const provider=String(payload?.provider||'native-pedometer');
+  S.monitoring.liveSteps=steps;S.monitoring.liveStepProvider=provider;S.monitoring.liveStepAt=payload?.observedAt||new Date().toISOString();
+  queueSignal('steps',steps,'count','native-pedometer',{provider,realtime:true});
+  if(['health','report','collection-status'].includes(route()))render();
+}
 async function collectNativeBridgeSignals(){
-  if(!monitoringEnabled()||!window.KIMSE_NATIVE||typeof window.KIMSE_NATIVE.getDailySignals!=='function')return;try{const rows=await window.KIMSE_NATIVE.getDailySignals();if(Array.isArray(rows))for(const x of rows){if(x&&x.metric&&Number.isFinite(Number(x.value)))queueSignal(x.metric,Number(x.value),x.unit||'','native',{provider:x.provider||'device'})}flushSignals()}catch{}
+  if(!monitoringEnabled()||!window.KIMSE_NATIVE||typeof window.KIMSE_NATIVE.getDailySignals!=='function')return;
+  try{
+    const rows=await window.KIMSE_NATIVE.getDailySignals();
+    if(Array.isArray(rows))for(const x of rows){
+      if(x?.metric==='steps'&&Number.isFinite(Number(x.value))){
+        S.monitoring.liveSteps=Math.max(0,Math.round(Number(x.value)));S.monitoring.liveStepProvider=String(x.provider||'native-pedometer');S.monitoring.liveStepAt=new Date().toISOString();
+      }
+      if(x&&x.metric&&Number.isFinite(Number(x.value)))queueSignal(x.metric,Number(x.value),x.unit||'','native',{provider:x.provider||'device'});
+    }
+    save();flushSignals();
+  }catch{}
+}
+async function configureNativeStepCollector(){
+  const should=monitoringEnabled()&&S.consents.motion&&window.KIMSE_NATIVE?.isNative?.()&&typeof window.KIMSE_NATIVE.startStepUpdates==='function';
+  if(!should||nativeStepCollectorStarted)return;
+  nativeStepCollectorStarted=true;
+  try{
+    const handle=await window.KIMSE_NATIVE.startStepUpdates(acceptNativeSteps);
+    if(handle?.granted===false){S.permissions.motion=handle.available===false?'unsupported':'denied';nativeStepCollectorStarted=false;save();return}
+    S.permissions.motion='granted';nativeStepRemove=handle?.remove||null;save();
+  }catch{nativeStepCollectorStarted=false}
 }
 function configureMotionCollector(){
   const should=monitoringEnabled()&&S.consents.motion&&['granted','available'].includes(S.permissions.motion);
@@ -564,6 +594,7 @@ function startPassiveCollectors(){
     collectorFlushTimer=setInterval(()=>{if(document.hidden)return;recordAppActive();flushMotionActivity();startLocationWatch();flushSignals()},60000);
   }
   configureMotionCollector();
+  configureNativeStepCollector();
   if(S.consents.location&&S.permissions.location==='granted')startLocationWatch();else stopLocationWatch();
   setTimeout(flushSignals,500);
 }
@@ -1053,7 +1084,9 @@ page['training-play']=()=>{const x=TRAINING[S.selectedTraining]||TRAINING.memory
 page.medication=()=>wrap(`<h1 class="page-title">복약 관리</h1><p class="page-desc">등록한 약마다 복용 여부를 바로 기록할 수 있어요.</p><div class="list">${S.medicines.map(m=>row('💊 '+m.name,`${m.time} · ${m.note||'복용 메모 없음'}`,`<button class="btn-kimse ${m.taken?'btn-secondary-k':'btn-primary-k'}" data-med-id="${m.id}">${m.taken?'복용 완료 ✓':'복용 기록'}</button>`)).join('')}</div><div class="hero-actions">${btn('+ 약 등록하기','medication-add','btn-blue-k')}</div>`,{title:'복약 관리',narrow:true});
 page['medication-add']=()=>wrap(`<h1 class="page-title">약 등록</h1><div class="form-stack"><div class="field"><label for="med-name">약 이름</label><input id="med-name" placeholder="예: 혈압약"></div><div class="field"><label for="med-time">복용 시간</label><input id="med-time" type="time" value="08:00"></div><div class="field"><label for="med-note">복용 메모</label><input id="med-note" placeholder="예: 아침 식사 후"></div><button id="save-med" class="btn-kimse btn-primary-k">등록하기</button></div>`,{title:'약 등록',narrow:true});
 const HEALTH_META={sleep:['🌙','수면','지난밤'],steps:['🚶','활동량','오늘'],pressure:['❤️','혈압','최근']};
-page.health=()=>wrap(`<h1 class="page-title">건강 기록</h1><div class="summary-card"><h3>오늘의 기분</h3><div class="answer-grid" style="grid-template-columns:repeat(3,1fr)">${[['🙂','좋아요'],['😐','보통이에요'],['🙁','안 좋아요']].map(x=>`<button class="answer" data-mood="${x[1]}" aria-pressed="${S.mood===x[1]}"><span class="emoji">${x[0]}</span>${x[1]}</button>`).join('')}</div></div><div class="list">${Object.entries(HEALTH_META).map(([k,x])=>`<button class="list-row menu-row" data-health="${k}"><span><strong>${x[0]} ${x[1]}</strong><small>${x[2]}</small></span><span><strong>${S.health[k]||'기록 없음'}</strong> ${I('chevron-right')}</span></button>`).join('')}</div>`,{title:'건강 기록',bottom:true,active:'health'});
+const liveStepText=()=>Number.isFinite(Number(S.monitoring.liveSteps))?Math.max(0,Math.round(Number(S.monitoring.liveSteps))).toLocaleString('ko-KR')+' 걸음':'';
+const healthDisplayValue=k=>k==='steps'&&liveStepText()?liveStepText():S.health[k]||'기록 없음';
+page.health=()=>wrap(`<h1 class="page-title">건강 기록</h1>${liveStepText()?`<div class="summary-card bg-mint"><div class="eyebrow">실시간 만보기 · 기기 센서</div><h3 style="font-size:36px">${liveStepText()}</h3><p>${esc(S.monitoring.liveStepProvider||'기기 걸음 센서')} · 오늘 측정값</p></div>`:''}<div class="summary-card"><h3>오늘의 기분</h3><div class="answer-grid" style="grid-template-columns:repeat(3,1fr)">${[['🙂','좋아요'],['😐','보통이에요'],['🙁','안 좋아요']].map(x=>`<button class="answer" data-mood="${x[1]}" aria-pressed="${S.mood===x[1]}"><span class="emoji">${x[0]}</span>${x[1]}</button>`).join('')}</div></div><div class="list">${Object.entries(HEALTH_META).map(([k,x])=>`<button class="list-row menu-row" data-health="${k}"><span><strong>${x[0]} ${x[1]}</strong><small>${x[2]}</small></span><span><strong>${healthDisplayValue(k)}</strong> ${I('chevron-right')}</span></button>`).join('')}</div>`,{title:'건강 기록',bottom:true,active:'health'});
 page['health-detail']=()=>{const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',x=HEALTH_META[k];return wrap(`<div class="eyebrow">${x[0]} ${x[1]}</div><h1 class="page-title">${x[1]} 기록 수정</h1><div class="form-stack"><div class="field"><label for="health-value">${x[1]} 값</label><input id="health-value" value="${S.health[k]||''}" placeholder="${k==='sleep'?'예: 7시간 30분':k==='steps'?'예: 4,320 걸음':'예: 120 / 80'}"></div><div class="field"><label for="health-memo">메모</label><textarea id="health-memo" rows="4" placeholder="특이사항이 있으면 적어주세요.">${S.health.memo||''}</textarea></div><button id="save-health" class="btn-kimse btn-primary-k">저장하기</button></div>`,{title:x[1]+' 기록',narrow:true})};
 page['caregiver-home']=()=>{if(!demo())return accountRequired();const alert=S.monitoring.alerts[0],careStatus=monitoringUiStatus(S.monitoring.summary,S.monitoring.summary?.changes||[]);return wrap(`<span class="context-chip caregiver">보호자 화면</span><h1 class="page-title">가족도 같은 상태를<br>확인할 수 있습니다</h1>${alert?`<button class="care-alert-card level-${careStatus.key}" data-go="monitoring-status"><span class="care-alert-symbol">${I(careStatus.icon)}</span><span><strong>${careStatus.label} · ${careStatus.action}</strong><em>최근 변화 확인하기 →</em></span>${I('chevron-right')}</button>`:''}<div class="summary-card bg-pink"><h3>공유된 정보</h3><p>사용자가 동의한 상태 요약만 보호자에게 표시됩니다.</p></div><div class="card-grid caregiver-tools">${[['📊','상태 요약','report'],['🚨','비상 알림','emergency'],['📅','일정 관리','care-schedule'],['👨‍👩‍👧','가족 관리','family']].map(x=>`<a class="action-card" href="#/${x[2]}"><span class="icon">${x[0]}</span><strong>${x[1]}</strong></a>`).join('')}</div><div class="caregiver-tools"><h2 class="section-title">내 기능도 사용하기</h2><button class="btn-kimse btn-blue-k btn-full" data-add-role="self">내 건강 관리 사용자 역할 추가/이동</button></div>`,{back:false,bottom:true,care:true,active:'caregiver-home',overview:true})};
 page['care-schedule']=()=>wrap(`<h1 class="page-title">가족 일정 관리</h1><p class="page-desc">복약·안부·진료 같은 가족 일정을 한곳에 적어둘 수 있어요.</p><div class="list">${S.schedule.map(x=>row('📅 '+x.title,x.date,'예정')).join('')}</div><h2 class="section-title">일정 추가</h2><div class="form-stack"><div class="field"><label for="schedule-title">일정</label><input id="schedule-title" placeholder="예: 병원 동행"></div><div class="field"><label for="schedule-date">날짜/시간</label><input id="schedule-date" placeholder="예: 9월 16일 10:30"></div><button id="add-schedule" class="btn-kimse btn-primary-k">일정 추가</button></div>`,{title:'일정 관리',narrow:true});
@@ -1069,7 +1102,7 @@ page['family-call']=()=>{
   const scheduleRows=schedules.length?schedules.map(x=>row(esc(x.caregiver_name||x.caregiver_email||'보호자'),x.interval_days+'일마다 · 다음 '+fmtDate(x.next_due_at),'활성')).join(''):'<div class="empty-state"><h3>아직 통화 일정이 없어요</h3></div>';
   return wrap(`<div class="eyebrow">기본 14일</div><h1 class="page-title">가족 안부 통화를<br>정기적으로 이어가요</h1><p class="page-desc">7일·14일·30일 중 선택할 수 있으며 통화 전 양쪽의 녹음·AI 분석 동의를 다시 확인합니다.</p><div class="list">${scheduleRows}</div><h2 class="section-title">일정 설정</h2><div class="form-stack"><div class="field"><label for="call-caregiver">보호자</label><select id="call-caregiver">${options}</select></div><div class="field"><label for="call-interval">통화 주기</label><select id="call-interval"><option value="7">7일마다</option><option value="14" selected>14일마다</option><option value="30">30일마다</option></select></div><div class="field"><label for="call-first-due">첫 통화 예정 <small>비워두면 선택한 주기 뒤</small></label><input id="call-first-due" type="datetime-local"></div><button id="save-call-schedule" class="btn-kimse btn-primary-k">통화 일정 저장</button></div><p class="screen-footnote">통화 일정은 실제 연결된 사용자·보호자 계정에 저장됩니다. 통화 버튼은 실제 통화 전송 계층이 연결된 뒤에만 표시합니다.</p>`,{title:'정기 안부 통화',narrow:true});
 };
-page.report=()=>{const meds=S.medicines.length?`${S.medicines.filter(x=>x.taken).length} / ${S.medicines.length}개 복용 기록`:'기록 없음';const rows=[row('🙂 오늘 기분','직접 기록한 값',S.mood||'기록 없음'),row('🌙 수면','직접 기록한 값',S.health.sleep||'기록 없음'),row('🚶 활동량','직접 기록한 값',S.health.steps||'기록 없음'),row('❤️ 혈압','직접 기록한 값',S.health.pressure||'기록 없음'),row('💊 복약','등록된 약 기준',meds)].join('');return wrap(`<h1 class="page-title">상태 리포트</h1><p class="page-desc">입력한 기록만 보여드립니다. 임의의 점수나 변화율을 만들지 않습니다.</p><div class="summary-card">${rows}</div>${notice('지속되는 변화가 걱정된다면','의료기관 상담을 권합니다. 낌새는 진단을 대신하지 않습니다.')}`,{title:'상태 리포트',narrow:true})};
+page.report=()=>{const meds=S.medicines.length?`${S.medicines.filter(x=>x.taken).length} / ${S.medicines.length}개 복용 기록`:'기록 없음';const stepValue=liveStepText()||S.health.steps||'기록 없음',stepSource=liveStepText()?'기기 실시간 측정':'직접 기록한 값';const rows=[row('🙂 오늘 기분','직접 기록한 값',S.mood||'기록 없음'),row('🌙 수면','직접 기록한 값',S.health.sleep||'기록 없음'),row('🚶 활동량',stepSource,stepValue),row('❤️ 혈압','직접 기록한 값',S.health.pressure||'기록 없음'),row('💊 복약','등록된 약 기준',meds)].join('');return wrap(`<h1 class="page-title">상태 리포트</h1><p class="page-desc">입력한 기록만 보여드립니다. 임의의 점수나 변화율을 만들지 않습니다.</p><div class="summary-card">${rows}</div>${notice('지속되는 변화가 걱정된다면','의료기관 상담을 권합니다. 낌새는 진단을 대신하지 않습니다.')}`,{title:'상태 리포트',narrow:true})};
 page.emergency=()=>wrap(`<h1 class="page-title">비상 알림</h1><div class="summary-card bg-pink"><h3>비상상태 알림 수신자 ${S.alertRecipients.length}명</h3><p>수신자 1인까지 무료이며, 2인째부터 구독이 적용됩니다.</p></div><div class="list">${S.alertRecipients.map((x,i)=>row(x.name,i?'추가 수신자':'무료 수신자','알림 받음')).join('')||'<div class="empty-state"><h3>등록된 비상알림 수신자가 없어요</h3></div>'}</div><button class="btn-kimse btn-primary-k btn-full mt-3" data-go="alert-add">+ 비상알림 수신자 추가</button>${notice('가족 연결과는 별개예요.','보호자 역할을 추가하는 것 자체에는 이 구독 제한을 적용하지 않습니다.')}`,{title:'비상 알림',narrow:true});
 page['alert-add']=()=>wrap(`<h1 class="page-title">비상알림 수신자 추가</h1><div class="form-stack"><div class="field"><label for="alert-name">이름</label><input id="alert-name" placeholder="예: 김○○"></div><div class="field"><label for="alert-relation">관계</label><input id="alert-relation" placeholder="예: 자녀"></div><div class="field"><label for="alert-phone">연락처</label><input id="alert-phone" inputmode="tel" placeholder="010-0000-0000"></div><button id="save-alert" class="btn-kimse btn-primary-k">수신자 저장</button></div>`,{title:'비상알림 수신자',narrow:true});
 const MARKET_CATS=[
