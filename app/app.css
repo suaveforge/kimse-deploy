@@ -920,3 +920,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   fill:none;stroke:#8fa0b1;stroke-width:5;stroke-linecap:round
 }
 .capture-frame-mode .brain-visual{max-height:292px!important}
+
+.auth-divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:#718096;font-size:13px;font-weight:700}
+.auth-divider::before,.auth-divider::after{content:"";height:1px;background:#dfe8e5;flex:1}
+.authhub-loading{padding:12px 4px;text-align:center;color:#667b78;font-size:14px}
+#authhub-social{min-height:44px}
+#authhub-social .authhub-social{margin-top:0}
