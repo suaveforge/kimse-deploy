@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),A=$('#app'),N=$('#announcer'),O=$('#offline-banner'),K='kimse.p0.state',MODEL_CACHE='kimse.evidence.model.cache';
-const STATE_VERSION=9;
+const STATE_VERSION=10;
 const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mode:'self',caregivers:[],alertRecipients:[],plan:'FREE',q:0,answers:[],med:false,mood:'',
   medicines:[],
   health:{sleep:'',steps:'',pressure:'',memo:''},
@@ -12,7 +12,7 @@ const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mo
   baseline:{startedAt:null},
   permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
   remote:{accountId:'',subjectId:'',token:''},
-  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},daily:{date:'',foregroundSteps:0,movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0,locationInitialized:false,motionInitialized:false}},
+  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},daily:{date:'',movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0,locationInitialized:false,motionInitialized:false}},
   brainView:'side',brainRange:'week',brainFocus:'memory',brainTrendDomain:'overall',brainHistory:[],
   selectedTraining:'memory',trainingResult:null,selectedHealth:'sleep',marketCategory:'all',marketSearch:'',marketItem:null,marketFavorites:[],partnerStatus:null,
   a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,captions:true,largeTouchTargets:true,colorIcons:true,screenReader:true,reduceMotion:false}};
@@ -28,6 +28,14 @@ if((Number(stored.version)||0)<STATE_VERSION){
   }
   if(Array.isArray(S.schedule))S.schedule=S.schedule.filter(x=>!['s1','s2'].includes(x.id));
   if(S.mood==='좋아요')S.mood='';
+  if(S.monitoring&&typeof S.monitoring==='object'){
+    if(Array.isArray(S.monitoring.pending))S.monitoring.pending=S.monitoring.pending.filter(x=>x?.metric!=='foreground_steps_estimate');
+    if(S.monitoring.lastObserved&&typeof S.monitoring.lastObserved==='object'){
+      delete S.monitoring.lastObserved.foreground_steps_estimate;
+      delete S.monitoring.lastObserved.foreground_steps;
+    }
+    if(S.monitoring.daily&&typeof S.monitoring.daily==='object')delete S.monitoring.daily.foregroundSteps;
+  }
   S.version=STATE_VERSION;
   localStorage.setItem(K,JSON.stringify(S));
 }
@@ -278,8 +286,8 @@ async function requestSelectedPermissions(){
   }
   await Promise.all(waits);save();
 }
-const SIGNAL_LABELS={sleep_minutes:'수면시간',steps:'걸음수',foreground_steps_estimate:'앱 실행 중 추정 걸음',location_radius_m:'생활반경',movement_distance_m:'이동거리',outings:'외출',motion_active_minutes:'활동시간',app_active_minutes:'낌새 이용시간',call_count:'통화 횟수',call_duration_min:'통화시간',messaging_sessions:'메신저 활동',task_response_ms:'반응시간',voice_pause_ratio:'말할 때 멈춤'};
-const SIGNAL_ICONS={sleep_minutes:'moon',steps:'walk',foreground_steps_estimate:'walk',location_radius_m:'map-pin',movement_distance_m:'route',outings:'door-exit',motion_active_minutes:'activity',app_active_minutes:'device-mobile',call_count:'phone',call_duration_min:'phone-call',messaging_sessions:'message-circle',task_response_ms:'clock',voice_pause_ratio:'message-dots'};
+const SIGNAL_LABELS={sleep_minutes:'수면시간',steps:'걸음수',location_radius_m:'생활반경',movement_distance_m:'이동거리',outings:'외출',motion_active_minutes:'활동시간',app_active_minutes:'낌새 이용시간',call_count:'통화 횟수',call_duration_min:'통화시간',messaging_sessions:'메신저 활동',task_response_ms:'반응시간',voice_pause_ratio:'말할 때 멈춤'};
+const SIGNAL_ICONS={sleep_minutes:'moon',steps:'walk',location_radius_m:'map-pin',movement_distance_m:'route',outings:'door-exit',motion_active_minutes:'activity',app_active_minutes:'device-mobile',call_count:'phone',call_duration_min:'phone-call',messaging_sessions:'message-circle',task_response_ms:'clock',voice_pause_ratio:'message-dots'};
 const MONITORING_UI_LEVELS={
   stable:{key:'stable',label:'안정',icon:'circle-check',headline:'최근 기록은 안정적입니다',action:'현재 기록을 이어가세요'},
   warning:{key:'warning',label:'경고',icon:'alert-triangle',headline:'확인이 필요한 변화가 있습니다',action:'기능별 변화를 확인해보세요'},
@@ -371,7 +379,7 @@ async function syncMonitoring(){
 function parseSleepMinutes(v){const s=String(v||'');let m=0;const h=s.match(/(\d+(?:\.\d+)?)\s*시간/),mm=s.match(/(\d+)\s*분/);if(h)m+=Number(h[1])*60;if(mm)m+=Number(mm[1]);if(!m&&/^\d+(?:\.\d+)?$/.test(s.trim()))m=Number(s)*60;return m>0?m:null}
 function parseSteps(v){const n=Number(String(v||'').replace(/[^\d.]/g,''));return Number.isFinite(n)&&n>0?n:null}
 function haversine(a,b){const R=6371000,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lon-a.lon)*p,x=Math.sin(dLat/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-let runtimeLocationDay='',runtimeFirstLocation=null,runtimeLastLocation=null,locationWatchId=null,motionAccumMs=0,motionLastFlush=Date.now(),appSessionStarted=Date.now(),collectorsStarted=false,motionListenerAttached=false,motionStepHigh=false,lastStepAt=0,lastStepSavedAt=0,gravityMagnitude=null,collectorFlushTimer=null;
+let runtimeLocationDay='',runtimeFirstLocation=null,runtimeLastLocation=null,locationWatchId=null,motionAccumMs=0,motionLastFlush=Date.now(),appSessionStarted=Date.now(),collectorsStarted=false,motionListenerAttached=false,gravityMagnitude=null,collectorFlushTimer=null;
 function handleLocationPosition(pos){
   if(!monitoringEnabled()||!S.consents.location||document.hidden)return;
   const accuracy=Number(pos?.coords?.accuracy)||0;
@@ -439,15 +447,8 @@ function onDeviceMotion(e){
     gravityMagnitude=gravityMagnitude==null?raw:gravityMagnitude*.9+raw*.1;dynamicMag=Math.abs(raw-gravityMagnitude);
   }else return;
   const interval=Math.max(10,Math.min(1000,Number(e.interval)||100)),now=Date.now(),daily=ensureMonitoringDay();
-  if(!daily.motionInitialized){daily.motionInitialized=true;queueSignal('motion_active_minutes',0,'min','devicemotion',{foreground:true,daily_presence:true});queueSignal('foreground_steps_estimate',0,'count','pwa-motion-estimate',{foreground:true,daily_presence:true})}
+  if(!daily.motionInitialized){daily.motionInitialized=true;queueSignal('motion_active_minutes',0,'min','devicemotion',{foreground:true,daily_presence:true})}
   if(dynamicMag>1.2)motionAccumMs+=interval;
-  const high=dynamicMag>1.75;
-  if(high&&!motionStepHigh&&now-lastStepAt>=280){
-    daily.foregroundSteps+=1;lastStepAt=now;
-    noteObserved('foreground_steps',daily.foregroundSteps,'count','pwa-motion-estimate');
-    if(daily.foregroundSteps%10===0||now-lastStepSavedAt>=60000){lastStepSavedAt=now;queueSignal('foreground_steps_estimate',daily.foregroundSteps,'count','pwa-motion-estimate',{foreground:true,estimated:true});save()}
-  }
-  motionStepHigh=dynamicMag>.9;
   if(now-motionLastFlush>=60000)flushMotionActivity();
 }
 async function collectNativeBridgeSignals(){
@@ -456,7 +457,7 @@ async function collectNativeBridgeSignals(){
 function configureMotionCollector(){
   const should=monitoringEnabled()&&S.consents.motion&&['granted','available'].includes(S.permissions.motion);
   if(should&&!motionListenerAttached){window.addEventListener('devicemotion',onDeviceMotion,{passive:true});motionListenerAttached=true}
-  if(!should&&motionListenerAttached){window.removeEventListener('devicemotion',onDeviceMotion);motionListenerAttached=false;motionAccumMs=0;motionStepHigh=false;motionLastFlush=Date.now();save()}
+  if(!should&&motionListenerAttached){window.removeEventListener('devicemotion',onDeviceMotion);motionListenerAttached=false;motionAccumMs=0;motionLastFlush=Date.now();save()}
 }
 function recordAppActive(){
   if(!monitoringEnabled()||!S.consents.usage){appSessionStarted=Date.now();return}
@@ -757,7 +758,7 @@ page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).lengt
 
 page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 테스트가 필요해요</h1>${notice('아직 결과를 만들 수 없습니다.','기본 테스트와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">기본 테스트 시작</button>`,{title:'첫 상태 참고',narrow:true});const d=initialScores(),avg=Math.round(Object.values(d).reduce((x,y)=>x+y,0)/5),m=statusMeta(avg);return wrap(`<div class="eyebrow">첫 상태 참고</div><h1 class="page-title">오늘의 기능 상태를<br>먼저 참고해보세요</h1><div class="status-hero ${m[1]}"><span>현재 기능 참고</span><strong>${m[0]}</strong><small>기본 테스트 수행과 자가응답을 합친 참고값</small></div><div class="domain-grid">${BRAIN_DOMAINS.map(([k,t,r,icon])=>{const x=statusMeta(d[k]);return `<div class="domain-card"><span class="domain-icon">${icon}</span><div><strong>${t}</strong><small>${r}</small></div><span class="brain-score ${x[1]}">${x[0]}</span></div>`}).join('')}</div>${notice('이 결과는 진단이 아닙니다.','현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다. 14일 동안 생활패턴을 확인한 뒤, 이후 변화를 그 기간과 비교합니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">뇌 기능 연관 지도 보기</button><button class="btn-kimse btn-primary-k" data-go="consent">데이터 수집 동의로 계속</button></div>`,{title:'첫 상태 참고',narrow:true})};
 
-page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 활동시간과 추정 걸음을 실제 센서로 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 브라우저 알림</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
+page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 움직임과 활동시간 신호를 수집합니다. 일일 걸음수는 네이티브 앱에서 기기 건강 데이터를 연결해 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 브라우저 알림</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
 
 page['evidence-proof']=()=>wrap(
@@ -808,7 +809,7 @@ function observedToday(metric){
 }
 function monitoringTodaySnapshot(){
   const d=ensureMonitoringDay(),sleep=observedToday('sleep_minutes'),manualSteps=observedToday('steps'),voice=observedToday('voice_pause_ratio');
-  const activity=manualSteps?formatMonitoringValue('steps',manualSteps.value):d.foregroundSteps?d.foregroundSteps.toLocaleString('ko-KR')+'보 추정':d.motionActiveMs>=60000?Math.round(d.motionActiveMs/60000)+'분 활동':'수집 대기';
+  const activity=manualSteps?formatMonitoringValue('steps',manualSteps.value):d.motionActiveMs>=60000?Math.round(d.motionActiveMs/60000)+'분 활동':'수집 대기';
   return {
     sleep:sleep?formatMonitoringValue('sleep_minutes',sleep.value):'기록 없음',
     activity,
@@ -826,7 +827,6 @@ function collectionStateRows(){
     row('🧭 생활반경',locState,'<strong>'+Math.round(d.locationRadiusM).toLocaleString('ko-KR')+'m</strong>'),
     row('🚪 외출 신호',locState,'<strong>'+(d.outings?'확인됨':'아직 없음')+'</strong>'),
     row('🚶 움직임·활동',motionState,'<strong>'+Math.round(d.motionActiveMs/60000)+'분</strong>'),
-    row('👟 추정 걸음',motionState,'<strong>'+d.foregroundSteps.toLocaleString('ko-KR')+'보</strong>'),
     row('📱 낌새 사용',usageOn?'수집 중':'동의 안 함','<strong>'+Math.round(d.appActiveMs/60000)+'분</strong>'),
     row('🎙️ 음성 샘플',S.consents.microphone?'사용자 실행 시 수집':'동의 안 함','<strong>'+voiceCount+'개</strong>')
   ].join('');
@@ -862,7 +862,7 @@ page.baseline=()=>{
     '<div class="baseline-milestone-rail"><span class="'+(day>=1?'on':'')+'"><b>1일</b>시작</span><i></i><span class="'+(day>=7?'on':'')+'"><b>7일</b>첫 주 확인</span><i></i><span class="'+(day>=14?'on':'')+'"><b>14일</b>비교 시작</span></div>'+
     (day>=14?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">최근 변화 보기</button></div>':'')+
     '<div class="hero-actions"><button class="btn-kimse btn-secondary-k btn-full" data-go="collection-status">오늘 수집 상태 확인</button></div>'+
-    '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다. 앱을 닫은 동안의 걸음·이동은 현재 PWA에서 계속 측정할 수 없습니다.</p>',
+    '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다. 앱을 닫은 동안의 위치·움직임은 현재 PWA에서 계속 측정할 수 없습니다.</p>',
     {title:'생활패턴 확인',narrow:true,overview:true}
   );
 };
@@ -920,7 +920,7 @@ page['collection-status']=()=>{
     '<div class="list">'+collectionStateRows()+'</div>'+
     '<div class="summary-card"><h3>서버 동기화</h3><p>전송 대기 '+pending+'건 · 마지막 전송 '+esc(last)+'</p>'+(S.monitoring.lastSyncError?'<p>'+esc(S.monitoring.lastSyncError)+'</p>':'')+'</div>'+
     '<div class="hero-actions"><button id="sync-monitoring" class="btn-kimse btn-primary-k btn-full">지금 동기화</button><button class="btn-kimse btn-secondary-k btn-full" data-go="consent">수집 동의·권한 확인</button></div>'+
-    '<p class="screen-footnote">추정 걸음은 웹앱이 열린 동안의 움직임 센서 기반 참고값이며, 현재 이상신호 판정의 일일 걸음수로 사용하지 않습니다. 이동거리·생활반경·활동시간은 수집된 범위에서 서버 비교에 사용됩니다.</p>',
+    '<p class="screen-footnote">현재 PWA에서는 이동거리·생활반경·활동시간을 수집된 범위에서 서버 비교에 사용합니다. 일일 걸음수는 네이티브 앱의 기기 건강 데이터 연동값을 사용합니다.</p>',
     {title:'수집 상태',narrow:true}
   );
 };
