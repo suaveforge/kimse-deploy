@@ -1,9 +1,11 @@
 {
-  "schemaVersion": "2026-09-15.1",
-  "updated": "2026-09-15",
+  "schemaVersion": "2026-09-23.2",
+  "updated": "2026-09-23",
   "governance": {
     "principle": "근거 페이지를 단일 기준으로 사용하며 앱은 이 레지스트리의 활성 모델을 읽어 계산합니다.",
-    "activeModelChanges": "새 논문·가이드라인·규제 이슈는 먼저 changeReview에 후보로 표시하고, 근거 검토 전 활성 팩터·가중치를 자동 변경하지 않습니다."
+    "activeModelChanges": "새 논문·가이드라인·규제 이슈는 먼저 changeReview에 후보로 표시하고, 근거 검토 전 활성 팩터·가중치를 자동 변경하지 않습니다.",
+    "questionRule": "앱에서 사용자에게 묻는 조사·과제 항목은 이 레지스트리에 근거 역할과 출처가 등록되어야 합니다. 검증도구 원문을 그대로 쓰지 않은 KIMSE 자체 문항은 임상 점수로 환산하지 않고 개인 baseline 또는 맥락 정보로만 사용합니다.",
+    "customTaskRule": "KIMSE 자체 과제는 원 연구의 과제 패러다임·측정영역을 설계 근거로 사용할 수 있지만, 원 도구의 민감도·특이도·cutoff를 KIMSE 과제 성능으로 주장하지 않습니다."
   },
   "activeModel": {
     "id": "CAIDE_MODEL_1",
@@ -145,18 +147,19 @@
         "id": "activity",
         "label": "신체활동",
         "group": "Risk",
-        "question": "원 CAIDE 기준의 신체활동 상태를 선택해주세요.",
+        "question": "한 번에 20–30분 이상, 숨이 차고 땀이 날 정도의 여가 신체활동을 일주일에 몇 번 하나요?",
         "options": [
           {
-            "label": "활동적",
+            "label": "주 2회 이상",
             "points": 0
           },
           {
-            "label": "비활동적",
+            "label": "주 2회 미만",
             "points": 1
           }
         ],
-        "evidence": "CAIDE Model 1"
+        "evidence": "CAIDE Model 1 · 원 연구 활동/비활동 정의",
+        "operationalization": "active = leisure-time physical activity at least 2 times/week, 20–30 minutes each, causing breathlessness and sweating"
       }
     ]
   },
@@ -214,7 +217,8 @@
     "활성 위험점수는 CAIDE Model 1 내부에서만 합산합니다.",
     "CAIDE · ANU-ADRI · LIBRA2는 목적과 모집단이 달라 서로 합산하지 않습니다.",
     "보행·음성·그리기 등 디지털 바이오마커 연구의 분류 정확도를 임상 점수 가중치로 직접 변환하지 않습니다.",
-    "개인 baseline 변화와 반복 인지과제 결과는 별도 시계열 신호로 보존하고, 외부검증 전 고정 진단 가중치를 부여하지 않습니다."
+    "개인 baseline 변화와 반복 인지과제 결과는 별도 시계열 신호로 보존하고, 외부검증 전 고정 진단 가중치를 부여하지 않습니다.",
+    "KIMSE 자체 온보딩·인지 과제는 검증도구의 임상 점수나 cutoff로 환산하지 않고 원자료·반응시간·개인 baseline 변화로만 사용합니다."
   ],
   "changeReview": {
     "lastReviewed": "2026-09-14",
@@ -474,5 +478,178 @@
       "신체활동"
     ],
     "footerMessage": "생활·인지 변화 신호 + 검증된 위험요인을 함께 본 뒤, 아래 근거 레지스트리에서 각 기준의 출처와 가중치 사용 여부를 확인할 수 있습니다."
+  },
+  "onboardingQuestionRegistry": {
+    "principle": "온보딩 조사 항목은 검증된 원 점수 입력, 근거 기반 맥락 조사, 개인 baseline 과제를 구분합니다.",
+    "items": [
+      {
+        "id": "birthYear",
+        "label": "출생연도/연령",
+        "role": "validated_score_input",
+        "appField": "profile.birthYear",
+        "evidence": "CAIDE Model 1",
+        "source": "Kivipelto et al. 2006",
+        "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
+        "use": "CAIDE 연령 구간 입력"
+      },
+      {
+        "id": "sex",
+        "label": "성별",
+        "role": "validated_score_input",
+        "appField": "profile.sex",
+        "evidence": "CAIDE Model 1",
+        "source": "Kivipelto et al. 2006",
+        "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
+        "use": "CAIDE 성별 입력"
+      },
+      {
+        "id": "education",
+        "label": "교육기간",
+        "role": "validated_score_input",
+        "appField": "profile.education",
+        "evidence": "CAIDE Model 1",
+        "source": "Kivipelto et al. 2006",
+        "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
+        "use": "CAIDE 교육기간 구간 입력"
+      },
+      {
+        "id": "activity",
+        "label": "여가 신체활동",
+        "role": "validated_score_input",
+        "appField": "profile.activity",
+        "evidence": "CAIDE Model 1",
+        "source": "Kivipelto et al. 2006 / FINGER CAIDE operationalization",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8277089/",
+        "use": "20–30분 이상, 숨참·땀을 동반하는 활동을 주 2회 이상이면 active"
+      },
+      {
+        "id": "living",
+        "label": "거주형태",
+        "role": "context_only",
+        "appField": "profile.living",
+        "evidence": "ANU-ADRI social network/engagement",
+        "source": "Anstey et al. 2014 validation",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
+        "use": "사회관계 5개 영역 중 living arrangements. 단독 ANU-ADRI 점수로 환산하지 않음"
+      },
+      {
+        "id": "socialSupport",
+        "label": "도움·속마음을 나눌 사람",
+        "role": "context_only",
+        "appField": "profile.socialSupport",
+        "evidence": "ANU-ADRI social network quality",
+        "source": "ANU-ADRI validation / HUNT operationalization",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
+        "use": "사회망의 질 맥락. KIMSE 자체 축약문항이므로 원 점수로 환산하지 않음"
+      },
+      {
+        "id": "socialActivity",
+        "label": "사회활동 빈도",
+        "role": "context_only",
+        "appField": "profile.socialActivity",
+        "evidence": "ANU-ADRI social activities",
+        "source": "ANU-ADRI validation",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
+        "use": "사회적 참여 맥락. 단독 위험점수로 사용하지 않음"
+      },
+      {
+        "id": "sleepHours",
+        "label": "평소 수면시간",
+        "role": "personal_baseline",
+        "appField": "profile.sleepHours",
+        "evidence": "Passive DHT",
+        "source": "Matias et al. 2026 systematic review",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13324020/",
+        "use": "개인 수면 baseline. LIBRA2 수면장애 점수로 자동 환산하지 않음"
+      },
+      {
+        "id": "sleepDisturbance",
+        "label": "반복 수면장애",
+        "role": "context_only",
+        "appField": "profile.sleepDisturbance",
+        "evidence": "LIBRA2 sleep disturbance",
+        "source": "LIBRA2 / dementia risk-index operationalization",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12501341/",
+        "use": "잠들기 어려움·수면 유지 어려움·조기각성의 반복 빈도를 맥락으로 기록"
+      },
+      {
+        "id": "hearing",
+        "label": "청력 불편",
+        "role": "context_only",
+        "appField": "profile.hearing",
+        "evidence": "Lancet 2024 · LIBRA2",
+        "source": "Livingston et al. 2024",
+        "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/39096926/",
+        "use": "청력저하 위험요인 맥락. 현재 KIMSE 축약 자가문항을 임상 청력검사로 간주하지 않음"
+      }
+    ]
+  },
+  "baselineTaskRegistry": {
+    "principle": "초기 과제는 진단검사 점수가 아니라 반복 가능한 개인 baseline을 만들기 위한 연구 기반 KIMSE 과제입니다.",
+    "tasks": [
+      {
+        "id": "delayed_recall_3word",
+        "label": "3단어 지연회상",
+        "role": "personal_delta",
+        "evidence": "MoCA-K의 지연회상 영역 + 일반 신경심리 기억 과제",
+        "source": "Lee et al. 2008 Korean MoCA validation",
+        "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/18474719/",
+        "implementation": "KIMSE 자체 3단어 세트. 회상 개수만 원자료로 저장하며 MoCA 점수/cutoff로 환산하지 않음"
+      },
+      {
+        "id": "serial_subtraction",
+        "label": "연속 뺄셈",
+        "role": "personal_delta",
+        "evidence": "Yamada et al. 2021 multimodal behavioral study",
+        "source": "Yamada et al. 2021",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8609704/",
+        "implementation": "원 연구가 subtraction speech task를 사용한 과제 패러다임을 바탕으로 KIMSE 자체 문항 구성. 정답 여부·반응시간만 저장"
+      },
+      {
+        "id": "functional_events",
+        "label": "최근 사건·약속 기억",
+        "role": "context_only",
+        "evidence": "FAQ6 functional deficit domain",
+        "source": "Devanand et al. 2017",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
+        "implementation": "FAQ6에서 예후와 연관된 기능영역을 바탕으로 한 KIMSE 자체 자가관찰 문항. FAQ6 점수로 부르지 않음"
+      },
+      {
+        "id": "functional_finance",
+        "label": "금전관리 변화",
+        "role": "context_only",
+        "evidence": "FAQ6 finances domains",
+        "source": "Devanand et al. 2017",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
+        "implementation": "KIMSE 자체 자가관찰 문항. 가능하면 향후 보호자 informant 응답으로 보강"
+      },
+      {
+        "id": "functional_travel",
+        "label": "외출·이동 기능 변화",
+        "role": "context_only",
+        "evidence": "FAQ6 travel domain",
+        "source": "Devanand et al. 2017",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
+        "implementation": "KIMSE 자체 자가관찰 문항. 공간기억 검사 점수로 사용하지 않음"
+      },
+      {
+        "id": "speech_spontaneous",
+        "label": "자발화",
+        "role": "personal_delta",
+        "evidence": "Speech biomarkers / Yamada multimodal",
+        "source": "Yamada et al. 2021; Heitz et al. 2026",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8609704/",
+        "implementation": "말의 pause·acoustic·linguistic feature를 개인 baseline으로 비교"
+      },
+      {
+        "id": "speech_semantic_fluency",
+        "label": "의미 유창성",
+        "role": "personal_delta",
+        "evidence": "semantic verbal fluency task",
+        "source": "Yamada et al. 2021",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8609704/",
+        "implementation": "동물 이름 말하기. 원 연구의 분류 정확도를 KIMSE 성능으로 전용하지 않음"
+      }
+    ]
   }
 }
