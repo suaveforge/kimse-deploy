@@ -1,9 +1,17 @@
-const CACHE = 'kimse-pwa-20260916-release36';
+const CACHE = 'kimse-pwa-20260923-release41-authhub-1';
 const CORE = [
   './',
   './index.html',
   './app.css',
+  './capture-polish.css',
+  './accessibility-enhancements.css',
+  './premium-ux.css',
+  './govtech-p0.css',
   './app.js',
+  './authhub.js',
+  './accessibility-enhancements.js',
+  './premium-ux.js',
+  './govtech-p0.js',
   './manifest.webmanifest',
   './assets/icons/icon.svg',
   './assets/icons/icon-maskable-source.svg'
