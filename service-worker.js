@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260923-release40-live-sensors';
+const CACHE = 'kimse-pwa-20260923-release40-live-sensors-2';
 const CORE = [
   './',
   './index.html',
