@@ -12,7 +12,7 @@ const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mo
   baseline:{startedAt:null},
   permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
   remote:{accountId:'',subjectId:'',token:''},
-  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},daily:{date:'',foregroundSteps:0,movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0}},
+  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},daily:{date:'',foregroundSteps:0,movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0,locationInitialized:false,motionInitialized:false}},
   brainView:'side',brainRange:'week',brainFocus:'memory',brainTrendDomain:'overall',brainHistory:[],
   selectedTraining:'memory',trainingResult:null,selectedHealth:'sleep',marketCategory:'all',marketSearch:'',marketItem:null,marketFavorites:[],partnerStatus:null,
   a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,captions:true,largeTouchTargets:true,colorIcons:true,screenReader:true,reduceMotion:false}};
@@ -379,6 +379,12 @@ function handleLocationPosition(pos){
   const p={lat:Number(pos.coords.latitude),lon:Number(pos.coords.longitude),at:Date.now()},day=localDayKey(),daily=ensureMonitoringDay();
   if(runtimeLocationDay!==day){runtimeLocationDay=day;runtimeFirstLocation=p;runtimeLastLocation=null}
   if(!runtimeFirstLocation)runtimeFirstLocation=p;
+  if(!daily.locationInitialized){
+    daily.locationInitialized=true;
+    queueSignal('movement_distance_m',0,'m','geolocation',{foreground:true,daily_presence:true});
+    queueSignal('location_radius_m',0,'m','geolocation',{foreground:true,daily_presence:true});
+    queueSignal('outings',0,'count','geolocation',{foreground:true,daily_presence:true});
+  }
   if(runtimeLastLocation){
     const distance=haversine(runtimeLastLocation,p),elapsed=Math.max(1,(p.at-runtimeLastLocation.at)/1000),speed=distance/elapsed,jitterFloor=Math.max(5,Math.min(35,accuracy*.5));
     if(Number.isFinite(distance)&&distance>=jitterFloor&&distance<50000&&speed<=55){
@@ -432,11 +438,12 @@ function onDeviceMotion(e){
     const raw=Math.sqrt((Number(withGravity.x)||0)**2+(Number(withGravity.y)||0)**2+(Number(withGravity.z)||0)**2);
     gravityMagnitude=gravityMagnitude==null?raw:gravityMagnitude*.9+raw*.1;dynamicMag=Math.abs(raw-gravityMagnitude);
   }else return;
-  const interval=Math.max(10,Math.min(1000,Number(e.interval)||100)),now=Date.now();
+  const interval=Math.max(10,Math.min(1000,Number(e.interval)||100)),now=Date.now(),daily=ensureMonitoringDay();
+  if(!daily.motionInitialized){daily.motionInitialized=true;queueSignal('motion_active_minutes',0,'min','devicemotion',{foreground:true,daily_presence:true})}
   if(dynamicMag>1.2)motionAccumMs+=interval;
   const high=dynamicMag>1.75;
   if(high&&!motionStepHigh&&now-lastStepAt>=280){
-    const daily=ensureMonitoringDay();daily.foregroundSteps+=1;lastStepAt=now;
+    daily.foregroundSteps+=1;lastStepAt=now;
     noteObserved('foreground_steps',daily.foregroundSteps,'count','pwa-motion-estimate');
     if(daily.foregroundSteps%10===0||now-lastStepSavedAt>=60000){lastStepSavedAt=now;save()}
   }
