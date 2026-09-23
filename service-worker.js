@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260923-release43-monitoring-integrity';
+const CACHE = 'kimse-pwa-20260923-release44-monitoring-verify';
 const CORE = [
   './',
   './index.html',
