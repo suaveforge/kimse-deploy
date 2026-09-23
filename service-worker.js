@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260923-release47-evidence-baseline';
+const CACHE = 'kimse-pwa-20260923-release48-evidence-baseline';
 const CORE = [
   './',
   './index.html',
