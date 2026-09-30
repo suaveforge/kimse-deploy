@@ -1,0 +1,453 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d5f4d"><title>전기낌새 MVP · 오프라인 단일파일</title><style>:root{font-family:Inter,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#13211e;background:#f4f7f5;--green:#116b57;--mint:#e9f7f2;--yellow:#bd7a00;--yellowbg:#fff7df;--red:#b53c2f;--redbg:#fff0ed;--line:#dce5e1;--muted:#63726d}*{box-sizing:border-box}body{margin:0;background:#f4f7f5;color:#13211e}button,input,select{font:inherit}.app-shell{min-height:100vh;padding-bottom:82px}.topbar{height:72px;padding:12px 20px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}.brand{display:flex;gap:10px;align-items:center;color:inherit;text-decoration:none}.brand-mark{width:38px;height:38px;border-radius:12px;background:#0d5f4d;color:white;display:grid;place-items:center;font-size:22px;box-shadow:0 8px 18px rgba(17,107,87,.18)}.brand strong{display:block;font-size:18px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.store-pill{font-size:13px;background:#edf3f0;border:1px solid var(--line);padding:8px 12px;border-radius:999px}.page{width:min(920px,100%);margin:0 auto;padding:22px 18px 36px}.status-card{border-radius:24px;padding:24px;box-shadow:0 14px 35px rgba(31,55,47,.09);border:1px solid transparent}.status-card.normal{background:linear-gradient(135deg,#effaf6,#fff);border-color:#cfe9df}.status-card.watch{background:linear-gradient(135deg,#fff8e6,#fff);border-color:#f0d899}.status-card.attention{background:linear-gradient(135deg,#fff0ed,#fff);border-color:#efc7c0}.eyebrow{text-transform:uppercase;font-weight:700;letter-spacing:.03em;color:var(--muted);font-size:12px}.status-row{display:flex;align-items:center;justify-content:space-between;gap:24px}.status-row h1{font-size:42px;margin:8px 0 6px;letter-spacing:-.05em}.status-row p{margin:0;color:#40514b;font-size:16px;line-height:1.55}.status-orb{width:78px;height:78px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:30px;font-weight:900;background:#fff;border:8px solid rgba(17,107,87,.12)}.watch .status-orb{color:var(--yellow);border-color:rgba(189,122,0,.15)}.attention .status-orb{color:var(--red);border-color:rgba(181,60,47,.14)}.normal .status-orb{color:var(--green)}.loss-highlight{margin-top:20px;background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);border-radius:16px;padding:16px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px}.loss-highlight span{font-size:13px;color:var(--muted)}.loss-highlight strong{font-size:28px}.loss-highlight small{grid-column:1/-1;color:var(--muted)}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.metric,.panel{background:#fff;border:1px solid var(--line);border-radius:18px}.metric{padding:16px;min-height:112px}.metric span,.metric small{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-size:22px;margin:9px 0 5px;letter-spacing:-.03em}.panel{padding:20px;margin-top:14px}.panel h2{font-size:17px;margin:0 0 14px}.panel-head{display:flex;justify-content:space-between;align-items:flex-start}.panel-head h2{margin-bottom:3px}.panel-head p{margin:0;color:var(--muted);font-size:13px}.panel-head a{color:var(--green);font-size:13px;text-decoration:none}.chart-wrap{overflow:hidden}.chart-wrap svg{width:100%;height:auto;min-height:190px}.range{fill:#e5f3ee;stroke:none}.expected{fill:none;stroke:#7a968d;stroke-width:2;stroke-dasharray:5 5}.actual{fill:none;stroke:#165d4e;stroke-width:3}.axis{stroke:#cad7d2;stroke-width:1}.anomaly-dot{fill:#b53c2f;stroke:white;stroke-width:1.5}.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:11px}.lg{width:12px;height:4px;border-radius:4px;display:inline-block;margin-right:5px;vertical-align:middle}.range-lg{background:#d8eee6}.expected-lg{background:#7a968d}.actual-lg{background:#165d4e}.anomaly-lg{background:#b53c2f}.why-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.why-stats span{background:#f4f7f5;border-radius:12px;padding:10px 12px;font-size:13px}.check-list{padding-left:22px;line-height:2}.primary,.ghost,.demo-flow button,.scenario{border:0;border-radius:12px;padding:12px 16px;cursor:pointer}.primary{background:#0d5f4d;color:#fff;font-weight:800}.ghost{background:#eef3f1;color:#24433a;margin-top:10px}.wide{width:100%}.source-note{font-size:11px;color:#7c8985;text-align:center;padding:16px}.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:68px;background:rgba(255,255,255,.97);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:30}.bottom-nav a{width:min(150px,20%);text-decoration:none;color:#71817b;text-align:center;font-size:11px;padding:10px 4px}.bottom-nav a span{display:block;font-size:20px;line-height:24px}.bottom-nav a.active{color:var(--green);font-weight:800}.page-title{margin:8px 0 18px}.page-title h1{font-size:28px;margin:0 0 6px}.page-title p{margin:0;color:var(--muted)}.table-panel{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:11px;border-bottom:1px solid #edf1ef;text-align:right}th:first-child,td:first-child{text-align:left}.row-alert{background:#fff4f1}.stack{display:grid;gap:10px}.alert-item{background:#fff;border:1px solid var(--line);border-left:5px solid #9ba9a4;border-radius:14px;padding:16px}.alert-item.watch{border-left-color:#bd7a00}.alert-item.attention{border-left-color:#b53c2f}.alert-item div{display:flex;justify-content:space-between;gap:20px}.alert-item span,.alert-item small{font-size:12px;color:var(--muted)}.alert-item p{margin:10px 0}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-grid label{font-weight:700;font-size:13px}.form-grid input,.form-grid select{width:100%;margin-top:7px;border:1px solid #cfdad6;background:#fff;border-radius:10px;padding:12px}.form-grid label small{display:block;color:var(--muted);font-weight:400;margin-top:5px}.full{grid-column:1/-1}.data-source{padding:12px 0;border-top:1px solid #edf1ef;display:flex;gap:20px}.data-source b{width:54px}.muted{color:var(--muted)}.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.scenario{background:#f3f7f5;border:1px solid var(--line);text-align:left}.scenario.selected{outline:2px solid var(--green);background:#eef9f5}.scenario b,.scenario span{display:block}.scenario span{color:var(--muted);font-size:12px;margin-top:5px}.demo-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.demo-flow button{background:#eef3f1;color:#203d35;font-weight:700}.demo-result{margin-top:14px;border-radius:14px;padding:14px;display:grid;gap:4px}.demo-result.normal{background:var(--mint)}.demo-result.watch{background:var(--yellowbg)}.demo-result.attention{background:var(--redbg)}.demo-result span,.demo-result small{font-size:13px;color:#53645f}.progress-label{display:flex;justify-content:space-between;font-size:13px}.progress{height:10px;background:#edf1ef;border-radius:99px;overflow:hidden;margin:10px 0}.progress i{display:block;height:100%;background:#16755f}.onboarding{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top,#e6f6f0,#f5f7f6 50%)}.onboard-card{width:min(650px,100%);background:#fff;border:1px solid var(--line);border-radius:26px;padding:28px;box-shadow:0 24px 70px rgba(35,68,57,.12)}.brand.intro{margin-bottom:26px}.onboard-card h1{font-size:32px;margin:0 0 12px}.onboard-card>p{color:var(--muted);line-height:1.65;margin-bottom:24px}.toast{position:fixed;left:50%;bottom:86px;transform:translate(-50%,15px);opacity:0;background:#172722;color:#fff;padding:11px 15px;border-radius:12px;transition:.2s;z-index:100;font-size:13px}.toast.show{transform:translate(-50%,0);opacity:1}.offline:before{content:'오프라인 · 저장된 데모 데이터로 작동 중';position:fixed;top:0;left:0;right:0;background:#273c35;color:#fff;text-align:center;font-size:11px;padding:5px;z-index:99}.offline .topbar{top:23px}.empty{text-align:center;color:var(--muted);padding:30px}
+@media(max-width:720px){.page{padding:16px 12px 28px}.topbar{height:64px;padding:10px 14px}.store-pill{max-width:45%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric-grid{grid-template-columns:1fr 1fr}.status-card{padding:18px;border-radius:20px}.status-row h1{font-size:36px}.status-orb{width:62px;height:62px}.loss-highlight{grid-template-columns:1fr}.loss-highlight strong{grid-row:auto}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.scenario-grid,.demo-flow{grid-template-columns:1fr}.panel{padding:16px}.onboard-card{padding:22px}.onboard-card h1{font-size:27px}}
+</style></head><body><div id="app"></div><noscript>JavaScript를 켜주세요.</noscript><script>const ENGINE_VERSION = 'electric-kimse-baseline-v1';
+const SLOT_MINUTES = 15;
+const SLOT_HOURS = SLOT_MINUTES / 60;
+
+const DEFAULT_CONFIG = Object.freeze({
+  intervalMinutes: SLOT_MINUTES,
+  offHours: { relative: 0.30, absoluteKw: 0.50, minMinutes: 30 },
+  businessHours: { relative: 0.45, absoluteKw: 0.80, minMinutes: 30 },
+  attention: { relative: 0.60, absoluteKw: 1.20, minMinutes: 90 },
+});
+
+const pad = (n) => String(n).padStart(2, '0');
+const round = (n, digits = 2) => {
+  const p = 10 ** digits;
+  return Math.round((Number(n) + Number.EPSILON) * p) / p;
+};
+const safeDate = (value) => value instanceof Date ? new Date(value) : new Date(String(value));
+const dayGroup = (d) => [0, 6].includes(d.getDay()) ? 'weekend' : 'weekday';
+const slotKey = (d) => `${pad(d.getHours())}:${pad(Math.floor(d.getMinutes() / SLOT_MINUTES) * SLOT_MINUTES)}`;
+
+function isBusinessHour(date, store) {
+  const d = safeDate(date);
+  const day = d.getDay();
+  const holidays = new Set((store.holidays || []).map(Number));
+  if (holidays.has(day)) return false;
+  const [oh, om] = String(store.openTime || '09:00').split(':').map(Number);
+  const [ch, cm] = String(store.closeTime || '22:00').split(':').map(Number);
+  const m = d.getHours() * 60 + d.getMinutes();
+  const open = oh * 60 + om;
+  const close = ch * 60 + cm;
+  return m >= open && m < close;
+}
+
+function median(values) {
+  const v = values.filter(Number.isFinite).sort((a,b)=>a-b);
+  if (!v.length) return null;
+  const mid = Math.floor(v.length/2);
+  return v.length % 2 ? v[mid] : (v[mid-1]+v[mid])/2;
+}
+
+function mad(values, center = null) {
+  const c = center ?? median(values);
+  if (c == null) return null;
+  return median(values.filter(Number.isFinite).map(v => Math.abs(v-c)));
+}
+
+function buildBaseline(readings, store) {
+  const buckets = new Map();
+  for (const r of readings) {
+    const d = safeDate(r.timestamp);
+    if (Number.isNaN(d.getTime()) || !Number.isFinite(Number(r.power_kw))) continue;
+    const key = `${dayGroup(d)}|${slotKey(d)}|${isBusinessHour(d, store) ? 1 : 0}`;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(Number(r.power_kw));
+  }
+  const profile = new Map();
+  for (const [key, values] of buckets.entries()) {
+    const med = median(values);
+    const spread = mad(values, med) ?? 0;
+    profile.set(key, {
+      median: med,
+      mad: spread,
+      low: Math.max(0, med - Math.max(0.15, spread * 2.5)),
+      high: med + Math.max(0.15, spread * 2.5),
+      samples: values.length,
+    });
+  }
+  return profile;
+}
+
+function expectedFor(profile, timestamp, store) {
+  const d = safeDate(timestamp);
+  const business = isBusinessHour(d, store);
+  const exact = `${dayGroup(d)}|${slotKey(d)}|${business ? 1 : 0}`;
+  let hit = profile.get(exact);
+  if (hit) return {...hit, key: exact, business};
+  const fallback = [...profile.entries()].filter(([k]) => k.includes(`|${slotKey(d)}|${business ? 1 : 0}`));
+  if (fallback.length) {
+    const meds = fallback.map(([,v]) => v.median);
+    const m = median(meds) ?? 0;
+    return {median:m, mad:0, low:Math.max(0,m-0.2), high:m+0.2, samples:fallback.length, key:'fallback', business};
+  }
+  return {median:0, mad:0, low:0, high:0.2, samples:0, key:'missing', business};
+}
+
+function thresholdFor(business, config) {
+  return business ? config.businessHours : config.offHours;
+}
+
+function analyzeEnergy({baselineReadings, currentReadings, store, config = DEFAULT_CONFIG}) {
+  const profile = buildBaseline(baselineReadings, store);
+  const sorted = [...currentReadings].sort((a,b)=>safeDate(a.timestamp)-safeDate(b.timestamp));
+  const rows = sorted.map(r => {
+    const actual = Number(r.power_kw);
+    const exp = expectedFor(profile, r.timestamp, store);
+    const delta = actual - exp.median;
+    const relative = exp.median > 0.05 ? delta / exp.median : null;
+    const t = thresholdFor(exp.business, config);
+    const candidate = delta >= t.absoluteKw && relative != null && relative >= t.relative;
+    return {
+      timestamp:r.timestamp,
+      actual:round(actual,3), expected:round(exp.median,3), low:round(exp.low,3), high:round(exp.high,3),
+      delta:round(delta,3), relative:relative == null ? null : round(relative,4),
+      business:exp.business, candidate, anomalous:false, runMinutes:0,
+    };
+  });
+
+  let run = 0;
+  for (const row of rows) {
+    if (row.candidate) run += config.intervalMinutes;
+    else run = 0;
+    row.runMinutes = run;
+    const t = thresholdFor(row.business, config);
+    row.anomalous = row.candidate && run >= t.minMinutes;
+  }
+
+  // Mark the whole consecutive run once it reaches the persistence threshold.
+  let i = 0;
+  while (i < rows.length) {
+    if (!rows[i].candidate) { i++; continue; }
+    let j = i;
+    while (j < rows.length && rows[j].candidate) j++;
+    const minutes = (j-i) * config.intervalMinutes;
+    const t = thresholdFor(rows[i].business, config);
+    if (minutes >= t.minMinutes) for (let k=i;k<j;k++) rows[k].anomalous = true;
+    i = j;
+  }
+
+  const anomalous = rows.filter(r=>r.anomalous);
+  const wasteKwh = anomalous.reduce((sum,r)=>sum + Math.max(0, r.delta) * (config.intervalMinutes/60), 0);
+  const price = Number(store.pricePerKwh || 0);
+  const extraCost = wasteKwh * price;
+  const last = rows.at(-1) || null;
+  const activeRun = (() => {
+    let n=0;
+    for(let k=rows.length-1;k>=0;k--) { if(rows[k].candidate) n+=config.intervalMinutes; else break; }
+    return n;
+  })();
+  const maxRel = anomalous.reduce((m,r)=>Math.max(m,r.relative || 0),0);
+  const maxDelta = anomalous.reduce((m,r)=>Math.max(m,r.delta || 0),0);
+  const wasAnomalous = anomalous.length > 0;
+  const resolved = wasAnomalous && last && !last.candidate && rows.slice(-2).every(r=>!r.candidate);
+
+  let level = 'NORMAL';
+  if (wasAnomalous && !resolved) {
+    const att = config.attention;
+    if (activeRun >= att.minMinutes || maxRel >= att.relative || maxDelta >= att.absoluteKw) level = 'ATTENTION';
+    else level = 'WATCH';
+  }
+
+  const activeAnomaly = level !== 'NORMAL';
+  const reference = last || {actual:0, expected:0, relative:0, business:false};
+  const relativePct = reference.expected > 0 ? ((reference.actual-reference.expected)/reference.expected)*100 : 0;
+  const causes = causeCandidates({rows, store, level});
+  const event = buildEvent({rows, level, wasteKwh, extraCost, causes, store, resolved});
+
+  return {
+    engineVersion: ENGINE_VERSION,
+    profileSize: profile.size,
+    rows,
+    level,
+    label: level === 'ATTENTION' ? '확인 필요' : level === 'WATCH' ? '주의' : '평상',
+    message: statusMessage({level, resolved, last, activeRun}),
+    activeAnomaly,
+    resolved,
+    durationMinutes: activeRun,
+    currentKw: round(reference.actual,2),
+    expectedKw: round(reference.expected,2),
+    relativePct: round(relativePct,1),
+    wasteKwh: round(wasteKwh,2),
+    extraCost: Math.round(extraCost),
+    monthlyCost: Math.round(extraCost * 30),
+    causes,
+    event,
+  };
+}
+
+function statusMessage({level, resolved, last, activeRun}) {
+  if (resolved) return '조치 후 평소 범위로 돌아왔습니다.';
+  if (level === 'NORMAL') return '현재 평소 범위입니다.';
+  const when = last?.business ? '영업시간에' : '폐점 후';
+  return `${when} 평소보다 높은 전력 사용이 ${formatDuration(activeRun)}째 계속되고 있습니다.`;
+}
+
+function formatDuration(minutes) {
+  const m = Math.max(0, Math.round(Number(minutes)||0));
+  const h = Math.floor(m/60), r = m%60;
+  if (!h) return `${r}분`;
+  if (!r) return `${h}시간`;
+  return `${h}시간 ${r}분`;
+}
+
+function causeCandidates({rows, store, level}) {
+  if (level === 'NORMAL') return [];
+  const active = rows.filter(r=>r.anomalous);
+  const mostlyOff = active.length && active.filter(r=>!r.business).length / active.length >= 0.6;
+  const spikes = active.filter(r=>r.delta >= 1.5).length >= 2;
+  const longBase = active.length * SLOT_MINUTES >= 90;
+  if (mostlyOff && longBase) return ['냉난방기 종료 여부', '전열기·온수기', '냉장·냉동설비 문열림 또는 이상작동', '기타 폐점 후 켜져 있는 설비'];
+  if (mostlyOff && spikes) return ['전열기·온수기', '압축기 등 주기 설비', '조명·간판', '기타 심야 가동 설비'];
+  if (mostlyOff) return ['냉난방기 종료 여부', '조명·간판', '전열기·온수기', '상시 가동 설비'];
+  return ['냉난방기 설정 변화', '고출력 조리·전열 설비', '특별 작업 여부', '평소와 다른 장비 사용'];
+}
+
+function buildEvent({rows, level, wasteKwh, extraCost, causes, store, resolved}) {
+  const anomalous = rows.filter(r=>r.anomalous);
+  if (!anomalous.length) return null;
+  const start = anomalous[0].timestamp;
+  const end = anomalous.at(-1).timestamp;
+  return {
+    id:`evt-${String(start).replace(/\D/g,'').slice(-12)}`,
+    type: anomalous.filter(r=>!r.business).length >= anomalous.length/2 ? 'AFTER_HOURS' : 'BUSINESS_SPIKE',
+    level,
+    status: resolved ? 'RESOLVED' : 'OPEN',
+    start, end,
+    wasteKwh:round(wasteKwh,2), extraCost:Math.round(extraCost),
+    summary: resolved ? '조치 후 평소 범위로 복귀' : '평소보다 높은 전력 사용이 지속됨',
+    causes,
+    storeId:store.id,
+  };
+}
+
+function seededNoise(i, amplitude=0.05) {
+  return (Math.sin(i*12.9898)*43758.5453 % 1) * amplitude;
+}
+
+function profileKw(date, store, variant=0) {
+  const h = date.getHours() + date.getMinutes()/60;
+  const business = isBusinessHour(date, store);
+  let base;
+  if (!business) base = 0.72;
+  else if (h < 11) base = 2.4;
+  else if (h < 14) base = 3.45;
+  else if (h < 18) base = 2.85;
+  else base = 3.65;
+  const cycle = 0.20*Math.sin((h/24)*Math.PI*4) + 0.08*Math.cos((h/24)*Math.PI*9);
+  return Math.max(0.3, base + cycle + seededNoise(date.getDate()*100 + date.getHours()*4 + date.getMinutes()/15 + variant, 0.09));
+}
+
+function generateBaseline(store, anchorDate = '2026-09-30T00:00:00+09:00') {
+  const anchor = safeDate(anchorDate);
+  const out=[];
+  for(let days=14; days>=1; days--) {
+    const d0 = new Date(anchor); d0.setDate(d0.getDate()-days); d0.setHours(0,0,0,0);
+    for(let s=0;s<96;s++) {
+      const d=new Date(d0); d.setMinutes(s*SLOT_MINUTES);
+      out.push({timestamp:d.toISOString(), power_kw:round(profileKw(d,store,days),3)});
+    }
+  }
+  return out;
+}
+
+function generateCurrent(store, scenario='A', step='full', anchorDate = '2026-09-30T00:00:00+09:00') {
+  const anchor=safeDate(anchorDate); anchor.setHours(0,0,0,0);
+  const all=[];
+  const maxSlot = step === 'start' ? 89 : step === 'watch' ? 93 : step === 'attention' ? 99 : 95; // around 22:15-00:45 local display depends on offset
+  for(let s=0;s<96;s++) {
+    const d=new Date(anchor); d.setMinutes(s*SLOT_MINUTES);
+    let kw=profileKw(d,store,30);
+    const minutes=d.getHours()*60+d.getMinutes();
+    const closeParts=String(store.closeTime||'22:00').split(':').map(Number);
+    const close=closeParts[0]*60+closeParts[1];
+    if (scenario==='B' && minutes>=close) kw = 2.1 + 0.08*Math.sin(s);
+    if (scenario==='C' && minutes>=14*60 && minutes<16*60+15) kw = profileKw(d,store,30)+1.85;
+    all.push({timestamp:d.toISOString(),power_kw:round(kw,3)});
+  }
+  if (step==='resolved' && scenario==='B') {
+    // 22:00~23:30 anomaly, then normal for two slots => actual recovery detected from data.
+    for(let s=0;s<all.length;s++) {
+      const d=safeDate(all[s].timestamp); const m=d.getHours()*60+d.getMinutes();
+      const [ch,cm]=String(store.closeTime||'22:00').split(':').map(Number); const close=ch*60+cm;
+      if(m>=close && m<close+90) all[s].power_kw=round(2.1+0.05*Math.sin(s),3);
+      if(m>=close+90) all[s].power_kw=round(profileKw(d,store,30),3);
+    }
+    return all.filter(r=>safeDate(r.timestamp).getHours()*60+safeDate(r.timestamp).getMinutes()<=24*60-15);
+  }
+  if (step==='full' && scenario==='C') {
+    return all.filter(r=>{const d=safeDate(r.timestamp); return d.getHours()*60+d.getMinutes()<=16*60;});
+  }
+  if (step==='full') return all;
+  // Cut the day at a deterministic local clock point for demo progression.
+  const cut = step==='start' ? 22*60+15 : step==='watch' ? 22*60+45 : 23*60+45;
+  return all.filter(r=>{const d=safeDate(r.timestamp); return d.getHours()*60+d.getMinutes()<=cut;});
+}
+
+function learningProgress(baselineReadings) {
+  const days=new Set(baselineReadings.map(r=>String(r.timestamp).slice(0,10)));
+  return Math.min(14, days.size);
+}
+
+
+const $ = (s, root=document) => root.querySelector(s);
+const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+const money = (n) => `${Math.round(Number(n)||0).toLocaleString('ko-KR')}원`;
+const kwh = (n) => `${Number(n||0).toFixed(2)} kWh`;
+const kw = (n) => `${Number(n||0).toFixed(2)} kW`;
+const pct = (n) => `${n>=0?'+':''}${Number(n||0).toFixed(1)}%`;
+
+const DEFAULT_STORE={id:'store-mokdong-demo',name:'목동 데모카페',type:'카페',openTime:'09:00',closeTime:'22:00',holidays:[0],pricePerKwh:190};
+const state = {
+  store: JSON.parse(localStorage.getItem('electricKimseStore')||'null'),
+  scenario: localStorage.getItem('electricKimseScenario')||'A',
+  demoStep: localStorage.getItem('electricKimseStep')||'full',
+  actions: JSON.parse(localStorage.getItem('electricKimseActions')||'[]'),
+  alerts: JSON.parse(localStorage.getItem('electricKimseAlerts')||'[]'),
+  route: location.hash.replace('#/','')||'home',
+};
+
+function persist(){
+  localStorage.setItem('electricKimseStore',JSON.stringify(state.store));
+  localStorage.setItem('electricKimseScenario',state.scenario);
+  localStorage.setItem('electricKimseStep',state.demoStep);
+  localStorage.setItem('electricKimseActions',JSON.stringify(state.actions.slice(-50)));
+  localStorage.setItem('electricKimseAlerts',JSON.stringify(state.alerts.slice(-50)));
+}
+
+function dataset(){
+  const store=state.store||DEFAULT_STORE;
+  const baseline=generateBaseline(store);
+  let current=generateCurrent(store,state.scenario,state.demoStep);
+  return {store,baseline,current,analysis:analyzeEnergy({baselineReadings:baseline,currentReadings:current,store})};
+}
+
+function maybeRecordAlert(analysis){
+  if(!analysis.event || analysis.level==='NORMAL') return;
+  const fingerprint=`${analysis.event.type}-${analysis.level}-${String(analysis.event.start).slice(0,13)}`;
+  if(state.alerts.some(a=>a.fingerprint===fingerprint)) return;
+  state.alerts.push({fingerprint,createdAt:new Date().toISOString(),...analysis.event});
+  persist();
+}
+
+function appShell(content){
+  return `<div class="app-shell">
+    <header class="topbar">
+      <a href="#/home" class="brand"><span class="brand-mark">⚡</span><span><strong>전기낌새</strong><small>낭비는 지금 시작됩니다</small></span></a>
+      <div class="store-pill">${escapeHtml((state.store||DEFAULT_STORE).name)}</div>
+    </header>
+    <main id="main" class="page">${content}</main>
+    <nav class="bottom-nav" aria-label="주요 메뉴">
+      ${nav('home','홈','⌂')}${nav('history','히스토리','▥')}${nav('alerts','알림','◉')}${nav('settings','설정','⚙')}${nav('demo','데모','▶')}
+    </nav>
+  </div>`;
+}
+function nav(route,label,icon){return `<a class="${state.route===route?'active':''}" href="#/${route}"><span>${icon}</span>${label}</a>`;}
+
+function statusClass(level){return level==='ATTENTION'?'attention':level==='WATCH'?'watch':'normal';}
+
+function homeView(){
+  const {analysis,current}=dataset(); maybeRecordAlert(analysis);
+  const last=current.at(-1);
+  const lastTime=last?new Date(last.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'-';
+  return appShell(`
+    <section class="status-card ${statusClass(analysis.level)}">
+      <div class="eyebrow">현재 상태 · ${lastTime}</div>
+      <div class="status-row"><div><h1>${analysis.label}</h1><p>${analysis.message}</p></div><div class="status-orb">${analysis.level==='NORMAL'?'✓':analysis.level==='WATCH'?'!':'!!'}</div></div>
+      ${analysis.level!=='NORMAL'?`<div class="loss-highlight"><span>현재까지 추정 낭비</span><strong>${money(analysis.extraCost)}</strong><small>${kwh(analysis.wasteKwh)} · 입력한 평균 전력단가 기준 추정</small></div>`:''}
+    </section>
+
+    <section class="metric-grid">
+      ${metric('현재 사용전력',kw(analysis.currentKw),'지금')}
+      ${metric('평소 사용전력',kw(analysis.expectedKw),'같은 요일군·시간대')}
+      ${metric('평소 대비',pct(analysis.relativePct),analysis.durationMinutes?`${formatDuration(analysis.durationMinutes)} 지속`:'평소 범위')}
+      ${metric('월 환산 추정',money(analysis.monthlyCost),'같은 패턴이 매일 반복될 경우')}
+    </section>
+
+    <section class="panel"><div class="panel-head"><div><h2>오늘 전력 흐름</h2><p>평소 범위와 오늘 사용량을 겹쳐 봅니다.</p></div><a href="#/history">자세히</a></div>${chartSvg(analysis.rows)}</section>
+
+    <section class="panel explain"><h2>왜 알렸나요?</h2>${whyText(analysis)}</section>
+
+    <section class="panel"><h2>먼저 확인해 보세요</h2>${analysis.causes.length?`<ol class="check-list">${analysis.causes.slice(0,4).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol>`:'<p class="muted">현재는 평소 범위라 점검할 항목이 없습니다.</p>'}
+      ${analysis.level!=='NORMAL'?`<button class="primary wide" id="action-complete">확인·조치 완료</button>`:''}
+    </section>
+    <div class="source-note">분석 기준: 14일 데모 baseline · 요일군 + 15분 시간슬롯 + 영업 여부 · median 기반</div>
+  `);
+}
+
+function whyText(a){
+  if(a.level==='NORMAL') return `<p>현재 전력 사용은 우리 매장의 같은 요일군·시간대 평소 범위 안에 있습니다.</p>`;
+  return `<p>같은 요일군·시간대의 평소 사용전력은 <strong>${kw(a.expectedKw)}</strong>인데, 지금은 <strong>${kw(a.currentKw)}</strong>입니다. ${a.durationMinutes?`이 차이가 <strong>${formatDuration(a.durationMinutes)}</strong> 이어졌습니다.`:''}</p><div class="why-stats"><span>평소 대비 <b>${pct(a.relativePct)}</b></span><span>추가 사용 <b>${kwh(a.wasteKwh)}</b></span></div>`;
+}
+
+function metric(label,value,sub){return `<article class="metric"><span>${label}</span><strong>${value}</strong><small>${sub}</small></article>`;}
+
+function chartSvg(rows){
+  const data=rows.filter((_,i)=>i%2===0); if(!data.length) return '<div class="empty">데이터 없음</div>';
+  const w=760,h=230,p=28; const max=Math.max(5,...data.map(r=>Math.max(r.actual,r.high)))*1.08;
+  const x=i=>p+(w-2*p)*(i/(data.length-1||1)); const y=v=>h-p-(h-2*p)*(v/max);
+  const line=field=>data.map((r,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(r[field]).toFixed(1)}`).join(' ');
+  const bandTop=data.map((r,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(r.high).toFixed(1)}`).join(' ');
+  const bandBottom=[...data].reverse().map((r,ii)=>{const i=data.length-1-ii; return `L${x(i).toFixed(1)},${y(r.low).toFixed(1)}`;}).join(' ');
+  const anomalies=data.map((r,i)=>r.anomalous?`<circle cx="${x(i)}" cy="${y(r.actual)}" r="3.8" class="anomaly-dot"/>`:'' ).join('');
+  return `<div class="chart-wrap"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="평소 범위와 오늘 전력 사용량 그래프"><path class="range" d="${bandTop} ${bandBottom} Z"/><path class="expected" d="${line('expected')}"/><path class="actual" d="${line('actual')}"/>${anomalies}<line x1="${p}" y1="${h-p}" x2="${w-p}" y2="${h-p}" class="axis"/></svg><div class="legend"><span><i class="lg range-lg"></i>평소 범위</span><span><i class="lg expected-lg"></i>평소</span><span><i class="lg actual-lg"></i>오늘</span><span><i class="lg anomaly-lg"></i>이상 구간</span></div></div>`;
+}
+
+function historyView(){
+  const {analysis}=dataset();
+  const rows=[...analysis.rows].reverse().filter((_,i)=>i%4===0).slice(0,24);
+  return appShell(`<section class="page-title"><h1>전력 사용 히스토리</h1><p>원시 데이터 대신 판단에 필요한 차이만 보여줍니다.</p></section><section class="panel">${chartSvg(analysis.rows)}</section><section class="panel table-panel"><table><thead><tr><th>시간</th><th>오늘</th><th>평소</th><th>차이</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.anomalous?'row-alert':''}"><td>${new Date(r.timestamp).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</td><td>${kw(r.actual)}</td><td>${kw(r.expected)}</td><td>${r.expected?pct(((r.actual-r.expected)/r.expected)*100):'-'}</td></tr>`).join('')}</tbody></table></section>`);
+}
+
+function alertsView(){
+  const items=[...state.alerts].reverse();
+  return appShell(`<section class="page-title"><h1>알림 기록</h1><p>평소와 다른 사용이 실제 기준을 넘었을 때만 기록합니다.</p></section><section class="stack">${items.length?items.map(a=>`<article class="alert-item ${statusClass(a.level)}"><div><b>${a.level==='ATTENTION'?'확인 필요':'주의'}</b><span>${new Date(a.createdAt).toLocaleString('ko-KR')}</span></div><p>${escapeHtml(a.summary)}</p><small>${kwh(a.wasteKwh)} · ${money(a.extraCost)}</small></article>`).join(''):'<div class="panel empty">아직 알림 기록이 없습니다.</div>'}</section>`);
+}
+
+function settingsView(){
+  const s=state.store||DEFAULT_STORE;
+  return appShell(`<section class="page-title"><h1>매장 설정</h1><p>전력 전문가가 아니어도 필요한 값만 입력합니다.</p></section><form class="panel form-grid" id="store-form">
+    <label>매장명<input name="name" value="${escapeAttr(s.name)}" required></label><label>업종<select name="type">${['카페','음식점','편의점','무인점포','미용실','숙박업','기타'].map(x=>`<option ${x===s.type?'selected':''}>${x}</option>`).join('')}</select></label>
+    <label>영업 시작<input type="time" name="openTime" value="${s.openTime}" required></label><label>영업 종료<input type="time" name="closeTime" value="${s.closeTime}" required></label>
+    <label class="full">평균 전력단가(원/kWh)<input type="number" min="1" name="pricePerKwh" value="${s.pricePerKwh}" required><small>실제 한전 청구액이 아니라 추정 계산에 쓰는 평균 단가입니다.</small></label>
+    <button class="primary" type="submit">저장</button></form><section class="panel"><h2>데이터소스</h2><div class="data-source"><b>현재</b><span>내장 데모 데이터 · 오프라인 작동</span></div><div class="data-source muted"><b>향후</b><span>CSV · 한전 AMI/Power Planner · 스마트미터</span></div></section>`);
+}
+
+function demoView(){
+  const {analysis}=dataset();
+  return appShell(`<section class="page-title"><h1>발표용 DEMO MODE</h1><p>버튼을 누르면 데이터가 바뀌고 결과는 엔진이 다시 계산합니다.</p></section>
+    <section class="panel"><h2>시나리오</h2><div class="scenario-grid">${demoBtn('A','정상','전형적인 하루')}${demoBtn('B','폐점 후 낭비','핵심 시연')}${demoBtn('C','영업 중 급증','별도 이상')}</div></section>
+    <section class="panel"><h2>핵심 시연 순서</h2><div class="demo-flow"><button data-step="full" data-scenario="A">1. 정상</button><button data-step="start" data-scenario="B">2. 이상 시작</button><button data-step="watch" data-scenario="B">3. 주의</button><button data-step="attention" data-scenario="B">4. 확인 필요</button><button data-action="mark">5. 조치 완료</button><button data-step="resolved" data-scenario="B">6. 정상 복귀</button></div><div class="demo-result ${statusClass(analysis.level)}"><b>현재 계산 결과: ${analysis.label}</b><span>${analysis.message}</span><small>${kwh(analysis.wasteKwh)} · ${money(analysis.extraCost)}</small></div></section>
+    <section class="panel"><h2>학습 상태</h2><div class="progress-label"><span>우리 매장의 평소 패턴을 배우는 중</span><b>DAY ${learningProgress(generateBaseline(state.store||DEFAULT_STORE))} / 14</b></div><div class="progress"><i style="width:100%"></i></div><p class="muted">데모에서는 14일 이력 데이터를 즉시 불러와 학습 완료 상태를 재현합니다.</p></section>`);
+}
+function demoBtn(code,title,sub){return `<button class="scenario ${state.scenario===code?'selected':''}" data-scenario="${code}" data-step="full"><b>${code} · ${title}</b><span>${sub}</span></button>`;}
+
+function onboarding(){
+  document.querySelector('#app').innerHTML=`<div class="onboarding"><div class="onboard-card"><div class="brand intro"><span class="brand-mark">⚡</span><span><strong>전기낌새</strong><small>전기요금은 한 달 뒤 나오지만, 낭비는 지금 시작됩니다.</small></span></div><h1>우리 매장의 평소를 먼저 배웁니다.</h1><p>요일·시간대·영업 여부에 따라 평소 전력 패턴을 만들고, 평소와 다른 소비가 계속되면 바로 알려드립니다.</p><form id="onboard-form" class="form-grid"><label class="full">매장명<input name="name" placeholder="예: 목동 OO카페" required></label><label>업종<select name="type"><option>카페</option><option>음식점</option><option>편의점</option><option>무인점포</option><option>미용실</option><option>숙박업</option><option>기타</option></select></label><label>평균 전력단가<input type="number" name="pricePerKwh" value="190" required></label><label>영업 시작<input type="time" name="openTime" value="09:00" required></label><label>영업 종료<input type="time" name="closeTime" value="22:00" required></label><button class="primary wide full" type="submit">우리 매장 전기낌새 시작하기</button></form><button id="quick-demo" class="ghost wide">발표용 데모 바로 시작</button></div></div>`;
+  $('#onboard-form').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.currentTarget);state.store={...DEFAULT_STORE,...Object.fromEntries(f.entries()),pricePerKwh:Number(f.get('pricePerKwh'))};persist();render();});
+  $('#quick-demo').addEventListener('click',()=>{state.store={...DEFAULT_STORE};state.scenario='B';state.demoStep='attention';persist();render();});
+}
+
+function render(){
+  if(!state.store){onboarding();return;}
+  const views={home:homeView,history:historyView,alerts:alertsView,settings:settingsView,demo:demoView};
+  $('#app').innerHTML=(views[state.route]||homeView)(); bind();
+}
+
+function bind(){
+  $('#action-complete')?.addEventListener('click',()=>{const d=dataset();state.actions.push({at:new Date().toISOString(),event:d.analysis.event,cause:'원인 미확인'});state.demoStep='resolved';persist();render();});
+  $('#store-form')?.addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.currentTarget);state.store={...state.store,...Object.fromEntries(f.entries()),pricePerKwh:Number(f.get('pricePerKwh'))};persist();toast('매장 설정을 저장했습니다.');render();});
+  $$('[data-scenario]').forEach(b=>b.addEventListener('click',()=>{state.scenario=b.dataset.scenario;state.demoStep=b.dataset.step||'full';persist();render();}));
+  $('[data-action="mark"]')?.addEventListener('click',()=>{const d=dataset();state.actions.push({at:new Date().toISOString(),event:d.analysis.event,cause:'냉난방기'});persist();toast('조치 완료를 기록했습니다. 다음으로 정상 복귀를 눌러보세요.');});
+}
+
+function toast(text){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t);}t.textContent=text;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function escapeAttr(s){return escapeHtml(s);}
+
+window.addEventListener('hashchange',()=>{state.route=location.hash.replace('#/','')||'home';render();});
+window.addEventListener('online',()=>document.body.classList.remove('offline'));
+window.addEventListener('offline',()=>document.body.classList.add('offline'));
+
+render();</script></body></html>
