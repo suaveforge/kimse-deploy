@@ -56,8 +56,8 @@ jobs:
             schema_version:'KIMSE_CLINICAL_HANDOFF_PAYLOAD_V2',generated_at:'2026-10-06T00:00:00Z',
             report_context:{profile:'KR',view_horizon_days:180,window_start:'2026-04-10',window_end:'2026-10-06',baseline_started_at:'2026-09-01',evidence_status:'kimse_operational'},
             subject:{care_subject_id:'qa-subject',display_name:'QA 환자'},
-            previsit_summary:{handoff_reason:'최근 여러 생활영역 변화가 함께 관찰됨',data_sufficiency:'SUFFICIENT',first_observed_change_at:'2026-09-20T00:00:00Z',latest_observed_change_at:'2026-10-03T00:00:00Z',affected_domains:['cognition_task','mobility','sleep','activity','speech','social_interaction'],function_status:'COMPLEX_DIFFICULTY',latest_informant_assessment:'CONFIRMED',median_signal_coverage:.8,top_changes:metrics.slice(0,5),family_confirmed_count:1,professional_outcome_present:true},
-            kimse_observation:{observation_pattern:'MULTI_DOMAIN_CHANGE',data_sufficiency:'SUFFICIENT',coverage:{},missing:[],explanation:{headline:'최근 여러 영역 변화'}},
+            previsit_summary:{handoff_reason:'최근 여러 생활영역 변화가 함께 관찰됨',data_sufficiency:'HIGH',first_observed_change_at:'2026-09-20T00:00:00Z',latest_observed_change_at:'2026-10-03T00:00:00Z',affected_domains:['cognition_task','mobility','sleep','activity','speech','social_interaction'],function_status:'COMPLEX_DIFFICULTY',latest_informant_assessment:'CONFIRMED',median_signal_coverage:.8,top_changes:metrics.slice(0,5),family_confirmed_count:1,professional_outcome_present:true},
+            kimse_observation:{observation_pattern:'MULTI_DOMAIN_CHANGE',data_sufficiency:'HIGH',coverage:{},missing:[],explanation:{headline:'최근 여러 영역 변화'}},
             clinical_domains:{subjective_change:{self:'PRESENT',informant:'PRESENT',evidence_refs:['#evidence-src-23']},cognition:{latest_objective_observation:{state:'CHANGED'},repeatable_task_sessions:[{phase:'RECHECK'}],recent_kimse_assessments:[],evidence_refs:['#evidence-src-09'],guard:'임상 점수로 환산하지 않음'},function_independence:{status:'COMPLEX_DIFFICULTY',source_type:'informant_report',evidence_refs:['#evidence-src-17']},mood_behavior:{current_user_report:'평소와 비슷',status:'available',guard:'진단 아님'},sensory_motor:{hearing_context:'some',mobility_activity_signals:metrics.filter(x=>['mobility','activity'].includes(x.domain)),status:'available',guard:'진찰 대체 아님'},safety_support:{events:[],status:'not_collected',guard:'자동 판정 안 함'}},
             risk_confounders:{sleep_disturbance_context:'sometimes',mood_context:'평소와 비슷',sensory_impairment_context:'some',conditions_context:'고혈압',current_medications:[{name:'혈압약'}],medication_change:{status:'not_collected'},acute_illness_context:{status:'not_collected'}},
             clinical_coverage:[
@@ -128,8 +128,24 @@ jobs:
             const dims=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));
             check(dims.sw<=dims.cw+1,'mobile-no-horizontal-overflow',JSON.stringify(dims));
             await p.screenshot({path:path.join(out,'clinical-handoff-mobile.png'),fullPage:true});
-            fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,checkedAt:new Date().toISOString()},null,2));
-            await ctx.close();await browser.close();
+            const desktop=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+            await desktop.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),state);
+            await desktop.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
+            const dp=await desktop.newPage();
+            await dp.goto(BASE+'#/clinical-handoff',{waitUntil:'domcontentloaded',timeout:30000});
+            await dp.waitForSelector('.clinical-explorer',{timeout:15000});
+            check(await dp.locator('.clinical-explorer').count()===1,'desktop-explorer-visible');
+            const dd=await dp.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));
+            check(dd.sw<=dd.cw+1,'desktop-no-horizontal-overflow',JSON.stringify(dd));
+            await dp.screenshot({path:path.join(out,'clinical-handoff-desktop.png'),fullPage:true});
+            await dp.emulateMedia({media:'print'});
+            check(await dp.locator('.clinical-interactive').evaluate(el=>getComputedStyle(el).display)==='none','print-hides-interactive');
+            check(await dp.locator('.clinical-print-page').isVisible(),'print-summary-visible');
+            const pdf=await dp.pdf({format:'A4',printBackground:true,margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
+            check(pdf.length>10000,'a4-pdf-generated',String(pdf.length));
+            fs.writeFileSync(path.join(out,'clinical-handoff-a4.pdf'),pdf);
+            fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,checkedAt:new Date().toISOString(),pdfBytes:pdf.length},null,2));
+            await desktop.close();await ctx.close();await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
           node /tmp/kimse-clinical-handoff-qa.cjs
