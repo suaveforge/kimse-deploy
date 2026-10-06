@@ -1460,14 +1460,19 @@ function collectionStateRows(){
   const d=ensureMonitoringDay(),locOn=S.consents.location,motionOn=S.consents.motion,usageOn=S.consents.usage;
   const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?(d.locationInitialized?'수집 중':'위치 신호 대기'):'권한 확인 전';
   const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?(d.motionInitialized?'수집 중':'센서 신호 대기'):'권한 확인 전';
-  const voiceCount=(S.initial.voiceSamples||[]).filter(Boolean).length;
+  const voiceCount=(S.initial.voiceSamples||[]).filter(Boolean).length,usageSeen=!!observedToday('app_sessions')||d.appActiveMs>0;
+  const movementValue=d.locationInitialized?Math.round(d.movementDistanceM).toLocaleString('ko-KR')+'m':'미수집';
+  const radiusValue=d.locationInitialized?Math.round(d.locationRadiusM).toLocaleString('ko-KR')+'m':'미수집';
+  const outingValue=d.locationInitialized?(d.outings?'확인됨':'관찰되지 않음'):'미수집';
+  const motionValue=d.motionInitialized?(d.motionActiveMs>=60000?Math.round(d.motionActiveMs/60000)+'분':'1분 미만'):'미수집';
+  const usageValue=!usageOn?'미수집':usageSeen?(d.appActiveMs>=60000?Math.round(d.appActiveMs/60000)+'분':'1분 미만'):'수집 시작 전';
   return [
-    row('📍 위치·이동',locState,'<strong>'+Math.round(d.movementDistanceM).toLocaleString('ko-KR')+'m</strong>'),
-    row('🧭 생활반경',locState,'<strong>'+Math.round(d.locationRadiusM).toLocaleString('ko-KR')+'m</strong>'),
-    row('🚪 외출 신호',locState,'<strong>'+(d.outings?'확인됨':'아직 없음')+'</strong>'),
-    row('🚶 움직임·활동',motionState,'<strong>'+Math.round(d.motionActiveMs/60000)+'분</strong>'),
-    row('📱 낌새 사용',usageOn?'수집 중':'동의 안 함','<strong>'+Math.round(d.appActiveMs/60000)+'분</strong>'),
-    row('🎙️ 음성 샘플',S.consents.microphone?'사용자 실행 시 수집':'동의 안 함','<strong>'+voiceCount+'개</strong>')
+    row('📍 위치·이동',locState,'<strong>'+movementValue+'</strong>'),
+    row('🧭 생활반경',locState,'<strong>'+radiusValue+'</strong>'),
+    row('🚪 외출 신호',locState,'<strong>'+outingValue+'</strong>'),
+    row('🚶 움직임·활동',motionState,'<strong>'+motionValue+'</strong>'),
+    row('📱 낌새 사용',usageOn?'수집 중':'동의 안 함','<strong>'+usageValue+'</strong>'),
+    row('🎙️ 음성 샘플',S.consents.microphone?'사용자 실행 시 수집':'동의 안 함','<strong>'+(voiceCount?voiceCount+'개':'미수집')+'</strong>')
   ].join('');
 }
 page.baseline=()=>{
