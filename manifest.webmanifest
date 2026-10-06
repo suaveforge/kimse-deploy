@@ -10,7 +10,7 @@
   "theme_color": "#0f4553",
   "orientation": "portrait-primary",
   "icons": [
-    {"src":"./assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
-    {"src":"./assets/icons/icon-maskable-source.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
+    {"src":"/assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
+    {"src":"/assets/icons/icon-maskable-source.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ]
 }
