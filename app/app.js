@@ -604,7 +604,7 @@ function stageActionButtons(stage=S.stage.summary){
   if(key==='KIMSE_TASK_CHANGE_WITH_PRESERVED_INDEPENDENCE'||key==='KIMSE_TASK_CHANGE_OBSERVED')return '<button class="status-action secondary" data-share-monitoring>'+I('users')+'<span>가족에게 확인 요청</span></button><button class="status-action primary" data-go="clinical-handoff">'+I('file-description')+'<span>상담 준비 리포트</span></button>';
   if(key==='KIMSE_TASK_CHANGE_WITH_IADL_IMPACT'||key==='KIMSE_TASK_CHANGE_WITH_BADL_IMPACT')return '<button class="status-action secondary" data-go="clinical-handoff">'+I('file-description')+'<span>의료진 전달 리포트</span></button><button class="status-action primary" data-go="professional-outcome">'+I('stethoscope')+'<span>전문평가 결과 기록</span></button>';
   if(key==='SUBJECTIVE_CHANGE_REPORTED')return '<button class="status-action secondary" data-share-monitoring>'+I('users')+'<span>가족에게 확인 요청</span></button><button class="status-action primary" data-go="cognitive-recheck">'+I('chart-line')+'<span>반복 인지 체크</span></button>';
-  return '<button class="status-action primary single" data-go="collection-status">'+I('database')+'<span>수집 상태 확인</span></button>';
+  return '<button class="status-action secondary" data-share-monitoring>'+I('users')+'<span>가족에게 확인 요청</span></button><button class="status-action primary" data-go="collection-status">'+I('database')+'<span>수집 상태 확인</span></button>';
 }
 const STATUS_ICON_ASSETS={
   stable:'/assets/icons/kimse-status-stable.png',
@@ -1663,6 +1663,7 @@ page['monitoring-status']=()=>{
     (extraActions.length?'<section class="summary-card"><h3>그다음 확인</h3><ol>'+extraActions.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></section>':'')+
     (ready&&!captureHook?'<div class="monitoring-actions">'+(careMode?(S.careOverview.alerts?.[0]?'<button class="status-action primary single" data-go="family-feedback">'+I('message-check')+'<span>직접 보셨을 때도 달랐는지 답하기</span></button>':'<button class="status-action primary single" data-go="caregiver-home">'+I('users')+'<span>보호자 홈</span></button>'):stageActionButtons(stage))+'</div>':'')+
     '<button class="monitoring-detail-link" data-go="collection-status">실제 수집 상태 보기 '+I('chevron-right')+'</button>'+
+    '<a class="monitoring-detail-link" href="tel:18999988">치매상담콜센터 1899-9988 연결 '+I('phone')+'</a>'+
     '<a class="monitoring-detail-link" href="'+evidenceUrl()+'" target="_blank">판단 근거 Evidence 보기 '+I('external-link')+'</a>'+
     '<p class="screen-footnote">이 화면은 평소와 달라진 변화를 알아차리기 위한 참고 정보이며, 치매나 경도인지장애를 진단하지 않습니다.</p>',
     {title:'최근 변화',narrow:true,overview:true}
