@@ -170,7 +170,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><img class="brand-status-icon" src="${appStatusIconSrc()}" alt="" aria-hidden="true"><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.10.06 · Release 40<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.10.06 · Release 41<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>'';
 function captureScenarioRibbon(){return ''}
@@ -497,17 +497,28 @@ const EXTERNAL_RECORD_TYPE_META={
   OTHER:['📎','기타 의료기록']
 };
 const CLINICAL_CONTEXT_EVENT_META={
-  MEDICATION_CHANGE:['💊','약 시작·중단·변경','복약 변경'],
-  ACUTE_ILLNESS:['🤒','급성 질환·감염','급성 질환'],
+  MEDICATION_CHANGE:['💊','약 시작·중단·증감·교체','복약 변경'],
+  ACUTE_ILLNESS:['🤒','급성 질환','급성 질환'],
+  INFECTION:['🦠','감염','감염'],
   HOSPITALIZATION:['🏥','입원·응급실 이용','입원·응급실'],
   FALL:['⚠️','낙상','낙상'],
   GETTING_LOST:['🧭','길 잃음·배회','길 찾기 안전'],
+  MEDICATION_ERROR:['💊','약 복용 실수','복약 안전'],
+  HOME_FIRE_GAS_SAFETY:['🔥','가스·화재 생활안전','가스·화재 안전'],
   DRIVING_SAFETY:['🚗','운전 안전 문제','운전 안전'],
   FINANCIAL_SAFETY:['💳','금전·결제 안전 문제','금전 안전'],
   OTHER_SAFETY:['🛡️','기타 안전 문제','기타 안전'],
   OTHER:['📝','기타 진료 맥락','기타 맥락']
 };
 const CLINICAL_CONTEXT_STATUS_LABELS={PRESENT:'있었음',RESOLVED:'해결/종료됨',NONE_REPORTED:'확인했으나 해당 변화 없음'};
+const MEDICATION_CHANGE_KIND_LABELS={
+  STARTED:'시작',
+  STOPPED:'중단',
+  DOSE_INCREASED:'증량',
+  DOSE_DECREASED:'감량',
+  SWITCHED:'다른 약으로 변경',
+  OTHER:'기타 변경'
+};
 function clinicalRecordStats(){
   const p=Array.isArray(S.professionalOutcomes)?S.professionalOutcomes:[],x=Array.isArray(S.externalClinicalRecords)?S.externalClinicalRecords:[];
   const assessments=p.reduce((n,r)=>n+(Array.isArray(r.validated_assessments)?r.validated_assessments.length:0),0);
@@ -1862,7 +1873,7 @@ function clinicalTimeline(r){
     if(x.kind==='SAFETY_EVENT')return target==='function';
     if(x.kind==='CLINICAL_CONTEXT_EVENT'){
       const type=x.detail?.event_type;
-      return target==='function'&&['FALL','GETTING_LOST','DRIVING_SAFETY','FINANCIAL_SAFETY','OTHER_SAFETY'].includes(type);
+      return target==='function'&&['FALL','GETTING_LOST','MEDICATION_ERROR','HOME_FIRE_GAS_SAFETY','DRIVING_SAFETY','FINANCIAL_SAFETY','OTHER_SAFETY'].includes(type);
     }
     if(x.kind==='SELF_CONTEXT'||x.kind==='CAREGIVER_CONTEXT')return target==='cognition'||target==='function';
     const ids=Array.isArray(x.metrics)?x.metrics:[];
@@ -1907,6 +1918,10 @@ function clinicalContextSummary(r){
     const e=rows?.[0];if(!e)return null;
     const status=CLINICAL_CONTEXT_STATUS_LABELS[e.status]||e.status||'기록';
     return String(e.occurred_at||'').slice(0,10)+' · '+status+(e.summary?' · '+e.summary:'');
+  },medicationEventText=rows=>{
+    const e=rows?.[0];if(!e)return null;
+    const status=CLINICAL_CONTEXT_STATUS_LABELS[e.status]||e.status||'기록',kind=MEDICATION_CHANGE_KIND_LABELS[e.details?.change_kind]||e.details?.change_kind||'',name=e.details?.medication_name||e.details?.new_medication_name||'';
+    return String(e.occurred_at||'').slice(0,10)+' · '+status+(kind?' · '+kind:'')+(name?' · '+name:'')+(e.summary?' · '+e.summary:'');
   },documentText=rows=>{
     const e=rows?.[0];if(!e)return null;
     return String(e.performed_at||'').slice(0,10)+' · '+(e.title||'복약 변경')+' · '+(CLINICAL_VERIFICATION_LABELS[e.verification_status]||e.verification_status||'사용자 전사');
@@ -1916,9 +1931,9 @@ function clinicalContextSummary(r){
     ['청력·감각 맥락',labelValue('hearing',x.sensory_impairment_context)],
     ['기저질환/기타 맥락',x.conditions_context],
     ['현재 복약',meds.length?meds.map(m=>m.name).filter(Boolean).join(', '):null],
-    ['복약 변경 · 사용자 맥락',eventText(medEvents)],
+    ['복약 변경 · 사용자 맥락',medicationEventText(medEvents)],
     ['복약 변경 · 결과문서',documentText(medDocs)],
-    ['급성 질환·입원',eventText(acuteEvents)]
+    ['급성 질환·감염·입원',eventText(acuteEvents)]
   ];
   return '<div class="clinical-context-grid">'+items.map(([label,value])=>'<div class="clinical-context-item"><span>'+esc(label)+'</span><strong>'+esc(value||'미수집')+'</strong></div>').join('')+'</div><p class="clinical-microcopy">미수집은 정상 소견이 아닙니다. 현재 복약 목록, 복약 변경, 급성 질환·입원을 서로 다른 축으로 보존합니다.</p>';
 }
@@ -1927,10 +1942,14 @@ function clinicalPrintContextFacts(r){
     if(!row)return fallback;
     const status=CLINICAL_CONTEXT_STATUS_LABELS[row.status]||row.status||'기록';
     return (String(row.occurred_at||'').slice(0,10)||'날짜 미상')+' · '+status+(row.summary?' · '+row.summary:'');
+  },fmtMedication=row=>{
+    if(!row)return '미수집';
+    const status=CLINICAL_CONTEXT_STATUS_LABELS[row.status]||row.status||'기록',kind=MEDICATION_CHANGE_KIND_LABELS[row.details?.change_kind]||row.details?.change_kind||'',name=row.details?.medication_name||row.details?.new_medication_name||'';
+    return (String(row.occurred_at||'').slice(0,10)||'날짜 미상')+' · '+status+(kind?' · '+kind:'')+(name?' · '+name:'')+(row.summary?' · '+row.summary:'');
   };
   const currentMeds=meds.map(m=>m.name).filter(Boolean).slice(0,4).join(', ');
-  const medDoc=latest(medDocs),medChange=latest(medEvents)?fmt(latest(medEvents)):(medDoc?((String(medDoc.performed_at||'').slice(0,10)||'날짜 미상')+' · '+(medDoc.title||'복약 변경')+' · 결과문서 기반'):'미수집');
-  return '<div class="clinical-source-summary"><p><b>현재 복약</b> · '+esc(currentMeds||'미수집')+'</p><p><b>복약 변경</b> · '+esc(medChange)+'</p><p><b>급성질환·입원</b> · '+esc(fmt(latest(acute)))+'</p><p><b>안전사건</b> · '+esc(fmt(latest(safety)))+'</p><p><b>전문/외부 기록</b> · '+esc(String((r?.professional_outcomes||[]).length))+' / '+esc(String((r?.external_clinical_records||[]).length))+'건</p><p><b>자료 없음</b> · 정상 소견으로 간주하지 않음</p></div>';
+  const medDoc=latest(medDocs),medChange=latest(medEvents)?fmtMedication(latest(medEvents)):(medDoc?((String(medDoc.performed_at||'').slice(0,10)||'날짜 미상')+' · '+(medDoc.title||'복약 변경')+' · 결과문서 기반'):'미수집');
+  return '<div class="clinical-source-summary"><p><b>현재 복약</b> · '+esc(currentMeds||'미수집')+'</p><p><b>복약 변경</b> · '+esc(medChange)+'</p><p><b>급성질환·감염·입원</b> · '+esc(fmt(latest(acute)))+'</p><p><b>안전사건</b> · '+esc(fmt(latest(safety)))+'</p><p><b>전문/외부 기록</b> · '+esc(String((r?.professional_outcomes||[]).length))+' / '+esc(String((r?.external_clinical_records||[]).length))+'건</p><p><b>자료 없음</b> · 정상 소견으로 간주하지 않음</p></div>';
 }
 function clinicalPrevisitKeyFacts(r){
   const s=r?.previsit_summary||{},coverage=s.median_signal_coverage==null?null:Math.round(Number(s.median_signal_coverage)*100),domains=(s.affected_domains||[]).map(x=>({mobility:'이동',function_mobility:'외출·기능',activity:'활동',speech:'말하기',cognition_task:'인지과제',function:'일상기능',sleep:'수면',social_interaction:'사회활동',interaction:'앱 상호작용'})[x]||x);
@@ -2013,7 +2032,7 @@ page['medical-records']=()=>{
   const receiptHtml=receipt?'<section class="summary-card bg-mint"><div class="eyebrow">방금 추가한 기록</div><h2>'+esc(receipt.title||'새 의료기록이 연결됐어요')+'</h2><div class="list">'+(receipt.itemCount?row('✓ 검사·결과 항목',receipt.itemCount+'개','시간축에 추가'):'')+row('✓ 다음 진료 리포트','최신 기록에 반영','준비 완료')+row('✓ 개인 변화 맥락','생활기록과 같은 시간축','연결')+'</div></section>':'';
   return wrap('<div class="eyebrow">내 건강기록 · 반복 업데이트</div><h1 class="page-title">병원·검사 결과는<br>새로 생길 때마다 추가하세요</h1><p class="page-desc">한 번 등록했다고 끝이 아닙니다. 같은 검사도 새 날짜면 새로운 기록으로 남고, 다음 진료 준비에 다시 쓰입니다.</p>'+receiptHtml+'<section class="summary-card bg-blue"><h3>등록하면 바로 이렇게 씁니다</h3><div class="list">'+row('📚 내 기록','병원마다 흩어진 검사·진료를 날짜순으로 정리','한곳에')+row('🧭 변화 맥락','생활신호와 검사·약·진료 시점을 함께 확인','더 풍부하게')+row('🩺 병원 방문','최근 변화와 이전 검사결과를 병원 방문용 리포트에 함께 표시','전달 도움')+'</div></section>'+notice('같은 검사도 다시 등록해 주세요','새로 받은 결과는 중복이 아니라 새로운 시점입니다. 필요 없는 검사를 더 받으라는 뜻은 아니며, 실제로 새 결과가 생겼을 때만 추가하면 됩니다.')+'<div class="hero-actions"><button class="btn-kimse btn-primary-k btn-full" data-go="medical-record-add">새 검사·피검사·검진 1분 등록</button><button class="btn-kimse btn-secondary-k btn-full" data-go="professional-outcome">전문평가·진단 결과 등록</button></div><h2 class="section-title">현재 연결 상태</h2><div class="list">'+row('전체 병원·검사 기록','전문평가 '+s.professional+'회 · 기타 검사/검진 '+s.external+'회',s.total+'회')+row('검사·바이오마커 항목','현재 구조화/입력된 항목',s.assessments+s.biomarkers+'개')+row('결과지·병원앱 등 출처 있는 기록','기억 입력과 구분해 보존',s.documentBacked+'회')+'</div><h2 class="section-title">내 기록</h2><div class="list">'+clinicalRecordHistoryHtml()+'</div><div class="hero-actions"><button class="btn-kimse btn-blue-k btn-full" data-go="clinical-handoff">병원 방문용 리포트 보기</button><button class="btn-kimse btn-secondary-k btn-full" data-go="medical-record-add">결과 하나 더 등록</button></div><p class="screen-footnote">낌새는 입력된 결과를 임의로 진단하지 않습니다. 출처와 검증수준을 구분해 저장하고 의료진 전달용 맥락으로 사용합니다.</p>',{title:'병원·검사 기록',narrow:true});
 };
-page['clinical-context-event']=()=>wrap(`<div class="eyebrow">Clinical Context · 사용자 기록</div><h1 class="page-title">최근 변화의 원인이 될 수도 있는<br>사건을 따로 남겨두세요</h1><p class="page-desc">약 변경·급성 질환·입원·안전사건은 치매 신호로 단정하지 않고, 생활변화와 같은 시간축에서 의료진이 함께 확인할 맥락으로 저장합니다.</p><form id="clinical-context-event-form" class="form-stack"><div class="field"><label for="context-event-type">무슨 일이 있었나요?</label><select id="context-event-type" required><option value="">선택</option>${Object.entries(CLINICAL_CONTEXT_EVENT_META).map(([k,v])=>'<option value="'+k+'">'+v[0]+' '+v[1]+'</option>').join('')}</select></div><div class="field"><label for="context-event-status">현재 상태</label><select id="context-event-status" required><option value="PRESENT">있었음 / 현재 영향 가능</option><option value="RESOLVED">있었지만 해결·종료됨</option><option value="NONE_REPORTED">확인했으나 해당 변화 없음</option></select><small>“해당 변화 없음”을 직접 확인한 경우에만 선택하세요. 기록이 없으면 리포트에는 미수집으로 남습니다.</small></div><div class="field"><label for="context-event-date">발생·확인 날짜</label><input id="context-event-date" type="date" value="${localDayKey()}" required></div><div class="field"><label for="context-event-summary">한 줄 설명 <small>선택</small></label><input id="context-event-summary" placeholder="예: 혈압약 변경 후 어지럼이 시작됨"></div><div class="field"><label for="context-event-detail">추가 메모 <small>선택</small></label><textarea id="context-event-detail" rows="3" placeholder="의료진에게 같이 알려야 할 실제 사실만 적어주세요."></textarea></div><button class="btn-kimse btn-primary-k" type="submit">진료 맥락 저장</button></form>${notice('진단으로 해석하지 않습니다.','이 기록은 변화의 원인이나 질환을 KIMSE가 판정하는 항목이 아닙니다. 의료진이 종단 변화와 함께 검토할 수 있도록 보존하는 사용자 보고 맥락입니다.')}`,{title:'진료 맥락 기록',narrow:true});
+page['clinical-context-event']=()=>wrap(`<div class="eyebrow">Clinical Context · 사용자 기록</div><h1 class="page-title">진료 때 놓치기 쉬운 변화를<br>시간축에 남겨두세요</h1><p class="page-desc">약 변경, 급성 질환·감염·입원, 낙상·길 잃음·복약 실수·가스/화재 같은 안전사건을 생활변화와 분리해 기록합니다.</p><form id="clinical-context-event-form" class="form-stack"><div class="field"><label for="context-event-type">무슨 일이 있었나요?</label><select id="context-event-type" required><option value="">선택</option>${Object.entries(CLINICAL_CONTEXT_EVENT_META).map(([k,v])=>'<option value="'+k+'">'+v[0]+' '+v[1]+'</option>').join('')}</select></div><div class="field"><label for="context-event-status">현재 상태</label><select id="context-event-status" required><option value="PRESENT">있었음 / 현재 영향 가능</option><option value="RESOLVED">있었지만 해결·종료됨</option><option value="NONE_REPORTED">확인했으나 해당 변화 없음</option></select><small>“해당 변화 없음”은 직접 확인한 경우에만 저장합니다. 기록 자체가 없으면 리포트에는 미수집으로 남습니다.</small></div><div class="field"><label for="context-event-date">발생·확인 날짜</label><input id="context-event-date" type="date" value="${localDayKey()}" required></div><div id="context-event-medication-fields" class="form-stack" hidden><div class="field"><label for="context-medication-change-kind">복약 변경 유형</label><select id="context-medication-change-kind"><option value="">선택</option>${Object.entries(MEDICATION_CHANGE_KIND_LABELS).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')}</select><small>‘있었음/해결됨’으로 저장할 때는 변경 유형을 선택합니다.</small></div><div class="field"><label for="context-medication-name">약 이름 <small>선택</small></label><input id="context-medication-name"></div><div class="field"><label for="context-medication-previous-dose">변경 전 용량 <small>선택</small></label><input id="context-medication-previous-dose"></div><div class="field"><label for="context-medication-new-dose">변경 후 용량 <small>선택</small></label><input id="context-medication-new-dose"></div></div><div id="context-event-acute-fields" class="form-stack" hidden><div class="field"><label for="context-acute-diagnosis">질환·감염명 <small>선택</small></label><input id="context-acute-diagnosis"></div><div class="field"><label for="context-care-setting">진료·입원 맥락 <small>선택</small></label><input id="context-care-setting"></div></div><div class="field"><label for="context-event-summary">한 줄 설명 <small>선택</small></label><input id="context-event-summary"></div><div class="field"><label for="context-event-detail">추가 메모 <small>선택</small></label><textarea id="context-event-detail" rows="3" placeholder="의료진에게 같이 알려야 할 실제 사실만 적어주세요."></textarea></div><button class="btn-kimse btn-primary-k" type="submit">진료 맥락 저장</button></form>${notice('진단으로 해석하지 않습니다.','이 기록은 변화의 원인이나 질환을 KIMSE가 판정하는 항목이 아닙니다. 의료진이 종단 변화와 함께 검토할 수 있도록 보존하는 사용자 보고 맥락입니다.')}`,{title:'진료 맥락 기록',narrow:true});
 page['medical-record-add']=()=>wrap(`<div class="eyebrow">새 결과 1분 등록</div><h1 class="page-title">이번에 새로 생긴 것만<br>간단히 추가하세요</h1><p class="page-desc">결과지의 모든 내용을 다시 적을 필요는 없습니다. 날짜·종류·핵심 결과부터 저장하고 자세한 내용은 선택입니다.</p><form id="external-clinical-record-form" class="form-stack"><div class="field"><label for="external-record-type">어떤 기록인가요?</label><select id="external-record-type" required><option value="">선택</option>${Object.entries(EXTERNAL_RECORD_TYPE_META).map(([k,v])=>'<option value="'+k+'">'+v[0]+' '+v[1]+'</option>').join('')}</select></div><div class="field"><label for="external-record-date">검사·진료 날짜</label><input id="external-record-date" type="date" value="${localDayKey()}" required></div><div class="field"><label for="external-record-institution">기관 <small>선택</small></label><input id="external-record-institution" placeholder="예: ○○병원, 건강검진센터"></div><div class="field"><label for="external-record-source">어디를 보고 입력하나요?</label><select id="external-record-source" required><option value="">선택</option><option value="PAPER_OR_PDF">종이 결과지·PDF</option><option value="PROVIDER_APP_OR_PORTAL">병원 앱·환자포털</option><option value="MYHEALTHWAY_VIEW">나의건강기록</option><option value="OTHER_DOCUMENT">기타 결과문서</option><option value="SELF_RECALL">기억·의료진 설명 기반</option></select></div><div class="field"><label for="external-record-title">기록 이름 <small>선택</small></label><input id="external-record-title" placeholder="예: 정기 건강검진, p-tau217, Brain MRI"></div><div class="field"><label for="external-record-items">핵심 결과 <small>선택 · 한 줄에 하나</small></label><textarea id="external-record-items" rows="4" placeholder="예: HbA1c | 5.8 | %&#10;예: p-tau217 | 결과값 | 단위 | 검사법/장비(알면)&#10;예: Brain MRI | 판독문 요약"></textarea><small>모르는 단위·검사법은 비워두세요. 추정하지 않습니다.</small></div><details><summary>의료진 설명·판독문·메모도 추가하기</summary><div class="field mt-3"><label for="external-record-report">판독·설명 요약 <small>선택</small></label><textarea id="external-record-report" rows="4" placeholder="결과지나 의료진 설명에 실제 적힌 내용만"></textarea></div><div class="field"><label for="external-record-source-note">출처 메모 <small>선택</small></label><input id="external-record-source-note" placeholder="예: 검사결과지 1쪽, 병원앱 검사결과 화면"></div><div class="field"><label for="external-record-note">내 메모 <small>선택</small></label><textarea id="external-record-note" rows="3"></textarea></div></details><button class="btn-kimse btn-primary-k" type="submit">새 결과 저장</button></form>${notice('다음에도 또 등록해도 됩니다','같은 검사라도 새 날짜에 다시 받았다면 또 추가하세요. 이전 기록을 지우지 않고 각각의 시점으로 보관합니다.')}`,{title:'새 의료기록',narrow:true});
 page['professional-outcome']=()=>wrap(`<div class="eyebrow">병원·전문평가 결과 · 낌새 관찰과 별도</div><h1 class="page-title">전문평가 결과도<br>새로 받을 때마다 추가하세요</h1><p class="page-desc">한 번 등록한 뒤 같은 검사를 다시 받아도 괜찮습니다. 새 날짜의 결과는 이전 기록과 별도 시점으로 보관합니다.</p><div class="summary-card bg-blue"><h3>등록하면 바로 얻는 것</h3><div class="list">${row('🧭 개인 변화 맥락','생활신호와 전문평가 시점을 함께 봅니다','연결')}${row('🩺 다음 진료 준비','병원 방문용 리포트에 최신 전문결과가 들어갑니다','반영')}${row('📚 검사 이력','이전 결과를 지우지 않고 날짜별로 보관합니다','누적')}</div></div><form id="professional-outcome-form" class="form-stack"><div class="field"><label for="professional-date">평가일</label><input id="professional-date" type="date" required></div><div class="field"><label for="professional-institution">기관</label><input id="professional-institution" placeholder="예: ○○병원, ○○치매안심센터"></div><div class="field"><label for="professional-source-route">어떤 자료를 보고 입력하나요?</label><select id="professional-source-route" required><option value="">선택</option><option value="PAPER_OR_PDF">종이 결과지·PDF</option><option value="PROVIDER_APP_OR_PORTAL">병원 앱·환자포털</option><option value="MYHEALTHWAY_VIEW">나의건강기록</option><option value="OTHER_DOCUMENT">기타 결과문서</option><option value="SELF_RECALL">기억·의료진 설명 기반</option></select><small>결과지를 보며 입력한 기록과 기억으로 입력한 기록을 구분해 저장합니다.</small></div><div class="field"><label for="professional-source-note">자료 출처 메모 <small>선택</small></label><input id="professional-source-note" placeholder="예: 검사결과지 2쪽, 병원 앱 검사결과 화면"></div><div class="field"><label for="professional-result">전문평가 결과 분류</label><select id="professional-result" required><option value="">선택</option><option value="NORMAL">정상/특이소견 없음</option><option value="SCD">주관적 인지저하(SCD)</option><option value="MCI">경도인지장애(MCI)</option><option value="MILD_DEMENTIA">경증 치매</option><option value="MODERATE_DEMENTIA">중등도 치매</option><option value="SEVERE_DEMENTIA">중증 치매</option><option value="OTHER">기타</option><option value="UNKNOWN">결과를 정확히 모름</option></select></div><div class="field"><label for="professional-impression">의료진 임상 인상 <small>선택</small></label><textarea id="professional-impression" rows="3" placeholder="진료기록/설명에서 확인한 표현만 입력"></textarea></div><div class="field"><label for="professional-assessments">표준검사 결과 <small>선택 · 한 줄에 하나</small></label><textarea id="professional-assessments" rows="3" placeholder="예: MoCA-K · 22/30&#10;예: CDR · 0.5"></textarea></div><div class="field"><label for="professional-neuropsych">신경심리검사 요약 <small>선택</small></label><textarea id="professional-neuropsych" rows="3" placeholder="검사기관/의료진이 제공한 요약을 그대로 기록"></textarea></div><div class="field"><label for="professional-biomarkers">영상·검사·바이오마커 <small>선택 · 한 줄에 하나</small></label><textarea id="professional-biomarkers" rows="4" placeholder="한 줄에 하나씩 가능한 원문 그대로 입력&#10;예: Brain MRI | 2026-09-20 | 특이소견 없음&#10;예: 혈액검사명 | 결과값 | 단위 | 검사법/장비(알면)"></textarea></div><div class="field"><label for="professional-diagnosis">의료진 진단/기록 문구 <small>선택</small></label><input id="professional-diagnosis" placeholder="의료진이 실제 기록하거나 설명한 경우만"></div><div class="field"><label for="professional-differential">감별진단/추가 확인 항목 <small>선택 · 줄바꿈 구분</small></label><textarea id="professional-differential" rows="3"></textarea></div><label class="consent-row"><input id="professional-further" type="checkbox"><span><strong>추가 검사 권고를 받음</strong></span></label><div class="field"><label for="professional-followup">추적 평가 예정일 <small>선택</small></label><input id="professional-followup" type="date"></div><div class="field"><label for="professional-followup-plan">추적 계획 <small>선택</small></label><textarea id="professional-followup-plan" rows="3" placeholder="재진, 검사, 생활관리 등 실제 안내받은 내용"></textarea></div><div class="field"><label for="professional-note">기타 메모 <small>선택</small></label><textarea id="professional-note" rows="3" placeholder="의료진이 설명한 내용 중 추가로 기억해둘 사항"></textarea></div><button class="btn-kimse btn-primary-k" type="submit">전문평가 결과 저장</button></form>${notice('출처를 구분해 저장합니다','결과지·병원앱·나의건강기록을 보며 입력한 내용은 “사용자가 확인해 입력한 기록”으로 저장됩니다. 의료기관에서 직접 연계된 기록과 섞어 표시하지 않습니다.')}`,{title:'전문평가 결과',narrow:true});
 page.report=()=>{const meds=S.medicines.length?`${S.medicines.filter(x=>x.taken).length} / ${S.medicines.length}개 복용 기록`:'기록 없음';const stepValue=liveStepText()||S.health.steps||'기록 없음',stepSource=liveStepText()?'기기 실시간 측정':'직접 기록한 값';const rows=[row('🙂 오늘 기분','직접 기록한 값',S.mood||'기록 없음'),row('🌙 수면','직접 기록한 값',S.health.sleep||'기록 없음'),row('🚶 활동량',stepSource,stepValue),row('❤️ 혈압','직접 기록한 값',S.health.pressure||'기록 없음'),row('💊 복약','등록된 약 기준',meds)].join('');return wrap(`<h1 class="page-title">상태 리포트</h1><p class="page-desc">입력한 기록만 보여드립니다. 임의의 점수나 변화율을 만들지 않습니다.</p><div class="summary-card">${rows}</div>${notice('지속되는 변화가 걱정된다면','의료기관 상담을 권합니다. 낌새는 진단을 대신하지 않습니다.')}`,{title:'상태 리포트',narrow:true})};
@@ -2216,7 +2235,14 @@ document.addEventListener('click',async e=>{
 document.addEventListener('pointerdown',()=>{ensureAudio()},{capture:true,passive:true});
 document.addEventListener('touchend',()=>{ensureAudio()},{capture:true,passive:true});
 document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#/"]');if(a)tone('tap')});
-document.addEventListener('change',e=>{if(e.target.dataset.a11y){S.a11y[e.target.dataset.a11y]=e.target.checked;save();render();feedback(e.target.closest('.switch-row').innerText+(e.target.checked?' 켰습니다':' 껐습니다'),e.target.checked?'success':'tap')}});
+document.addEventListener('change',e=>{
+  if(e.target.dataset.a11y){S.a11y[e.target.dataset.a11y]=e.target.checked;save();render();feedback(e.target.closest('.switch-row').innerText+(e.target.checked?' 켰습니다':' 껐습니다'),e.target.checked?'success':'tap');return}
+  if(e.target.id==='context-event-type'){
+    const type=e.target.value||'',med=$('#context-event-medication-fields'),acute=$('#context-event-acute-fields');
+    if(med)med.hidden=type!=='MEDICATION_CHANGE';
+    if(acute)acute.hidden=!['ACUTE_ILLNESS','INFECTION','HOSPITALIZATION'].includes(type);
+  }
+});
 document.addEventListener('click',e=>{if(e.target.id==='begin'){tone('tap');S.q=0;S.answers=[];save();go('assessment')}if(e.target.id==='next'){if(S.answers[S.q]===undefined)return;if(S.q>=Q.length-1){feedback('결과를 확인합니다.');go('result')}else{S.q++;save();feedback((S.q+1)+'번째 문항입니다.');render()}}if(e.target.id==='save-alert'){const name=$('#alert-name').value.trim(),relation=$('#alert-relation').value.trim(),phone=$('#alert-phone').value.trim();if(!name||!phone){feedback('이름과 연락처를 입력해주세요.','warning');return}if(S.alertRecipients.length>=1&&S.plan!=='PREMIUM'){feedback('비상알림 수신자 2인째부터 구독이 필요합니다.','warning');go('plan')}else{S.alertRecipients.push({name,relation:relation||'가족',phone});save();feedback('비상알림 수신자를 저장했습니다.','success');go('emergency')}}if(e.target.id==='save-med'){const name=$('#med-name').value.trim(),time=$('#med-time').value||'08:00',note=$('#med-note').value.trim();if(!name){feedback('약 이름을 입력해주세요.','warning');return}S.medicines.push({id:'m'+Date.now(),name,time,note,taken:false});save();syncClinicalContextSnapshot().catch(()=>{});feedback('약을 등록했습니다.','success');go('medication')}if(e.target.id==='save-health'){const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',v=$('#health-value').value.trim();if(!v){feedback('기록할 값을 입력해주세요.','warning');return}S.health[k]=v;S.health.memo=$('#health-memo').value.trim();save();syncClinicalContextSnapshot().catch(()=>{});if(k==='sleep'){const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health')}if(k==='steps'){const n=parseSteps(v);if(n)queueSignal('steps',n,'count','manual-health')}flushSignals();feedback(HEALTH_META[k][1]+' 기록을 저장했습니다.','success');go('health')}if(e.target.id==='add-schedule'){const title=$('#schedule-title').value.trim(),date=$('#schedule-date').value.trim();if(!title||!date){feedback('일정과 날짜/시간을 입력해주세요.','warning');return}S.schedule.push({id:'s'+Date.now(),title,date});save();feedback('가족 일정을 추가했습니다.','success');render()}});
 document.addEventListener('click',async e=>{
   if(e.target.id==='save-family'){
@@ -2262,7 +2288,21 @@ document.addEventListener('submit',async e=>{
     if(!eventType||!status||!date){feedback('사건 종류·상태·날짜를 확인해주세요.','warning');return}
     const b=e.target.querySelector('button[type="submit"]');if(b)b.disabled=true;
     try{
-      await saveClinicalContextEvent({event_type:eventType,status,occurred_at:date,summary:$('#context-event-summary')?.value.trim()||null,details:{source_note:$('#context-event-detail')?.value.trim()||null}});
+      const details={source_note:$('#context-event-detail')?.value.trim()||null};
+      if(eventType==='MEDICATION_CHANGE'&&status!=='NONE_REPORTED'){
+        const changeKind=$('#context-medication-change-kind')?.value||'';
+        if(!changeKind){feedback('복약 변경 유형을 선택해주세요.','warning');if(b)b.disabled=false;return}
+        details.change_kind=changeKind;
+        details.medication_name=$('#context-medication-name')?.value.trim()||null;
+        details.previous_dose=$('#context-medication-previous-dose')?.value.trim()||null;
+        details.new_dose=$('#context-medication-new-dose')?.value.trim()||null;
+      }
+      if(['ACUTE_ILLNESS','INFECTION','HOSPITALIZATION'].includes(eventType)&&status!=='NONE_REPORTED'){
+        const diagnosis=$('#context-acute-diagnosis')?.value.trim()||null,careSetting=$('#context-care-setting')?.value.trim()||null;
+        if(eventType==='INFECTION')details.infection_name=diagnosis;else details.diagnosis=diagnosis;
+        details.care_setting=careSetting;
+      }
+      await saveClinicalContextEvent({event_type:eventType,status,occurred_at:date,summary:$('#context-event-summary')?.value.trim()||null,details});
       feedback('진료 맥락을 저장했습니다. 병원 방문용 리포트 시간축에 반영됩니다.','success');go('clinical-handoff')
     }catch{feedback('진료 맥락을 저장하지 못했습니다. 계정 연결을 확인해주세요.','warning');if(b)b.disabled=false}
     return;
