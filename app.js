@@ -511,9 +511,9 @@ function stageActionButtons(stage=S.stage.summary){
   return '<button class="status-action primary single" data-go="collection-status">'+I('database')+'<span>수집 상태 확인</span></button>';
 }
 const STATUS_ICON_ASSETS={
-  stable:'./assets/icons/kimse-status-stable.png',
-  watch:'./assets/icons/kimse-status-watch.png',
-  urgent:'./assets/icons/kimse-status-urgent.png'
+  stable:'/assets/icons/kimse-status-stable.png',
+  watch:'/assets/icons/kimse-status-watch.png',
+  urgent:'/assets/icons/kimse-status-urgent.png'
 };
 function appStatusIconLevel(){
   const ui=monitoringUiStatus(S.monitoring.summary,S.monitoring.summary?.changes||[]);
