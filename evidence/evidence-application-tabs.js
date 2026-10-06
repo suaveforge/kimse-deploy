@@ -30,7 +30,7 @@ function opRow(title,body){
 }
 
 var style=document.createElement('style');
-style.textContent='.kimse-primary-hub{margin:0 0 22px}.kimse-primary-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:14px}.kimse-primary-head h2{font-size:clamp(1.45rem,2.5vw,1.95rem);line-height:1.2;margin:0;color:#182433}.kimse-primary-head p{margin:.4rem 0 0;color:#66788a;font-size:.94rem}.kimse-primary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.kimse-primary-choice{text-decoration:none!important;min-height:116px;border:1px solid #dbe5ef;border-radius:16px;background:#fff;padding:17px 18px;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:start;gap:13px;color:#182433;box-shadow:0 5px 18px rgba(24,50,80,.045);transition:border-color .16s ease,box-shadow .16s ease,background .16s ease,transform .16s ease}.kimse-primary-choice:hover{border-color:#b9cde4;box-shadow:0 8px 22px rgba(24,50,80,.08);transform:translateY(-1px)}.kimse-primary-choice.active{border:2px solid #206bc4;background:#f5f9ff;box-shadow:0 8px 24px rgba(32,107,196,.1)}.kimse-primary-no{width:40px;height:40px;border-radius:12px;display:grid!important;place-items:center;background:#eef5ff;color:#206bc4;font-size:.88rem;font-weight:900}.kimse-primary-copy{display:block;min-width:0}.kimse-primary-title{display:block;font-size:1.12rem;font-weight:900;line-height:1.2;color:#182433}.kimse-primary-en{display:block;margin-top:4px;font-size:.7rem;line-height:1.2;font-weight:800;letter-spacing:.055em;color:#74859a}.kimse-primary-desc{display:block;margin-top:8px;font-size:.84rem;line-height:1.42;color:#65758a;word-break:keep-all}.kimse-application-card{border:0;background:transparent;box-shadow:none}.kimse-purpose{border-left:4px solid #206bc4;background:#f6f9fc;padding:14px 16px;border-radius:10px}.kimse-rd-guard{border-left-color:#2fb344}.kimse-evidence-ref{white-space:normal;text-align:left;line-height:1.3}.kimse-architecture{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-architecture-step{border:1px solid #dde6ef;border-radius:12px;padding:12px;background:#fff}.kimse-architecture-step strong{display:block;margin-bottom:4px}.kimse-output-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-output-card{border:1px solid #e0e7ef;border-radius:12px;padding:12px;background:#f8fafc}.kimse-time-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-time-card{border-radius:12px;padding:13px;border:1px solid #dbe5ef}.kimse-time-card b{font-size:1.05rem}.kimse-time-card span{display:block;color:#66788a;font-size:.82rem;margin-top:4px}@media(max-width:991.98px){.kimse-primary-grid{grid-template-columns:1fr}.kimse-primary-choice{min-height:96px}.kimse-architecture,.kimse-output-grid,.kimse-time-grid{grid-template-columns:1fr}}@media(max-width:575.98px){.kimse-primary-head{display:block}.kimse-primary-head .badge{margin-top:9px}.kimse-primary-choice{padding:15px}.kimse-primary-title{font-size:1.05rem}}';
+style.textContent='.kimse-primary-hub{margin:0 0 24px}.kimse-primary-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:12px}.kimse-primary-head h2{font-size:1.15rem;line-height:1.25;margin:0;color:#182433}.kimse-primary-head p{margin:.3rem 0 0;color:#66788a;font-size:.88rem}.kimse-primary-grid{display:grid;grid-template-columns:1fr;gap:10px}.kimse-primary-choice{text-decoration:none!important;width:100%;min-height:96px;border:1px solid #dbe5ef;border-radius:17px;background:#fff;padding:16px 18px;display:grid;grid-template-columns:48px minmax(0,1fr) 34px;align-items:center;gap:15px;color:#182433;box-shadow:0 5px 18px rgba(24,50,80,.045);transition:border-color .16s ease,box-shadow .16s ease,background .16s ease,transform .16s ease}.kimse-primary-choice:hover{border-color:#b9cde4;box-shadow:0 8px 22px rgba(24,50,80,.08);transform:translateY(-1px)}.kimse-primary-choice.active{border:2px solid #206bc4;background:#f5f9ff;box-shadow:0 8px 24px rgba(32,107,196,.1)}.kimse-primary-no{width:46px;height:46px;border-radius:14px;display:grid!important;place-items:center;background:#eef5ff;color:#206bc4;font-size:.9rem;font-weight:900}.kimse-primary-copy{display:block;min-width:0}.kimse-primary-title{display:block;font-size:1.15rem;font-weight:900;line-height:1.2;color:#182433}.kimse-primary-en{display:block;margin-top:3px;font-size:.7rem;line-height:1.2;font-weight:800;letter-spacing:.055em;color:#74859a}.kimse-primary-desc{display:block;margin-top:7px;font-size:.86rem;line-height:1.4;color:#65758a;word-break:keep-all}.kimse-primary-go{display:grid!important;place-items:center;width:32px;height:32px;border-radius:999px;background:#f1f5f9;color:#708399;font-size:1rem;font-weight:900}.kimse-primary-choice.active .kimse-primary-go{background:#206bc4;color:#fff}.kimse-application-card{border:0;background:transparent;box-shadow:none}.kimse-purpose{border-left:4px solid #206bc4;background:#f6f9fc;padding:14px 16px;border-radius:10px}.kimse-rd-guard{border-left-color:#2fb344}.kimse-evidence-ref{white-space:normal;text-align:left;line-height:1.3}.kimse-architecture{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-architecture-step{border:1px solid #dde6ef;border-radius:12px;padding:12px;background:#fff}.kimse-architecture-step strong{display:block;margin-bottom:4px}.kimse-output-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-output-card{border:1px solid #e0e7ef;border-radius:12px;padding:12px;background:#f8fafc}.kimse-time-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-time-card{border-radius:12px;padding:13px;border:1px solid #dbe5ef}.kimse-time-card b{font-size:1.05rem}.kimse-time-card span{display:block;color:#66788a;font-size:.82rem;margin-top:4px}@media(max-width:991.98px){.kimse-architecture,.kimse-output-grid,.kimse-time-grid{grid-template-columns:1fr}}@media(max-width:575.98px){.kimse-primary-head{display:block}.kimse-primary-head .badge{margin-top:8px}.kimse-primary-choice{grid-template-columns:44px minmax(0,1fr);padding:15px;min-height:92px}.kimse-primary-go{display:none!important}.kimse-primary-no{width:42px;height:42px}.kimse-primary-title{font-size:1.05rem}.kimse-primary-desc{font-size:.82rem}}';
 document.head.appendChild(style);
 var rdStyle=document.createElement('style');
 rdStyle.textContent='.kimse-rd-principles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.kimse-rd-principle{border:1px solid #dfe8e4;border-radius:12px;padding:12px;background:#f8fcfa}.kimse-rd-units{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.kimse-rd-unit{border:1px solid #dde6ef;border-radius:10px;padding:10px;background:#fff}.kimse-rd-unit strong{display:block}.kimse-rd-unit span{display:block;color:#66788a;font-size:.78rem;margin-top:3px}.kimse-rd-stage{border:1px solid #dde6ef;border-radius:12px;padding:13px;height:100%;background:#fff}.kimse-rd-stage .kimse-stage-target{font-weight:800;font-size:1.05rem}.kimse-rd-stage .kimse-stage-note{color:#66788a;font-size:.82rem;margin-top:5px}@media(max-width:991.98px){.kimse-rd-principles{grid-template-columns:repeat(2,minmax(0,1fr))}.kimse-rd-units{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:767.98px){.kimse-rd-principles{grid-template-columns:1fr}.kimse-rd-units{grid-template-columns:repeat(2,minmax(0,1fr))}}';
@@ -57,7 +57,7 @@ var clinical=''
   +'</div>';
 
 var rd=''
-  +'<div id="research-data-model" class="kimse-application-panel" data-panel="rd" hidden>'
+  +'<div id="research-data-model" class="kimse-application-panel" data-panel="rd">'
   +'<div class="kimse-purpose kimse-rd-guard mb-3"><div class="text-uppercase small fw-bold text-green">PURPOSE · RESEARCH DATA MODEL</div><h3 class="mt-1 mb-2">기관 공동연구·검증·R&D에서 재현 가능한 장기 인지변화 데이터 구조를 만듭니다</h3><div class="text-secondary">목적별 동의, 가명·비식별 처리, 데이터 품질·출처·버전, 전문평가 outcome을 함께 보존해 연구기관이 같은 데이터를 다시 계산하고 검증할 수 있도록 합니다.</div></div>'
   +'<div class="card mb-3"><div class="card-header"><div><h3 class="card-title">연구가치는 “사람 수 × 기간”만으로 결정되지 않습니다</h3><div class="text-secondary small">외부 benchmark를 보면 강한 Ground Truth, 반복 측정, 정규화·품질, 재사용 가능한 동의가 함께 있을 때 연구가치가 올라갑니다.</div></div></div><div class="card-body"><div class="kimse-rd-principles"><div class="kimse-rd-principle"><strong>01 · Ground Truth</strong><div class="text-secondary small mt-1">전문평가·검사·바이오마커와 연결해 “무엇을 예측했는가”를 확인합니다.</div>'+refs([3,4,5,29])+'</div><div class="kimse-rd-principle"><strong>02 · Longitudinal</strong><div class="text-secondary small mt-1">한 번의 값보다 같은 사람의 반복 변화와 지속기간을 보존합니다.</div>'+refs([28,30,31,33])+'</div><div class="kimse-rd-principle"><strong>03 · Quality & Provenance</strong><div class="text-secondary small mt-1">누락·기기·앱·모델·산식 버전까지 남겨 재현 가능하게 합니다.</div>'+refs([12,14,32])+'</div><div class="kimse-rd-principle"><strong>04 · Reuse Governance</strong><div class="text-secondary small mt-1">목적별 동의와 가명처리를 데이터 자체의 메타데이터로 관리합니다.</div>'+refs([12,32])+'</div></div></div></div>'
   +'<div class="row g-3"><div class="col-xl-8"><div class="card h-100"><div class="card-header"><div><h3 class="card-title">R&D 정규화 데이터의 핵심 Variable Family</h3><div class="text-secondary small">각 변수군은 앱 신호·개인 baseline Δ·전문평가 outcome과 연결하고, 근거 원문까지 추적할 수 있어야 합니다.</div></div></div><div class="card-body py-0"><div class="list-group list-group-flush">'
@@ -76,26 +76,32 @@ var rd=''
   +'</div>';
 
 function pageHref(key){
-  if(PAGE_MODE==='evidence'){
-    if(key==='evidence')return './';
-    if(key==='clinical')return './clinical.html';
-    return './rd.html';
-  }
   if(key==='evidence')return './';
   if(key==='clinical')return './clinical.html';
   return './rd.html';
 }
 function choice(key,no,title,en,desc){
-  return '<a class="kimse-primary-choice '+(PAGE_MODE===key?'active':'')+'" href="'+pageHref(key)+'" aria-current="'+(PAGE_MODE===key?'page':'false')+'"><span class="kimse-primary-no">'+no+'</span><span class="kimse-primary-copy"><span class="kimse-primary-title">'+title+'</span><span class="kimse-primary-en">'+en+'</span><span class="kimse-primary-desc">'+desc+'</span></span></a>';
+  return '<a class="kimse-primary-choice '+(PAGE_MODE===key?'active':'')+'" href="'+pageHref(key)+'" '+(PAGE_MODE===key?'aria-current="page"':'')+'><span class="kimse-primary-no">'+no+'</span><span class="kimse-primary-copy"><span class="kimse-primary-title">'+title+'</span><span class="kimse-primary-en">'+en+'</span><span class="kimse-primary-desc">'+desc+'</span></span><span class="kimse-primary-go" aria-hidden="true">→</span></a>';
 }
-var hub='<section class="kimse-primary-hub" id="evidence-home"><div class="kimse-primary-head"><div><div class="text-uppercase text-secondary small fw-bold">KIMSE EVIDENCE HUB</div><h2>세 영역을 각각 독립된 페이지로 제공합니다</h2><p>원하는 영역을 선택하면 해당 페이지로 이동합니다.</p></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 14</span></div><div class="kimse-primary-grid" aria-label="Evidence 대분류">'+choice('evidence','01','관찰 근거','EVIDENCE','낌새가 무엇을 관찰하고 왜 보는지, 원문 근거와 함께 확인합니다.')+choice('clinical','02','의료 리포트','CLINICAL HANDOFF','누적된 변화를 의료진이 빠르게 이해할 수 있는 형태로 정리합니다.')+choice('rd','03','연구·기관 R&D','RESEARCH DATA MODEL','공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.')+'</div></section>';
+var hub='<section class="kimse-primary-hub" id="evidence-home"><div class="kimse-primary-head"><div><h2>영역 선택</h2><p>각 항목은 독립된 페이지입니다.</p></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 15</span></div><div class="kimse-primary-grid" aria-label="Evidence 대분류">'+choice('evidence','01','관찰 근거','EVIDENCE','낌새가 무엇을 관찰하고 왜 보는지, 원문 근거와 함께 확인합니다.')+choice('clinical','02','의료 리포트','CLINICAL HANDOFF','누적된 변화를 의료진이 빠르게 이해할 수 있는 형태로 정리합니다.')+choice('rd','03','연구·기관 R&D','RESEARCH DATA MODEL','공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.')+'</div></section>';
 
 root.insertAdjacentHTML('afterbegin',hub);
+var hubEl=document.getElementById('evidence-home');
 
-if(PAGE_MODE==='clinical'){
-  root.insertAdjacentHTML('beforeend','<section class="kimse-application-card mb-4" id="evidence-application">'+clinical+'</section>');
-}else if(PAGE_MODE==='rd'){
-  root.insertAdjacentHTML('beforeend','<section class="kimse-application-card mb-4" id="evidence-application">'+rd+'</section>');
+if(PAGE_MODE==='clinical'&&hubEl){
+  hubEl.insertAdjacentHTML('afterend','<section class="kimse-application-card mb-4" id="evidence-application">'+clinical+'</section>');
+}else if(PAGE_MODE==='rd'&&hubEl){
+  hubEl.insertAdjacentHTML('afterend','<section class="kimse-application-card mb-4" id="evidence-application">'+rd+'</section>');
+}
+
+/* Evidence page loads additional sections asynchronously; always keep the main selector first. */
+if(PAGE_MODE==='evidence'&&hubEl){
+  var keepHubFirst=function(){
+    if(root.firstElementChild!==hubEl)root.insertBefore(hubEl,root.firstElementChild);
+  };
+  var hubObserver=new MutationObserver(keepHubFirst);
+  hubObserver.observe(root,{childList:true});
+  keepHubFirst();
 }
 
 var title=document.querySelector('.page-header .page-title');
@@ -116,6 +122,6 @@ if(PAGE_MODE==='evidence'){
   if(location.hash==='#research-data-model'||location.hash==='#rd')location.replace('./rd.html');
 }
 
-document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 14';});
+document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 15';});
 document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KIMSE Evidence Registry')>=0)e.textContent='KIMSE Evidence Registry · Updated 2026.10.06';});
 })();
