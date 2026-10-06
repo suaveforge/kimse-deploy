@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261006-cycle-03';
+const CACHE = 'kimse-pwa-20261006-cycle-04';
 const CORE = [
   './',
   './index.html',
@@ -18,9 +18,9 @@ const CORE = [
   './manifest.webmanifest',
   './assets/icons/icon.svg',
   './assets/icons/icon-maskable-source.svg',
-  './assets/icons/kimse-status-stable.png',
-  './assets/icons/kimse-status-watch.png',
-  './assets/icons/kimse-status-urgent.png'
+  '/assets/icons/kimse-status-stable.png',
+  '/assets/icons/kimse-status-watch.png',
+  '/assets/icons/kimse-status-urgent.png'
 ];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));
@@ -39,7 +39,7 @@ self.addEventListener('push', event => {
   try{data=event.data?event.data.json():{}}catch{try{data={body:event.data?.text()||''}}catch{}}
   const title=data.title||'낌새 · 최근 변화가 보여요';
   const level=String(data.level||data.status||'').toUpperCase();
-  const statusIcon=['URGENT','EMERGENCY','SEVERE','CRITICAL'].includes(level)?'./assets/icons/kimse-status-urgent.png':['WATCH','ATTENTION'].includes(level)?'./assets/icons/kimse-status-watch.png':'./assets/icons/kimse-status-stable.png';
+  const statusIcon=['URGENT','EMERGENCY','SEVERE','CRITICAL'].includes(level)?'/assets/icons/kimse-status-urgent.png':['WATCH','ATTENTION'].includes(level)?'/assets/icons/kimse-status-watch.png':'/assets/icons/kimse-status-stable.png';
   const options={
     body:data.body||'평소와 다른 변화가 함께 관찰되었습니다.',
     icon:statusIcon,
