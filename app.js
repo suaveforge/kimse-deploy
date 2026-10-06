@@ -1910,7 +1910,8 @@ function clinicalDomainReview(r){
   };
   if(d.subjective_change){
     const agreement=({AGREE:'일치',DISAGREE:'불일치',INSUFFICIENT:'비교 자료 부족'})[d.subjective_change.agreement]||'비교 자료 부족';
-    add('주관적 변화','HISTORY','<dl><div><dt>본인</dt><dd>'+esc(yn(d.subjective_change.self))+'</dd></div><div><dt>가족</dt><dd>'+esc(yn(d.subjective_change.informant))+'</dd></div><div><dt>본인-가족</dt><dd>'+esc(agreement)+(d.subjective_change.agreement==='DISAGREE'?' <span class="clinical-inline-change">불일치</span>':'')+'</dd></div></dl>','user / informant',refs(d.subjective_change),d.subjective_change.guard||'환자·가족 진술은 객관검사와 구분합니다.');
+    const selfDate=d.subjective_change.self_observed_at?String(d.subjective_change.self_observed_at).slice(0,10):'',informantDate=d.subjective_change.informant_observed_at?String(d.subjective_change.informant_observed_at).slice(0,10):'';
+    add('주관적 변화','HISTORY','<dl><div><dt>본인'+(selfDate?' · '+esc(selfDate):'')+'</dt><dd>'+esc(yn(d.subjective_change.self))+'</dd></div><div><dt>가족'+(informantDate?' · '+esc(informantDate):'')+'</dt><dd>'+esc(yn(d.subjective_change.informant))+'</dd></div><div><dt>본인-가족</dt><dd>'+esc(agreement)+(d.subjective_change.agreement==='DISAGREE'?' <span class="clinical-inline-change">불일치</span>':'')+'</dd></div></dl>','user / informant',refs(d.subjective_change),d.subjective_change.guard||'환자·가족 진술은 객관검사와 구분합니다.');
   }
   if(d.cognition){
     const o=d.cognition.latest_objective_observation||{},tasks=Array.isArray(d.cognition.repeatable_task_sessions)?d.cognition.repeatable_task_sessions:[],ass=Array.isArray(d.cognition.recent_kimse_assessments)?d.cognition.recent_kimse_assessments:[];
@@ -1922,7 +1923,8 @@ function clinicalDomainReview(r){
     const frow=(key,label)=>{const cur=answers[key];if(!cur)return '';const before=cmp[key]?.baseline,changed=cmp[key]?.changed===true;return '<div><dt>'+esc(label)+'</dt><dd>'+esc(before&&before!==cur?(flabel[before]||before)+' → '+(flabel[cur]||cur):(flabel[cur]||cur))+(changed?' <span class="clinical-inline-change">변화</span>':'')+'</dd></div>'};
     const detail=frow('events','약속·최근 일')+frow('finances','계산·청구서·돈 관리')+frow('travel','익숙한 곳 외출·이동');
     const fa=({AGREE:'일치',DISAGREE:'불일치',INSUFFICIENT:'비교 자료 부족'})[fx.agreement]||'비교 자료 부족';
-    const reports=(fx.self_status&&fx.self_status!=='UNKNOWN'?'<div><dt>본인 기능</dt><dd>'+esc(clinicalFunctionLabel(fx.self_status))+'</dd></div>':'')+(fx.informant_status&&fx.informant_status!=='UNKNOWN'?'<div><dt>가족 기능</dt><dd>'+esc(clinicalFunctionLabel(fx.informant_status))+'</dd></div>':'')+((fx.self_status&&fx.self_status!=='UNKNOWN')||(fx.informant_status&&fx.informant_status!=='UNKNOWN')?'<div><dt>본인-가족</dt><dd>'+esc(fa)+(fx.agreement==='DISAGREE'?' <span class="clinical-inline-change">불일치</span>':'')+'</dd></div>':'');
+    const selfDate=fx.self_observed_at?String(fx.self_observed_at).slice(0,10):'',informantDate=fx.informant_observed_at?String(fx.informant_observed_at).slice(0,10):'';
+    const reports=(fx.self_status&&fx.self_status!=='UNKNOWN'?'<div><dt>본인 기능'+(selfDate?' · '+esc(selfDate):'')+'</dt><dd>'+esc(clinicalFunctionLabel(fx.self_status))+'</dd></div>':'')+(fx.informant_status&&fx.informant_status!=='UNKNOWN'?'<div><dt>가족 기능'+(informantDate?' · '+esc(informantDate):'')+'</dt><dd>'+esc(clinicalFunctionLabel(fx.informant_status))+'</dd></div>':'')+((fx.self_status&&fx.self_status!=='UNKNOWN')||(fx.informant_status&&fx.informant_status!=='UNKNOWN')?'<div><dt>본인-가족</dt><dd>'+esc(fa)+(fx.agreement==='DISAGREE'?' <span class="clinical-inline-change">불일치</span>':'')+'</dd></div>':'');
     add('일상기능·독립성','FUNCTION','<dl><div><dt>Handoff 기준 상태</dt><dd>'+esc(clinicalFunctionLabel(fx.status))+'</dd></div>'+reports+detail+'</dl>',[fx.source_type,fx.functional_source_type].filter(Boolean).join(' / ')||'미확인',refs(fx),fx.guard||'일상기능 정보는 인지과제 점수와 별개 축으로 봅니다.');
   }
   if(d.mood_behavior){
