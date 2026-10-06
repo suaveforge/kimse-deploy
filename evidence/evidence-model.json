@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "2026-09-23.3",
-  "updated": "2026-09-23",
+  "schemaVersion": "2026-10-06.1",
+  "updated": "2026-10-06",
   "governance": {
     "principle": "근거 페이지를 단일 기준으로 사용하며 앱은 이 레지스트리의 활성 모델을 읽어 계산합니다.",
     "activeModelChanges": "새 논문·가이드라인·규제 이슈는 먼저 changeReview에 후보로 표시하고, 근거 검토 전 활성 팩터·가중치를 자동 변경하지 않습니다.",
@@ -591,6 +591,28 @@
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/39096926/",
         "use": "청력저하 위험요인 맥락. 현재 KIMSE 축약 자가문항을 임상 청력검사로 간주하지 않음",
         "appControlId": "profile-hearing"
+      },
+      {
+        "id": "subjectiveChange",
+        "label": "주관적 인지 변화 호소",
+        "role": "context_only",
+        "appField": "profile.subjectiveChange",
+        "appControlId": "profile-subjective-change",
+        "evidence": "SCD-I subjective cognitive decline framework",
+        "source": "Jessen et al. / SCD-I framework; characterisation review",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7062546/",
+        "use": "예전의 정상 상태와 비교해 스스로 지속적인 인지 저하를 느끼는지 기록합니다. KIMSE가 SCD를 임상진단하는 항목이 아닙니다."
+      },
+      {
+        "id": "functionStatus",
+        "label": "일상기능 독립성",
+        "role": "context_only",
+        "appField": "profile.functionStatus",
+        "appControlId": "profile-function-status",
+        "evidence": "NIA-AA MCI functional independence + Alzheimer’s Association 2024 clinical functional staging",
+        "source": "Albert et al. 2011; Jack et al. 2024",
+        "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3312027/",
+        "use": "복잡한 IADL과 기본 ADL의 독립/도움 필요 정도를 구분합니다. 2024 AD 임상 stage를 사용자에게 진단명으로 전용하지 않고 KIMSE 관찰 단계의 기능축으로만 사용합니다."
       }
     ]
   },
@@ -678,6 +700,88 @@
           2
         ],
         "storage": "initial.voiceSamples"
+      }
+    ]
+  },
+  "observationStageModel": {
+    "id": "KIMSE_STAGE_RULES_2026_10_06_V1",
+    "status": "operational",
+    "role": "observation_stage_not_diagnosis",
+    "evidenceVersion": "Evidence Registry 07 · 2026-10-06",
+    "principle": "SCD·MCI·경증치매·중등도/중증치매 관련 변화 양상을 설명하는 관찰 단계입니다. KIMSE가 질환을 확진하거나 Alzheimer’s Association의 임상 stage를 그대로 부여하지 않습니다.",
+    "axes": [
+      {
+        "id": "subjective",
+        "label": "주관적 변화",
+        "evidence": "SCD-I / NIA-AA",
+        "rule": "본인 또는 가족이 이전 상태와 비교한 인지 변화를 보고했는지"
+      },
+      {
+        "id": "objective_cognitive",
+        "label": "객관적 인지 변화",
+        "evidence": "NIA-AA MCI criteria",
+        "rule": "반복 인지과제·전문검사에서 이전보다 객관적 변화가 있는지. KIMSE 자체 과제에는 임상 cutoff를 임의 부여하지 않음"
+      },
+      {
+        "id": "function",
+        "label": "일상기능",
+        "evidence": "NIA-AA MCI criteria / Alzheimer’s Association 2024",
+        "rule": "독립 유지, 복잡한 IADL 도움, 기본 ADL 도움, 의존을 구분"
+      },
+      {
+        "id": "passive_behavioral",
+        "label": "생활·행동 변화",
+        "evidence": "Passive DHT / speech / gait literature",
+        "rule": "수면·활동·이동·말하기·KIMSE 통화 등은 단계의 보조근거이며 단독으로 치매 단계를 결정하지 않음"
+      },
+      {
+        "id": "family_feedback",
+        "label": "가족 확인",
+        "evidence": "KIMSE operational validation field",
+        "rule": "실제 변화 여부와 후속 행동을 기록해 관찰의 일관성과 향후 R&D label로 사용"
+      },
+      {
+        "id": "professional",
+        "label": "전문평가 결과",
+        "evidence": "Clinical ground truth layer",
+        "rule": "KIMSE 관찰값과 별도 필드로 보존하며 가장 강한 외부 앵커로 표시"
+      }
+    ],
+    "stages": [
+      {
+        "id": "SCD",
+        "label": "SCD 관련 변화",
+        "guard": "주관적 저하가 있고 객관적 저하가 확인되지 않았으며 독립생활이 보존된 경우에만 관찰 후보"
+      },
+      {
+        "id": "MCI",
+        "label": "MCI 관련 변화",
+        "guard": "객관적 인지 변화가 있고 독립생활이 유지되는 경우에만 관찰 후보"
+      },
+      {
+        "id": "MILD_DEMENTIA",
+        "label": "경증치매 관련 변화",
+        "guard": "객관적 인지 변화와 IADL 도움 필요가 함께 있고 가족 확인 또는 전문평가 앵커가 있는 경우"
+      },
+      {
+        "id": "MODERATE_SEVERE",
+        "label": "중등도·중증치매 관련 변화",
+        "guard": "객관적 인지 변화와 기본 ADL 도움/의존이 함께 있고 가족 확인 또는 전문평가 앵커가 있는 경우"
+      }
+    ],
+    "confidenceRule": "confidence는 질환 확률이 아니라 데이터 충분도·축 간 일관성을 LOW/MEDIUM/HIGH로 표시합니다.",
+    "sources": [
+      {
+        "title": "The characterisation of subjective cognitive decline",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7062546/"
+      },
+      {
+        "title": "The diagnosis of mild cognitive impairment due to Alzheimer’s disease",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3312027/"
+      },
+      {
+        "title": "Revised criteria for diagnosis and staging of Alzheimer’s disease",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11350039/"
       }
     ]
   }
