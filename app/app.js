@@ -1859,7 +1859,7 @@ function clinicalFunctionLabel(v){
   return ({INDEPENDENT:'독립생활 유지',COMPLEX_DIFFICULTY:'복잡한 일상기능에서 어려움',IADL_ASSISTANCE:'IADL 도움 필요',BADL_ASSISTANCE:'기본 ADL 도움 필요',DEPENDENT:'일상생활 의존',UNKNOWN:'자료 없음'})[v]||v||'자료 없음';
 }
 function clinicalContextSummary(r){
-  const x=r?.risk_confounders||{},meds=Array.isArray(x.current_medications)?x.current_medications:[],medEvents=Array.isArray(x.medication_change?.events)?x.medication_change.events:[],acuteEvents=Array.isArray(x.acute_illness_context?.events)?x.acute_illness_context.events:[],labelValue=(kind,v)=>{
+  const x=r?.risk_confounders||{},meds=Array.isArray(x.current_medications)?x.current_medications:[],medEvents=Array.isArray(x.medication_change?.events)?x.medication_change.events:[],medDocs=Array.isArray(x.medication_change?.external_records)?x.medication_change.external_records:[],acuteEvents=Array.isArray(x.acute_illness_context?.events)?x.acute_illness_context.events:[],labelValue=(kind,v)=>{
     if(v===undefined||v===null||v==='')return null;
     const maps={
       sleep:{rare:'주 1회 이하',sometimes:'주 2~3회',frequent:'주 4회 이상'},
@@ -1870,25 +1870,30 @@ function clinicalContextSummary(r){
     const e=rows?.[0];if(!e)return null;
     const status=CLINICAL_CONTEXT_STATUS_LABELS[e.status]||e.status||'기록';
     return String(e.occurred_at||'').slice(0,10)+' · '+status+(e.summary?' · '+e.summary:'');
+  },documentText=rows=>{
+    const e=rows?.[0];if(!e)return null;
+    return String(e.performed_at||'').slice(0,10)+' · '+(e.title||'복약 변경')+' · '+(CLINICAL_VERIFICATION_LABELS[e.verification_status]||e.verification_status||'사용자 전사');
   },items=[
     ['수면장애 맥락',labelValue('sleep',x.sleep_disturbance_context)],
     ['기분 맥락',x.mood_context],
     ['청력·감각 맥락',labelValue('hearing',x.sensory_impairment_context)],
     ['기저질환/기타 맥락',x.conditions_context],
     ['현재 복약',meds.length?meds.map(m=>m.name).filter(Boolean).join(', '):null],
-    ['최근 복약 변경',eventText(medEvents)],
+    ['복약 변경 · 사용자 맥락',eventText(medEvents)],
+    ['복약 변경 · 결과문서',documentText(medDocs)],
     ['급성 질환·입원',eventText(acuteEvents)]
   ];
   return '<div class="clinical-context-grid">'+items.map(([label,value])=>'<div class="clinical-context-item"><span>'+esc(label)+'</span><strong>'+esc(value||'미수집')+'</strong></div>').join('')+'</div><p class="clinical-microcopy">미수집은 정상 소견이 아닙니다. 현재 복약 목록, 복약 변경, 급성 질환·입원을 서로 다른 축으로 보존합니다.</p>';
 }
 function clinicalPrintContextFacts(r){
-  const x=r?.risk_confounders||{},s=r?.clinical_domains?.safety_support||{},meds=Array.isArray(x.current_medications)?x.current_medications:[],medEvents=Array.isArray(x.medication_change?.events)?x.medication_change.events:[],acute=Array.isArray(x.acute_illness_context?.events)?x.acute_illness_context.events:[],safety=Array.isArray(s.context_events)?s.context_events:[],latest=rows=>rows?.[0]||null,fmt=(row,fallback='미수집')=>{
+  const x=r?.risk_confounders||{},s=r?.clinical_domains?.safety_support||{},meds=Array.isArray(x.current_medications)?x.current_medications:[],medEvents=Array.isArray(x.medication_change?.events)?x.medication_change.events:[],medDocs=Array.isArray(x.medication_change?.external_records)?x.medication_change.external_records:[],acute=Array.isArray(x.acute_illness_context?.events)?x.acute_illness_context.events:[],safety=Array.isArray(s.context_events)?s.context_events:[],latest=rows=>rows?.[0]||null,fmt=(row,fallback='미수집')=>{
     if(!row)return fallback;
     const status=CLINICAL_CONTEXT_STATUS_LABELS[row.status]||row.status||'기록';
     return (String(row.occurred_at||'').slice(0,10)||'날짜 미상')+' · '+status+(row.summary?' · '+row.summary:'');
   };
   const currentMeds=meds.map(m=>m.name).filter(Boolean).slice(0,4).join(', ');
-  return '<div class="clinical-source-summary"><p><b>현재 복약</b> · '+esc(currentMeds||'미수집')+'</p><p><b>복약 변경</b> · '+esc(fmt(latest(medEvents)))+'</p><p><b>급성질환·입원</b> · '+esc(fmt(latest(acute)))+'</p><p><b>안전사건</b> · '+esc(fmt(latest(safety)))+'</p><p><b>전문/외부 기록</b> · '+esc(String((r?.professional_outcomes||[]).length))+' / '+esc(String((r?.external_clinical_records||[]).length))+'건</p><p><b>자료 없음</b> · 정상 소견으로 간주하지 않음</p></div>';
+  const medDoc=latest(medDocs),medChange=latest(medEvents)?fmt(latest(medEvents)):(medDoc?((String(medDoc.performed_at||'').slice(0,10)||'날짜 미상')+' · '+(medDoc.title||'복약 변경')+' · 결과문서 기반'):'미수집');
+  return '<div class="clinical-source-summary"><p><b>현재 복약</b> · '+esc(currentMeds||'미수집')+'</p><p><b>복약 변경</b> · '+esc(medChange)+'</p><p><b>급성질환·입원</b> · '+esc(fmt(latest(acute)))+'</p><p><b>안전사건</b> · '+esc(fmt(latest(safety)))+'</p><p><b>전문/외부 기록</b> · '+esc(String((r?.professional_outcomes||[]).length))+' / '+esc(String((r?.external_clinical_records||[]).length))+'건</p><p><b>자료 없음</b> · 정상 소견으로 간주하지 않음</p></div>';
 }
 function clinicalPrevisitKeyFacts(r){
   const s=r?.previsit_summary||{},coverage=s.median_signal_coverage==null?null:Math.round(Number(s.median_signal_coverage)*100),domains=(s.affected_domains||[]).map(x=>({mobility:'이동',function_mobility:'외출·기능',activity:'활동',speech:'말하기',cognition_task:'인지과제',function:'일상기능',sleep:'수면',social_interaction:'사회활동',interaction:'앱 상호작용'})[x]||x);
@@ -1904,7 +1909,8 @@ function clinicalDomainReview(r){
     cards.push('<article class="clinical-domain-card"><div class="clinical-domain-card-head"><span>'+esc(kicker)+'</span><h3>'+esc(title)+'</h3></div><div class="clinical-domain-card-body">'+body+'</div>'+(source?'<div class="clinical-domain-source">출처 · '+esc(source)+'</div>':'')+(evidence?'<div class="clinical-evidence-links">'+evidence+'</div>':'')+(guard?'<p class="clinical-microcopy">'+esc(guard)+'</p>':'')+'</article>');
   };
   if(d.subjective_change){
-    add('주관적 변화','HISTORY','<dl><div><dt>본인</dt><dd>'+esc(yn(d.subjective_change.self))+'</dd></div><div><dt>가족</dt><dd>'+esc(yn(d.subjective_change.informant))+'</dd></div></dl>','user / informant',refs(d.subjective_change),'환자·가족 진술은 객관검사와 구분합니다.');
+    const agreement=({AGREE:'일치',DISAGREE:'불일치',INSUFFICIENT:'비교 자료 부족'})[d.subjective_change.agreement]||'비교 자료 부족';
+    add('주관적 변화','HISTORY','<dl><div><dt>본인</dt><dd>'+esc(yn(d.subjective_change.self))+'</dd></div><div><dt>가족</dt><dd>'+esc(yn(d.subjective_change.informant))+'</dd></div><div><dt>본인-가족</dt><dd>'+esc(agreement)+(d.subjective_change.agreement==='DISAGREE'?' <span class="clinical-inline-change">불일치</span>':'')+'</dd></div></dl>','user / informant',refs(d.subjective_change),d.subjective_change.guard||'환자·가족 진술은 객관검사와 구분합니다.');
   }
   if(d.cognition){
     const o=d.cognition.latest_objective_observation||{},tasks=Array.isArray(d.cognition.repeatable_task_sessions)?d.cognition.repeatable_task_sessions:[],ass=Array.isArray(d.cognition.recent_kimse_assessments)?d.cognition.recent_kimse_assessments:[];
@@ -1915,7 +1921,9 @@ function clinicalDomainReview(r){
     const flabel={no:'평소와 비슷',some:'가끔 어려움',often:'자주 어려움'};
     const frow=(key,label)=>{const cur=answers[key];if(!cur)return '';const before=cmp[key]?.baseline,changed=cmp[key]?.changed===true;return '<div><dt>'+esc(label)+'</dt><dd>'+esc(before&&before!==cur?(flabel[before]||before)+' → '+(flabel[cur]||cur):(flabel[cur]||cur))+(changed?' <span class="clinical-inline-change">변화</span>':'')+'</dd></div>'};
     const detail=frow('events','약속·최근 일')+frow('finances','계산·청구서·돈 관리')+frow('travel','익숙한 곳 외출·이동');
-    add('일상기능·독립성','FUNCTION','<dl><div><dt>전체 독립성</dt><dd>'+esc(clinicalFunctionLabel(fx.status))+'</dd></div>'+detail+'</dl>',[fx.source_type,fx.functional_source_type].filter(Boolean).join(' / ')||'미확인',refs(fx),fx.guard||'일상기능 정보는 인지과제 점수와 별개 축으로 봅니다.');
+    const fa=({AGREE:'일치',DISAGREE:'불일치',INSUFFICIENT:'비교 자료 부족'})[fx.agreement]||'비교 자료 부족';
+    const reports=(fx.self_status&&fx.self_status!=='UNKNOWN'?'<div><dt>본인 기능</dt><dd>'+esc(clinicalFunctionLabel(fx.self_status))+'</dd></div>':'')+(fx.informant_status&&fx.informant_status!=='UNKNOWN'?'<div><dt>가족 기능</dt><dd>'+esc(clinicalFunctionLabel(fx.informant_status))+'</dd></div>':'')+((fx.self_status&&fx.self_status!=='UNKNOWN')||(fx.informant_status&&fx.informant_status!=='UNKNOWN')?'<div><dt>본인-가족</dt><dd>'+esc(fa)+(fx.agreement==='DISAGREE'?' <span class="clinical-inline-change">불일치</span>':'')+'</dd></div>':'');
+    add('일상기능·독립성','FUNCTION','<dl><div><dt>Handoff 기준 상태</dt><dd>'+esc(clinicalFunctionLabel(fx.status))+'</dd></div>'+reports+detail+'</dl>',[fx.source_type,fx.functional_source_type].filter(Boolean).join(' / ')||'미확인',refs(fx),fx.guard||'일상기능 정보는 인지과제 점수와 별개 축으로 봅니다.');
   }
   if(d.mood_behavior){
     add('기분·행동 맥락','MOOD / BEHAVIOR','<dl><div><dt>현재 기록</dt><dd>'+esc(val(d.mood_behavior.current_user_report))+'</dd></div></dl>','user report','',d.mood_behavior.guard);
