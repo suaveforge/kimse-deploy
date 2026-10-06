@@ -6,7 +6,7 @@ function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){retur
 function badge(points){return '<span class="badge bg-azure-lt">'+esc(points)+'점</span>'}
 function optionText(options){return options.map(function(o){return esc(o.label)+' '+badge(o.points)}).join(' · ')}
 function render(m){
-  var a=m.activeModel, cr=m.changeReview||{}, tracked=m.trackedSignals||[], rules=m.combinationRules||[], devices=m.deviceTiers||{}, tiers=devices.tiers||[], signalMap=m.signalMap||{}, signals=signalMap.signals||[], onboarding=m.onboardingQuestionRegistry||{}, onboardingItems=onboarding.items||[], baselineTasks=(m.baselineTaskRegistry||{}).tasks||[];
+  var a=m.activeModel, cr=m.changeReview||{}, tracked=m.trackedSignals||[], rules=m.combinationRules||[], devices=m.deviceTiers||{}, tiers=devices.tiers||[], signalMap=m.signalMap||{}, signals=signalMap.signals||[], onboarding=m.onboardingQuestionRegistry||{}, onboardingItems=onboarding.items||[], baselineTasks=(m.baselineTaskRegistry||{}).tasks||[], stageModel=m.observationStageModel||{};
   var review=(cr.items||[]).length
     ? '<div class="list-group list-group-flush">'+cr.items.map(function(x){
         var tone=x.action==='add'?'green':x.action==='remove'?'red':'yellow';
@@ -39,6 +39,16 @@ function render(m){
       +'<div class="row g-3">'+tiers.map(function(t,i){var color=tone[t.id]||'secondary';return '<div class="col-md-6 col-xl-3"><div class="card h-100 border-'+color+'"><div class="card-body"><div class="d-flex justify-content-between align-items-start gap-2 mb-2"><div><span class="badge bg-'+color+'-lt">0'+(i+1)+'</span><h3 class="mt-2 mb-1">'+esc(t.label)+'</h3></div><span class="badge bg-'+color+' text-white">'+esc(t.badge)+'</span></div><p class="fw-bold">'+esc(t.role)+'</p><div class="list-group list-group-flush mb-3">'+(t.signals||[]).map(function(s){return '<div class="list-group-item px-0 py-2">'+esc(s)+'</div>'}).join('')+'</div><div class="alert alert-'+color+' py-2 mb-2"><strong>'+esc(t.message)+'</strong></div>'+(t.note?'<div class="text-secondary small">'+esc(t.note)+'</div>':'')+'<div class="mt-3 d-flex flex-wrap gap-1">'+(t.evidence||[]).map(function(e){return '<span class="badge bg-secondary-lt">'+esc(e)+'</span>'}).join('')+'</div></div></div></div>'}).join('')+'</div>'
       +'<div class="mt-4 text-secondary small">'+esc(devices.claimGuard||'')+'</div></div></div>';
   }
+  var stageHtml='';
+  if(stageModel.id){
+    var stageTone={SCD:'azure',MCI:'yellow',MILD_DEMENTIA:'orange',MODERATE_SEVERE:'red'};
+    stageHtml='<div class="card mb-4" id="observation-stage-model"><div class="card-header"><div><div class="text-uppercase text-secondary small">OBSERVATION STAGE ENGINE</div><h2 class="card-title mt-1">관찰 단계는 진단명이 아니라 근거축을 함께 보는 설명 모델입니다</h2><div class="text-secondary small mt-1">'+esc(stageModel.principle||'')+'</div></div><span class="badge bg-purple-lt">'+esc(stageModel.id)+'</span></div>'
+      +'<div class="card-body"><div class="row g-3 mb-4">'+(stageModel.axes||[]).map(function(x){return '<div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body"><strong>'+esc(x.label)+'</strong><div class="text-secondary small mt-1">'+esc(x.evidence||'')+'</div><p class="mt-2 mb-0">'+esc(x.rule||'')+'</p></div></div></div>'}).join('')+'</div>'
+      +'<div class="table-responsive"><table class="table table-vcenter"><thead><tr><th>관찰 단계</th><th>최소 해석 가드</th></tr></thead><tbody>'+(stageModel.stages||[]).map(function(x){var tone=stageTone[x.id]||'secondary';return '<tr><td><span class="badge bg-'+tone+'-lt">'+esc(x.label)+'</span></td><td>'+esc(x.guard||'')+'</td></tr>'}).join('')+'</tbody></table></div>'
+      +'<div class="alert alert-warning mt-3 mb-3"><strong>confidence 표시 원칙</strong><br>'+esc(stageModel.confidenceRule||'')+'</div>'
+      +'<div class="d-flex flex-wrap gap-2">'+(stageModel.sources||[]).map(function(x){return '<a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener" href="'+esc(x.url||'#')+'">'+esc(x.title||'근거 원문')+' ↗</a>'}).join('')+'</div>'
+      +'</div></div>';
+  }
   var questionHtml='';
   if(onboardingItems.length||baselineTasks.length){
     var roleLabel={validated_score_input:'검증 점수 입력',context_only:'근거 맥락',personal_baseline:'개인 baseline',personal_delta:'개인 변화'};
@@ -57,6 +67,7 @@ function render(m){
     +'<div class="col-lg-5"><div class="card h-100"><div class="card-header"><h3 class="card-title">결합 원칙</h3></div><div class="card-body"><ol class="mb-0">'+rules.map(function(x){return '<li class="mb-2">'+esc(x)+'</li>'}).join('')+'</ol></div></div></div></div></div></div>'
     +'<div class="card mb-4" id="change-review"><div class="card-header"><div><div class="text-uppercase text-secondary small">EVIDENCE CHANGE REVIEW</div><h2 class="card-title mt-1">팩터 · 가중치 · 조합 변경 검토</h2><div class="text-secondary small mt-1">새 논문·가이드라인·규제 이슈가 활성 모델의 추가·변경·삭제를 요구할 때 여기에 표시합니다. 검토 후보는 활성 모델에 자동 반영하지 않습니다.</div></div></div>'+review+'<div class="card-footer text-secondary small">Last reviewed '+esc(cr.lastReviewed||m.updated)+' · 상태 '+esc(cr.status||'review')+'</div></div>';
   if(questionHtml)root.insertAdjacentHTML('afterbegin',questionHtml);
+  if(stageHtml)root.insertAdjacentHTML('afterbegin',stageHtml);
   if(deviceHtml)root.insertAdjacentHTML('afterbegin',deviceHtml);
   if(signalHtml)root.insertAdjacentHTML('afterbegin',signalHtml);
   var factors=document.getElementById('factors');
