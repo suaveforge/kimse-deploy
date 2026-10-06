@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),A=$('#app'),N=$('#announcer'),O=$('#offline-banner'),K='kimse.p0.state',MODEL_CACHE='kimse.evidence.model.cache';
-const STATE_VERSION=13;
+const STATE_VERSION=14;
 const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mode:'self',caregivers:[],caregiverInvites:[],callSchedules:[],alertRecipients:[],plan:'FREE',q:0,answers:[],med:false,mood:'',
   medicines:[],
   health:{sleep:'',steps:'',pressure:'',memo:''},
@@ -9,7 +9,7 @@ const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mo
   onboarding:{profileDone:false,initialDone:false,consentDone:false,completed:false},
   initial:{step:0,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:false,completedAt:null,domains:null,remoteSessionId:'',remoteSyncedAt:''},
   cognitiveRecheck:{step:0,answers:{},responseMs:null,recall:'',startedAt:null,lastResult:null,lastCompletedAt:null},
-  consents:{service:false,privacy:false,health:false,microphone:true,location:false,motion:false,usage:true,notifications:false,caregiverShare:false},
+  consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},
   baseline:{startedAt:null},
   permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
   remote:{accountId:'',subjectId:'',selfSubjectId:'',careSubjects:[],activeCareSubjectId:'',token:''},
@@ -31,6 +31,15 @@ if((Number(stored.version)||0)<STATE_VERSION){
   }
   if(Array.isArray(S.schedule))S.schedule=S.schedule.filter(x=>!['s1','s2'].includes(x.id));
   if(S.mood==='좋아요')S.mood='';
+  if(!stored.onboarding?.consentDone){
+    S.consents=structuredClone(D.consents);
+    if(S.onboarding?.profileDone||S.onboarding?.initialDone){
+      S.profile=structuredClone(D.profile);
+      S.initial=structuredClone(D.initial);
+      S.onboarding={...S.onboarding,profileDone:false,initialDone:false,consentDone:false,completed:false};
+      S.baseline={startedAt:null};
+    }
+  }
   if(S.monitoring&&typeof S.monitoring==='object'){
     if(Array.isArray(S.monitoring.pending))S.monitoring.pending=S.monitoring.pending.filter(x=>x?.metric!=='foreground_steps_estimate');
     if(S.monitoring.lastObserved&&typeof S.monitoring.lastObserved==='object'){
@@ -107,9 +116,10 @@ const AUTH=()=>window.KIMSE_AUTH||null;
 function authNextRoute(){
   if(!S.self&&!S.care&&!S.intent)return 'role';
   if(S.care&&!S.self)return 'caregiver-home';
+  if(!S.onboarding.consentDone)return 'consent';
   if(!S.onboarding.profileDone)return 'onboarding-profile';
   if(!S.onboarding.initialDone)return 'initial-check';
-  if(!S.onboarding.completed)return 'consent';
+  if(!S.onboarding.completed)return 'initial-result';
   return 'home';
 }
 async function createRemoteSelfSubjectIfNeeded(){
@@ -160,7 +170,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><img class="brand-status-icon" src="${appStatusIconSrc()}" alt="" aria-hidden="true"><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.10.06 · Release 37<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.10.06 · Release 38<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>'';
 function captureScenarioRibbon(){return ''}
@@ -1154,30 +1164,31 @@ async function demoTap(selector,after=520){
 async function demoOnboardingSteps(alive){
   S.onboarding={profileDone:true,initialDone:false,consentDone:false,completed:false};
   S.initial={...structuredClone(D.initial),step:0,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:false,completedAt:null,domains:null};
+  S.consents=structuredClone(D.consents);
   S.baseline.startedAt=null;
   save();
-  await demoGo('initial-check',1250,{title:'앱 설치 후 초기 상태 확인',position:'bottom',hold:720});if(!alive())return false;
-  if(!await demoTap('[data-initial-next]',260))return false;
-  if(!await demoTap('[data-initial-answer="subtraction:79"]',280))return false;
-  if(!await demoTap('[data-initial-answer="events:no"]',280))return false;
-  if(!await demoTap('[data-initial-answer="finances:no"]',260))return false;
-  if(!await demoTap('[data-initial-answer="travel:no"]',260))return false;
-  demoSetValue('#recall-input','나무 기차 우산');await demoWait(260);
-  if(!await demoTap('#save-recall',420))return false;
+
+  await demoGo('consent',900,{title:'앱 설치 후 데이터 이용 동의',position:'top',hold:520});if(!alive())return false;
+  for(const selector of ['#consent-service','#consent-privacy','#consent-health','#consent-location','#consent-motion','#consent-usage','#consent-caregiver']){
+    if(!await demoTap(selector,150))return false;
+  }
+  if(!await demoTap('#consent-form button[type="submit"]',480))return false;
   if(!alive())return false;
 
-  // 음성 화면은 실제 UI를 보여주되, 자동녹화가 OS 마이크 권한 팝업을 띄우지 않도록 강제 녹음은 하지 않는다.
-  await demoShowCaption({title:'초기 상태 확인 · 말하기',position:'bottom'},720);
-  S.initial.domains={memory:86,executive:84,language:87,spatial:85,daily:88};
-  S.initial.completedAt=new Date().toISOString();S.onboarding.initialDone=true;
-  S.consents={...D.consents,service:true,privacy:true,health:true,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false};
-  save();
+  await demoGo('initial-check',1100,{title:'동의 후 초기 상태 확인',position:'bottom',hold:650});if(!alive())return false;
+  if(!await demoTap('[data-initial-next]',230))return false;
+  if(!await demoTap('[data-initial-answer="subtraction:79"]',240))return false;
+  if(!await demoTap('[data-initial-answer="events:no"]',240))return false;
+  if(!await demoTap('[data-initial-answer="finances:no"]',220))return false;
+  if(!await demoTap('[data-initial-answer="travel:no"]',220))return false;
+  demoSetValue('#recall-input','나무 기차 우산');await demoWait(220);
+  if(!await demoTap('#save-recall',360))return false;
+  if(!alive())return false;
 
-  await demoGo('consent',750,{title:'앱 설치 후 약관 동의',position:'top',hold:520});if(!alive())return false;
-  for(const selector of ['#consent-location','#consent-motion','#consent-usage','#consent-caregiver']){
-    if(!await demoTap(selector,210))return false;
-  }
-  if(!await demoTap('#consent-form button[type="submit"]',520))return false;
+  await demoShowCaption({title:'초기 상태 확인 · 말하기',position:'bottom'},620);
+  if(!await demoTap('#skip-voice',360))return false;
+  if(!alive())return false;
+  if(!await demoTap('#start-monitoring-after-initial',520))return false;
   return alive();
 }
 async function demoCycleBrain(alive){
@@ -1339,7 +1350,7 @@ async function startDemoCapture(){
 }
 
 const page={};
-page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 50초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·기본검사·동의·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>최근 변화</span><i>→</i><span>연구</span><i>→</i><span>계속 업데이트</span><i>→</i><span>처음 상태</span><i>→</i><span>1→14일</span><i>→</i><span>변화 흐름</span><i>→</i><span>가족</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 자동촬영 시작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-50s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">녹화 시작 때 공유창에서 반드시 “현재 탭”을 선택하세요. Chrome에서는 앱 영역만 9:16 세로로 자동 크롭해 녹화합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
+page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 50초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·동의·기본검사·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>최근 변화</span><i>→</i><span>연구</span><i>→</i><span>계속 업데이트</span><i>→</i><span>처음 상태</span><i>→</i><span>1→14일</span><i>→</i><span>변화 흐름</span><i>→</i><span>가족</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 자동촬영 시작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-50s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">녹화 시작 때 공유창에서 반드시 “현재 탭”을 선택하세요. Chrome에서는 앱 영역만 9:16 세로로 자동 크롭해 녹화합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
 page.start=()=>wrap(`<section class="hero"><img class="hero-logo" src="${STATUS_ICON_ASSETS.stable}" alt="낌새 로고"><div class="eyebrow">오늘도, 변화를 먼저 알아차리는</div><h1>낌새</h1><p>작은 관심이 큰 안심이 됩니다.<br>나와 가족의 인지·생활 변화를 쉽고 꾸준하게 기록해요.</p><div class="hero-actions">${btn('시작하기','role')}${btn('로그인','auth','btn-secondary-k')}</div></section>${notice('접근성을 기본으로 설계했어요.','큰 글씨, 큰 터치 영역, 색상+아이콘, 화면 읽기와 음성 안내를 지원합니다.')}`,{nohead:true,narrow:true});
 page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','👵','제가 사용해요','내 건강을 스스로 관리해요.','bg-blue'],['care','👩','가족을 돌보고 있어요','가족의 상태를 함께 살펴봐요.','bg-pink'],['both','👵👩','둘 다 사용해요','내 건강도 챙기고 가족도 돌봐요.','bg-purple']].map(x=>`<button class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg">${x[1]}</span><span><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}${notice('계정은 하나, 역할은 여러 개.','보호자로 시작해도 나중에 사용자 역할을 추가할 수 있어요.')}`,{title:'역할 선택',narrow:true});
 page.auth=()=>{
@@ -1348,7 +1359,7 @@ page.auth=()=>{
   return wrap(`<div class="eyebrow">AuthHub 계정</div><h1 class="page-title">낌새 계정으로<br>안전하게 시작하세요</h1><p class="page-desc">이메일 또는 사용 가능한 소셜 계정으로 로그인할 수 있습니다.</p>${err?notice('로그인 확인',esc(err)):''}<div class="form-stack"><div class="field"><label for="name">이름 <small>새 계정 만들 때 사용</small></label><input id="name" autocomplete="name" value="${esc(S.account?.name||'')}" placeholder="이름"></div><div class="field"><label for="email">이메일</label><input id="email" type="email" autocomplete="email" value="${esc(S.account?.email||'')}" placeholder="name@example.com"></div><div class="field"><label for="auth-password">비밀번호</label><input id="auth-password" type="password" minlength="10" autocomplete="current-password" placeholder="10자 이상"></div><button id="authhub-login" class="btn-kimse btn-primary-k">로그인</button><button id="authhub-signup" class="btn-kimse btn-secondary-k">새 계정 만들기</button></div><div class="auth-divider"><span>또는</span></div><div id="authhub-social" aria-live="polite"></div>`,{title:'회원가입 / 로그인',narrow:true});
 };
 
-page['onboarding-profile']=()=>wrap(`<div class="eyebrow">처음 설정 1/4 · 근거 연결 조사</div><h1 class="page-title">처음 비교에 필요한<br>기본정보를 알려주세요</h1><p class="page-desc">각 항목은 Evidence Registry에 출처와 사용 목적이 등록되어 있습니다. 검증된 점수 입력과 개인 baseline·맥락 정보는 서로 섞어 점수화하지 않습니다.</p><form id="profile-form" class="form-stack">
+page['onboarding-profile']=()=>wrap(`<div class="eyebrow">처음 설정 2/4 · 근거 연결 조사</div><h1 class="page-title">처음 비교에 필요한<br>기본정보를 알려주세요</h1><p class="page-desc">각 항목은 Evidence Registry에 출처와 사용 목적이 등록되어 있습니다. 검증된 점수 입력과 개인 baseline·맥락 정보는 서로 섞어 점수화하지 않습니다.</p><form id="profile-form" class="form-stack">
 <div class="field"><label for="profile-birth">출생연도 <small>CAIDE</small></label><input id="profile-birth" inputmode="numeric" value="${esc(S.profile.birthYear)}" placeholder="예: 1956"></div>
 <div class="field"><label for="profile-sex">성별 <small>CAIDE</small></label><select id="profile-sex"><option value="">선택</option><option value="female" ${S.profile.sex==='female'?'selected':''}>여성</option><option value="male" ${S.profile.sex==='male'?'selected':''}>남성</option><option value="other" ${S.profile.sex==='other'?'selected':''}>기타 / 응답하지 않음</option></select></div>
 <div class="field"><label for="profile-education">정규 교육기간 <small>CAIDE</small></label><select id="profile-education"><option value="">선택</option><option value="lt7" ${S.profile.education==='lt7'?'selected':''}>0~6년</option><option value="7to9" ${S.profile.education==='7to9'?'selected':''}>7~9년</option><option value="gte10" ${S.profile.education==='gte10'?'selected':''}>10년 이상</option></select></div>
@@ -1366,7 +1377,7 @@ page['onboarding-profile']=()=>wrap(`<div class="eyebrow">처음 설정 1/4 · �
 
 page['initial-check']=()=>{
   const s=Math.min(5,Math.max(0,Number(S.initial.step)||0));
-  const top=`<div class="eyebrow">처음 설정 2/4 · 연구 근거 기반 baseline ${s+1}/6</div><div class="progress-k mt-2"><span style="width:${(s+1)/6*100}%"></span></div>`;
+  const top=`<div class="eyebrow">처음 설정 3/4 · 연구 근거 기반 baseline ${s+1}/6</div><div class="progress-k mt-2"><span style="width:${(s+1)/6*100}%"></span></div>`;
   if(s===0)return wrap(top+`<h1 class="page-title">세 단어를 기억해주세요</h1><div class="memory-words"><strong>나무</strong><strong>기차</strong><strong>우산</strong></div><p class="page-desc">잠시 뒤 다시 묻습니다. KIMSE 자체 3단어 과제로, 임상검사 점수로 환산하지 않고 다음 측정과 비교할 원자료만 남깁니다.</p><button class="btn-kimse btn-primary-k btn-full" data-initial-next>기억했어요</button>`,{title:'기억 baseline',narrow:true});
   if(s===1)return wrap(top+`<div class="eyebrow mt-4">연속 뺄셈 · Yamada 2021 과제 패러다임</div><h1 class="page-title">100에서 7을 세 번 빼면<br>마지막 숫자는 무엇인가요?</h1><div class="answer-grid">${['79','81','83','77'].map(v=>`<button class="answer" data-initial-answer="subtraction:${v}">${v}</button>`).join('')}</div><p class="screen-footnote">정답 여부와 반응시간을 개인 baseline으로 저장합니다. 원 연구의 진단 정확도를 낌새에 그대로 적용하지 않습니다.</p>`,{title:'주의·실행 baseline',narrow:true});
   if(s===2)return wrap(top+`<div class="eyebrow mt-4">일상기능 · FAQ6 근거영역</div><h1 class="page-title">최근 4주 동안<br>약속이나 최근 일을 기억하는 게 평소보다 어려웠나요?</h1><div class="answer-grid">${[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>`<button class="answer" data-initial-answer="events:${v[0]}">${v[1]}</button>`).join('')}</div><p class="screen-footnote">FAQ6에서 예후와 연관된 기능영역을 바탕으로 만든 KIMSE 자가관찰 문항이며 FAQ6 점수는 아닙니다.</p>`,{title:'사건·약속 기억',narrow:true});
@@ -1375,9 +1386,9 @@ page['initial-check']=()=>{
   return wrap(top+`<div class="eyebrow mt-4">지연회상 · 개인 baseline</div><h1 class="page-title">처음 보여드린 세 단어를<br>기억나는 만큼 적어주세요</h1><p class="page-desc">순서는 상관없습니다. 회상 개수만 원자료로 저장하고 임상 cutoff를 적용하지 않습니다.</p><div class="form-stack"><div class="field"><label for="recall-input">기억나는 단어</label><input id="recall-input" value="${esc(S.initial.recall)}" placeholder="예: 나무, …"></div><button id="save-recall" class="btn-kimse btn-primary-k">음성 baseline으로 계속</button></div>`,{title:'지연회상 baseline',narrow:true});
 };
 
-page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).length,recording=!!voiceRecorder;return wrap(`<div class="eyebrow">처음 설정 3/4 · Yamada 2021 / Speech biomarker 근거</div><h1 class="page-title">말하는 습관도<br>개인 baseline이 됩니다</h1><p class="page-desc">자발화·사건 설명·의미 유창성 과제에서 말의 멈춤·음향 특징 등을 장기 비교합니다. 원 연구의 진단 정확도를 낌새 성능으로 사용하지 않습니다.</p><div class="voice-task-list">${VOICE_PROMPTS.map((p,i)=>{const v=S.initial.voiceSamples[i];const active=recording&&voiceTask===i;return `<section class="voice-task ${v?'done':''}"><div class="voice-index">${v?'✓':i+1}</div><div><strong>${p}</strong><small>${v?`녹음 완료 · ${v.durationSec}초 · 이 기기에 저장`:'30초 이상 편하게 말해주세요.'}</small></div><button class="btn-kimse ${active?'btn-danger-k':'btn-blue-k'} compact-btn" data-voice-task="${i}" ${recording&&!active?'disabled':''}>${active?'녹음 종료':v?'다시 녹음':'녹음 시작'}</button></section>`}).join('')}</div>${S.permissions.microphone==='denied'?notice('마이크 권한이 꺼져 있어요.','브라우저 사이트 설정에서 마이크를 허용하면 다시 녹음할 수 있습니다.'):''}<div class="hero-actions"><button id="finish-voice" class="btn-kimse btn-primary-k" ${done<3?'disabled':''}>첫 상태 결과 보기</button><button id="skip-voice" class="btn-kimse btn-secondary-k">음성 없이 계속</button></div>${notice('개인정보 원칙','현재 음성 원본은 서버로 전송하지 않고 이 기기의 전용 저장공간에 보관합니다. 향후 분석·연구 전송은 별도 동의를 받습니다.')}`,{title:'음성 기준',narrow:true})};
+page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).length,recording=!!voiceRecorder;return wrap(`<div class="eyebrow">처음 설정 4/4 · Yamada 2021 / Speech biomarker 근거</div><h1 class="page-title">말하는 습관도<br>개인 baseline이 됩니다</h1><p class="page-desc">자발화·사건 설명·의미 유창성 과제에서 말의 멈춤·음향 특징 등을 장기 비교합니다. 원 연구의 진단 정확도를 낌새 성능으로 사용하지 않습니다.</p><div class="voice-task-list">${VOICE_PROMPTS.map((p,i)=>{const v=S.initial.voiceSamples[i];const active=recording&&voiceTask===i;return `<section class="voice-task ${v?'done':''}"><div class="voice-index">${v?'✓':i+1}</div><div><strong>${p}</strong><small>${v?`녹음 완료 · ${v.durationSec}초 · 이 기기에 저장`:'30초 이상 편하게 말해주세요.'}</small></div><button class="btn-kimse ${active?'btn-danger-k':'btn-blue-k'} compact-btn" data-voice-task="${i}" ${recording&&!active?'disabled':''}>${active?'녹음 종료':v?'다시 녹음':'녹음 시작'}</button></section>`}).join('')}</div>${S.permissions.microphone==='denied'?notice('마이크 권한이 꺼져 있어요.','브라우저 사이트 설정에서 마이크를 허용하면 다시 녹음할 수 있습니다.'):''}<div class="hero-actions"><button id="finish-voice" class="btn-kimse btn-primary-k" ${done<3?'disabled':''}>첫 상태 결과 보기</button><button id="skip-voice" class="btn-kimse btn-secondary-k">음성 없이 계속</button></div>${notice('개인정보 원칙','현재 음성 원본은 서버로 전송하지 않고 이 기기의 전용 저장공간에 보관합니다. 향후 분석·연구 전송은 별도 동의를 받습니다.')}`,{title:'음성 기준',narrow:true})};
 
-page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 확인이 필요해요</h1>${notice('아직 기준을 만들 수 없습니다.','초기 과제와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">초기 과제 시작</button>`,{title:'첫 상태 참고',narrow:true});const a=S.initial.answers||{},recall=initialRecallCount(),rt=(S.initial.responseTimes||[])[0];const freq=v=>v==='no'?'평소와 비슷함':v==='some'?'가끔 어려움':v==='often'?'자주 어려움':'기록 없음';return wrap(`<div class="eyebrow">연구 근거 기반 · 개인 baseline</div><h1 class="page-title">오늘의 원자료를<br>비교 기준으로 저장했어요</h1><p class="page-desc">낌새 자체 과제를 임상 점수로 환산하지 않습니다. 다음 측정에서 같은 종류의 원자료와 반응시간 변화를 비교합니다.</p><div class="list">${row('🧠 지연회상','KIMSE 3단어 과제 · 임상 cutoff 없음','<strong>'+recall+' / 3개</strong>')}${row('➖ 연속 뺄셈','Yamada 2021 과제 패러다임','<strong>'+(a.subtraction?(a.subtraction==='79'?'정답':'응답 기록'):'기록 없음')+(rt?' · '+Math.round(rt/100)/10+'초':'')+'</strong>')}${row('📅 사건·약속 기억','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.events)+'</strong>')}${row('💳 금전관리','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.finances)+'</strong>')}${row('🧭 외출·이동','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.travel)+'</strong>')}${row('🗣️ 음성 샘플','자발화·의미유창성 연구 기반','<strong>'+S.initial.voiceSamples.filter(Boolean).length+'개</strong>')}</div>${notice('해석 원칙','이 값만으로 정상·이상·치매 여부를 판정하지 않습니다. 현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">관찰 영역 보기</button><button class="btn-kimse btn-primary-k" data-go="consent">데이터 수집 동의로 계속</button></div>`,{title:'첫 상태 참고',narrow:true})};
+page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 확인이 필요해요</h1>${notice('아직 기준을 만들 수 없습니다.','초기 과제와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">초기 과제 시작</button>`,{title:'첫 상태 참고',narrow:true});const a=S.initial.answers||{},recall=initialRecallCount(),rt=(S.initial.responseTimes||[])[0];const freq=v=>v==='no'?'평소와 비슷함':v==='some'?'가끔 어려움':v==='often'?'자주 어려움':'기록 없음';return wrap(`<div class="eyebrow">연구 근거 기반 · 개인 baseline</div><h1 class="page-title">오늘의 원자료를<br>비교 기준으로 저장했어요</h1><p class="page-desc">낌새 자체 과제를 임상 점수로 환산하지 않습니다. 다음 측정에서 같은 종류의 원자료와 반응시간 변화를 비교합니다.</p><div class="list">${row('🧠 지연회상','KIMSE 3단어 과제 · 임상 cutoff 없음','<strong>'+recall+' / 3개</strong>')}${row('➖ 연속 뺄셈','Yamada 2021 과제 패러다임','<strong>'+(a.subtraction?(a.subtraction==='79'?'정답':'응답 기록'):'기록 없음')+(rt?' · '+Math.round(rt/100)/10+'초':'')+'</strong>')}${row('📅 사건·약속 기억','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.events)+'</strong>')}${row('💳 금전관리','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.finances)+'</strong>')}${row('🧭 외출·이동','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.travel)+'</strong>')}${row('🗣️ 음성 샘플','자발화·의미유창성 연구 기반','<strong>'+S.initial.voiceSamples.filter(Boolean).length+'개</strong>')}</div>${notice('해석 원칙','이 값만으로 정상·이상·치매 여부를 판정하지 않습니다. 현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">관찰 영역 보기</button><button id="start-monitoring-after-initial" class="btn-kimse btn-primary-k">생활패턴 기록 시작</button></div>`,{title:'첫 상태 참고',narrow:true})};
 
 page['cognitive-recheck']=()=>{
   const x=S.cognitiveRecheck||D.cognitiveRecheck,s=Math.min(5,Math.max(0,Number(x.step)||0));
@@ -1397,7 +1408,7 @@ page['cognitive-recheck-result']=()=>{
   return wrap('<div class="eyebrow">개인 baseline 대비 원자료</div><h1 class="page-title">'+(changed?'첫 기록보다 낮아진<br>수행 원자료가 있습니다':'이번 기록에서는<br>낮아진 수행 원자료가 없습니다')+'</h1><p class="page-desc">같은 KIMSE 자체 과제의 첫 기록과 이번 기록을 직접 비교했습니다. 임상 진단이나 MCI·치매 단계 판정이 아닙니다.</p><div class="list">'+row('🧠 지연회상','3단어 원자료 · cutoff 없음','<strong>'+d.baseline+' → '+d.current+'개</strong>')+row('➖ 연속 뺄셈','정답 여부 · 개인 비교','<strong>'+(sub.baseline_correct?'정답':'응답 기록')+' → '+(sub.current_correct?'정답':'응답 기록')+'</strong>')+row('⏱ 반응시간','원자료만 표시 · 임상 cutoff 없음','<strong>'+((sub.response_ms_baseline||0)/1000).toFixed(1)+'초 → '+((sub.response_ms_current||0)/1000).toFixed(1)+'초</strong>')+'</div>'+notice(changed?'원자료 변화 관찰':'비교 결과','반응시간 변화만으로는 CHANGED 상태를 만들지 않습니다. 기능 문항은 원자료 맥락으로 별도 보존하며 객관 인지변화나 일상기능 단계로 자동 환산하지 않습니다. 수행 원자료가 낮아진 경우에만 KIMSE 관찰축에 기록합니다.')+'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">관찰 패턴 확인</button><button class="btn-kimse btn-secondary-k" data-go="clinical-handoff">상담 준비 리포트</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'반복 체크 결과',narrow:true});
 };
 
-page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>발화시간·멈춤·음성활동·음높이의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 움직임과 활동시간 신호를 수집합니다. 일일 걸음수는 네이티브 앱에서 기기 건강 데이터를 연결해 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 지원 기기에서는 앱을 닫아도 푸시 알림을 받습니다.</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>외부 전화·메신저</strong><p>현재 수집하지 않습니다. 앱 안에서 연결된 KIMSE 통화와 가족 피드백만 사회접촉 기록으로 사용합니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
+page.consent=()=>wrap(`<div class="eyebrow">처음 설정 1/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>발화시간·멈춤·음성활동·음높이의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 움직임과 활동시간 신호를 수집합니다. 일일 걸음수는 네이티브 앱에서 기기 건강 데이터를 연결해 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 지원 기기에서는 앱을 닫아도 푸시 알림을 받습니다.</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>외부 전화·메신저</strong><p>현재 수집하지 않습니다. 앱 안에서 연결된 KIMSE 통화와 가족 피드백만 사회접촉 기록으로 사용합니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
 
 page['evidence-proof']=()=>wrap(
@@ -1931,6 +1942,14 @@ function applyA11y(){document.documentElement.classList.toggle('large-text',S.a1
 function render(){applyA11y();let r=route(),f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();syncAppStatusIcon();if(r==='auth')setTimeout(mountAuthHubSocial,20);if(['family','family-call'].includes(r))setTimeout(()=>syncFamilyData(true),30);if(['family-call','call-room'].includes(r))setTimeout(()=>syncCallSessions(true),40);if(r==='call-room')setTimeout(startCallRoomPolling,80);if(['caregiver-home','family-feedback'].includes(r)&&S.remote.activeCareSubjectId){const age=Date.now()-new Date(S.careOverview.lastSyncAt||0).getTime();if(!Number.isFinite(age)||age>10000)setTimeout(()=>syncCareOverview(true),50)};setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;if(r!==lastSpokenRoute){lastSpokenRoute=r;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
 document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');if(t.dataset.go==='cognitive-recheck'&&route()!=='cognitive-recheck')resetCognitiveRecheck();go(t.dataset.go)}if(t.hasAttribute('data-initial-next')){S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('다음 항목으로 이동합니다.');render()}if(t.dataset.initialAnswer){const [k,v]=t.dataset.initialAnswer.split(':');const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes.push(rt);S.initial.answers[k]=v;S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('선택했습니다.');render()}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');history.length>1?history.back():go('start')}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
 document.addEventListener('click',async e=>{
+  if(e.target.id==='start-monitoring-after-initial'){
+    if(!S.onboarding.consentDone){feedback('데이터 이용 동의를 먼저 확인해주세요.','warning');go('consent');return}
+    e.target.disabled=true;e.target.textContent='시작 중…';
+    const ok=await finishOnboardingAndStartMonitoring();
+    if(ok){feedback('생활패턴 기록을 시작합니다.','success');if(!demoAutoRunning)go('home')}
+    else{feedback('초기 설정을 모두 확인해주세요.','warning');e.target.disabled=false;e.target.textContent='생활패턴 기록 시작'}
+    return;
+  }
   const next=e.target.closest('[data-recheck-next]');
   if(next){
     if(!S.cognitiveRecheck.startedAt)S.cognitiveRecheck.startedAt=Date.now();
@@ -1961,6 +1980,24 @@ document.addEventListener('click',e=>{
     S.initial.domains=null;S.initial.completedAt=new Date().toISOString();S.onboarding.initialDone=true;save();feedback('개인 비교용 첫 기준을 저장했습니다.','success');go('initial-result');return;
   }
 });
+async function finishOnboardingAndStartMonitoring(){
+  if(!S.onboarding.consentDone||!S.onboarding.profileDone||!S.onboarding.initialDone)return false;
+  S.onboarding.completed=true;
+  if(!S.baseline.startedAt)S.baseline.startedAt=new Date().toISOString();
+  save();
+  if(demoAutoRunning){go('baseline');return true}
+  await startRemoteMonitoring();
+  await syncMonitoringPreferences();
+  await syncStageContextFromProfile();
+  await syncClinicalContextSnapshot();
+  await syncInitialCognitiveBaseline();
+  await window.KIMSE_PUSH?.sync?.();
+  queueInitialSignals();
+  startPassiveCollectors();
+  await flushSignals();
+  save();
+  return true;
+}
 document.addEventListener('submit',async e=>{
   if(e.target.id==='profile-form'){
     e.preventDefault();
@@ -1974,9 +2011,16 @@ document.addEventListener('submit',async e=>{
     const required=['service','privacy','health'];for(const k of required)S.consents[k]=!!$('#consent-'+k)?.checked;
     if(required.some(k=>!S.consents[k])){feedback('필수 동의 3가지를 확인해주세요.','warning');return}
     S.consents.microphone=!!$('#consent-microphone')?.checked;S.consents.location=!!$('#consent-location')?.checked;S.consents.motion=!!$('#consent-motion')?.checked;S.consents.usage=!!$('#consent-usage')?.checked;S.consents.notifications=!!$('#consent-notifications')?.checked;S.consents.caregiverShare=!!$('#consent-caregiver')?.checked;
-    S.onboarding.consentDone=true;S.onboarding.completed=true;if(!S.baseline.startedAt)S.baseline.startedAt=new Date().toISOString();save();
-    if(demoAutoRunning){go('baseline');return}
-    feedback('설정을 저장했습니다. 생활 패턴 기록을 시작합니다.','success');await requestSelectedPermissions();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();await syncInitialCognitiveBaseline();await window.KIMSE_PUSH?.sync?.();queueInitialSignals();startPassiveCollectors();flushSignals();save();go('home');return;
+    S.onboarding.consentDone=true;save();
+    await requestSelectedPermissions();
+    if(S.onboarding.completed){
+      await startRemoteMonitoring();await syncMonitoringPreferences();await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();flushSignals();save();
+      feedback('데이터 수집·공유 설정을 저장했습니다.','success');go('home');return;
+    }
+    feedback('동의를 저장했습니다. 이제 초기 정보를 확인합니다.','success');
+    if(!S.onboarding.profileDone){go('onboarding-profile');return}
+    if(!S.onboarding.initialDone){go('initial-check');return}
+    await finishOnboardingAndStartMonitoring();go('home');return;
   }
 });
 async function completeAuthHubLogin(result){
