@@ -1,13 +1,14 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s),A=$('#app'),N=$('#announcer'),O=$('#offline-banner'),K='kimse.p0.state',MODEL_CACHE='kimse.evidence.model.cache';
-const STATE_VERSION=12;
+const STATE_VERSION=13;
 const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mode:'self',caregivers:[],caregiverInvites:[],callSchedules:[],alertRecipients:[],plan:'FREE',q:0,answers:[],med:false,mood:'',
   medicines:[],
   health:{sleep:'',steps:'',pressure:'',memo:''},
   schedule:[],
   profile:{birthYear:'',sex:'',education:'',living:'',socialSupport:'',socialActivity:'',sleepHours:'',sleepDisturbance:'',activity:'',hearing:'',subjectiveChange:'',functionStatus:'',conditions:''},
   onboarding:{profileDone:false,initialDone:false,consentDone:false,completed:false},
-  initial:{step:0,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:false,completedAt:null,domains:null},
+  initial:{step:0,answers:{},responseTimes:[],recall:'',voiceSamples:[],voiceSkipped:false,completedAt:null,domains:null,remoteSessionId:'',remoteSyncedAt:''},
+  cognitiveRecheck:{step:0,answers:{},responseMs:null,recall:'',startedAt:null,lastResult:null,lastCompletedAt:null},
   consents:{service:false,privacy:false,health:false,microphone:true,location:false,motion:false,usage:true,notifications:false,caregiverShare:false},
   baseline:{startedAt:null},
   permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
@@ -64,6 +65,7 @@ if(typeof S.marketSearch!=='string')S.marketSearch='';
 S.profile=Object.assign({},D.profile,S.profile||{});
 S.onboarding=Object.assign({},D.onboarding,S.onboarding||{});
 S.initial=Object.assign({},D.initial,S.initial||{});S.initial.answers=Object.assign({},D.initial.answers,S.initial.answers||{});if(!Array.isArray(S.initial.voiceSamples))S.initial.voiceSamples=[];
+S.cognitiveRecheck=Object.assign({},D.cognitiveRecheck,S.cognitiveRecheck||{});S.cognitiveRecheck.answers=Object.assign({},D.cognitiveRecheck.answers,S.cognitiveRecheck.answers||{});
 S.consents=Object.assign({},D.consents,S.consents||{});
 S.baseline=Object.assign({},D.baseline,S.baseline||{});
 S.permissions=Object.assign({},D.permissions,S.permissions||{});
@@ -158,7 +160,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><img class="brand-status-icon" src="${appStatusIconSrc()}" alt="" aria-hidden="true"><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.09.16 · Release 35<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">Updated 2026.10.06 · Release 36<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>'';
 function captureScenarioRibbon(){return ''}
@@ -495,7 +497,7 @@ function stageActionButtons(stage=S.stage.summary){
   const key=stage?.observation_pattern||stage?.observation_stage;
   if(key==='KIMSE_TASK_CHANGE_WITH_PRESERVED_INDEPENDENCE'||key==='KIMSE_TASK_CHANGE_OBSERVED')return '<button class="status-action secondary" data-share-monitoring>'+I('users')+'<span>가족에게 확인 요청</span></button><button class="status-action primary" data-go="clinical-handoff">'+I('file-description')+'<span>상담 준비 리포트</span></button>';
   if(key==='KIMSE_TASK_CHANGE_WITH_IADL_IMPACT'||key==='KIMSE_TASK_CHANGE_WITH_BADL_IMPACT')return '<button class="status-action secondary" data-go="clinical-handoff">'+I('file-description')+'<span>의료진 전달 리포트</span></button><button class="status-action primary" data-go="professional-outcome">'+I('stethoscope')+'<span>전문평가 결과 기록</span></button>';
-  if(key==='SUBJECTIVE_CHANGE_REPORTED')return '<button class="status-action secondary" data-share-monitoring>'+I('users')+'<span>가족에게 확인 요청</span></button><button class="status-action primary" data-go="brain-map">'+I('chart-line')+'<span>반복 기록 확인</span></button>';
+  if(key==='SUBJECTIVE_CHANGE_REPORTED')return '<button class="status-action secondary" data-share-monitoring>'+I('users')+'<span>가족에게 확인 요청</span></button><button class="status-action primary" data-go="cognitive-recheck">'+I('chart-line')+'<span>반복 인지 체크</span></button>';
   return '<button class="status-action primary single" data-go="collection-status">'+I('database')+'<span>수집 상태 확인</span></button>';
 }
 const STATUS_ICON_ASSETS={
@@ -574,6 +576,62 @@ function queueInitialSignals(){
     });
   }
   S.monitoring.initialSignalsQueued=true;save();return true;
+}
+
+function cognitiveSessionId(prefix='cog'){
+  return prefix+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);
+}
+function recallCountFromText(value){
+  const text=String(value||'').replace(/[,.]/g,' ').split(/\s+/).filter(Boolean);
+  return ['나무','기차','우산'].filter(w=>text.includes(w)).length;
+}
+function resetCognitiveRecheck(){
+  S.cognitiveRecheck=structuredClone(D.cognitiveRecheck);
+  S.cognitiveRecheck.startedAt=Date.now();
+  save();
+}
+async function syncInitialCognitiveBaseline(){
+  if(!S.self||!S.onboarding.initialDone||!S.initial.completedAt||!S.initial.answers?.subtraction)return false;
+  if(!navigator.onLine||!await ensureRemoteIdentity()||!S.remote.subjectId)return false;
+  if(!S.initial.remoteSessionId){S.initial.remoteSessionId=cognitiveSessionId('baseline');save()}
+  try{
+    const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/cognitive-task-sessions',{
+      method:'POST',headers:remoteHeaders(),body:JSON.stringify({
+        account_id:S.remote.accountId,
+        client_session_id:S.initial.remoteSessionId,
+        phase:'BASELINE',
+        delayed_recall_count:recallCountFromText(S.initial.recall),
+        subtraction_answer:String(S.initial.answers.subtraction),
+        subtraction_response_ms:Number(S.initial.responseTimes?.[0])||null,
+        completed_at:S.initial.completedAt
+      })
+    });
+    if(!r.ok)throw new Error('cognitive baseline '+r.status);
+    const x=await r.json();S.initial.remoteSyncedAt=new Date().toISOString();if(x.stage)S.stage.summary=x.stage;save();return true;
+  }catch{S.stage.lastError='초기 반복과제 기준을 서버에 동기화하지 못했습니다.';save();return false}
+}
+async function submitCognitiveRecheck(){
+  const x=S.cognitiveRecheck||{},answer=x.answers?.subtraction,recall=x.recall;
+  if(!answer||!String(recall||'').trim())throw new Error('RECHECK_INCOMPLETE');
+  if(!await syncInitialCognitiveBaseline())throw new Error('BASELINE_SYNC_REQUIRED');
+  const subjectId=S.remote.selfSubjectId||S.remote.subjectId;
+  const clientId=cognitiveSessionId('recheck'),completedAt=new Date().toISOString();
+  const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(subjectId)+'/cognitive-task-sessions',{
+    method:'POST',headers:remoteHeaders(),body:JSON.stringify({
+      account_id:S.remote.accountId,
+      client_session_id:clientId,
+      phase:'RECHECK',
+      delayed_recall_count:recallCountFromText(recall),
+      subtraction_answer:String(answer),
+      subtraction_response_ms:Number(x.responseMs)||null,
+      completed_at:completedAt
+    })
+  });
+  if(!r.ok)throw new Error('COGNITIVE_RECHECK_'+r.status);
+  const body=await r.json();
+  S.cognitiveRecheck.lastResult=body;S.cognitiveRecheck.lastCompletedAt=completedAt;
+  if(body.stage)S.stage.summary=body.stage;S.stage.lastSyncAt=new Date().toISOString();S.stage.lastError='';save();
+  return body;
 }
 
 async function ensureRemoteIdentity(){
@@ -1309,6 +1367,24 @@ page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).lengt
 
 page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 확인이 필요해요</h1>${notice('아직 기준을 만들 수 없습니다.','초기 과제와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">초기 과제 시작</button>`,{title:'첫 상태 참고',narrow:true});const a=S.initial.answers||{},recall=initialRecallCount(),rt=(S.initial.responseTimes||[])[0];const freq=v=>v==='no'?'평소와 비슷함':v==='some'?'가끔 어려움':v==='often'?'자주 어려움':'기록 없음';return wrap(`<div class="eyebrow">연구 근거 기반 · 개인 baseline</div><h1 class="page-title">오늘의 원자료를<br>비교 기준으로 저장했어요</h1><p class="page-desc">낌새 자체 과제를 임상 점수로 환산하지 않습니다. 다음 측정에서 같은 종류의 원자료와 반응시간 변화를 비교합니다.</p><div class="list">${row('🧠 지연회상','KIMSE 3단어 과제 · 임상 cutoff 없음','<strong>'+recall+' / 3개</strong>')}${row('➖ 연속 뺄셈','Yamada 2021 과제 패러다임','<strong>'+(a.subtraction?(a.subtraction==='79'?'정답':'응답 기록'):'기록 없음')+(rt?' · '+Math.round(rt/100)/10+'초':'')+'</strong>')}${row('📅 사건·약속 기억','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.events)+'</strong>')}${row('💳 금전관리','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.finances)+'</strong>')}${row('🧭 외출·이동','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.travel)+'</strong>')}${row('🗣️ 음성 샘플','자발화·의미유창성 연구 기반','<strong>'+S.initial.voiceSamples.filter(Boolean).length+'개</strong>')}</div>${notice('해석 원칙','이 값만으로 정상·이상·치매 여부를 판정하지 않습니다. 현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">관찰 영역 보기</button><button class="btn-kimse btn-primary-k" data-go="consent">데이터 수집 동의로 계속</button></div>`,{title:'첫 상태 참고',narrow:true})};
 
+page['cognitive-recheck']=()=>{
+  const x=S.cognitiveRecheck||D.cognitiveRecheck,s=Math.min(5,Math.max(0,Number(x.step)||0));
+  const top='<div class="eyebrow">개인 baseline 비교 · 반복 인지 체크 '+(s+1)+'/6</div><div class="progress-k mt-2"><span style="width:'+((s+1)/6*100)+'%"></span></div>';
+  if(s===0)return wrap(top+'<h1 class="page-title">세 단어를 다시 기억해주세요</h1><div class="memory-words"><strong>나무</strong><strong>기차</strong><strong>우산</strong></div><p class="page-desc">초기 기준과 같은 KIMSE 자체 과제를 반복합니다. 임상검사 점수나 cutoff로 바꾸지 않고 내 첫 기록과 원자료만 비교합니다.</p><button class="btn-kimse btn-primary-k btn-full" data-recheck-next>기억했어요</button>',{title:'반복 인지 체크',narrow:true});
+  if(s===1)return wrap(top+'<div class="eyebrow mt-4">연속 뺄셈 · 동일 과제 반복</div><h1 class="page-title">100에서 7을 세 번 빼면<br>마지막 숫자는 무엇인가요?</h1><div class="answer-grid">'+['79','81','83','77'].map(v=>'<button class="answer" data-recheck-answer="subtraction:'+v+'">'+v+'</button>').join('')+'</div><p class="screen-footnote">정답 여부와 반응시간을 원자료로 남깁니다. 반응시간만 느려졌다는 이유로 인지저하를 판정하지 않습니다.</p>',{title:'주의·실행 반복',narrow:true});
+  if(s===2)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>약속이나 최근 일을 기억하는 게 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="events:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">반복과제 사이의 동일한 기능 문항이며 FAQ6 점수로 계산하지 않습니다.</p>',{title:'사건·약속 기억',narrow:true});
+  if(s===3)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>계산·청구서·돈 관리가 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="finances:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">자가관찰 맥락으로만 기록하며 임상 점수로 환산하지 않습니다.</p>',{title:'금전관리 변화',narrow:true});
+  if(s===4)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>익숙한 곳으로 외출하거나 이동하기가 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="travel:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">자가관찰 기능문항이며 공간기억 검사나 FAQ6 원점수가 아닙니다.</p>',{title:'외출·이동 기능',narrow:true});
+  return wrap(top+'<div class="eyebrow mt-4">지연회상 · 개인 원자료 비교</div><h1 class="page-title">처음 보여드린 세 단어를<br>기억나는 만큼 적어주세요</h1><p class="page-desc">순서는 상관없습니다. 첫 기록과 같은 방식으로 회상 개수만 비교합니다.</p><div class="form-stack"><div class="field"><label for="recheck-recall-input">기억나는 단어</label><input id="recheck-recall-input" value="'+esc(x.recall||'')+'" placeholder="예: 나무, …"></div><button id="save-cognitive-recheck" class="btn-kimse btn-primary-k">개인 기준과 비교</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'지연회상 반복',narrow:true});
+};
+page['cognitive-recheck-result']=()=>{
+  const r=S.cognitiveRecheck?.lastResult,c=r?.comparison;
+  if(!r)return wrap('<h1 class="page-title">반복 인지 체크가 필요해요</h1>'+notice('아직 비교 결과가 없습니다.','같은 KIMSE 과제를 반복하면 초기 원자료와 비교합니다.')+'<button class="btn-kimse btn-primary-k btn-full" data-go="cognitive-recheck">반복 체크 시작</button>',{title:'반복 체크 결과',narrow:true});
+  if(!c||c.status==='BASELINE_MISSING')return wrap('<div class="eyebrow">개인 baseline 비교</div><h1 class="page-title">초기 기준을 먼저<br>동기화해야 합니다</h1>'+notice('비교 보류','초기 KIMSE 원자료가 서버에 없어 이번 기록으로 객관적 변화 상태를 만들지 않았습니다.')+'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="cognitive-recheck">다시 확인</button><button class="btn-kimse btn-secondary-k" data-go="monitoring-status">최근 변화로 돌아가기</button></div>',{title:'반복 체크 결과',narrow:true});
+  const d=c.delayed_recall||{},sub=c.serial_subtraction||{},changed=c.objective_state==='CHANGED';
+  return wrap('<div class="eyebrow">개인 baseline 대비 원자료</div><h1 class="page-title">'+(changed?'첫 기록보다 낮아진<br>수행 원자료가 있습니다':'이번 기록에서는<br>낮아진 수행 원자료가 없습니다')+'</h1><p class="page-desc">같은 KIMSE 자체 과제의 첫 기록과 이번 기록을 직접 비교했습니다. 임상 진단이나 MCI·치매 단계 판정이 아닙니다.</p><div class="list">'+row('🧠 지연회상','3단어 원자료 · cutoff 없음','<strong>'+d.baseline+' → '+d.current+'개</strong>')+row('➖ 연속 뺄셈','정답 여부 · 개인 비교','<strong>'+(sub.baseline_correct?'정답':'응답 기록')+' → '+(sub.current_correct?'정답':'응답 기록')+'</strong>')+row('⏱ 반응시간','원자료만 표시 · 임상 cutoff 없음','<strong>'+((sub.response_ms_baseline||0)/1000).toFixed(1)+'초 → '+((sub.response_ms_current||0)/1000).toFixed(1)+'초</strong>')+'</div>'+notice(changed?'원자료 변화 관찰':'비교 결과','반응시간 변화만으로는 CHANGED 상태를 만들지 않습니다. 수행 원자료가 낮아진 경우에만 KIMSE 관찰축에 기록합니다.')+'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">관찰 패턴 확인</button><button class="btn-kimse btn-secondary-k" data-go="clinical-handoff">상담 준비 리포트</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'반복 체크 결과',narrow:true});
+};
+
 page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 움직임과 활동시간 신호를 수집합니다. 일일 걸음수는 네이티브 앱에서 기기 건강 데이터를 연결해 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 지원 기기에서는 앱을 닫아도 푸시 알림을 받습니다.</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
 
@@ -1738,7 +1814,28 @@ async function loadAdminInquiries(){
 page.settings=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">설정</h1><div class="summary-card"><h3>${S.account.name}</h3><p>${S.account.email}</p></div><div class="list"><a class="list-row" href="#/account">내 프로필 / 역할 관리 ${I('chevron-right')}</a><a class="list-row" href="#/family">가족 / 보호자 관리 ${I('chevron-right')}</a><a class="list-row" href="#/accessibility">접근성 설정 ${I('chevron-right')}</a><a class="list-row" href="#/brain-map">뇌 기능 연관 지도 ${I('chevron-right')}</a><a class="list-row" href="#/brain-trends">기능별 변화 흐름 보기 ${I('chevron-right')}</a><a class="list-row" href="#/monitoring-status">개인 변화 관찰 상태 ${I('chevron-right')}</a><a class="list-row" href="#/collection-status">실제 수집 상태 ${I('chevron-right')}</a><a class="list-row" href="#/consent">데이터 수집 / 공유 동의 ${I('chevron-right')}</a><a class="list-row" href="#/plan">구독 관리 ${I('chevron-right')}</a><a class="list-row" href="#/market">치매 케어관 ${I('chevron-right')}</a><a class="list-row" href="#/partnership">사업자 입점 / 제휴 문의 ${I('chevron-right')}</a><a class="list-row" href="${evidenceUrl()}" target="_blank">연구 근거 / Evidence ${I('external-link')}</a></div>`,{title:'설정',narrow:true})};
 function applyA11y(){document.documentElement.classList.toggle('large-text',S.a11y.largeText);document.documentElement.classList.toggle('large-touch',S.a11y.largeTouchTargets);document.documentElement.classList.toggle('high-contrast',S.a11y.highContrast)}
 function render(){applyA11y();let r=route(),f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();syncAppStatusIcon();if(r==='auth')setTimeout(mountAuthHubSocial,20);if(['family','family-call'].includes(r))setTimeout(()=>syncFamilyData(true),30);if(['family-call','call-room'].includes(r))setTimeout(()=>syncCallSessions(true),40);if(r==='call-room')setTimeout(startCallRoomPolling,80);if(['caregiver-home','family-feedback'].includes(r)&&S.remote.activeCareSubjectId){const age=Date.now()-new Date(S.careOverview.lastSyncAt||0).getTime();if(!Number.isFinite(age)||age>10000)setTimeout(()=>syncCareOverview(true),50)};setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;if(r!==lastSpokenRoute){lastSpokenRoute=r;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
-document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');go(t.dataset.go)}if(t.hasAttribute('data-initial-next')){S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('다음 항목으로 이동합니다.');render()}if(t.dataset.initialAnswer){const [k,v]=t.dataset.initialAnswer.split(':');const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes.push(rt);S.initial.answers[k]=v;S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('선택했습니다.');render()}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');history.length>1?history.back():go('start')}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
+document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');if(t.dataset.go==='cognitive-recheck'&&route()!=='cognitive-recheck')resetCognitiveRecheck();go(t.dataset.go)}if(t.hasAttribute('data-initial-next')){S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('다음 항목으로 이동합니다.');render()}if(t.dataset.initialAnswer){const [k,v]=t.dataset.initialAnswer.split(':');const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes.push(rt);S.initial.answers[k]=v;S.initial.step=Math.min(5,(Number(S.initial.step)||0)+1);S.initial._stepStartedAt=Date.now();save();feedback('선택했습니다.');render()}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');history.length>1?history.back():go('start')}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
+document.addEventListener('click',async e=>{
+  const next=e.target.closest('[data-recheck-next]');
+  if(next){
+    if(!S.cognitiveRecheck.startedAt)S.cognitiveRecheck.startedAt=Date.now();
+    S.cognitiveRecheck.step=1;S.cognitiveRecheck._stepStartedAt=Date.now();save();feedback('다음 항목으로 이동합니다.');render();return;
+  }
+  const answer=e.target.closest('[data-recheck-answer]');
+  if(answer){
+    const [k,v]=answer.dataset.recheckAnswer.split(':');
+    if(k==='subtraction')S.cognitiveRecheck.responseMs=Math.max(100,Date.now()-(Number(S.cognitiveRecheck._stepStartedAt)||Date.now()));
+    S.cognitiveRecheck.answers[k]=v;S.cognitiveRecheck.step=Math.min(5,(Number(S.cognitiveRecheck.step)||0)+1);S.cognitiveRecheck._stepStartedAt=Date.now();save();feedback('선택했습니다.');render();return;
+  }
+  if(e.target.id==='save-cognitive-recheck'){
+    const v=$('#recheck-recall-input')?.value.trim()||'';
+    if(!v){feedback('기억나는 단어를 적어주세요. 없으면 “없음”이라고 적어도 됩니다.','warning');return}
+    S.cognitiveRecheck.recall=v;save();e.target.disabled=true;e.target.textContent='비교 중…';
+    try{await submitCognitiveRecheck();feedback('개인 baseline과 원자료 비교를 저장했습니다.','success');go('cognitive-recheck-result')}
+    catch(err){feedback(err.message==='BASELINE_SYNC_REQUIRED'?'초기 기준 동기화가 필요합니다. 잠시 뒤 다시 시도해주세요.':'반복 체크를 저장하지 못했습니다. 연결 상태를 확인해주세요.','warning');e.target.disabled=false;e.target.textContent='개인 기준과 비교'}
+    return;
+  }
+});
 document.addEventListener('click',e=>{
   if(e.target.id==='save-recall'){
     const v=$('#recall-input')?.value.trim()||'';if(!v){feedback('기억나는 단어를 적어주세요. 없으면 “없음”이라고 적어도 됩니다.','warning');return}
@@ -1764,7 +1861,7 @@ document.addEventListener('submit',async e=>{
     S.consents.microphone=!!$('#consent-microphone')?.checked;S.consents.location=!!$('#consent-location')?.checked;S.consents.motion=!!$('#consent-motion')?.checked;S.consents.usage=!!$('#consent-usage')?.checked;S.consents.notifications=!!$('#consent-notifications')?.checked;S.consents.caregiverShare=!!$('#consent-caregiver')?.checked;
     S.onboarding.consentDone=true;S.onboarding.completed=true;if(!S.baseline.startedAt)S.baseline.startedAt=new Date().toISOString();save();
     if(demoAutoRunning){go('baseline');return}
-    feedback('설정을 저장했습니다. 생활 패턴 기록을 시작합니다.','success');await requestSelectedPermissions();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();await window.KIMSE_PUSH?.sync?.();queueInitialSignals();startPassiveCollectors();flushSignals();save();go('home');return;
+    feedback('설정을 저장했습니다. 생활 패턴 기록을 시작합니다.','success');await requestSelectedPermissions();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();await syncInitialCognitiveBaseline();await window.KIMSE_PUSH?.sync?.();queueInitialSignals();startPassiveCollectors();flushSignals();save();go('home');return;
   }
 });
 async function completeAuthHubLogin(result){
@@ -1880,7 +1977,7 @@ async function bootstrap(){
     else if(oauth?.accessToken){await establishKimseAuth(oauth);S.auth.lastError='';save();go(authNextRoute())}
   }catch(err){S.auth.lastError='소셜 로그인을 완료하지 못했습니다.';save();go('auth')}
   render();
-  if(monitoringEnabled()){queueInitialSignals();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();if(S.consents.notifications)await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();await syncMonitoring()}
+  if(monitoringEnabled()){queueInitialSignals();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();await syncInitialCognitiveBaseline();if(S.consents.notifications)await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();await syncMonitoring()}
 }
 bootstrap();
 })();
