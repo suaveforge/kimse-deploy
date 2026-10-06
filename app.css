@@ -136,7 +136,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 .trend-stack{display:grid;gap:12px}.trend-card{border:1px solid var(--kimse-border);border-radius:20px;background:#fff;padding:14px}
 .trend-card-head{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:10px;align-items:center}.trend-card-head strong{display:block;font-size:16px}.trend-card-head small{display:block;color:var(--kimse-muted);font-size:11px}
-.mini-trend{width:100%;height:86px;color:#3377a7;margin-top:8px}.trend-axis{stroke:#dce4ee;stroke-width:1}.trend-empty{height:76px;display:grid;place-items:center;color:var(--kimse-muted);font-size:13px}
+.mini-trend{width:100%;height:86px;color:#3377a7;margin-top:8px}.trend-axis{stroke:#dce4ee;stroke-width:1}.trend-empty{height:76px;display:grid;place-items:center;color:var(--kimse-muted);font-size:14px}
 @media(max-width:520px){
   .voice-task{grid-template-columns:42px minmax(0,1fr);}.voice-task .btn-kimse{grid-column:1/-1;width:100%}
   .memory-words strong{min-height:88px;font-size:22px}.signal-grid{grid-template-columns:repeat(2,1fr)}
