@@ -1058,3 +1058,34 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .clinical-top-row{padding:5px 0}
   .clinical-print-disclaimer{font-size:9px}
 }
+
+
+/* Clinical Handoff · clinician-first dynamic review */
+.clinical-coverage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.clinical-coverage-item{border:1px solid var(--line,#dde6ef);border-radius:16px;padding:14px;background:#fff;min-width:0}
+.clinical-coverage-item>span{display:inline-block;font-size:.72rem;font-weight:800;border-radius:999px;padding:4px 8px;margin-bottom:8px}
+.clinical-coverage-item.known>span{background:#e8f7ef;color:#18794e}
+.clinical-coverage-item.missing>span{background:#f1f3f5;color:#68717a}
+.clinical-coverage-item strong{display:block;font-size:.98rem;line-height:1.35}
+.clinical-coverage-item small{display:block;color:var(--muted,#6b7785);line-height:1.45;margin-top:5px}
+.clinical-two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px}
+.clinical-informant-list,.clinical-quality-grid,.clinical-cooccurrence-list{display:grid;gap:10px}
+.clinical-informant-row{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line,#e3e8ef);padding:10px 0}
+.clinical-informant-row div{min-width:0}
+.clinical-informant-row span,.clinical-informant-row small{font-size:.78rem;color:var(--muted,#6b7785)}
+.clinical-informant-row strong{display:block;margin-top:2px}
+.clinical-informant-row p{margin:4px 0 0;color:var(--muted,#6b7785);font-size:.86rem;line-height:1.45}
+.clinical-quality-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(120px,1fr) auto;align-items:center;gap:12px}
+.clinical-quality-row strong{display:block}
+.clinical-quality-row span{display:block;font-size:.78rem;color:var(--muted,#6b7785);margin-top:2px}
+.clinical-quality-row b{font-size:.86rem}
+.clinical-quality-track{height:8px;border-radius:999px;background:#edf1f5;overflow:hidden}
+.clinical-quality-track i{display:block;height:100%;border-radius:inherit;background:#4c6ef5}
+.clinical-cooccurrence-row{display:grid;grid-template-columns:88px minmax(0,1fr) auto;align-items:center;gap:12px;border:1px solid var(--line,#e3e8ef);border-radius:14px;padding:11px 12px}
+.clinical-cooccurrence-row time{font-size:.78rem;color:var(--muted,#6b7785);font-variant-numeric:tabular-nums}
+.clinical-cooccurrence-row div{display:flex;gap:6px;flex-wrap:wrap}
+.clinical-cooccurrence-row div span{font-size:.77rem;font-weight:700;padding:4px 7px;border-radius:999px;background:#eef3f8;color:#334155}
+.clinical-cooccurrence-row strong{font-size:.8rem;white-space:nowrap}
+@media(max-width:900px){.clinical-coverage-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.clinical-two-col{grid-template-columns:1fr}.clinical-quality-row{grid-template-columns:1fr auto}.clinical-quality-track{grid-column:1/-1}.clinical-cooccurrence-row{grid-template-columns:1fr}.clinical-cooccurrence-row strong{white-space:normal}}
+@media(max-width:560px){.clinical-coverage-grid{grid-template-columns:1fr}}
+@media print{.clinical-interactive .clinical-section{break-inside:avoid}.clinical-two-col{grid-template-columns:1fr 1fr}}
