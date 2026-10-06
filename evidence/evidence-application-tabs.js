@@ -26,7 +26,7 @@ function opRow(title,body){
 }
 
 var style=document.createElement('style');
-style.textContent='.kimse-application-card{border:1px solid #d9e4ef;box-shadow:0 10px 30px rgba(24,50,80,.06)}.kimse-application-tabs{display:flex;gap:8px;flex-wrap:wrap}.kimse-application-tab{border:1px solid #dbe5ef;background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;color:#526477;cursor:pointer}.kimse-application-tab.active{background:#15345b;color:#fff;border-color:#15345b}.kimse-application-panel[hidden]{display:none!important}.kimse-purpose{border-left:4px solid #206bc4;background:#f6f9fc;padding:14px 16px;border-radius:10px}.kimse-rd-guard{border-left-color:#2fb344}.kimse-evidence-ref{white-space:normal;text-align:left;line-height:1.3}.kimse-bridge-flow{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:12px;border-radius:12px;background:#f8fafc}.kimse-bridge-flow span{white-space:nowrap;font-weight:800;font-size:.82rem}.kimse-bridge-flow i{font-style:normal;color:#8fa2b5}.kimse-architecture{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-architecture-step{border:1px solid #dde6ef;border-radius:12px;padding:12px;background:#fff}.kimse-architecture-step strong{display:block;margin-bottom:4px}.kimse-output-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-output-card{border:1px solid #e0e7ef;border-radius:12px;padding:12px;background:#f8fafc}.kimse-time-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-time-card{border-radius:12px;padding:13px;border:1px solid #dbe5ef}.kimse-time-card b{font-size:1.05rem}.kimse-time-card span{display:block;color:#66788a;font-size:.82rem;margin-top:4px}@media(max-width:767.98px){.kimse-architecture,.kimse-output-grid,.kimse-time-grid{grid-template-columns:1fr}}@media(max-width:575.98px){.kimse-application-tab{flex:1 1 100%;text-align:left}}';
+style.textContent='.kimse-primary-hub{margin-top:4px}.kimse-primary-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:16px}.kimse-primary-head h2{font-size:clamp(1.55rem,3vw,2.15rem);margin:0}.kimse-primary-head p{margin:.35rem 0 0;color:#66788a}.kimse-primary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.kimse-primary-choice{position:relative;min-height:168px;border:1px solid #d9e4ef;border-radius:22px;background:#fff;padding:22px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 28px rgba(24,50,80,.06);cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}.kimse-primary-choice:hover{transform:translateY(-2px);box-shadow:0 15px 34px rgba(24,50,80,.1)}.kimse-primary-choice.active{border:2px solid #206bc4;background:linear-gradient(145deg,#f4f9ff,#fff);box-shadow:0 14px 34px rgba(32,107,196,.14)}.kimse-primary-choice .kimse-primary-no{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#eef5ff;color:#206bc4;font-weight:900}.kimse-primary-choice .kimse-primary-title{font-size:1.28rem;font-weight:900;line-height:1.2;margin-top:20px;color:#182433}.kimse-primary-choice .kimse-primary-en{font-size:.78rem;font-weight:800;letter-spacing:.04em;color:#718096;margin-top:5px}.kimse-primary-choice .kimse-primary-desc{font-size:.9rem;line-height:1.45;color:#66788a;margin-top:8px}.kimse-primary-choice.active:after{content:"선택됨";position:absolute;right:16px;top:16px;border-radius:999px;padding:5px 9px;background:#206bc4;color:#fff;font-size:.72rem;font-weight:800}.kimse-application-card{border:1px solid #d9e4ef;box-shadow:0 10px 30px rgba(24,50,80,.06)}.kimse-application-panel[hidden],.kimse-observation-hidden{display:none!important}.kimse-purpose{border-left:4px solid #206bc4;background:#f6f9fc;padding:14px 16px;border-radius:10px}.kimse-rd-guard{border-left-color:#2fb344}.kimse-evidence-ref{white-space:normal;text-align:left;line-height:1.3}.kimse-bridge-flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;padding:12px;border-radius:12px;background:#f8fafc}.kimse-bridge-flow span{font-weight:800;font-size:.78rem;text-align:center}.kimse-bridge-flow i{display:none}.kimse-architecture{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-architecture-step{border:1px solid #dde6ef;border-radius:12px;padding:12px;background:#fff}.kimse-architecture-step strong{display:block;margin-bottom:4px}.kimse-output-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-output-card{border:1px solid #e0e7ef;border-radius:12px;padding:12px;background:#f8fafc}.kimse-time-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-time-card{border-radius:12px;padding:13px;border:1px solid #dbe5ef}.kimse-time-card b{font-size:1.05rem}.kimse-time-card span{display:block;color:#66788a;font-size:.82rem;margin-top:4px}@media(max-width:991.98px){.kimse-primary-grid{grid-template-columns:1fr}.kimse-primary-choice{min-height:142px}.kimse-bridge-flow{grid-template-columns:1fr;gap:4px}.kimse-bridge-flow span{text-align:left;padding:7px 10px;border-radius:9px;background:#fff}.kimse-architecture,.kimse-output-grid,.kimse-time-grid{grid-template-columns:1fr}}@media(max-width:575.98px){.kimse-primary-head{display:block}.kimse-primary-choice{padding:18px;min-height:136px}.kimse-primary-choice .kimse-primary-title{font-size:1.18rem}}';
 document.head.appendChild(style);
 
 var clinical=''
@@ -63,36 +63,86 @@ var rd=''
   +'<div class="col-lg-5"><div class="card h-100"><div class="card-header"><h3 class="card-title">외부 공개 원칙</h3></div><div class="card-body"><div class="alert alert-success"><strong>표현 기준</strong><br>“데이터 판매”가 아니라 “공동연구·검증·기관 R&D를 위한 정규화 데이터 구조”로 설명합니다.</div><ul class="mb-3"><li class="mb-2">개인 식별정보와 연구데이터 분리</li><li class="mb-2">연구·협력 목적별 동의 범위 기록</li><li class="mb-2">원자료보다 파생변수·품질정보·출처를 함께 관리</li><li class="mb-2">임상 Ground Truth가 없는 데이터와 있는 데이터 구분</li></ul>'+refs([12,13,14,3,4])+'</div></div></div></div>'
   +'</div>';
 
-var html='<section class="card kimse-application-card mb-4" id="evidence-application"><div class="card-header"><div class="w-100"><div class="d-flex justify-content-between align-items-start gap-3 flex-wrap"><div><div class="text-uppercase text-secondary small">EVIDENCE APPLICATION LAYER</div><h2 class="card-title mt-1">관찰된 변화는 어떻게 이어지는가</h2><div class="text-secondary small mt-1">개인 변화 관찰의 근거를 의료진 전달과 기관 R&D 데이터 구조까지 끊김 없이 연결합니다.</div></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 08</span></div><div class="kimse-application-tabs mt-3" role="tablist"><button type="button" class="kimse-application-tab active" data-kimse-tab="clinical">의료 리포트 · Clinical Handoff</button><button type="button" class="kimse-application-tab" data-kimse-tab="rd">R&D 데이터 모델 · Research Data Model</button></div></div></div><div class="card-body">'
+var hub='<section class="kimse-primary-hub mb-4" id="evidence-home"><div class="kimse-primary-head"><div><div class="text-uppercase text-secondary small fw-bold">KIMSE EVIDENCE HUB</div><h2>세 가지 목적을 먼저 선택하세요</h2><p>근거를 확인하고, 의료진에게 전달하고, 연구 가능한 데이터로 정규화합니다.</p></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 09</span></div><div class="kimse-primary-grid" role="tablist" aria-label="Evidence 대분류"><button type="button" class="kimse-primary-choice active" data-kimse-primary="evidence" aria-pressed="true"><span class="kimse-primary-no">01</span><span><span class="kimse-primary-title">관찰 근거</span><span class="kimse-primary-en">Evidence</span><span class="kimse-primary-desc">낌새가 무엇을 보고, 왜 보는지와 원문 근거를 확인합니다.</span></span></button><button type="button" class="kimse-primary-choice" data-kimse-primary="clinical" aria-pressed="false"><span class="kimse-primary-no">02</span><span><span class="kimse-primary-title">의료 리포트</span><span class="kimse-primary-en">Clinical Handoff</span><span class="kimse-primary-desc">장기 변화를 의료진이 빠르게 읽을 수 있는 구조로 전달합니다.</span></span></button><button type="button" class="kimse-primary-choice" data-kimse-primary="rd" aria-pressed="false"><span class="kimse-primary-no">03</span><span><span class="kimse-primary-title">연구·기관 R&D</span><span class="kimse-primary-en">Research Data Model</span><span class="kimse-primary-desc">공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.</span></span></button></div></section>';
+
+var html='<section class="card kimse-application-card mb-4" id="evidence-application" hidden><div class="card-header"><div class="w-100"><div class="d-flex justify-content-between align-items-start gap-3 flex-wrap"><div><div class="text-uppercase text-secondary small">EVIDENCE APPLICATION LAYER</div><h2 class="card-title mt-1">관찰된 변화는 어떻게 이어지는가</h2><div class="text-secondary small mt-1">개인 변화 관찰의 근거를 의료진 전달과 기관 R&D 데이터 구조까지 끊김 없이 연결합니다.</div></div><span class="badge bg-blue-lt">Evidence Registry 09</span></div></div></div><div class="card-body">'
   +'<div class="kimse-bridge-flow mb-4"><span>외부 근거</span><i>→</i><span>앱 실제 신호</span><i>→</i><span>개인 baseline Δ</span><i>→</i><span>가족 확인</span><i>→</i><span>의료진 전달</span><i>→</i><span>전문평가 결과</span><i>→</i><span>R&D 정규화</span></div>'
   +clinical+rd+'</div></section>';
 
-var impact=document.getElementById('impact-proof');
-if(impact)impact.insertAdjacentHTML('afterend',html); else root.insertAdjacentHTML('afterbegin',html);
+var originalChildren=[].slice.call(root.children);
+originalChildren.forEach(function(el){el.dataset.kimseObservation='1'});
+root.insertAdjacentHTML('afterbegin',hub);
+var hubEl=document.getElementById('evidence-home');
+if(hubEl)hubEl.insertAdjacentHTML('afterend',html);
 
-var nav=document.querySelector('.kimse-evidence-links');
-if(nav){
-  var change=nav.querySelector('a[href="#change-review"]');
-  var a=document.createElement('a');a.className='nav-link';a.href='#clinical-handoff';a.textContent='Clinical';
-  var b=document.createElement('a');b.className='nav-link';b.href='#research-data-model';b.textContent='R&D';
-  if(change){nav.insertBefore(a,change);nav.insertBefore(b,change);}else{nav.appendChild(a);nav.appendChild(b);}
+var app=document.getElementById('evidence-application');
+function markObservationChildren(){
+  [].slice.call(root.children).forEach(function(el){
+    if(el.id==='evidence-home'||el.id==='evidence-application')return;
+    el.dataset.kimseObservation='1';
+  });
 }
+markObservationChildren();
 
-function activate(key,scroll){
-  var tabs=[].slice.call(document.querySelectorAll('[data-kimse-tab]'));
-  var panels=[].slice.call(document.querySelectorAll('.kimse-application-panel'));
-  tabs.forEach(function(t){t.classList.toggle('active',t.getAttribute('data-kimse-tab')===key)});
-  panels.forEach(function(p){p.hidden=p.getAttribute('data-panel')!==key});
-  if(scroll){var el=key==='rd'?document.getElementById('research-data-model'):document.getElementById('clinical-handoff');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+var currentMode='evidence';
+function setMode(key,scroll){
+  if(!['evidence','clinical','rd'].includes(key))key='evidence';
+  currentMode=key;
+  document.querySelectorAll('[data-kimse-primary]').forEach(function(b){
+    var on=b.getAttribute('data-kimse-primary')===key;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-pressed',on?'true':'false');
+  });
+  markObservationChildren();
+  document.querySelectorAll('[data-kimse-observation="1"]').forEach(function(el){
+    el.classList.toggle('kimse-observation-hidden',key!=='evidence');
+  });
+  if(app)app.hidden=key==='evidence';
+  document.querySelectorAll('.kimse-application-panel').forEach(function(p){
+    p.hidden=key==='evidence'||p.getAttribute('data-panel')!==key;
+  });
+  var title=document.querySelector('.page-header .page-title');
+  var desc=document.querySelector('.page-header p.text-secondary');
+  if(title&&desc){
+    if(key==='clinical'){
+      title.textContent='장기 변화를 의료진이 빠르게 이해할 수 있는 형태로 연결합니다';
+      desc.textContent='관찰값을 진단으로 바꾸지 않고, 변화의 시작·순서·지속성·기능 영향·가족 확인·데이터 품질을 구조화해 전달합니다.';
+    }else if(key==='rd'){
+      title.textContent='공동연구·검증을 위한 재현 가능한 종단 데이터 구조를 만듭니다';
+      desc.textContent='동의 범위와 목적 제한을 전제로 생활·인지 변화 데이터를 정규화하고 출처·품질·누락·전문평가 결과를 함께 관리합니다.';
+    }else{
+      title.textContent='낌새가 무엇을 보고, 그 기준은 어디에서 왔는지 한눈에 보여드립니다';
+      desc.textContent='수면량, 말하기, 이동시간, 통화·사회활동, 보행·활동량, 기억·집중의 변화를 평소 기준선과 비교합니다. 각 신호 옆에서 어떤 기기로 수집하는지와 어떤 연구·검증도구가 근거인지 바로 확인할 수 있습니다.';
+    }
+  }
+  if(scroll){
+    var target=key==='evidence'?document.getElementById('impact-proof'):app;
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+  }
 }
 document.addEventListener('click',function(e){
-  var t=e.target.closest('[data-kimse-tab]');if(t){activate(t.getAttribute('data-kimse-tab'),false);return;}
-  var n=e.target.closest('a[href="#clinical-handoff"],a[href="#research-data-model"]');
-  if(n){e.preventDefault();var key=n.getAttribute('href')==='#research-data-model'?'rd':'clinical';activate(key,true);history.replaceState(null,'',n.getAttribute('href'));}
+  var primary=e.target.closest('[data-kimse-primary]');
+  if(primary){
+    var key=primary.getAttribute('data-kimse-primary');
+    setMode(key,true);
+    history.replaceState(null,'',key==='clinical'?'#clinical-handoff':key==='rd'?'#research-data-model':'#evidence-home');
+    return;
+  }
+  var ref=e.target.closest('a[href^="#evidence-src-"]');
+  if(ref)setMode('evidence',false);
 });
-if(location.hash==='#research-data-model')activate('rd',false);
-if(location.hash==='#clinical-handoff')activate('clinical',false);
+window.addEventListener('hashchange',function(){
+  var h=location.hash||'';
+  if(h==='#clinical-handoff')setMode('clinical',false);
+  else if(h==='#research-data-model')setMode('rd',false);
+  else if(h==='#evidence-home'||h.indexOf('#evidence-src-')===0||h==='#sources'||h==='#signal-map'||h==='#device-map'||h==='#app-model'||h==='#factors'||h==='#change-review')setMode('evidence',false);
+});
+var observer=new MutationObserver(function(){markObservationChildren();setMode(currentMode,false)});
+observer.observe(root,{childList:true});
+if(location.hash==='#clinical-handoff')setMode('clinical',false);
+else if(location.hash==='#research-data-model')setMode('rd',false);
+else setMode('evidence',false);
 
-document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 08';});
+document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 09';});
 document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KIMSE Evidence Registry')>=0)e.textContent='KIMSE Evidence Registry · Updated 2026.10.06';});
 })();
