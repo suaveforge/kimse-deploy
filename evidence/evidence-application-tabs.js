@@ -2,7 +2,7 @@
 'use strict';
 var root=document.querySelector('.page-body .container-xl');
 if(!root||document.getElementById('evidence-application'))return;
-var PAGE_MODE=document.body.getAttribute('data-evidence-page')||'evidence';
+var PAGE_MODE=document.body.getAttribute('data-evidence-page')||'menu';
 
 var names={
   1:'Lancet Commission 2024',2:'WHO Risk Reduction Guideline',3:'AA 2024 Diagnostic Criteria',
@@ -18,7 +18,7 @@ var names={
 function pad(n){return String(n).padStart(2,'0')}
 function refs(list){
   return '<div class="d-flex flex-wrap gap-1 mt-2">'+list.map(function(n){
-    var href=PAGE_MODE==='evidence'?'#evidence-src-'+pad(n):'./#evidence-src-'+pad(n);
+    var href=PAGE_MODE==='observation'?'#evidence-src-'+pad(n):'./observation.html#evidence-src-'+pad(n);
     return '<a class="badge bg-azure-lt text-azure text-decoration-none kimse-evidence-ref" href="'+href+'">근거 '+pad(n)+' · '+names[n]+'</a>';
   }).join('')+'</div>';
 }
@@ -206,7 +206,7 @@ var trust=`
 </div>`;
 
 function pageHref(key){
-  if(key==='evidence')return './';
+  if(key==='evidence')return './observation.html';
   if(key==='clinical')return './clinical.html';
   if(key==='rd')return './rd.html';
   if(key==='trust')return './trust.html';
@@ -219,33 +219,28 @@ function iconSvg(key){
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>';
 }
 function choice(key,no,title,en,desc){
-  return '<a class="kimse-primary-choice '+(PAGE_MODE===key?'active':'')+'" href="'+pageHref(key)+'" '+(PAGE_MODE===key?'aria-current="page"':'')+'><span class="kimse-primary-icon">'+iconSvg(key)+'</span><span class="kimse-primary-copy"><span class="kimse-primary-title">'+title+'</span><span class="kimse-primary-en">'+en+'</span><span class="kimse-primary-desc">'+desc+'</span></span><span class="kimse-primary-no">'+no+'</span></a>';
+  return '<a class="kimse-primary-choice" href="'+pageHref(key)+'"><span class="kimse-primary-icon">'+iconSvg(key)+'</span><span class="kimse-primary-copy"><span class="kimse-primary-title">'+title+'</span><span class="kimse-primary-en">'+en+'</span><span class="kimse-primary-desc">'+desc+'</span></span><span class="kimse-primary-no">'+no+'</span></a>';
 }
-var hub='<section class="kimse-primary-hub" id="evidence-home"><div class="kimse-primary-head"><div><h2>영역 선택</h2><p>각 항목은 독립된 페이지입니다.</p></div></div><div class="kimse-primary-grid" aria-label="Evidence 대분류">'+choice('evidence','01','관찰 근거','EVIDENCE','낌새가 무엇을 관찰하고 왜 보는지, 원문 근거와 함께 확인합니다.')+choice('clinical','02','의료 리포트','CLINICAL HANDOFF','누적된 변화를 의료진이 빠르게 이해할 수 있는 형태로 정리합니다.')+choice('rd','03','연구·기관 R&D','RESEARCH DATA MODEL','공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.')+choice('trust','04','데이터 신뢰·검증','TRUST & PROVENANCE','데이터 무결성·시점·동의·이용 이력을 검증하는 구조를 확인합니다.')+'</div></section>';
+var hub='<section class="kimse-primary-hub" id="evidence-home"><div class="kimse-primary-head"><div><h2>Evidence Registry</h2><p>확인할 영역을 선택하세요.</p></div></div><div class="kimse-primary-grid" aria-label="Evidence 대분류">'+choice('evidence','01','관찰 근거','EVIDENCE','낌새가 무엇을 관찰하고 왜 보는지, 원문 근거와 함께 확인합니다.')+choice('clinical','02','의료 리포트','CLINICAL HANDOFF','누적된 변화를 의료진이 빠르게 이해할 수 있는 형태로 정리합니다.')+choice('rd','03','연구·기관 R&D','RESEARCH DATA MODEL','공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.')+choice('trust','04','데이터 신뢰·검증','TRUST & PROVENANCE','데이터 무결성·시점·동의·이용 이력을 검증하는 구조를 확인합니다.')+'</div></section>';
 
-root.insertAdjacentHTML('afterbegin',hub);
-var hubEl=document.getElementById('evidence-home');
-
-if(PAGE_MODE==='clinical'&&hubEl){
-  hubEl.insertAdjacentHTML('afterend','<section class="kimse-application-card mb-4" id="evidence-application">'+clinical+'</section>');
-}else if(PAGE_MODE==='rd'&&hubEl){
-  hubEl.insertAdjacentHTML('afterend','<section class="kimse-application-card mb-4" id="evidence-application">'+rd+'</section>');
-}else if(PAGE_MODE==='trust'&&hubEl){
-  hubEl.insertAdjacentHTML('afterend','<section class="kimse-application-card mb-4" id="evidence-application">'+trust+'</section>');
-}
-
-/* Evidence page loads extra sections asynchronously; keep the 4-card menu first. */
-if(PAGE_MODE==='evidence'&&hubEl){
-  var keepHubFirst=function(){if(root.firstElementChild!==hubEl)root.insertBefore(hubEl,root.firstElementChild);};
-  var hubObserver=new MutationObserver(keepHubFirst);
-  hubObserver.observe(root,{childList:true});
-  keepHubFirst();
+if(PAGE_MODE==='menu'){
+  root.innerHTML='';
+  root.insertAdjacentHTML('afterbegin',hub);
+}else if(PAGE_MODE==='clinical'){
+  root.insertAdjacentHTML('afterbegin','<section class="kimse-application-card mb-4" id="evidence-application">'+clinical+'</section>');
+}else if(PAGE_MODE==='rd'){
+  root.insertAdjacentHTML('afterbegin','<section class="kimse-application-card mb-4" id="evidence-application">'+rd+'</section>');
+}else if(PAGE_MODE==='trust'){
+  root.insertAdjacentHTML('afterbegin','<section class="kimse-application-card mb-4" id="evidence-application">'+trust+'</section>');
 }
 
 var title=document.querySelector('.page-header .page-title');
 var desc=document.querySelector('.page-header p.text-secondary');
 if(title&&desc){
-  if(PAGE_MODE==='clinical'){
+  if(PAGE_MODE==='observation'){
+    title.textContent='낌새가 무엇을 보고, 그 기준은 어디에서 왔는지 보여드립니다';
+    desc.textContent='수면·말하기·이동·활동·인지 변화가 어떤 연구와 검증도구에 근거하는지 확인합니다.';
+  }else if(PAGE_MODE==='clinical'){
     title.textContent='의료진에게 필요한 변화만 빠르게 전달합니다';
     desc.textContent='낌새의 관찰값을 진단과 구분한 채, 변화의 시작·경과·기능 영향·가족 확인·데이터 품질을 구조화해 보여줍니다.';
   }else if(PAGE_MODE==='rd'){
@@ -257,13 +252,14 @@ if(title&&desc){
   }
 }
 
-/* Legacy same-page links now redirect to the dedicated pages. */
-if(PAGE_MODE==='evidence'){
+/* Legacy links on the menu route redirect to dedicated content pages. */
+if(PAGE_MODE==='menu'){
   if(location.hash==='#clinical-handoff'||location.hash==='#clinical')location.replace('./clinical.html');
-  if(location.hash==='#research-data-model'||location.hash==='#rd')location.replace('./rd.html');
-  if(location.hash==='#trust-provenance'||location.hash==='#trust')location.replace('./trust.html');
+  else if(location.hash==='#research-data-model'||location.hash==='#rd')location.replace('./rd.html');
+  else if(location.hash==='#trust-provenance'||location.hash==='#trust')location.replace('./trust.html');
+  else if((location.hash||'').indexOf('#evidence-src-')===0)location.replace('./observation.html'+location.hash);
 }
 
-document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 17';});
+document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 18';});
 document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KIMSE Evidence Registry')>=0)e.textContent='KIMSE Evidence Registry · Updated 2026.10.06';});
 })();
