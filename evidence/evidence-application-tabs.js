@@ -35,6 +35,9 @@ document.head.appendChild(style);
 var rdStyle=document.createElement('style');
 rdStyle.textContent='.kimse-rd-principles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.kimse-rd-principle{border:1px solid #dfe8e4;border-radius:12px;padding:12px;background:#f8fcfa}.kimse-rd-units{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.kimse-rd-unit{border:1px solid #dde6ef;border-radius:10px;padding:10px;background:#fff}.kimse-rd-unit strong{display:block}.kimse-rd-unit span{display:block;color:#66788a;font-size:.78rem;margin-top:3px}.kimse-rd-stage{border:1px solid #dde6ef;border-radius:12px;padding:13px;height:100%;background:#fff}.kimse-rd-stage .kimse-stage-target{font-weight:800;font-size:1.05rem}.kimse-rd-stage .kimse-stage-note{color:#66788a;font-size:.82rem;margin-top:5px}@media(max-width:991.98px){.kimse-rd-principles{grid-template-columns:repeat(2,minmax(0,1fr))}.kimse-rd-units{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:767.98px){.kimse-rd-principles{grid-template-columns:1fr}.kimse-rd-units{grid-template-columns:repeat(2,minmax(0,1fr))}}';
 document.head.appendChild(rdStyle);
+var trustStyle=document.createElement('style');
+trustStyle.textContent='.kimse-trust-hero{border:1px solid #d8e4f0;background:linear-gradient(135deg,#f5f9ff,#f6fbf8);box-shadow:0 14px 36px rgba(25,57,92,.06)}.kimse-trust-pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.kimse-trust-pillar{border:1px solid #dce6ef;border-radius:14px;padding:16px;background:#fff;height:100%}.kimse-trust-pillar .num{font-size:.75rem;font-weight:900;letter-spacing:.06em}.kimse-trust-pillar h3{margin:.45rem 0 .55rem}.kimse-trust-flow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.kimse-trust-flow-step{position:relative;border:1px solid #dce6ef;border-radius:12px;padding:12px;background:#fff;min-height:112px}.kimse-trust-flow-step b{display:block;font-size:.78rem;color:#206bc4;margin-bottom:5px}.kimse-trust-flow-step strong{display:block;line-height:1.25}.kimse-trust-flow-step span{display:block;color:#66788a;font-size:.78rem;line-height:1.35;margin-top:5px}.kimse-trust-question{border:1px solid #dfe7ef;border-radius:12px;padding:13px;background:#f8fafc;height:100%}.kimse-trust-stage{border:1px solid #dfe7ef;border-radius:13px;padding:15px;background:#fff;height:100%}.kimse-trust-stage h3{margin:.45rem 0}.kimse-trust-stage ul{padding-left:1.1rem;margin-bottom:0}.kimse-trust-stage li{margin-bottom:.4rem}.kimse-trust-stage li:last-child{margin-bottom:0}.kimse-trust-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}.kimse-trust-compare>div{border-radius:13px;padding:16px}.kimse-trust-nochain{border:1px solid #f0d6d6;background:#fff8f8}.kimse-trust-chain{border:1px solid #cfe4dc;background:#f5fbf8}@media(max-width:1199.98px){.kimse-trust-flow{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:991.98px){.kimse-trust-pillars{grid-template-columns:1fr}.kimse-trust-compare{grid-template-columns:1fr}}@media(max-width:575.98px){.kimse-trust-flow{grid-template-columns:1fr}}';
+document.head.appendChild(trustStyle);
 
 var clinical=''
   +'<div id="clinical-handoff" class="kimse-application-panel" data-panel="clinical">'
@@ -76,15 +79,143 @@ var rd=''
   +'<div class="card mt-3"><div class="card-header"><h3 class="card-title">외부 공개 원칙</h3></div><div class="card-body"><div class="alert alert-success mb-0"><strong>연구 활용을 위한 공개 범위</strong><br>연구·기관 R&D용 정규화 구조 · 공동연구·검증 · 목적별 동의 · 가명·비식별 처리 · 데이터 품질·출처·버전 · benchmark-informed 확보 로드맵을 공개합니다. 상업화 분석은 내부 사업자료에서 별도로 관리합니다.</div></div></div>'
   +'</div>';
 
+
+var trust=`
+<div id="trust-provenance" class="kimse-application-panel" data-panel="trust">
+  <div class="card kimse-trust-hero mb-3">
+    <div class="card-body p-4 p-lg-5">
+      <div class="text-uppercase small fw-bold text-azure">PURPOSE · TRUST & PROVENANCE</div>
+      <h2 class="mt-2 mb-2">블록체인은 데이터를 저장하기 위해 쓰지 않습니다</h2>
+      <p class="lead mb-3">사용자·보호자·의료기관·연구기관처럼 서로 다른 주체가 같은 데이터의 존재·변경 여부·동의 범위·이용 이력을 독립적으로 검증할 수 있게 하는 신뢰 계층으로 사용합니다.</p>
+      <div class="alert alert-warning mb-0"><strong>민감한 원본은 체인 밖에 둡니다.</strong><br>위치·음성·건강정보·임상문서·직접식별정보는 기존 보호 저장소에 보관하고, 검증에 필요한 해시와 시점·동의·이력 증거만 블록체인 앵커 대상으로 설계합니다.</div>
+    </div>
+  </div>
+
+  <div class="kimse-trust-pillars mb-3">
+    <div class="kimse-trust-pillar">
+      <div class="num text-blue">01 · SHARED TRUTH</div>
+      <h3>여러 주체가 같은 사실을 공유</h3>
+      <p class="text-secondary mb-2">한 기관의 DB를 절대적인 원본으로 믿지 않아도 동일한 증거값과 기록 순서를 함께 확인할 수 있게 합니다.</p>
+      <div class="fw-bold">KIMSE 적용 방향</div>
+      <div class="small text-secondary mt-1">사용자 → 보호자 → 병원 → 연구기관으로 데이터가 이동해도 같은 원본에서 나온 기록인지 검증.</div>
+      <span class="badge bg-blue-lt mt-3">기관 연계 단계에서 강화</span>
+    </div>
+    <div class="kimse-trust-pillar">
+      <div class="num text-green">02 · VERIFIABLE HISTORY</div>
+      <h3>무결성·시점·이력을 증명</h3>
+      <p class="text-secondary mb-2">특정 데이터가 그 시점에 존재했고 이후 바뀌지 않았는지, 당시 어떤 동의와 제공 이력이 있었는지 검증합니다.</p>
+      <div class="fw-bold">KIMSE 적용 방향</div>
+      <div class="small text-secondary mt-1">데이터 해시 · 생성시점 · 동의범위 · 접근/제공 이벤트 · 버전을 외부 검증 가능한 증거로 연결.</div>
+      <span class="badge bg-green-lt mt-3">1단계 핵심 구현 범위</span>
+    </div>
+    <div class="kimse-trust-pillar">
+      <div class="num text-purple">03 · PROGRAMMABLE RIGHTS</div>
+      <h3>권리·이용조건을 규칙대로 실행</h3>
+      <p class="text-secondary mb-2">누가 어떤 목적과 기간으로 데이터를 사용할 수 있는지, 철회되면 무엇이 바뀌는지 명확한 규칙으로 관리합니다.</p>
+      <div class="fw-bold">KIMSE 적용 방향</div>
+      <div class="small text-secondary mt-1">기관별 접근권 · 목적 제한 · 기간 만료 · 동의 철회 · 향후 데이터 이용/보상 조건의 자동화.</div>
+      <span class="badge bg-purple-lt mt-3">확장 단계</span>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header"><div><h3 class="card-title">KIMSE Trust Layer · 데이터가 증거가 되는 흐름</h3><div class="text-secondary small">원본 민감정보와 공개 검증용 증거를 분리합니다.</div></div></div>
+    <div class="card-body">
+      <div class="kimse-trust-flow">
+        <div class="kimse-trust-flow-step"><b>01 · EVENT</b><strong>생활·행동 데이터 생성</strong><span>수면 · 이동 · 활동 · 인지과제 · 전문평가 등</span></div>
+        <div class="kimse-trust-flow-step"><b>02 · OFF-CHAIN</b><strong>원본 보호 저장</strong><span>민감정보와 실제 측정값은 기존 보안 저장소에 유지</span></div>
+        <div class="kimse-trust-flow-step"><b>03 · DIGEST</b><strong>검증용 해시 생성</strong><span>정규화된 원본으로 동일 입력이면 동일한 증거값 생성</span></div>
+        <div class="kimse-trust-flow-step"><b>04 · CONTEXT</b><strong>동의·이력 결합</strong><span>생성시점 · 목적 · 동의범위 · 접근/제공 이벤트 연결</span></div>
+        <div class="kimse-trust-flow-step"><b>05 · ANCHOR</b><strong>블록체인 앵커</strong><span>개별 해시 또는 배치 루트를 공개 검증 가능한 원장에 기록</span></div>
+        <div class="kimse-trust-flow-step"><b>06 · VERIFY</b><strong>제3자 검증</strong><span>병원·연구기관이 받은 데이터와 원장 증거의 일치 여부 확인</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header"><h3 class="card-title">체인 밖에 두는 것</h3></div>
+        <div class="card-body">
+          <div class="alert alert-danger py-2"><strong>Raw personal / health data</strong></div>
+          <ul class="mb-0">
+            <li class="mb-2">GPS 좌표·생활동선·음성 원본</li>
+            <li class="mb-2">건강·인지 측정 원자료와 임상문서</li>
+            <li class="mb-2">이름·연락처 등 직접 식별정보</li>
+            <li>삭제·정정 요구가 적용되는 실제 업무 데이터</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header"><h3 class="card-title">체인에 증거로 남길 것</h3></div>
+        <div class="card-body">
+          <div class="alert alert-success py-2"><strong>Minimal verification proof</strong></div>
+          <ul class="mb-0">
+            <li class="mb-2">데이터 digest / batch root</li>
+            <li class="mb-2">생성·등록 시점과 이벤트 종류</li>
+            <li class="mb-2">동의정책·목적·버전의 digest</li>
+            <li>가명화된 주체/기관 식별자와 앵커 Tx·Block 참조</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header"><div><h3 class="card-title">이 구조가 답해야 하는 질문</h3><div class="text-secondary small">“블록체인을 쓴다”보다 실제로 무엇을 검증할 수 있는지가 중요합니다.</div></div></div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6 col-xl-3"><div class="kimse-trust-question"><strong>이 데이터가 그때 존재했나?</strong><div class="text-secondary small mt-2">원장의 시점과 원본 digest를 비교합니다.</div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="kimse-trust-question"><strong>중간에 바뀌지 않았나?</strong><div class="text-secondary small mt-2">현재 원본을 다시 해시해 앵커 증거와 대조합니다.</div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="kimse-trust-question"><strong>당시 어디까지 동의했나?</strong><div class="text-secondary small mt-2">동의 범위·목적·버전과 변경 이력을 확인합니다.</div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="kimse-trust-question"><strong>누가 언제 이용했나?</strong><div class="text-secondary small mt-2">접근·제공 이벤트를 데이터 provenance와 연결합니다.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="kimse-trust-compare mb-3">
+    <div class="kimse-trust-nochain">
+      <div class="text-uppercase small fw-bold text-red">EVIDENCE REGISTRY</div>
+      <h3 class="mt-1">왜 이 데이터를 보는가</h3>
+      <p class="mb-0 text-secondary">논문·가이드라인·임상 근거와 KIMSE 관찰 팩터를 연결해 판단 근거의 투명성을 설명합니다.</p>
+    </div>
+    <div class="kimse-trust-chain">
+      <div class="text-uppercase small fw-bold text-green">TRUST & PROVENANCE</div>
+      <h3 class="mt-1">그 데이터 자체를 왜 믿을 수 있는가</h3>
+      <p class="mb-0 text-secondary">원본의 무결성·존재시점·동의범위·접근/제공 이력을 독립적으로 검증할 수 있게 합니다.</p>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header"><div><h3 class="card-title">단계별 적용 범위</h3><div class="text-secondary small">세 가지 블록체인 가치가 KIMSE 성장단계에 따라 순서대로 커집니다.</div></div></div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-lg-4"><div class="kimse-trust-stage"><span class="badge bg-green-lt">PHASE 1 · 구현 우선</span><h3>검증 가능한 기록</h3><ul><li>원본 정규화·digest</li><li>생성시점·동의·제공 이벤트</li><li>배치 앵커 및 검증기</li><li>원본은 off-chain 유지</li></ul></div></div>
+        <div class="col-lg-4"><div class="kimse-trust-stage"><span class="badge bg-blue-lt">PHASE 2 · 기관 연계</span><h3>공동 신뢰</h3><ul><li>병원·연구기관 독립 검증</li><li>기관별 provenance 연결</li><li>검증 가능한 자격/주체 식별</li><li>공동연구 데이터 교환 증거</li></ul></div></div>
+        <div class="col-lg-4"><div class="kimse-trust-stage"><span class="badge bg-purple-lt">PHASE 3 · 확장</span><h3>권리 자동화</h3><ul><li>목적·기간별 접근권</li><li>동의 철회에 따른 상태 변경</li><li>기관별 사용조건 자동 집행</li><li>필요 시 이용·정산 규칙 연결</li></ul></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-info mb-0">
+    <strong>검증 표시 원칙</strong><br>
+    실제 블록체인 트랜잭션에 앵커가 완료되고 원본과 대조 가능한 기록만 “on-chain verified”로 표시합니다. 설계 문서나 서버 내부 로그만 존재하는 단계에서는 블록체인 검증 완료라고 표시하지 않습니다.
+  </div>
+</div>`;
+
 function pageHref(key){
   if(key==='evidence')return './';
   if(key==='clinical')return './clinical.html';
-  return './rd.html';
+  if(key==='rd')return './rd.html';
+  if(key==='trust')return './trust.html';
+  return './';
 }
 function choice(key,no,title,en,desc){
   return '<a class="kimse-primary-choice '+(PAGE_MODE===key?'active':'')+'" href="'+pageHref(key)+'" '+(PAGE_MODE===key?'aria-current="page"':'')+'><span class="kimse-primary-no">'+no+'</span><span class="kimse-primary-copy"><span class="kimse-primary-title">'+title+'</span><span class="kimse-primary-en">'+en+'</span><span class="kimse-primary-desc">'+desc+'</span></span><span class="kimse-primary-go" aria-hidden="true">→</span></a>';
 }
-var hub='<section class="kimse-primary-hub" id="evidence-home"><div class="kimse-primary-head"><div><h2>영역 선택</h2><p>각 항목은 독립된 페이지입니다.</p></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 15</span></div><div class="kimse-primary-grid" aria-label="Evidence 대분류">'+choice('evidence','01','관찰 근거','EVIDENCE','낌새가 무엇을 관찰하고 왜 보는지, 원문 근거와 함께 확인합니다.')+choice('clinical','02','의료 리포트','CLINICAL HANDOFF','누적된 변화를 의료진이 빠르게 이해할 수 있는 형태로 정리합니다.')+choice('rd','03','연구·기관 R&D','RESEARCH DATA MODEL','공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.')+'</div></section>';
+var hub='<section class="kimse-primary-hub" id="evidence-home"><div class="kimse-primary-head"><div><h2>영역 선택</h2><p>각 항목은 독립된 페이지입니다.</p></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 16</span></div><div class="kimse-primary-grid" aria-label="Evidence 대분류">'+choice('evidence','01','관찰 근거','EVIDENCE','낌새가 무엇을 관찰하고 왜 보는지, 원문 근거와 함께 확인합니다.')+choice('clinical','02','의료 리포트','CLINICAL HANDOFF','누적된 변화를 의료진이 빠르게 이해할 수 있는 형태로 정리합니다.')+choice('rd','03','연구·기관 R&D','RESEARCH DATA MODEL','공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.')+choice('trust','04','데이터 신뢰·검증','TRUST & PROVENANCE','데이터 무결성·시점·동의·이용 이력을 블록체인으로 어떻게 검증할지 확인합니다.')+'</div></section>';
 
 root.insertAdjacentHTML('afterbegin',hub);
 var hubEl=document.getElementById('evidence-home');
@@ -93,6 +224,8 @@ if(PAGE_MODE==='clinical'&&hubEl){
   hubEl.insertAdjacentHTML('afterend','<section class="kimse-application-card mb-4" id="evidence-application">'+clinical+'</section>');
 }else if(PAGE_MODE==='rd'&&hubEl){
   hubEl.insertAdjacentHTML('afterend','<section class="kimse-application-card mb-4" id="evidence-application">'+rd+'</section>');
+}else if(PAGE_MODE==='trust'&&hubEl){
+  hubEl.insertAdjacentHTML('afterend','<section class="kimse-application-card mb-4" id="evidence-application">'+trust+'</section>');
 }
 
 /* Evidence page loads additional sections asynchronously; always keep the main selector first. */
@@ -114,6 +247,9 @@ if(title&&desc){
   }else if(PAGE_MODE==='rd'){
     title.textContent='공동연구·검증이 가능한 종단 데이터 구조를 만듭니다';
     desc.textContent='동의 범위와 목적 제한을 전제로 생활·인지 변화 데이터를 정규화하고 출처·품질·누락·전문평가 결과를 함께 관리합니다.';
+  }else if(PAGE_MODE==='trust'){
+    title.textContent='데이터와 동의 이력을 외부에서도 검증할 수 있게 만듭니다';
+    desc.textContent='원본 민감정보는 보호 저장소에 두고, 무결성·존재시점·동의·접근·제공 이력을 블록체인 증거와 연결하는 Trust & Provenance 구조입니다.';
   }
 }
 
@@ -121,8 +257,9 @@ if(title&&desc){
 if(PAGE_MODE==='evidence'){
   if(location.hash==='#clinical-handoff'||location.hash==='#clinical')location.replace('./clinical.html');
   if(location.hash==='#research-data-model'||location.hash==='#rd')location.replace('./rd.html');
+  if(location.hash==='#trust-provenance'||location.hash==='#trust')location.replace('./trust.html');
 }
 
-document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 15';});
+document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 16';});
 document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KIMSE Evidence Registry')>=0)e.textContent='KIMSE Evidence Registry · Updated 2026.10.06';});
 })();
