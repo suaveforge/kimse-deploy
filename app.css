@@ -1089,3 +1089,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:900px){.clinical-coverage-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.clinical-two-col{grid-template-columns:1fr}.clinical-quality-row{grid-template-columns:1fr auto}.clinical-quality-track{grid-column:1/-1}.clinical-cooccurrence-row{grid-template-columns:1fr}.clinical-cooccurrence-row strong{white-space:normal}}
 @media(max-width:560px){.clinical-coverage-grid{grid-template-columns:1fr}}
 @media print{.clinical-interactive .clinical-section{break-inside:avoid}.clinical-two-col{grid-template-columns:1fr 1fr}}
+
+
+.clinical-coverage-item.partial>span{background:#fff4d6;color:#8a5a00}
+.clinical-keyfact-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+.clinical-keyfact-grid>div{border:1px solid var(--line,#dde6ef);border-radius:14px;padding:12px;background:#f8fafc;min-width:0}
+.clinical-keyfact-grid span{display:block;font-size:.72rem;font-weight:800;color:var(--muted,#6b7785);margin-bottom:5px}
+.clinical-keyfact-grid strong{display:block;font-size:.9rem;line-height:1.4;overflow-wrap:anywhere}
+.clinical-context-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.clinical-context-item{border:1px solid var(--line,#dde6ef);border-radius:14px;padding:12px;background:#fff;min-width:0}
+.clinical-context-item span{display:block;font-size:.74rem;color:var(--muted,#6b7785);font-weight:800;margin-bottom:5px}
+.clinical-context-item strong{display:block;font-size:.9rem;line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:900px){.clinical-keyfact-grid,.clinical-context-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.clinical-keyfact-grid,.clinical-context-grid{grid-template-columns:1fr}}
+@media print{.clinical-keyfact-grid{grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.clinical-keyfact-grid>div{padding:8px}.clinical-keyfact-grid span{font-size:7pt}.clinical-keyfact-grid strong{font-size:8.5pt}.clinical-context-grid{grid-template-columns:repeat(3,1fr)}}
