@@ -27,7 +27,7 @@ function opRow(title,body){
 }
 
 var style=document.createElement('style');
-style.textContent='.kimse-primary-hub{margin-top:4px}.kimse-primary-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:16px}.kimse-primary-head h2{font-size:clamp(1.55rem,3vw,2.15rem);margin:0}.kimse-primary-head p{margin:.35rem 0 0;color:#66788a}.kimse-primary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.kimse-primary-choice{position:relative;min-height:168px;border:1px solid #d9e4ef;border-radius:22px;background:#fff;padding:22px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 28px rgba(24,50,80,.06);cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}.kimse-primary-choice:hover{transform:translateY(-2px);box-shadow:0 15px 34px rgba(24,50,80,.1)}.kimse-primary-choice.active{border:2px solid #206bc4;background:linear-gradient(145deg,#f4f9ff,#fff);box-shadow:0 14px 34px rgba(32,107,196,.14)}.kimse-primary-choice .kimse-primary-no{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#eef5ff;color:#206bc4;font-weight:900}.kimse-primary-choice .kimse-primary-title{font-size:1.28rem;font-weight:900;line-height:1.2;margin-top:20px;color:#182433}.kimse-primary-choice .kimse-primary-en{font-size:.78rem;font-weight:800;letter-spacing:.04em;color:#718096;margin-top:5px}.kimse-primary-choice .kimse-primary-desc{font-size:.9rem;line-height:1.45;color:#66788a;margin-top:8px}.kimse-primary-choice.active:after{content:"선택됨";position:absolute;right:16px;top:16px;border-radius:999px;padding:5px 9px;background:#206bc4;color:#fff;font-size:.72rem;font-weight:800}.kimse-application-card{border:1px solid #d9e4ef;box-shadow:0 10px 30px rgba(24,50,80,.06)}.kimse-application-panel[hidden],.kimse-observation-hidden{display:none!important}.kimse-purpose{border-left:4px solid #206bc4;background:#f6f9fc;padding:14px 16px;border-radius:10px}.kimse-rd-guard{border-left-color:#2fb344}.kimse-evidence-ref{white-space:normal;text-align:left;line-height:1.3}.kimse-bridge-flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;padding:12px;border-radius:12px;background:#f8fafc}.kimse-bridge-flow span{font-weight:800;font-size:.78rem;text-align:center}.kimse-bridge-flow i{display:none}.kimse-architecture{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-architecture-step{border:1px solid #dde6ef;border-radius:12px;padding:12px;background:#fff}.kimse-architecture-step strong{display:block;margin-bottom:4px}.kimse-output-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-output-card{border:1px solid #e0e7ef;border-radius:12px;padding:12px;background:#f8fafc}.kimse-time-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-time-card{border-radius:12px;padding:13px;border:1px solid #dbe5ef}.kimse-time-card b{font-size:1.05rem}.kimse-time-card span{display:block;color:#66788a;font-size:.82rem;margin-top:4px}@media(max-width:991.98px){.kimse-primary-grid{grid-template-columns:1fr}.kimse-primary-choice{min-height:142px}.kimse-bridge-flow{grid-template-columns:1fr;gap:4px}.kimse-bridge-flow span{text-align:left;padding:7px 10px;border-radius:9px;background:#fff}.kimse-architecture,.kimse-output-grid,.kimse-time-grid{grid-template-columns:1fr}}@media(max-width:575.98px){.kimse-primary-head{display:block}.kimse-primary-choice{padding:18px;min-height:136px}.kimse-primary-choice .kimse-primary-title{font-size:1.18rem}}';
+style.textContent='.kimse-primary-hub{margin:0 0 22px}.kimse-primary-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:16px}.kimse-primary-head h2{font-size:clamp(1.55rem,2.7vw,2.05rem);line-height:1.2;margin:0;color:#182433}.kimse-primary-head p{margin:.45rem 0 0;color:#66788a;font-size:.96rem}.kimse-primary-grid{display:grid;grid-template-columns:1fr;gap:12px}.kimse-primary-choice{appearance:none;-webkit-appearance:none;width:100%;min-height:112px;border:1px solid #dbe5ef;border-radius:18px;background:#fff;padding:18px 20px;display:grid;grid-template-columns:56px minmax(0,1fr) 28px;align-items:center;gap:18px;text-align:left;color:#182433;box-shadow:0 7px 22px rgba(24,50,80,.05);cursor:pointer;transition:border-color .16s ease,box-shadow .16s ease,background .16s ease,transform .16s ease}.kimse-primary-choice:hover{border-color:#b9cde4;box-shadow:0 10px 28px rgba(24,50,80,.09);transform:translateY(-1px)}.kimse-primary-choice:focus-visible{outline:3px solid rgba(32,107,196,.22);outline-offset:3px}.kimse-primary-choice.active{border:2px solid #206bc4;background:#f5f9ff;box-shadow:0 10px 28px rgba(32,107,196,.12)}.kimse-primary-no{width:50px;height:50px;border-radius:15px;display:grid!important;place-items:center;background:#eef5ff;color:#206bc4;font-size:.96rem;font-weight:900}.kimse-primary-copy{display:block;min-width:0}.kimse-primary-title{display:block;font-size:1.28rem;font-weight:900;line-height:1.2;color:#182433}.kimse-primary-en{display:block;margin-top:4px;font-size:.76rem;line-height:1.2;font-weight:800;letter-spacing:.055em;color:#74859a}.kimse-primary-desc{display:block;margin-top:9px;font-size:.92rem;line-height:1.48;color:#65758a;max-width:900px;word-break:keep-all}.kimse-primary-arrow{display:grid!important;place-items:center;width:28px;height:28px;border-radius:999px;background:#f2f6fa;color:#708399;font-size:1.05rem;font-weight:900}.kimse-primary-choice.active .kimse-primary-arrow{background:#206bc4;color:#fff}.kimse-application-card{border:0;background:transparent;box-shadow:none}.kimse-application-panel[hidden],.kimse-observation-hidden{display:none!important}.kimse-purpose{border-left:4px solid #206bc4;background:#f6f9fc;padding:14px 16px;border-radius:10px}.kimse-rd-guard{border-left-color:#2fb344}.kimse-evidence-ref{white-space:normal;text-align:left;line-height:1.3}.kimse-architecture{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-architecture-step{border:1px solid #dde6ef;border-radius:12px;padding:12px;background:#fff}.kimse-architecture-step strong{display:block;margin-bottom:4px}.kimse-output-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-output-card{border:1px solid #e0e7ef;border-radius:12px;padding:12px;background:#f8fafc}.kimse-time-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.kimse-time-card{border-radius:12px;padding:13px;border:1px solid #dbe5ef}.kimse-time-card b{font-size:1.05rem}.kimse-time-card span{display:block;color:#66788a;font-size:.82rem;margin-top:4px}@media(max-width:991.98px){.kimse-architecture,.kimse-output-grid,.kimse-time-grid{grid-template-columns:1fr}}@media(max-width:767.98px){.kimse-primary-head{display:block}.kimse-primary-head .badge{margin-top:10px}.kimse-primary-choice{grid-template-columns:50px minmax(0,1fr) 24px;gap:14px;padding:16px;min-height:106px}.kimse-primary-no{width:46px;height:46px}.kimse-primary-title{font-size:1.15rem}.kimse-primary-desc{font-size:.88rem}}@media(max-width:420px){.kimse-primary-choice{grid-template-columns:44px minmax(0,1fr);align-items:start}.kimse-primary-arrow{display:none!important}.kimse-primary-no{width:42px;height:42px;border-radius:13px}.kimse-primary-desc{word-break:normal}}';
 document.head.appendChild(style);
 var rdStyle=document.createElement('style');
 rdStyle.textContent='.kimse-rd-principles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.kimse-rd-principle{border:1px solid #dfe8e4;border-radius:12px;padding:12px;background:#f8fcfa}.kimse-rd-units{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.kimse-rd-unit{border:1px solid #dde6ef;border-radius:10px;padding:10px;background:#fff}.kimse-rd-unit strong{display:block}.kimse-rd-unit span{display:block;color:#66788a;font-size:.78rem;margin-top:3px}.kimse-rd-stage{border:1px solid #dde6ef;border-radius:12px;padding:13px;height:100%;background:#fff}.kimse-rd-stage .kimse-stage-target{font-weight:800;font-size:1.05rem}.kimse-rd-stage .kimse-stage-note{color:#66788a;font-size:.82rem;margin-top:5px}@media(max-width:991.98px){.kimse-rd-principles{grid-template-columns:repeat(2,minmax(0,1fr))}.kimse-rd-units{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:767.98px){.kimse-rd-principles{grid-template-columns:1fr}.kimse-rd-units{grid-template-columns:repeat(2,minmax(0,1fr))}}';
@@ -71,13 +71,9 @@ var rd=''
   +'<div class="card mt-3"><div class="card-header"><h3 class="card-title">외부 공개 원칙</h3></div><div class="card-body"><div class="alert alert-success mb-0"><strong>연구 활용을 위한 공개 범위</strong><br>연구·기관 R&D용 정규화 구조 · 공동연구·검증 · 목적별 동의 · 가명·비식별 처리 · 데이터 품질·출처·버전 · benchmark-informed 확보 로드맵을 공개합니다. 상업화 분석은 내부 사업자료에서 별도로 관리합니다.</div></div></div>'
   +'</div>';
 
-var hub='<section class="kimse-primary-hub mb-4" id="evidence-home"><div class="kimse-primary-head"><div><div class="text-uppercase text-secondary small fw-bold">KIMSE EVIDENCE HUB</div><h2>세 가지 목적을 먼저 선택하세요</h2><p>근거를 확인하고, 의료진에게 전달하고, 연구 가능한 데이터로 정규화합니다.</p></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 11</span></div><div class="kimse-primary-grid" role="tablist" aria-label="Evidence 대분류"><button type="button" class="kimse-primary-choice active" data-kimse-primary="evidence" aria-pressed="true"><span class="kimse-primary-no">01</span><span><span class="kimse-primary-title">관찰 근거</span><span class="kimse-primary-en">Evidence</span><span class="kimse-primary-desc">낌새가 무엇을 보고, 왜 보는지와 원문 근거를 확인합니다.</span></span></button><button type="button" class="kimse-primary-choice" data-kimse-primary="clinical" aria-pressed="false"><span class="kimse-primary-no">02</span><span><span class="kimse-primary-title">의료 리포트</span><span class="kimse-primary-en">Clinical Handoff</span><span class="kimse-primary-desc">장기 변화를 의료진이 빠르게 읽을 수 있는 구조로 전달합니다.</span></span></button><button type="button" class="kimse-primary-choice" data-kimse-primary="rd" aria-pressed="false"><span class="kimse-primary-no">03</span><span><span class="kimse-primary-title">연구·기관 R&D</span><span class="kimse-primary-en">Research Data Model</span><span class="kimse-primary-desc">공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.</span></span></button></div></section>';
+var hub='<section class="kimse-primary-hub" id="evidence-home"><div class="kimse-primary-head"><div><div class="text-uppercase text-secondary small fw-bold">KIMSE EVIDENCE HUB</div><h2>확인할 영역을 선택하세요</h2><p>세 영역은 같은 근거 체계를 서로 다른 목적에 맞게 보여줍니다.</p></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 12</span></div><div class="kimse-primary-grid" role="tablist" aria-label="Evidence 대분류"><button type="button" class="kimse-primary-choice active" data-kimse-primary="evidence" aria-pressed="true"><span class="kimse-primary-no">01</span><span class="kimse-primary-copy"><span class="kimse-primary-title">관찰 근거</span><span class="kimse-primary-en">EVIDENCE</span><span class="kimse-primary-desc">낌새가 무엇을 관찰하고, 왜 보는지와 원문 근거를 확인합니다.</span></span><span class="kimse-primary-arrow" aria-hidden="true">→</span></button><button type="button" class="kimse-primary-choice" data-kimse-primary="clinical" aria-pressed="false"><span class="kimse-primary-no">02</span><span class="kimse-primary-copy"><span class="kimse-primary-title">의료 리포트</span><span class="kimse-primary-en">CLINICAL HANDOFF</span><span class="kimse-primary-desc">누적된 변화를 의료진이 빠르게 이해할 수 있는 구조로 정리합니다.</span></span><span class="kimse-primary-arrow" aria-hidden="true">→</span></button><button type="button" class="kimse-primary-choice" data-kimse-primary="rd" aria-pressed="false"><span class="kimse-primary-no">03</span><span class="kimse-primary-copy"><span class="kimse-primary-title">연구·기관 R&D</span><span class="kimse-primary-en">RESEARCH DATA MODEL</span><span class="kimse-primary-desc">공동연구·검증을 위한 종단 데이터의 정규화 구조를 확인합니다.</span></span><span class="kimse-primary-arrow" aria-hidden="true">→</span></button></div></section>';
 
-var hub='<section class="kimse-primary-hub mb-4" id="evidence-home"><div class="kimse-primary-head"><div><div class="text-uppercase text-secondary small fw-bold">KIMSE EVIDENCE HUB</div><h2>세 가지 목적을 먼저 선택하세요</h2><p>근거를 확인하고, 의료진에게 전달하고, 연구 가능한 데이터로 정규화합니다.</p></div><span class="badge bg-blue-lt">Updated 2026.10.06 · 11</span></div><div class="kimse-primary-grid" role="tablist" aria-label="Evidence 대분류"><button type="button" class="kimse-primary-choice active" data-kimse-primary="evidence" aria-pressed="true"><span class="kimse-primary-no">01</span><span><span class="kimse-primary-title">관찰 근거</span><span class="kimse-primary-en">Evidence</span><span class="kimse-primary-desc">낌새가 무엇을 보고, 왜 보는지와 원문 근거를 확인합니다.</span></span></button><button type="button" class="kimse-primary-choice" data-kimse-primary="clinical" aria-pressed="false"><span class="kimse-primary-no">02</span><span><span class="kimse-primary-title">의료 리포트</span><span class="kimse-primary-en">Clinical Handoff</span><span class="kimse-primary-desc">장기 변화를 의료진이 빠르게 읽을 수 있는 구조로 전달합니다.</span></span></button><button type="button" class="kimse-primary-choice" data-kimse-primary="rd" aria-pressed="false"><span class="kimse-primary-no">03</span><span><span class="kimse-primary-title">연구·기관 R&D</span><span class="kimse-primary-en">Research Data Model</span><span class="kimse-primary-desc">공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.</span></span></button></div></section>';
-
-var html='<section class="card kimse-application-card mb-4" id="evidence-application" hidden><div class="card-header"><div class="w-100"><div class="d-flex justify-content-between align-items-start gap-3 flex-wrap"><div><div class="text-uppercase text-secondary small">EVIDENCE APPLICATION LAYER</div><h2 class="card-title mt-1">관찰된 변화는 어떻게 이어지는가</h2><div class="text-secondary small mt-1">개인 변화 관찰의 근거를 의료진 전달과 기관 R&D 데이터 구조까지 끊김 없이 연결합니다.</div></div><span class="badge bg-blue-lt">Evidence Registry 11</span></div></div></div><div class="card-body">'
-  +'<div class="kimse-bridge-flow mb-4"><span>외부 근거</span><i>→</i><span>앱 실제 신호</span><i>→</i><span>개인 baseline Δ</span><i>→</i><span>가족 확인</span><i>→</i><span>의료진 전달</span><i>→</i><span>전문평가 결과</span><i>→</i><span>R&D 정규화</span></div>'
-  +clinical+rd+'</div></section>';
+var html='<section class="kimse-application-card mb-4" id="evidence-application" hidden><div id="kimse-application-content"></div></section>';
 
 var originalChildren=[].slice.call(root.children);
 originalChildren.forEach(function(el){el.dataset.kimseObservation='1'});
@@ -86,6 +82,7 @@ var hubEl=document.getElementById('evidence-home');
 if(hubEl)hubEl.insertAdjacentHTML('afterend',html);
 
 var app=document.getElementById('evidence-application');
+var appContent=document.getElementById('kimse-application-content');
 function markObservationChildren(){
   [].slice.call(root.children).forEach(function(el){
     if(el.id==='evidence-home'||el.id==='evidence-application')return;
@@ -95,6 +92,12 @@ function markObservationChildren(){
 markObservationChildren();
 
 var currentMode='evidence';
+function renderApplication(key){
+  if(!appContent)return;
+  if(key==='clinical')appContent.innerHTML=clinical;
+  else if(key==='rd')appContent.innerHTML=rd;
+  else appContent.innerHTML='';
+}
 function setMode(key,scroll){
   if(!['evidence','clinical','rd'].includes(key))key='evidence';
   currentMode=key;
@@ -107,22 +110,21 @@ function setMode(key,scroll){
   document.querySelectorAll('[data-kimse-observation="1"]').forEach(function(el){
     el.classList.toggle('kimse-observation-hidden',key!=='evidence');
   });
+  renderApplication(key);
   if(app)app.hidden=key==='evidence';
-  document.querySelectorAll('.kimse-application-panel').forEach(function(p){
-    p.hidden=key==='evidence'||p.getAttribute('data-panel')!==key;
-  });
+
   var title=document.querySelector('.page-header .page-title');
   var desc=document.querySelector('.page-header p.text-secondary');
   if(title&&desc){
     if(key==='clinical'){
-      title.textContent='장기 변화를 의료진이 빠르게 이해할 수 있는 형태로 연결합니다';
-      desc.textContent='관찰값을 진단으로 바꾸지 않고, 변화의 시작·순서·지속성·기능 영향·가족 확인·데이터 품질을 구조화해 전달합니다.';
+      title.textContent='의료진에게 필요한 변화만 빠르게 전달합니다';
+      desc.textContent='낌새의 관찰값을 진단과 구분한 채, 변화의 시작·경과·기능 영향·가족 확인·데이터 품질을 구조화해 보여줍니다.';
     }else if(key==='rd'){
-      title.textContent='공동연구·검증을 위한 재현 가능한 종단 데이터 구조를 만듭니다';
+      title.textContent='공동연구·검증이 가능한 종단 데이터 구조를 만듭니다';
       desc.textContent='동의 범위와 목적 제한을 전제로 생활·인지 변화 데이터를 정규화하고 출처·품질·누락·전문평가 결과를 함께 관리합니다.';
     }else{
       title.textContent='낌새가 무엇을 보고, 그 기준은 어디에서 왔는지 한눈에 보여드립니다';
-      desc.textContent='수면량, 말하기, 이동시간, 통화·사회활동, 보행·활동량, 기억·집중의 변화를 평소 기준선과 비교합니다. 각 신호 옆에서 어떤 기기로 수집하는지와 어떤 연구·검증도구가 근거인지 바로 확인할 수 있습니다.';
+      desc.textContent='수면량, 말하기, 이동시간, 통화·사회활동, 보행·활동량, 기억·집중의 변화를 평소 기준선과 비교합니다. 각 신호에서 수집 기기와 연구·검증 근거를 바로 확인할 수 있습니다.';
     }
   }
   if(scroll){
@@ -135,26 +137,44 @@ document.addEventListener('click',function(e){
   if(primary){
     var key=primary.getAttribute('data-kimse-primary');
     setMode(key,true);
-    history.replaceState(null,'',key==='clinical'?'#clinical-handoff':key==='rd'?'#research-data-model':'#evidence-home');
+    history.replaceState(null,'',key==='clinical'?'#clinical':key==='rd'?'#rd':'#evidence');
     return;
   }
   var ref=e.target.closest('a[href^="#evidence-src-"]');
-  if(ref)setMode('evidence',false);
+  if(ref){
+    e.preventDefault();
+    var targetHash=ref.getAttribute('href');
+    setMode('evidence',false);
+    if(location.hash===targetHash){
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    }else{
+      location.hash=targetHash;
+    }
+  }
 });
 window.addEventListener('hashchange',function(){
   var h=location.hash||'';
-  if(h==='#clinical-handoff')setMode('clinical',false);
-  else if(h==='#research-data-model')setMode('rd',false);
-  else if(h==='#evidence-home'||h.indexOf('#evidence-src-')===0||h==='#sources'||h==='#signal-map'||h==='#device-map'||h==='#app-model'||h==='#factors'||h==='#change-review')setMode('evidence',false);
+  if(h==='#clinical'||h==='#clinical-handoff')setMode('clinical',false);
+  else if(h==='#rd'||h==='#research-data-model')setMode('rd',false);
+  else if(h==='#evidence'||h==='#evidence-home'||h.indexOf('#evidence-src-')===0||h==='#sources'||h==='#signal-map'||h==='#device-map'||h==='#app-model'||h==='#factors'||h==='#change-review')setMode('evidence',false);
 });
-function ensureHubOrder(){if(hubEl&&root.firstElementChild!==hubEl)root.insertBefore(hubEl,root.firstElementChild);if(app&&hubEl&&hubEl.nextElementSibling!==app)root.insertBefore(app,hubEl.nextElementSibling)}
-var observer=new MutationObserver(function(){markObservationChildren();ensureHubOrder();setMode(currentMode,false)});
+function ensureHubOrder(){
+  if(hubEl&&root.firstElementChild!==hubEl)root.insertBefore(hubEl,root.firstElementChild);
+  if(app&&hubEl&&hubEl.nextElementSibling!==app)root.insertBefore(app,hubEl.nextElementSibling);
+}
+var observer=new MutationObserver(function(){
+  markObservationChildren();
+  ensureHubOrder();
+  document.querySelectorAll('[data-kimse-observation="1"]').forEach(function(el){
+    el.classList.toggle('kimse-observation-hidden',currentMode!=='evidence');
+  });
+});
 observer.observe(root,{childList:true});
 ensureHubOrder();
-if(location.hash==='#clinical-handoff')setMode('clinical',false);
-else if(location.hash==='#research-data-model')setMode('rd',false);
+if(location.hash==='#clinical'||location.hash==='#clinical-handoff')setMode('clinical',false);
+else if(location.hash==='#rd'||location.hash==='#research-data-model')setMode('rd',false);
 else setMode('evidence',false);
 
-document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 11';});
+document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 12';});
 document.querySelectorAll('.text-center.text-secondary.small.py-4').forEach(function(e){if(e.textContent.indexOf('KIMSE Evidence Registry')>=0)e.textContent='KIMSE Evidence Registry · Updated 2026.10.06';});
 })();
