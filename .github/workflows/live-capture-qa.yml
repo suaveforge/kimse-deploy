@@ -55,7 +55,7 @@ jobs:
             check(!js.includes('<localize-switcher'),'main-js-localize-removed');
             check(sw.includes('kimse-pwa-20261006-cycle-02')&&sw.includes('capture-polish.css')&&sw.includes('accessibility-enhancements.css')&&sw.includes('accessibility-enhancements.js')&&sw.includes('premium-ux.css')&&sw.includes('premium-ux.js')&&sw.includes('govtech-p0.css')&&sw.includes('govtech-p0.js')&&!sw.includes('localizehub-runtime'),'release39-cache-live');
             check(manifest.includes('icon.svg')&&manifest.includes('icon-maskable-source.svg'),'manifest-icons-live');
-            check(icon.includes('#FF6E68')&&icon.includes('#0F4553')&&icon.includes('M303 659'),'redesigned-icon-live');
+            check(icon.includes('<image href=')&&icon.includes('viewBox="0 0 128 128"'),'redesigned-icon-live');
             check(polish.includes('.screen-brain-trends')&&polish.includes('top:12px'),'caption-safe-zone-live');
             check(a11yCss.includes('.a11y-only')&&a11yCss.includes('.user-reduced-motion')&&a11yCss.includes('.large-text .screen-monitoring-status'),'a11y-css-live');
             check(a11yJs.includes('ALWAYS_ON_KEYS')&&a11yJs.includes('monitoring-a11y-summary')&&a11yJs.includes('brain-trends-a11y-summary')&&a11yJs.includes("svg.setAttribute('aria-describedby',summary.id)"),'a11y-js-live');
