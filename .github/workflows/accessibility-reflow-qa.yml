@@ -44,7 +44,7 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.5 · product-first universal readable floor'; then
               premium_ok=1
             fi
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'kimse-pwa-20261006-cycle-01'; then
+            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'kimse-pwa-20261006-cycle-02'; then
               sw_ok=1
             fi
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?qa=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
