@@ -1796,7 +1796,11 @@ function clinicalDomainReview(r){
     add('인지 관련 변화','COGNITION','<dl><div><dt>최근 반복과제 상태</dt><dd>'+esc(o.state==='CHANGED'?'개인 baseline 대비 변화 관찰':o.state==='STABLE'?'현재 비교에서 뚜렷한 변화 없음':'자료 없음')+'</dd></div><div><dt>비교 가능한 반복 세션</dt><dd>'+esc(String(tasks.length))+'건</dd></div><div><dt>최근 KIMSE 과제</dt><dd>'+esc(String(ass.length))+'건</dd></div></dl>','KIMSE task',refs(d.cognition),d.cognition.guard);
   }
   if(d.function_independence){
-    add('일상기능·독립성','FUNCTION','<dl><div><dt>현재 상태</dt><dd>'+esc(clinicalFunctionLabel(d.function_independence.status))+'</dd></div></dl>',d.function_independence.source_type||'미확인',refs(d.function_independence),'일상기능 정보는 인지과제 점수와 별개 축으로 봅니다.');
+    const fx=d.function_independence,answers=fx.latest_functional_answers||{},cmp=fx.functional_change_from_personal_baseline||{};
+    const flabel={no:'평소와 비슷',some:'가끔 어려움',often:'자주 어려움'};
+    const frow=(key,label)=>{const cur=answers[key];if(!cur)return '';const before=cmp[key]?.baseline,changed=cmp[key]?.changed===true;return '<div><dt>'+esc(label)+'</dt><dd>'+esc(before&&before!==cur?(flabel[before]||before)+' → '+(flabel[cur]||cur):(flabel[cur]||cur))+(changed?' <span class="clinical-inline-change">변화</span>':'')+'</dd></div>'};
+    const detail=frow('events','약속·최근 일')+frow('finances','계산·청구서·돈 관리')+frow('travel','익숙한 곳 외출·이동');
+    add('일상기능·독립성','FUNCTION','<dl><div><dt>전체 독립성</dt><dd>'+esc(clinicalFunctionLabel(fx.status))+'</dd></div>'+detail+'</dl>',[fx.source_type,fx.functional_source_type].filter(Boolean).join(' / ')||'미확인',refs(fx),fx.guard||'일상기능 정보는 인지과제 점수와 별개 축으로 봅니다.');
   }
   if(d.mood_behavior){
     add('기분·행동 맥락','MOOD / BEHAVIOR','<dl><div><dt>현재 기록</dt><dd>'+esc(val(d.mood_behavior.current_user_report))+'</dd></div></dl>','user report','',d.mood_behavior.guard);
