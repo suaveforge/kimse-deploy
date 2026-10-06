@@ -31,7 +31,7 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'deltaValue' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?ud=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?ud=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'kimse-pwa-20261006-cycle-08'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'kimse-pwa-20261006-cycle-09'; then
               echo "Live Release 40 submission assets are ready."
               exit 0
             fi
@@ -53,7 +53,7 @@ jobs:
           const BASE='https://kimse.suaveforge.com/';
           const OUT=path.resolve('submission-capture');
           const baseState={
-            version:9,
+            version:14,
             account:{name:'공모전 시연',email:''},
             intent:'self',self:true,care:true,mode:'self',
             caregivers:[{name:'가족 보호자',relation:'자녀'}],
