@@ -1,0 +1,142 @@
+name: KIMSE Clinical Handoff QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/clinical-handoff-qa.yml'
+      - 'app.js'
+      - 'app.css'
+
+permissions:
+  contents: read
+
+jobs:
+  clinical-handoff-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: node --check app.js
+      - name: Install Playwright Chromium
+        run: |
+          npm install playwright --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Verify live Clinical Handoff explorer
+        run: |
+          mkdir -p clinical-handoff-qa
+          cat > /tmp/kimse-clinical-handoff-qa.cjs <<'NODE'
+          const {chromium}=require(process.cwd()+'/node_modules/playwright');
+          const fs=require('fs'),path=require('path');
+          const BASE='https://kimse.suaveforge.com/';
+          const out=path.resolve('clinical-handoff-qa');
+          const check=(v,n,d='')=>{if(!v)throw Error(n+': '+d);console.log('PASS',n,d)};
+          const metric=(metric,label,domain,base,recent,rawSource='test-source')=>({
+            metric,clinical_label:label,domain,baseline:base,recent,relative_change:(recent-base)/Math.abs(base||1),changed:true,
+            evidence_status:'evidence_backed',evidence_refs:['#evidence-src-12'],interpretation_guard:'테스트 해석 한계',
+            series:[
+              {day:'2026-10-01',value:base,samples:1},
+              {day:'2026-10-02',value:(base+recent)/2,samples:1},
+              {day:'2026-10-03',value:recent,samples:1}
+            ],
+            raw_samples:[{source:rawSource,metric,value:recent,unit:'test',observed_at:'2026-10-03T09:00:00+00:00',metadata:{local_day:'2026-10-03'}}],
+            quality:{expected_calendar_days:30,valid_days:24,calendar_day_coverage:.8,missing_calendar_days:6,note:'QA coverage'}
+          });
+          const metrics=[
+            metric('task_response_ms','반복과제 반응시간 변화','cognition_task',1200,1700),
+            metric('location_radius_m','생활반경 변화','mobility',2500,1400,'geolocation-derived'),
+            metric('sleep_minutes','수면시간 변화','sleep',430,350),
+            metric('steps','활동량 변화','activity',6000,3800),
+            metric('voice_pause_ratio','발화 중 멈춤 변화','speech',.18,.28,'voice-feature'),
+            metric('call_count','통화 횟수 변화','social_interaction',5,2)
+          ];
+          const report={
+            schema_version:'KIMSE_CLINICAL_HANDOFF_PAYLOAD_V2',generated_at:'2026-10-06T00:00:00Z',
+            report_context:{profile:'KR',view_horizon_days:180,window_start:'2026-04-10',window_end:'2026-10-06',baseline_started_at:'2026-09-01',evidence_status:'kimse_operational'},
+            subject:{care_subject_id:'qa-subject',display_name:'QA 환자'},
+            previsit_summary:{handoff_reason:'최근 여러 생활영역 변화가 함께 관찰됨',data_sufficiency:'SUFFICIENT',first_observed_change_at:'2026-09-20T00:00:00Z',latest_observed_change_at:'2026-10-03T00:00:00Z',affected_domains:['cognition_task','mobility','sleep','activity','speech','social_interaction'],function_status:'COMPLEX_DIFFICULTY',latest_informant_assessment:'CONFIRMED',median_signal_coverage:.8,top_changes:metrics.slice(0,5),family_confirmed_count:1,professional_outcome_present:true},
+            kimse_observation:{observation_pattern:'MULTI_DOMAIN_CHANGE',data_sufficiency:'SUFFICIENT',coverage:{},missing:[],explanation:{headline:'최근 여러 영역 변화'}},
+            clinical_domains:{subjective_change:{self:'PRESENT',informant:'PRESENT',evidence_refs:['#evidence-src-23']},cognition:{latest_objective_observation:{state:'CHANGED'},repeatable_task_sessions:[{phase:'RECHECK'}],recent_kimse_assessments:[],evidence_refs:['#evidence-src-09'],guard:'임상 점수로 환산하지 않음'},function_independence:{status:'COMPLEX_DIFFICULTY',source_type:'informant_report',evidence_refs:['#evidence-src-17']},mood_behavior:{current_user_report:'평소와 비슷',status:'available',guard:'진단 아님'},sensory_motor:{hearing_context:'some',mobility_activity_signals:metrics.filter(x=>['mobility','activity'].includes(x.domain)),status:'available',guard:'진찰 대체 아님'},safety_support:{events:[],status:'not_collected',guard:'자동 판정 안 함'}},
+            risk_confounders:{sleep_disturbance_context:'sometimes',mood_context:'평소와 비슷',sensory_impairment_context:'some',conditions_context:'고혈압',current_medications:[{name:'혈압약'}],medication_change:{status:'not_collected'},acute_illness_context:{status:'not_collected'}},
+            clinical_coverage:[
+              {id:'onset_trajectory',label:'변화 시작·경과',status:'available'},
+              {id:'cognition',label:'인지 관련 변화',status:'available'},
+              {id:'function',label:'일상기능·독립성',status:'available'},
+              {id:'mood_behavior',label:'기분·행동 맥락',status:'available'},
+              {id:'sensory_motor',label:'감각·운동 맥락',status:'available'},
+              {id:'longitudinal_signals',label:'생활·디지털 종단 변화',status:'available'},
+              {id:'risk_confounders',label:'위험요인·혼란요인',status:'available'},
+              {id:'safety_support',label:'안전·지원 영향',status:'missing'},
+              {id:'informant',label:'가족/Informant 확인',status:'available'},
+              {id:'data_quality',label:'데이터 품질·출처',status:'available'},
+              {id:'professional',label:'전문평가 결과',status:'available'}
+            ],
+            monitoring:{baseline_started_at:'2026-09-01',baseline_days:14,baseline_target_days:14,recent_window:'최근 3일',level:'ATTENTION',metrics},
+            timeline:[
+              {kind:'BASELINE_STARTED',at:'2026-09-01T00:00:00Z',label:'개인 기준선 기록 시작',metrics:[]},
+              {kind:'KIMSE_CHANGE_ALERT',at:'2026-09-20T00:00:00Z',label:'평소와 다른 변화 조합이 관찰됨',metrics:['location_radius_m','sleep_minutes','steps','voice_pause_ratio']},
+              {kind:'OBJECTIVE_COGNITIVE',at:'2026-09-23T00:00:00Z',label:'KIMSE 반복과제 관찰 기록',detail:{state:'CHANGED'},metrics:[]},
+              {kind:'INFORMANT_FEEDBACK',at:'2026-09-24T00:00:00Z',label:'가족이 실제 변화를 확인함',detail:'약속 누락을 확인',metrics:[]},
+              {kind:'PROFESSIONAL_OUTCOME',at:'2026-10-01T00:00:00Z',label:'전문평가 결과 기록',detail:{institution:'QA 병원',result_category:'MCI',provenance:'USER_ENTERED'},metrics:[]}
+            ],
+            cooccurrence:[{at:'2026-09-20T00:00:00Z',metrics:['location_radius_m','sleep_minutes','steps','voice_pause_ratio'],count:4,source:'change_alert'}],
+            family_feedback:[{feedback_at:'2026-09-24T00:00:00Z',assessment:'CONFIRMED',action_taken:'CALL',note:'약속 누락 확인'}],
+            professional_outcomes:[{evaluation_date:'2026-10-01',institution:'QA 병원',result_category:'MCI',provenance:'USER_ENTERED',clinical_impression:'추적 평가 필요',validated_assessments:[{text:'MoCA-K · 22/30'}],followup_plan:'1개월 후 재진'}],
+            evidence_version:'Evidence Registry 14',model_version:'QA',disclaimer:'KIMSE 관찰값은 진단을 확정하지 않습니다.'
+          };
+          const state={version:13,account:{name:'QA',email:'qa@example.com'},intent:'self',self:true,care:false,mode:'self',caregivers:[],onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},remote:{accountId:'',subjectId:'',selfSubjectId:'',careSubjects:[],activeCareSubjectId:'',token:''},monitoring:{pending:[],summary:null,alerts:[],lastObserved:{},daily:{}},clinicalReport:report,professionalOutcomes:report.professional_outcomes,a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,captions:true,largeTouchTargets:true,colorIcons:true,screenReader:true,reduceMotion:false}};
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const ctx=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:1});
+            await ctx.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),state);
+            await ctx.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
+            const p=await ctx.newPage();
+            await p.goto(BASE+'#/clinical-handoff',{waitUntil:'domcontentloaded',timeout:30000});
+            await p.waitForSelector('.screen-clinical-handoff',{timeout:15000});
+            await p.waitForSelector('.clinical-explorer',{timeout:15000});
+            check(await p.locator('[data-clinical-domain]').count()===6,'six-domain-filters');
+            check(await p.locator('.clinical-metric').count()===6,'all-metrics-visible');
+            check(await p.locator('.clinical-quality-band').count()===1,'quality-overlay-visible');
+            check(await p.locator('.clinical-event-informant_feedback').count()===1,'informant-overlay-visible');
+            check(await p.locator('.clinical-event-professional_outcome').count()===1,'professional-overlay-visible');
+
+            await p.locator('[data-clinical-domain="speech"]').click();
+            await p.waitForTimeout(80);
+            check(await p.locator('.clinical-metric').count()===1,'speech-filter-one-metric');
+            check((await p.locator('.clinical-metric h3').innerText()).includes('발화 중 멈춤'),'speech-filter-correct-metric');
+            check(await p.locator('.clinical-quality-band-item').count()===1,'quality-filter-follows-domain');
+            check(await p.locator('.clinical-time-metrics span').filter({hasText:'발화 중 멈춤 변화'}).count()>=1,'timeline-follows-domain');
+
+            await p.locator('.clinical-metric details summary').click();
+            check(await p.locator('.clinical-raw-table').count()===1,'source-drilldown-table');
+            check((await p.locator('.clinical-raw-table').innerText()).includes('voice-feature'),'source-event-provenance');
+            check(!(await p.locator('.clinical-metric details').innerText()).includes('latitude'),'no-coordinate-exposure');
+
+            await p.locator('[data-clinical-overlay="informant"]').click();
+            await p.waitForTimeout(50);
+            check(await p.locator('.clinical-event-informant_feedback').count()===0,'informant-overlay-toggle-off');
+            await p.locator('[data-clinical-overlay="quality"]').click();
+            await p.waitForTimeout(50);
+            check(await p.locator('.clinical-quality-band').count()===0,'quality-overlay-toggle-off');
+
+            await p.locator('[data-clinical-domain="all"]').click();
+            await p.waitForTimeout(50);
+            check(await p.locator('.clinical-metric').count()===6,'return-all-metrics');
+            check(await p.locator('.clinical-cooccurrence-row').count()>=1,'cooccurrence-visible');
+            const dims=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));
+            check(dims.sw<=dims.cw+1,'mobile-no-horizontal-overflow',JSON.stringify(dims));
+            await p.screenshot({path:path.join(out,'clinical-handoff-mobile.png'),fullPage:true});
+            fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,checkedAt:new Date().toISOString()},null,2));
+            await ctx.close();await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/kimse-clinical-handoff-qa.cjs
+      - name: Upload Clinical Handoff QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-clinical-handoff-qa
+          path: clinical-handoff-qa
+          retention-days: 7
