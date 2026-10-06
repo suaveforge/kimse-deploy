@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261006-cycle-04';
+const CACHE = 'kimse-pwa-20261006-cycle-05';
 const CORE = [
   './',
   './index.html',
@@ -16,8 +16,8 @@ const CORE = [
   './premium-ux.js',
   './govtech-p0.js',
   './manifest.webmanifest',
-  './assets/icons/icon.svg',
-  './assets/icons/icon-maskable-source.svg',
+  '/assets/icons/icon.svg',
+  '/assets/icons/icon-maskable-source.svg',
   '/assets/icons/kimse-status-stable.png',
   '/assets/icons/kimse-status-watch.png',
   '/assets/icons/kimse-status-urgent.png'
