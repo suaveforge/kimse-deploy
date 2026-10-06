@@ -42,6 +42,7 @@ jobs:
               {day:'2026-10-03',value:recent,samples:1}
             ],
             raw_samples:[{source:rawSource,metric,value:recent,unit:'test',observed_at:'2026-10-03T09:00:00+00:00',metadata:{local_day:'2026-10-03'}}],
+            deviation_summary:{status:'OBSERVED_DEVIATION',first_observed_deviation_at:'2026-09-20',latest_observed_deviation_at:'2026-10-03',observed_deviation_days:5,observed_post_baseline_days:9,deviation_span_days:14,gap_days_within_span:5,guard:'QA gap aware'},
             quality:{expected_calendar_days:30,valid_days:24,calendar_day_coverage:.8,missing_calendar_days:6,note:'QA coverage'}
           });
           const metrics=[
@@ -76,6 +77,7 @@ jobs:
             monitoring:{baseline_started_at:'2026-09-01',baseline_days:14,baseline_target_days:14,recent_window:'최근 3일',level:'ATTENTION',metrics},
             timeline:[
               {kind:'BASELINE_STARTED',at:'2026-09-01T00:00:00Z',label:'개인 기준선 기록 시작',metrics:[]},
+              {kind:'SIGNAL_DEVIATION_ONSET',at:'2026-09-20T00:00:00Z',label:'생활반경 변화 · 첫 개인 기준선 이탈 관찰',detail:{observed_deviation_days:5,deviation_span_days:14,gap_days_within_span:5},metrics:['location_radius_m']},
               {kind:'KIMSE_CHANGE_ALERT',at:'2026-09-20T00:00:00Z',label:'평소와 다른 변화 조합이 관찰됨',metrics:['location_radius_m','sleep_minutes','steps','voice_pause_ratio']},
               {kind:'OBJECTIVE_COGNITIVE',at:'2026-09-23T00:00:00Z',label:'KIMSE 반복과제 관찰 기록',detail:{state:'CHANGED'},metrics:[]},
               {kind:'INFORMANT_FEEDBACK',at:'2026-09-24T00:00:00Z',label:'가족이 실제 변화를 확인함',detail:'약속 누락을 확인',metrics:[]},
@@ -99,6 +101,8 @@ jobs:
             check(await p.locator('[data-clinical-domain]').count()===6,'six-domain-filters');
             check(await p.locator('.clinical-metric').count()===6,'all-metrics-visible');
             check(await p.locator('.clinical-quality-band').count()===1,'quality-overlay-visible');
+            check(await p.locator('.clinical-deviation-copy').count()===6,'observed-onset-chip-visible');
+            check(await p.locator('.clinical-event-signal_deviation_onset').count()>=1,'observed-onset-timeline-visible');
             check(await p.locator('.clinical-event-informant_feedback').count()===1,'informant-overlay-visible');
             check(await p.locator('.clinical-event-professional_outcome').count()===1,'professional-overlay-visible');
 
