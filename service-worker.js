@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20260928-status-icons';
+const CACHE = 'kimse-pwa-20261006-cycle-02';
 const CORE = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const CORE = [
   './native-bridge.js',
   './authhub.js',
   './push.js',
+  './call-transport.js',
   './accessibility-enhancements.js',
   './premium-ux.js',
   './govtech-p0.js',
