@@ -33,7 +33,7 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.5 · product-first universal readable floor' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?qa=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?qa=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'kimse-pwa-20261006-cycle-01'; then
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'kimse-pwa-20261006-cycle-02'; then
               echo "Live Release 39 premium UX is ready."
               exit 0
             fi
