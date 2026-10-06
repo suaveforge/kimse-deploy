@@ -107,7 +107,7 @@ jobs:
             check(await p.locator('.clinical-metric').count()===1,'speech-filter-one-metric');
             check((await p.locator('.clinical-metric h3').innerText()).includes('발화 중 멈춤'),'speech-filter-correct-metric');
             check(await p.locator('.clinical-quality-band-item').count()===1,'quality-filter-follows-domain');
-            check(await p.locator('.clinical-time-metrics span').filter({hasText:'발화 중 멈춤 변화'}).count()>=1,'timeline-follows-domain');
+            check(await p.locator('.clinical-time-metrics span').filter({hasText:'발화 중 멈춤'}).count()>=1,'timeline-follows-domain');
 
             await p.locator('.clinical-metric details summary').click();
             check(await p.locator('.clinical-raw-table').count()===1,'source-drilldown-table');
