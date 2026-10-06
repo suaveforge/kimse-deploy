@@ -137,8 +137,10 @@ window.addEventListener('hashchange',function(){
   else if(h==='#research-data-model')setMode('rd',false);
   else if(h==='#evidence-home'||h.indexOf('#evidence-src-')===0||h==='#sources'||h==='#signal-map'||h==='#device-map'||h==='#app-model'||h==='#factors'||h==='#change-review')setMode('evidence',false);
 });
-var observer=new MutationObserver(function(){markObservationChildren();setMode(currentMode,false)});
+function ensureHubOrder(){if(hubEl&&root.firstElementChild!==hubEl)root.insertBefore(hubEl,root.firstElementChild);if(app&&hubEl&&hubEl.nextElementSibling!==app)root.insertBefore(app,hubEl.nextElementSibling)}
+var observer=new MutationObserver(function(){markObservationChildren();ensureHubOrder();setMode(currentMode,false)});
 observer.observe(root,{childList:true});
+ensureHubOrder();
 if(location.hash==='#clinical-handoff')setMode('clinical',false);
 else if(location.hash==='#research-data-model')setMode('rd',false);
 else setMode('evidence',false);
