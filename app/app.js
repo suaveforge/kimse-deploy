@@ -1257,7 +1257,7 @@ async function runRealAppTour(prepared=false){
 
     // 왜 이 항목들을 보는지 근거를 보여주고, 그 근거가 개인별 기준으로 이어지는 과정을 설명한다.
     await demoGo('evidence-proof',3900,{title:'분석 기준 · 검증된 연구 근거',position:'bottom',hold:1000});if(!alive())return;
-    await demoGo('research-engine',4200,{title:'AI 기반 개인별 분석 기준 조정',position:'bottom',hold:1050});if(!alive())return;
+    await demoGo('research-engine',4200,{title:'개인 기준선과 연구 근거 비교',position:'bottom',hold:1050});if(!alive())return;
 
     // 14일 이후 실제 상세 분석 화면으로 넘어간다.
     await demoGo('brain-map',1350,{title:'14일 이후 상세 분석',position:'bottom',hold:850});if(!alive())return;
@@ -1397,7 +1397,7 @@ page['cognitive-recheck-result']=()=>{
   return wrap('<div class="eyebrow">개인 baseline 대비 원자료</div><h1 class="page-title">'+(changed?'첫 기록보다 낮아진<br>수행 원자료가 있습니다':'이번 기록에서는<br>낮아진 수행 원자료가 없습니다')+'</h1><p class="page-desc">같은 KIMSE 자체 과제의 첫 기록과 이번 기록을 직접 비교했습니다. 임상 진단이나 MCI·치매 단계 판정이 아닙니다.</p><div class="list">'+row('🧠 지연회상','3단어 원자료 · cutoff 없음','<strong>'+d.baseline+' → '+d.current+'개</strong>')+row('➖ 연속 뺄셈','정답 여부 · 개인 비교','<strong>'+(sub.baseline_correct?'정답':'응답 기록')+' → '+(sub.current_correct?'정답':'응답 기록')+'</strong>')+row('⏱ 반응시간','원자료만 표시 · 임상 cutoff 없음','<strong>'+((sub.response_ms_baseline||0)/1000).toFixed(1)+'초 → '+((sub.response_ms_current||0)/1000).toFixed(1)+'초</strong>')+'</div>'+notice(changed?'원자료 변화 관찰':'비교 결과','반응시간 변화만으로는 CHANGED 상태를 만들지 않습니다. 기능 문항은 원자료 맥락으로 별도 보존하며 객관 인지변화나 일상기능 단계로 자동 환산하지 않습니다. 수행 원자료가 낮아진 경우에만 KIMSE 관찰축에 기록합니다.')+'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">관찰 패턴 확인</button><button class="btn-kimse btn-secondary-k" data-go="clinical-handoff">상담 준비 리포트</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'반복 체크 결과',narrow:true});
 };
 
-page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">자동 관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말속도·멈춤·표현의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 움직임과 활동시간 신호를 수집합니다. 일일 걸음수는 네이티브 앱에서 기기 건강 데이터를 연결해 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 지원 기기에서는 앱을 닫아도 푸시 알림을 받습니다.</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>전화·메신저 패턴</strong><p>타 앱의 대화 내용은 읽지 않습니다. 향후 네이티브 앱에서 운영체제가 허용하는 통화·메시지 메타데이터를 연결할 때 별도 동의를 받습니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
+page.consent=()=>wrap(`<div class="eyebrow">처음 설정 4/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><h2 class="section-title">관찰에 사용할 신호</h2><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>발화시간·멈춤·음성활동·음높이의 장기 변화 비교</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>현재 PWA에서는 앱 사용 중 실제 위치로 이동거리·생활반경·외출 신호를 수집합니다. 브라우저/OS 권한이 필요합니다.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원 기기에서 앱 사용 중 움직임과 활동시간 신호를 수집합니다. 일일 걸음수는 네이티브 앱에서 기기 건강 데이터를 연결해 수집합니다.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 지원 기기에서는 앱을 닫아도 푸시 알림을 받습니다.</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div><div class="signal-limit"><strong>외부 전화·메신저</strong><p>현재 수집하지 않습니다. 앱 안에서 연결된 KIMSE 통화와 가족 피드백만 사회접촉 기록으로 사용합니다.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
 
 
 page['evidence-proof']=()=>wrap(
@@ -1415,8 +1415,8 @@ page['evidence-proof']=()=>wrap(
 );
 
 page['research-engine']=()=>wrap(
-  '<div class="eyebrow">AI 연구 업데이트</div>'+
-  '<h1 class="page-title">새 근거가 쌓일수록<br>개인별 기준을 더 정교하게 맞춥니다</h1>'+
+  '<div class="eyebrow">근거·개인화 업데이트</div>'+
+  '<h1 class="page-title">새 근거와 내 기록이 쌓일수록<br>개인별 비교가 더 정교해집니다</h1>'+
   '<p class="page-desc research-personal-lead">검증된 논문과 실증 데이터, 공식 가이드라인을 계속 확인합니다.</p>'+
   '<section class="research-personal-engine">'+
     '<div class="research-source-stack">'+
@@ -1424,16 +1424,16 @@ page['research-engine']=()=>wrap(
       '<div class="research-source field">'+I('chart-dots-3')+'<span><small>실증 데이터</small><strong>실제 관찰 결과</strong></span></div>'+
       '<div class="research-source guide">'+I('clipboard-check')+'<span><small>공식 가이드</small><strong>권고 기준</strong></span></div>'+
     '</div>'+
-    '<div class="research-review-gate">'+I('sparkles')+'<strong>AI가 모아 비교</strong><span>정기 검토</span></div>'+
+    '<div class="research-review-gate">'+I('sparkles')+'<strong>근거와 기록을 함께 비교</strong><span>버전 관리</span></div>'+
     '<div class="research-factor-panel">'+
-      '<div class="research-factor-head"><small>개인별 변화 기준</small><strong>더 의미 있는 변화에 무게를 조정</strong></div>'+
-      '<div class="research-factor-row"><span>수면</span><i style="--w:72%"></i></div>'+
-      '<div class="research-factor-row"><span>활동</span><i style="--w:54%"></i></div>'+
-      '<div class="research-factor-row"><span>말하기</span><i style="--w:84%"></i></div>'+
-      '<div class="research-factor-row"><span>이동</span><i style="--w:62%"></i></div>'+
+      '<div class="research-factor-head"><small>개인별 변화 기준</small><strong>내 14일 기록과 새 기록을 같은 방식으로 비교</strong></div>'+
+      '<div class="research-factor-row"><span>수면</span><em>개인 baseline</em></div>'+
+      '<div class="research-factor-row"><span>활동</span><em>개인 baseline</em></div>'+
+      '<div class="research-factor-row"><span>말하기</span><em>개인 baseline</em></div>'+
+      '<div class="research-factor-row"><span>이동</span><em>개인 baseline</em></div>'+
     '</div>'+
   '</section>'+
-  '<p class="research-personal-note">사람마다 더 의미 있는 변화가 다르기 때문에, 같은 기준을 그대로 적용하지 않습니다.</p>',
+  '<p class="research-personal-note">개인의 14일 기준선, 실제 수집 범위와 가족 확인을 함께 보며 근거 없는 가중치를 만들지 않습니다.</p>',
   {title:'연구 업데이트',narrow:true,overview:true}
 );
 
