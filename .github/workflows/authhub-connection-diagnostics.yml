@@ -1,0 +1,38 @@
+name: KIMSE AuthHub Connection Diagnostics
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/authhub-connection-diagnostics.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe-authhub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check public DNS and HTTP/CORS without credentials
+        shell: bash
+        run: |
+          set +e
+          for host in api-authhub.suaveforge.com api-kimse.suaveforge.com kimse.suaveforge.com; do
+            echo "DIAGNOSTIC_HOST=$host"
+            getent ahostsv4 "$host" | head -1 || echo "DNS_LOOKUP_FAILED=$host"
+          done
+          probe(){
+            label="$1"; shift
+            echo "BEGIN_PROBE=$label"
+            curl -sS --connect-timeout 7 --max-time 18 -D /tmp/k-header -o /tmp/k-body -w 'HTTP_STATUS=%{http_code} IP=%{remote_ip} DURATION=%{time_total} ERROR=%{errormsg}\n' "$@"
+            rc=$?
+            echo "CURL_EXIT=$rc"
+            grep -Ei '^HTTP/|^access-control-allow-origin:|^access-control-allow-headers:|^content-type:|^server:' /tmp/k-header | head -16
+            echo "END_PROBE=$label"
+          }
+          probe AUTH_CONFIG_GET -H 'Origin: https://kimse.suaveforge.com' -H 'X-AuthHub-Client: kimse-p45' 'https://api-authhub.suaveforge.com/v1/config/p45?environment=production'
+          probe AUTH_CONFIG_OPTIONS -X OPTIONS -H 'Origin: https://kimse.suaveforge.com' -H 'Access-Control-Request-Method: GET' -H 'Access-Control-Request-Headers: x-authhub-client,content-type' 'https://api-authhub.suaveforge.com/v1/config/p45?environment=production'
+          probe KIMSE_API -H 'Origin: https://kimse.suaveforge.com' 'https://api-kimse.suaveforge.com/'
+          echo 'KIMSE_AUTHHUB_DIAGNOSTIC_DONE=yes'
