@@ -1740,7 +1740,7 @@ page['initial-result']=()=>{
     '<p class="kimse-flow-hint">앞으로의 변화를 살펴볼 수 있도록 첫 기준을 남겼어요. 오늘 결과만으로 건강 상태를 판단하지 않아요.</p>'+
     '<div class="kimse-summary-sheet"><h2>오늘 남긴 기록</h2>'+
     row('단어 기억',count+' / 3개','보았던 단어를 기억한 개수')+
-    row('숫자 계산',a.subtraction?(a.subtraction==='79'?'기록했어요':'응답했어요'):'기록하지 않음','답변과 반응시간 보관'+(rt?' · '+(rt/1000).toFixed(1)+'초':''))+
+    row('숫자 계산',a.subtraction?'응답 기록':'기록하지 않음','답변과 반응시간 보관'+(rt?' · '+(rt/1000).toFixed(1)+'초':''))+
     row('약속과 최근 일',freq(a.events),'최근 4주')+
     row('돈 관리',freq(a.finances),'최근 4주')+
     row('외출과 이동',freq(a.travel),'최근 4주')+
@@ -1749,7 +1749,6 @@ page['initial-result']=()=>{
     '<div class="kimse-complete-message"><strong>앞으로 이렇게 사용해요</strong><span>평소 생활을 기록하면, 시간이 지나면서 달라진 점을 함께 살펴볼 수 있어요.</span></div>'+
     '<div class="kimse-flow-actions"><button type="button" id="start-monitoring-after-initial" class="kimse-flow-primary">생활 기록 시작하기 <span aria-hidden="true">→</span></button></div>'+
     '<button class="kimse-flow-quiet kimse-complete-more" data-go="brain-map">관찰하는 항목 알아보기</button>'+
-    '<p class="kimse-flow-privacy">이 기록은 의료 진단이나 치매 여부 판정에 사용되는 검사 결과가 아닙니다.</p>'+
     '</section>',{title:'첫 기록',narrow:true});
 };
 
