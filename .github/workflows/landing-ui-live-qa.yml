@@ -31,9 +31,9 @@ jobs:
             if curl -fsSL --max-time 15 "$base/?qa=$GITHUB_SHA" -o /tmp/kimse-entry-index.html &&
                curl -fsSL --max-time 15 "$base/app.js?qa=$GITHUB_SHA" -o /tmp/kimse-entry-app.js &&
                curl -fsSL --max-time 15 "$base/app.css?qa=$GITHUB_SHA" -o /tmp/kimse-entry-app.css &&
-               grep -Fq '20261009-46' /tmp/kimse-entry-index.html &&
+               grep -Fq '20261009-47' /tmp/kimse-entry-index.html &&
                grep -Fq 'kimse-entry-tile' /tmp/kimse-entry-app.js &&
-               grep -Fq 'Release 46' /tmp/kimse-entry-app.css; then
+               grep -Fq 'Release 47' /tmp/kimse-entry-app.css; then
                  echo "KIMSE_LANDING_LIVE_ASSETS_OK=yes attempt=$i"
                  exit 0
             fi
@@ -60,7 +60,7 @@ jobs:
                 const page = await browser.newPage({viewport:{width,height:720},deviceScaleFactor:1});
                 const jsErrors=[];
                 page.on('pageerror',err=>{const trace=String(err.stack||err);jsErrors.push(trace);console.error('KIMSE_BROWSER_PAGEERROR '+trace)});
-                await page.goto('https://kimse.suaveforge.com/?v=46#/start',{waitUntil:'domcontentloaded',timeout:45000});
+                await page.goto('https://kimse.suaveforge.com/?v=47#/start',{waitUntil:'domcontentloaded',timeout:45000});
                 await page.waitForSelector('.kimse-entry-actions button',{timeout:18000});
                 const data=await page.evaluate(()=>{
                   const buttons=[...document.querySelectorAll('.kimse-entry-actions button')];
@@ -74,29 +74,44 @@ jobs:
                     footer:!!document.querySelector('.screen-start .app-footer')};
                 });
                 assert.equal(data.h1,'낌새');
-                assert.equal(data.buttonCount,2);
-                assert.deepEqual(data.rects.map(x=>x.label),['시작하기','로그인']);
+                assert.equal(data.buttonCount,1);
+                assert.deepEqual(data.rects.map(x=>x.label),['시작하기']);
                 assert.equal(data.footer,false);
+                const login = await page.locator('.kimse-entry-login-link').evaluate(el=>{const r=el.getBoundingClientRect();return {text:el.innerText.trim(),width:r.width,height:r.height,top:r.top,bottom:r.bottom}});
+                assert.equal(login.text,'로그인');
+                assert(login.height>=44,'login text link touch height too small');
+                assert(login.width<=130,'login text link must not look like a second button');
+                assert(login.top>=data.rects[0].bottom,'login text link overlaps primary tile');
                 assert(!data.allText.includes('수면')&&!data.allText.includes('Release'),'clutter on landing');
                 assert(data.docWidth<=data.viewportWidth+2,'horizontal overflow');
                 for(const r of data.rects){
-                  assert(r.width>=130 && r.height>=130 && Math.abs(r.width-r.height)<18,'tactile tile dimensions invalid: '+JSON.stringify(r));
+                  assert(r.width>=165 && r.height>=165 && Math.abs(r.width-r.height)<18,'primary tactile tile dimensions invalid: '+JSON.stringify(r));
                   assert(r.left>=0 && r.right<=width+2,'tile clipped: '+JSON.stringify(r));
                 }
                 await page.locator('.kimse-entry-actions [data-go="role"]').click();
                 await page.waitForFunction(()=>location.hash==='#/role');
-                await page.goto('https://kimse.suaveforge.com/?v=46#/start',{waitUntil:'domcontentloaded'});
-                await page.waitForSelector('.kimse-entry-actions [data-go="auth"]');
-                await page.locator('.kimse-entry-actions [data-go="auth"]').click();
+                await page.goto('https://kimse.suaveforge.com/?v=47#/start',{waitUntil:'domcontentloaded'});
+                await page.waitForSelector('.kimse-entry-login-link[href="#/auth"]');
+                await page.locator('.kimse-entry-login-link').click();
                 await page.waitForFunction(()=>location.hash==='#/auth');
                 const sipErrors=jsErrors.filter(stack=>stack.includes('ReferenceError: require is not defined')&&stack.includes('cdn.jsdelivr.net/npm/jssip@3.13.8/lib/JsSIP.min.js'));
                 const otherErrors=jsErrors.filter(stack=>!sipErrors.includes(stack));
                 if(sipErrors.length)console.log('KIMSE_EXISTING_JSSIP_CDN_ERROR=yes (not related to landing navigation)');
                 assert.equal(otherErrors.length,0,'Landing app JavaScript errors: '+JSON.stringify(otherErrors));
+                if(width===375){
+                  await page.evaluate(()=>{
+                    localStorage.setItem('kimse.p0.state',JSON.stringify({version:14,account:{name:'기존회원',email:'member@example.com'},self:true,care:false,intent:'self',onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},remote:{accountId:'account-test',token:'test-app-token'}}));
+                    localStorage.setItem('kimse.authhub.session.v1',JSON.stringify({accessToken:'test-auth-token',refreshToken:'test-refresh-token',expiresAt:Date.now()+3600000}));
+                  });
+                  await page.goto('https://kimse.suaveforge.com/?v=47#/start',{waitUntil:'domcontentloaded'});
+                  await page.waitForFunction(()=>location.hash==='#/home',null,{timeout:15000});
+                  assert.equal(await page.locator('.screen-start').count(),0,'authenticated member still sees start');
+                  console.log('KIMSE_AUTHENTICATED_SKIP_OK=yes width=375');
+                }
                 console.log('KIMSE_LANDING_RENDER_OK=yes width='+width+' tile_metrics='+JSON.stringify(data.rects));
                 await page.close();
               }
-              console.log('KIMSE_LANDING_BOTH_CHOICES_OK=yes');
+              console.log('KIMSE_LANDING_ONE_PRIMARY_OK=yes');
             } finally {await browser.close();}
           })().catch(err=>{console.error(err);process.exitCode=1});
           JS
