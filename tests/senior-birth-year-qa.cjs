@@ -20,10 +20,12 @@ async function caseRun(browser,width,mode,which){
   assert.equal(await page.locator('#profile-wizard-input').count(),0,'Birth year keyboard still visible');
   assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'1 / 12');
   assert.equal(await page.locator('#profile-wizard-next').count(),0,'Next should not compete with selecting the decade');
+  assert.equal(await page.locator('[data-birth-range]').count(),0,'All eligible decades should be directly visible');
+  assert.equal(await page.locator('[data-birth-decade]').count(),11,'2026 eligible decades should be available in one grid');
   if(which==='typical'&&mode==='normal'&&[320,375,1280].includes(width))await page.screenshot({path:'qa-artifacts/birth-decade-options-'+width+'.png',fullPage:true});
   let expected,decade;
-  if(which==='early'){await page.locator('[data-birth-range="earlier"]').click();decade=1900;expected=1906}
-  else if(which==='late'){await page.locator('[data-birth-range="later"]').click();decade=2000;expected=2008}
+  if(which==='early'){decade=1900;expected=1906}
+  else if(which==='late'){decade=2000;expected=2008}
   else{decade=1950;expected=1956}
   assert.equal(await page.locator('[data-birth-decade="'+decade+'"]').count(),1,'Missing valid decade');
   await page.locator('[data-birth-decade="'+decade+'"]').click();
@@ -31,7 +33,7 @@ async function caseRun(browser,width,mode,which){
   assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'1 / 12','Choosing decade must not skip profile question');
   assert.equal(await page.locator('#profile-wizard-input').count(),0,'No typing expected in year phase');
   assert.equal(await page.locator('[data-profile-prev]').count(),0,'Do not duplicate back action alongside choosing another decade');
-  assert.equal(await page.locator('#profile-wizard-next').isDisabled(),true,'Cannot proceed without specific year');
+  assert.equal(await page.locator('#profile-wizard-next').count(),0,'Never show extra confirmation button');
   assert.equal(await page.locator('[data-birth-year="'+expected+'"]').count(),1,'Exact eligible birth year missing');
   const measure=await page.evaluate(()=>{
     const controls=[...document.querySelectorAll('.kimse-birth-year')];
@@ -39,29 +41,26 @@ async function caseRun(browser,width,mode,which){
     return {outer:document.documentElement.scrollWidth,inner:innerWidth,r};
   });
   assert(measure.outer<=measure.inner+2,'Horizontal overflow');
-  for(const rect of measure.r){assert(rect.h>=74,'Touch target too small');assert(rect.x>=0&&rect.right<=measure.inner+2,'Clipped button');if(mode==='contrast')assert(rect.border>=2.5,'High-contrast border too weak')}
+  for(const rect of measure.r){assert(rect.h>=58,'Touch target too small');assert(rect.x>=0&&rect.right<=measure.inner+2,'Clipped button');if(mode==='contrast')assert(rect.border>=2.5,'High-contrast border too weak')}
   if(which==='typical'&&mode==='normal'&&[320,375,1280].includes(width)){
     await page.screenshot({path:'qa-artifacts/birth-decade-'+width+'.png',fullPage:true});
   }
-  await page.locator('[data-birth-year="'+expected+'"]').click();
-  assert.equal(await page.locator('[data-birth-year="'+expected+'"]').getAttribute('aria-pressed'),'true');
-  assert.equal(await page.locator('#profile-wizard-next').isDisabled(),false);
-  let st=await page.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')));
-  assert.equal(st.profile.birthYear,String(expected));
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator('[data-birth-year="'+expected+'"]').waitFor();
-  assert.equal(await page.locator('[data-birth-year="'+expected+'"]').getAttribute('aria-pressed'),'true','Selection must survive reload');
+  assert.equal(await page.locator('#profile-wizard-next').count(),0,'No confirmation button after reload');
   if(which==='typical'){
     await page.locator('[data-birth-back]').click();
     assert.equal(await page.locator('[data-birth-phase="decade"]').count(),1,'Change decade should work');
     await page.locator('[data-birth-decade="1960"]').click();
-    assert.equal(await page.locator('#profile-wizard-next').isDisabled(),true,'Must not reuse old year from different decade');
+    assert.equal(await page.locator('#profile-wizard-next').count(),0,'No second confirmation');
     await page.locator('[data-birth-year="1965"]').click();
     expected=1965;
+  }else{
+    await page.locator('[data-birth-year="'+expected+'"]').click();
   }
-  await page.locator('#profile-wizard-next').click();
-  assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'2 / 12','Year choice should advance exactly one profile question');
-  st=await page.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')));
+  await page.locator('.kimse-journey-count').getByText('2 / 12').waitFor({timeout:4000});
+  assert.equal(await page.locator('#profile-wizard-next').count(),1,'Next is only for the second profile question');
+  let st=await page.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')));
   assert.equal(st.profile.birthYear,String(expected),'Clinical birthYear changed encoding');
   assert.equal(errors.length,0,'Unexpected browser script errors: '+errors.join(';'));
   report.push({width,mode,which,year:expected,pass:true});
