@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261009-cycle-19';
+const CACHE = 'kimse-pwa-20261009-cycle-23';
 const CORE = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const CORE = [
   './premium-ux.css',
   './govtech-p0.css',
   './app.js',
+  './clinical-submission.js',
   './native-bridge.js',
   './authhub.js',
   './push.js',
