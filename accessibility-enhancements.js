@@ -1,7 +1,6 @@
 (()=>{'use strict';
 const STATE_KEY='kimse.p0.state';
 const ALWAYS_ON_KEYS=new Set(['captions','colorIcons','screenReader']);
-const RELEASE_LABEL='Updated 2026.10.06 · Release 40';
 const clean=t=>String(t||'').replace(/\s+/g,' ').trim();
 const readState=()=>{try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')}catch{return {}}};
 function applyPreferenceClasses(){
@@ -102,13 +101,6 @@ function enhanceDemoCapture(screen){
   const download=screen.querySelector('#demo-download');
   if(download)download.setAttribute('download','kimse-youtube-demo-1min.webm');
 }
-function updateRelease(screen){
-  const foot=screen.querySelector('.app-footer');
-  if(!foot)return;
-  const disclaimer='의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.';
-  const html=RELEASE_LABEL+'<br>'+disclaimer;
-  if(foot.innerHTML!==html)foot.innerHTML=html;
-}
 function enhance(){
   applyPreferenceClasses();
   const screen=document.querySelector('#main');
@@ -120,7 +112,6 @@ function enhance(){
   if(screen.classList.contains('screen-brain-map'))enhanceBrainMap(screen);
   if(screen.classList.contains('screen-brain-trends'))enhanceBrainTrends(screen);
   if(screen.classList.contains('screen-demo-capture'))enhanceDemoCapture(screen);
-  updateRelease(screen);
   screen.dataset.a11yEnhanced='true';
 }
 let queued=false;

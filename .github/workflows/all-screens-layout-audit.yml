@@ -30,7 +30,7 @@ jobs:
             if curl -fsSL --max-time 15 "https://kimse.suaveforge.com/index.html?audit=${GITHUB_SHA}" -o /tmp/kimse-audit-index.html &&
                curl -fsSL --max-time 15 "https://kimse.suaveforge.com/app.js?audit=${GITHUB_SHA}" -o /tmp/kimse-audit-app.js &&
                curl -fsSL --max-time 15 "https://kimse.suaveforge.com/app.css?audit=${GITHUB_SHA}" -o /tmp/kimse-audit-app.css &&
-               grep -Fq '20261009-48' /tmp/kimse-audit-index.html &&
+               grep -Fq '20261009-49' /tmp/kimse-audit-index.html &&
                grep -Fq "['both','users'" /tmp/kimse-audit-app.js &&
                grep -Fq 'Role selection: fixed pictogram' /tmp/kimse-audit-app.css; then
               echo 'AUDIT_PUBLIC_PARITY=yes'
@@ -53,6 +53,7 @@ jobs:
           const {chromium}=require(process.env.RUNNER_TEMP+'/kimse-all-audit/node_modules/playwright');
           const base='https://kimse.suaveforge.com/';
           const widths=[320,375,430,720,768,1280];
+          const modes=['normal','large'];
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const issueMap=new Map(),counts={pages:0,rendered:0,missing:0,scroll:0,overlap:0,text:0,touch:0,visibleDebug:0,script:0};
@@ -71,23 +72,24 @@ jobs:
               routes=[...new Set([...js.matchAll(/page(?:\.([a-zA-Z0-9_-]+)|\[['"]([a-zA-Z0-9_-]+)['"]\])\s*=/g)].map(m=>m[1]||m[2]))];
               console.log('AUDIT_ROUTE_MANIFEST='+JSON.stringify(routes));
               if(routes.length<50)throw new Error('ROUTE_COVERAGE_TOO_SMALL='+routes.length);
+              for(const mode of modes){
               for(const width of widths){
                 const context=await browser.newContext({viewport:{width,height:740},deviceScaleFactor:1,reducedMotion:'reduce'});
                 await context.route('https://api-kimse.suaveforge.com/**',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"READ_ONLY_VISUAL_QA"}'}));
-                await context.addInitScript(()=>{
+                await context.addInitScript(mode=>{
                   const key='kimse.p0.state';
                   const seed={
                     version:14,account:{name:'화면점검',email:'layout-check@example.invalid'},
                     intent:'both',self:true,care:true,mode:'self',
                     onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
                     consents:{service:true,privacy:true,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},
-                    a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,largeTouchTargets:false,reduceMotion:true},
+                    a11y:{largeText:mode==='large',highContrast:mode==='large',voiceGuidance:false,soundEffects:false,largeTouchTargets:mode==='large',reduceMotion:true},
                     remote:{accountId:'',subjectId:'',selfSubjectId:'',careSubjects:[],activeCareSubjectId:'',token:''},
                     initial:{step:5,answers:{subtraction:'79'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:'2026-10-01T00:00:00Z'},
                     baseline:{startedAt:'2026-10-01T00:00:00Z'}
                   };
                   localStorage.setItem(key,JSON.stringify(seed));
-                });
+                },mode);
                 const page=await context.newPage();
                 page.on('pageerror',e=>{
                   const error=String(e.stack||e);
@@ -96,7 +98,7 @@ jobs:
                 try{
                   await page.goto(base+'?layoutAudit=48#/start',{waitUntil:'domcontentloaded',timeout:45000});
                   await page.waitForSelector('#main',{timeout:20000});
-                }catch(e){record('missing','BOOT',width,String(e));await context.close();continue}
+                }catch(e){record('missing','BOOT@'+mode,width,String(e));await context.close();continue}
                 for(const route of routes){
                   counts.pages++;
                   const selector='.screen-'+route;
@@ -160,22 +162,23 @@ jobs:
                       return {issues:issue,route:root.className,docWidth:scroll,visibleElements:focus.length};
                     });
                     counts.rendered++;
-                    for(const issue of audit.issues||[])record(issue.type,route,width,issue.detail);
-                    if((audit.issues||[]).length)console.log('AUDIT_ROUTE_ISSUES '+JSON.stringify({route,width,issues:audit.issues.slice(0,22)}));
-                    else console.log('AUDIT_ROUTE_OK '+route+' '+width);
-                    if(route==='role'&&[320,375,720].includes(width)){
+                    for(const issue of audit.issues||[])record(issue.type,route+'@'+mode,width,issue.detail);
+                    if((audit.issues||[]).length)console.log('AUDIT_ROUTE_ISSUES '+JSON.stringify({route,mode,width,issues:audit.issues.slice(0,22)}));
+                    else console.log('AUDIT_ROUTE_OK '+route+' '+mode+' '+width);
+                    if(route==='role'&&mode==='normal'&&[320,375,720].includes(width)){
                       await page.screenshot({path:process.env.RUNNER_TEMP+'/kimse-role-'+width+'.png',fullPage:true,animations:'disabled'}).catch(()=>{});
                     }
                   }catch(e){
-                    record('missing',route,width,'screen absent/exception '+String(e.message||e).slice(0,170));
+                    record('missing',route+'@'+mode,width,'screen absent/exception '+String(e.message||e).slice(0,170));
                     console.log('AUDIT_ROUTE_MISSING '+route+' '+width+' '+String(e.message||e).slice(0,150));
                   }
                 }
                 await context.close();
               }
-              console.log('AUDIT_SUMMARY '+JSON.stringify({routes:routes.length,widths,counts,uniqueIssues:issueMap.size}));
+              }
+              console.log('AUDIT_SUMMARY '+JSON.stringify({routes:routes.length,widths,modes,counts,uniqueIssues:issueMap.size}));
               for(const i of [...issueMap.values()].slice(0,220))console.log('AUDIT_ISSUE '+JSON.stringify(i));
-              const blocking=(counts.missing||0)+(counts.scroll||0)+(counts.overlap||0)+(counts.text||0);
+              const blocking=(counts.missing||0)+(counts.scroll||0)+(counts.overlap||0)+(counts.text||0)+(counts.visibleDebug||0);
               if(blocking>0){console.error('AUDIT_LAYOUT_BLOCKERS='+blocking);process.exitCode=1}
               else console.log('AUDIT_ALL_SCREENS_PASS=yes');
             }finally{await browser.close()}
