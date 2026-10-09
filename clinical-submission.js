@@ -65,8 +65,10 @@
         blockers.push('진료 전 핵심 요약과 상담 사유가 없습니다.');
       if(typeof report.disclaimer!=='string'||!report.disclaimer.trim())
         blockers.push('관찰과 의료 진단을 구분하는 안내가 없습니다.');
-      if(!Array.isArray(report.clinical_coverage))
+      if(!Array.isArray(report.clinical_coverage)||report.clinical_coverage.length===0)
         blockers.push('임상 항목별 수집·결측 상태가 없습니다.');
+      else if(!report.clinical_coverage.some(x=>x&&x.status==='available'))
+        blockers.push('실제 수집된 임상·관찰 자료가 없어 진료 전달용 요약을 만들 수 없습니다.');
       const missing=(Array.isArray(report.clinical_coverage)?report.clinical_coverage:[]).filter(x=>x&&x.status!=='available');
       if(missing.length)warnings.push('아직 확인되지 않은 임상 영역 '+missing.length+'개가 있습니다. 미수집은 정상 소견이 아닙니다.');
       if(!report.subject?.display_name)warnings.push('환자 표시 이름이 제공되지 않았습니다. 실제 진료 전 환자 확인이 필요합니다.');
