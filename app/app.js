@@ -154,11 +154,20 @@ async function establishKimseAuth(authResult=null){
   return data;
 }
 async function mountAuthHubSocial(){
-  const root=$('#authhub-social');if(!root)return;
-  const auth=AUTH();if(!auth){root.innerHTML='<div class="notice danger"><strong>인증 모듈을 불러오지 못했습니다.</strong>잠시 뒤 다시 시도해주세요.</div>';return}
-  root.innerHTML='<div class="authhub-loading">로그인 수단을 불러오는 중…</div>';
-  try{await auth.mountSocial(root)}
-  catch(err){S.auth.lastError='AuthHub 연결을 확인해주세요.';save();root.innerHTML='<div class="notice danger"><strong>로그인 수단을 불러오지 못했습니다.</strong>네트워크 연결 또는 AuthHub 프로젝트 설정을 확인해주세요.</div>'}
+  const root=$('#authhub-social'),group=$('#auth-social-area');if(!root||!group)return;
+  group.hidden=true;root.replaceChildren();
+  const auth=AUTH();if(!auth?.mountSocial)return;
+  try{
+    await auth.mountSocial(root);
+    if(!root.isConnected||!group.isConnected)return;
+    if(root.querySelector('button,a[href],[role="button"]'))group.hidden=false;
+    else root.replaceChildren();
+  }catch(err){
+    // Social sign-in is optional: keep working email login/registration accessible.
+    console.warn('KIMSE_SOCIAL_PROVIDER_UNAVAILABLE',String(err?.message||'unavailable'));
+    if(root.isConnected)root.replaceChildren();
+    if(group.isConnected)group.hidden=true;
+  }
 }
 
 let audioCtx=null,lastSpokenRoute='',lastFeedbackAt=0;
@@ -200,7 +209,7 @@ async function demoShowCaption(topic,hold=1000){
 }
 function wrap(html,o={}){
   const r=route(),screen='screen-'+r.replace(/[^a-z0-9-]/gi,'-'),senior=SENIOR_ROUTES.has(r)?' senior-screen':'';
-  return `${captureTopicOverlay()}${o.nohead?standaloneLang():head(o.title||'낌새',o.back!==false)}<main id="main" class="page ${o.narrow?'narrow':''} ${o.overview?'overview-page':''} ${screen}${senior}" tabindex="-1">${html}${o.overview||r==='start'?'':foot()}</main>${o.bottom?nav(o.care,o.active):''}`
+  return `${captureTopicOverlay()}${o.nohead?standaloneLang():head(o.title||'낌새',o.back!==false)}<main id="main" class="page ${o.narrow?'narrow':''} ${o.overview?'overview-page':''} ${screen}${senior}" tabindex="-1">${html}${o.overview||r==='start'||r==='auth'?'':foot()}</main>${o.bottom?nav(o.care,o.active):''}`
 }
 const notice=(h,p)=>`<div class="notice"><strong>${h}</strong>${p}</div>`;
 const row=(h,s='',right='')=>`<div class="list-row"><span><strong>${h}</strong>${s?`<small>${s}</small>`:''}</span>${right}</div>`;
@@ -1538,10 +1547,29 @@ page.start=()=>wrap(`<section class="kimse-entry" aria-label="낌새 시작 화�
   </div>
 </section>`,{nohead:true,narrow:true});
 page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','user','제가 사용해요','나의 변화를 살펴봐요.','bg-blue'],['care','heart-handshake','가족을 돌보고 있어요','가족의 변화를 함께 살펴봐요.','bg-pink'],['both','users','둘 다 사용해요','나와 가족의 변화를 함께 살펴봐요.','bg-purple']].map(x=>`<button type="button" class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg" aria-hidden="true">${I(x[1])}</span><span class="role-card-copy"><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}`,{title:'역할 선택',narrow:true});
+let authMode='login',authDraftEmail='';
 page.auth=()=>{
   const pending=AUTH()?.pendingVerification?.(),err=S.auth?.lastError||'';
-  if(pending)return wrap(`<div class="eyebrow">이메일 확인</div><h1 class="page-title">보내드린 인증번호를<br>입력해주세요</h1><p class="page-desc">${esc(pending.challenge?.maskedEmail||pending.user?.email||'입력한 이메일')}로 인증번호를 보냈습니다.</p>${err?notice('확인이 필요해요.',esc(err)):''}<div class="form-stack"><div class="field"><label for="authhub-code">인증번호</label><input id="authhub-code" inputmode="numeric" autocomplete="one-time-code" placeholder="인증번호"></div><button id="authhub-verify" class="btn-kimse btn-primary-k">인증하고 계속</button></div>`,{title:'이메일 확인',narrow:true});
-  return wrap(`<div class="eyebrow">AuthHub 계정</div><h1 class="page-title">낌새 계정으로<br>안전하게 시작하세요</h1><p class="page-desc">이메일 또는 사용 가능한 소셜 계정으로 로그인할 수 있습니다.</p>${err?notice('로그인 확인',esc(err)):''}<div class="form-stack"><div class="field"><label for="name">이름 <small>새 계정 만들 때 사용</small></label><input id="name" autocomplete="name" value="${esc(S.account?.name||'')}" placeholder="이름"></div><div class="field"><label for="email">이메일</label><input id="email" type="email" autocomplete="email" value="${esc(S.account?.email||'')}" placeholder="name@example.com"></div><div class="field"><label for="auth-password">비밀번호</label><input id="auth-password" type="password" minlength="10" autocomplete="current-password" placeholder="10자 이상"></div><button id="authhub-login" class="btn-kimse btn-primary-k">로그인</button><button id="authhub-signup" class="btn-kimse btn-secondary-k">새 계정 만들기</button></div><div class="auth-divider"><span>또는</span></div><div id="authhub-social" aria-live="polite"></div>`,{title:'회원가입 / 로그인',narrow:true});
+  if(pending)return wrap(`<div class="eyebrow">이메일 확인</div><h1 class="page-title">이메일을 확인해주세요</h1><p class="page-desc">${esc(pending.challenge?.maskedEmail||pending.user?.email||'입력한 이메일')}로 보낸 인증번호를 입력해주세요.</p>${err?notice('확인이 필요해요.',esc(err)):''}<div class="form-stack"><div class="field"><label for="authhub-code">인증번호</label><input id="authhub-code" inputmode="numeric" autocomplete="one-time-code" placeholder="인증번호"></div><button id="authhub-verify" type="button" class="btn-kimse btn-primary-k">확인하기</button></div>`,{title:'이메일 확인',narrow:true});
+  const signup=authMode==='signup',email=authDraftEmail||S.account?.email||'';
+  return wrap(`<section class="auth-entry" aria-label="${signup?'계정 만들기':'로그인'}">
+    <h1 class="page-title auth-title">${signup?'계정 만들기':'로그인'}</h1>
+    ${err?`<p class="auth-form-error" role="alert">${esc(err)}</p>`:''}
+    <form class="form-stack auth-entry-form" id="auth-entry-form">
+      ${signup?`<div class="field"><label for="name">이름</label><input id="name" name="name" autocomplete="name" value="${esc(S.account?.name||'')}" required placeholder="이름"></div>`:''}
+      <div class="field"><label for="email">이메일</label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" value="${esc(email)}" required placeholder="name@example.com"></div>
+      <div class="field"><label for="auth-password">비밀번호</label><input id="auth-password" name="password" type="password" ${signup?'minlength="10" autocomplete="new-password" placeholder="10자 이상"':'autocomplete="current-password" placeholder="비밀번호"'} required></div>
+      <button id="${signup?'authhub-signup':'authhub-login'}" type="submit" class="btn-kimse btn-primary-k auth-submit" ${S.auth.pending?'disabled':''}>${signup?'계정 만들기':'로그인'}</button>
+    </form>
+    <div class="auth-switch">
+      <span>${signup?'이미 계정이 있나요?':'처음이신가요?'}</span>
+      <button type="button" class="auth-switch-link" data-auth-mode="${signup?'login':'signup'}">${signup?'로그인':'계정 만들기'}</button>
+    </div>
+    <div id="auth-social-area" class="auth-social-area" hidden>
+      <div class="auth-divider"><span>또는</span></div>
+      <div id="authhub-social"></div>
+    </div>
+  </section>`,{title:signup?'계정 만들기':'로그인',narrow:true});
 };
 
 page['onboarding-profile']=()=>wrap(`<div class="eyebrow">처음 설정 2/4 · 근거 연결 조사</div><h1 class="page-title">처음 비교에 필요한<br>기본정보를 알려주세요</h1><p class="page-desc">각 항목은 Evidence Registry에 출처와 사용 목적이 등록되어 있습니다. 검증된 점수 입력과 개인 baseline·맥락 정보는 서로 섞어 점수화하지 않습니다.</p><form id="profile-form" class="form-stack">
@@ -2295,7 +2323,7 @@ async function runAuthHubPassword(mode){
   const auth=AUTH();if(!auth){S.auth.lastError='인증 모듈을 불러오지 못했습니다.';save();render();return}
   const email=$('#email')?.value.trim()||'',password=$('#auth-password')?.value||'',name=$('#name')?.value.trim()||'';
   if(!email||!password){feedback('이메일과 비밀번호를 입력해주세요.','warning');return}
-  if(password.length<10){feedback('비밀번호는 10자 이상 입력해주세요.','warning');return}
+  if(mode==='signup'&&password.length<10){feedback('비밀번호는 10자 이상 입력해주세요.','warning');return}
   if(mode==='signup'&&!name){feedback('새 계정을 만들 때는 이름을 입력해주세요.','warning');return}
   S.auth.pending=true;S.auth.lastError='';save();
   ['authhub-login','authhub-signup'].forEach(id=>{const b=$('#'+id);if(b)b.disabled=true});
@@ -2307,9 +2335,18 @@ async function runAuthHubPassword(mode){
     S.auth.lastError=map[err.message]||'로그인을 완료하지 못했습니다. 잠시 뒤 다시 시도해주세요.';S.auth.pending=false;save();render();
   }
 }
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='auth-entry-form')return;
+  e.preventDefault();await runAuthHubPassword(authMode);
+});
 document.addEventListener('click',async e=>{
-  if(e.target.id==='authhub-login'){await runAuthHubPassword('login');return}
-  if(e.target.id==='authhub-signup'){await runAuthHubPassword('signup');return}
+  const switcher=e.target.closest('[data-auth-mode]');
+  if(switcher){
+    e.preventDefault();
+    authDraftEmail=$('#email')?.value.trim()||authDraftEmail;
+    authMode=switcher.dataset.authMode==='signup'?'signup':'login';
+    S.auth.lastError='';S.auth.pending=false;save();render();return;
+  }
   if(e.target.id==='authhub-verify'){
     const code=$('#authhub-code')?.value.trim()||'';if(!code){feedback('인증번호를 입력해주세요.','warning');return}
     e.target.disabled=true;
@@ -2444,7 +2481,7 @@ document.addEventListener('click',async e=>{if(e.target.id==='sync-monitoring'){
 document.addEventListener('click',async e=>{if(e.target.id==='admin-login'){const token=$('#admin-token').value.trim();if(!token){feedback('운영자 접근 코드를 입력해주세요.','warning');return}e.target.disabled=true;e.target.textContent='확인 중…';try{const r=await fetch(API+'/api/v1/admin/partner-inquiries?limit=1',{headers:{'X-KIMSE-ADMIN-TOKEN':token}});if(r.status===401||r.status===403){feedback('운영자 접근 코드를 다시 확인해주세요.','warning');return}if(!r.ok)throw new Error('HTTP '+r.status);sessionStorage.setItem('kimse.admin.token',token);feedback('운영자 인증이 확인되었습니다.','success');render()}catch{feedback('운영자 문의함에 연결하지 못했습니다. 잠시 뒤 다시 시도해주세요.','warning')}finally{if(e.target?.isConnected){e.target.disabled=false;e.target.textContent='문의함 열기'}}return}if(e.target.id==='admin-logout'){sessionStorage.removeItem('kimse.admin.token');feedback('운영자 문의함에서 로그아웃했습니다.');render();return}const statusBtn=e.target.closest('[data-admin-status]');if(statusBtn){const token=sessionStorage.getItem('kimse.admin.token');if(!token)return;statusBtn.disabled=true;try{const r=await fetch(API+'/api/v1/admin/partner-inquiries/'+encodeURIComponent(statusBtn.dataset.inquiryId)+'/status',{method:'POST',headers:{'Content-Type':'application/json','X-KIMSE-ADMIN-TOKEN':token},body:JSON.stringify({status:statusBtn.dataset.adminStatus})});if(!r.ok)throw new Error('HTTP '+r.status);feedback('문의 상태를 변경했습니다.','success');await loadAdminInquiries()}catch{feedback('문의 상태 변경에 실패했습니다.','warning');statusBtn.disabled=false}}});
 document.addEventListener('click',async e=>{if(e.target.id!=='partner-submit')return;const company=$('#partner-company').value.trim(),contact=$('#partner-name').value.trim(),email=$('#partner-email').value.trim(),message=$('#partner-message').value.trim();if(!company||!contact||!email||message.length<10||!$('#partner-consent').checked){feedback('회사명, 담당자, 이메일, 10자 이상의 제안 내용과 개인정보 동의를 확인해주세요.','warning');return}e.target.disabled=true;e.target.textContent='접수 중…';try{const r=await fetch(API+'/api/v1/partner-inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({inquiry_type:$('#partner-type').value,company_name:company,contact_name:contact,email,phone:$('#partner-phone').value.trim()||null,website_url:$('#partner-web').value.trim()||null,category:$('#partner-category').value,message})});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();S.partnerStatus={id:data.id,at:data.created_at,company};save();feedback('입점·제휴 문의가 정상 접수되었습니다.','success');A.innerHTML=wrap(`<h1 class="page-title">문의가 접수됐어요</h1>${notice('접수 완료',company+' 담당자님의 제안을 저장했습니다. 검토 후 입력한 이메일로 연락드릴 수 있습니다.')}<button class="btn-kimse btn-primary-k btn-full" data-go="market">케어관으로 돌아가기</button>`,{title:'문의 접수',narrow:true})}catch(err){feedback('접수에 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.','warning');e.target.disabled=false;e.target.textContent='문의 접수'}});
 
-window.addEventListener('hashchange',render);window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');startPassiveCollectors();flushSignals();syncMonitoringPreferences();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
+window.addEventListener('hashchange',()=>{if(route()==='auth')authMode='login';render()});window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');startPassiveCollectors();flushSignals();syncMonitoringPreferences();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
 document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)}else{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}}});
 window.addEventListener('pagehide',()=>{recordAppActive();flushMotionActivity();queueNativeStepSnapshot(true);stopLocationWatch();flushSignals(true)});
 window.addEventListener('pageshow',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});

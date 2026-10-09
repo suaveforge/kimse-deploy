@@ -1304,3 +1304,36 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  .screen-role .role-card{grid-template-columns:60px minmax(0,1fr) 20px;column-gap:12px}
  .screen-role .role-card .avatar-lg{width:60px;min-width:60px;max-width:60px;height:60px}
 }
+
+/* KIMSE account: distinct minimal sign-in and registration surfaces */
+.screen-auth .auth-entry{width:100%;max-width:440px;margin:0 auto;padding-top:clamp(18px,5vh,48px)}
+.screen-auth .auth-title{margin-bottom:30px;font-size:clamp(32px,8vw,42px);line-height:1.16;letter-spacing:-.055em}
+.screen-auth .auth-entry-form{gap:20px}
+.screen-auth .auth-entry-form .field{min-width:0}
+.screen-auth .auth-entry-form .field label{margin-bottom:9px;font-weight:800;font-size:16px}
+.screen-auth .auth-entry-form .field input{width:100%;min-height:62px;border-radius:17px;font-size:17px}
+.screen-auth .auth-submit{
+  display:block;min-height:70px;width:min(100%,320px);max-width:320px;
+  margin:14px auto 0;border-radius:24px;font-size:19px;font-weight:900;
+  box-shadow:0 8px 0 #095b46,0 16px 20px rgba(9,91,70,.14);
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.screen-auth .auth-submit:active{transform:translateY(6px);box-shadow:0 2px 0 #095b46,0 7px 12px rgba(9,91,70,.12)}
+.screen-auth .auth-switch{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:31px 0 0;color:#667671;font-size:15px}
+.screen-auth .auth-switch-link{
+  appearance:none;border:0;background:transparent;color:#116b54;
+  padding:9px 4px;min-height:44px;font-weight:850;font-size:16px;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;
+}
+.screen-auth .auth-form-error{margin:0 0 18px;padding:14px 16px;border-radius:13px;background:#fff3f2;color:#9b302e;font-size:15px;line-height:1.5}
+.screen-auth .auth-social-area[hidden]{display:none!important}
+.screen-auth .auth-social-area{margin-top:25px}
+.screen-auth #authhub-social:empty{display:none}
+.screen-auth .auth-switch-link:focus-visible,.screen-auth .auth-submit:focus-visible{outline:3px solid #125de3;outline-offset:4px}
+@media(max-width:400px){
+  .screen-auth .auth-entry{padding-top:16px}
+  .screen-auth .auth-title{margin-bottom:25px}
+  .screen-auth .auth-entry-form{gap:16px}
+  .screen-auth .auth-entry-form .field input{min-height:60px}
+}
+@media(prefers-reduced-motion:reduce){.screen-auth .auth-submit{transition:none}}
