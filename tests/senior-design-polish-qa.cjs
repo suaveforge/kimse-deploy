@@ -29,7 +29,7 @@ async function check(browser,width,mode,screen){
  if(mode==='normal'&&[320,375,1280].includes(width))await page.screenshot({path:'qa-artifacts/'+screen+'-'+width+'.png',fullPage:true});
  if(initial){
  await page.locator('[data-initial-answer="subtraction:79"]').click();
- await page.locator('.kimse-initial-progress-label strong').getByText('3 / 6').waitFor({timeout:3000});
+ await page.locator('.kimse-journey-count').getByText('3 / 6').waitFor({timeout:3000});
  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')));
  assert.equal(state.initial.answers.subtraction,'79');
  assert(state.initial.responseTimes[0]>=100);
@@ -37,7 +37,7 @@ async function check(browser,width,mode,screen){
  await page.locator('[data-profile-choice="male"]').click();
  assert.equal(await page.locator('[data-profile-choice="male"]').getAttribute('aria-pressed'),'true');
  await page.locator('#profile-wizard-next').click();
- assert.equal((await page.locator('.kimse-wizard-progress-head strong').innerText()).trim(),'3 / 12');
+ assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'3 / 12');
  }
  assert.equal(errors.length,0,'Unexpected JS errors: '+errors.join(';'));
  results.push({screen,width,mode,result:'PASS'});
@@ -56,7 +56,7 @@ async function check(browser,width,mode,screen){
  assert.equal(await page.locator('.kimse-initial-answer.is-confirming').count(),1,'Selection feedback missing');
  const content=await page.locator('main').innerText();
  assert(!/정답입니다|오답입니다|치매 위험 판정/.test(content),'Diagnostic feedback leaked');
- await page.locator('.kimse-initial-progress-label strong').getByText('3 / 6').waitFor({timeout:2500});
+ await page.locator('.kimse-journey-count').getByText('3 / 6').waitFor({timeout:2500});
  await context.close();
  fs.writeFileSync('qa-artifacts/design-results.json',JSON.stringify({pass:true,checks:results.length,results},null,2));
  console.log('KIMSE_POLISH_QA_TOTAL='+results.length);
