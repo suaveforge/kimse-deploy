@@ -227,11 +227,24 @@ function choice(key,no,title,en,desc){
 }
 var hub='<section class="kimse-primary-hub" id="evidence-home"><div class="kimse-primary-head"><h2>Evidence Registry</h2><p>확인할 영역을 선택하세요.</p></div><div class="kimse-primary-grid" aria-label="Evidence 대분류">'+choice('evidence','01','관찰 근거','EVIDENCE','낌새가 무엇을 관찰하고 왜 보는지, 원문 근거와 함께 확인합니다.')+choice('clinical','02','의료 리포트','CLINICAL HANDOFF','누적된 변화를 의료진이 빠르게 이해할 수 있는 형태로 정리합니다.')+choice('rd','03','연구·기관 R&D','RESEARCH DATA MODEL','공동연구·검증을 위한 종단 데이터 정규화 구조를 확인합니다.')+choice('trust','04','데이터 신뢰·검증','TRUST & PROVENANCE','데이터 무결성·시점·동의·이용 이력을 검증하는 구조를 확인합니다.')+'</div></section>';
 
+
+var clinicalSubmissionStatus='<section class="card mt-3" id="clinical-submission-readiness"><div class="card-header"><div><h3 class="card-title">최종 목적 · 병원별 맞춤 리포트 원클릭 제출</h3><div class="text-secondary small">국가·병원·진료과별 필수 내용/형식을 적용하고 검증된 채널로 전송한 뒤 실제 병원 수신증빙까지 확보하는 것이 목표입니다.</div></div></div>'
++'<div class="card-body"><p class="mb-3">한 환자의 관찰·전문검사·가족 확인 정보를 한 Clinical Dataset으로 유지하고, <strong>A4 출력·PDF</strong>와 <strong>모니터·태블릿 인터랙티브 화면</strong> 및 향후 기관별 구조화 전송을 동일한 사실에서 만듭니다.</p>'
++'<div class="row g-2">'
++'<div class="col-md-4"><div class="border rounded p-3 h-100"><strong>코드상 구현</strong><p class="small text-secondary mt-2 mb-0">임상 데이터 구조·인쇄·대화형 분석·근거 추적·미검증 FHIR 후보 및 제출 전 확인 상태</p></div></div>'
++'<div class="col-md-4"><div class="border rounded p-3 h-100"><strong>의료진·병원 검증 필요</strong><p class="small text-secondary mt-2 mb-0">실제 의료기관별 문진 필수항목·표시 순서·진료과 선호·환자 매칭·동의·수신 방식 및 의료진 평가</p></div></div>'
++'<div class="col-md-4"><div class="border rounded p-3 h-100"><strong>병원 원클릭 전송 미완료</strong><p class="small text-secondary mt-2 mb-0">검증된 실제 병원 수신 채널·병원 수신 receipt·의료진 확인 근거 없음. PDF 생성은 접수가 아닙니다.</p></div></div>'
++'</div><h4 class="mt-4 mb-2">공식 근거 및 적용 범위</h4><div class="list-group list-group-flush">'
++row('임상 리포트의 내용 기준','인지·일상기능·행동·증상 경과·가족 관찰·가역적 요인의 임상 기록 기준. 개별 병원의 접수 양식과 동일하다고 주장하지 않습니다.',[23,24,4,25,36])
++row('상호운용성 기본 구조','HL7 IPS는 국제 환자요약 구조, KR Core는 한국 FHIR 제약조건. 병원별 실제 수신 승인/구현 여부와는 별도입니다.',[26,27])
++opRow('의료기관별 수집·검증 공백','개별 병원의 필수·선택 필드, 전송 채널, 의사/간호사 사용성 피드백과 실제 수신은 아직 공식 승인된 데이터로 확보되지 않았습니다.')
++'</div><p class="small text-secondary mt-3 mb-0">실제 연동 승인 없이 기관명·의료진 평가·제출 성공 상태를 생성하지 않습니다. 문서 기준: Clinical Report One-click Objective, 2026-10-09.</p></div></section>';
+
 if(PAGE_MODE==='menu'){
   root.innerHTML='';
   root.insertAdjacentHTML('afterbegin',hub);
 }else if(PAGE_MODE==='clinical'){
-  root.insertAdjacentHTML('afterbegin','<section class="kimse-application-card mb-4" id="evidence-application">'+clinical+'</section>');
+  root.insertAdjacentHTML('afterbegin','<section class="kimse-application-card mb-4" id="evidence-application">'+clinical+'</section>'+clinicalSubmissionStatus);
 }else if(PAGE_MODE==='rd'){
   root.insertAdjacentHTML('afterbegin','<section class="kimse-application-card mb-4" id="evidence-application">'+rd+'</section>');
 }else if(PAGE_MODE==='trust'){
