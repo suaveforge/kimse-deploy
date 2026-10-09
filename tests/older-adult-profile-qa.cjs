@@ -26,7 +26,7 @@ async function checkMode(browser,width,mode){
  await page.locator('.kimse-wizard-title').waitFor({timeout:30000});
  for(let i=0;i<fields.length;i++){
    const [field,value]=fields[i];
-   const progress=page.locator('.kimse-wizard-progress-head strong');
+   const progress=page.locator('.kimse-journey-count');
    assert.equal((await progress.innerText()).trim(),(i+1)+' / 12','step '+i+' count');
    const title=await page.locator('.kimse-wizard-title').innerText();
    const text=await page.locator('.kimse-profile-wizard').innerText();
@@ -58,15 +58,15 @@ async function checkMode(browser,width,mode){
    if(width===375&&mode==='normal'&&i===4){
      await page.reload({waitUntil:'domcontentloaded'});
      await page.locator('.kimse-wizard-title').waitFor();
-     assert.equal((await page.locator('.kimse-wizard-progress-head strong').innerText()).trim(),'5 / 12','Resume current question after reload');
+     assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'5 / 12','Resume current question after reload');
      assert.equal(await page.locator('.kimse-wizard-choice[data-profile-choice="partner_family"]').getAttribute('aria-pressed'),'true');
    }
    if((width===320||width===375)&&mode==='normal'&&i===2){
      await page.locator('[data-profile-prev]').click();
-     assert.equal((await page.locator('.kimse-wizard-progress-head strong').innerText()).trim(),'2 / 12','Previous step');
+     assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'2 / 12','Previous step');
      await page.locator('.kimse-wizard-choice[data-profile-choice="male"]').click();
      await page.locator('#profile-wizard-next').click();
-     assert.equal((await page.locator('.kimse-wizard-progress-head strong').innerText()).trim(),'3 / 12','Forward after correction');
+     assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'3 / 12','Forward after correction');
    }
    if(i===0&&(width===320||width===375||width===1280)){await page.screenshot({path:'qa-artifacts/kimse-wizard-'+width+'-'+mode+'.png',fullPage:true})}
    const next=page.locator('#profile-wizard-next');
