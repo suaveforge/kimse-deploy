@@ -6,7 +6,7 @@ const report=[];
 async function caseRun(browser,width,mode,which){
   const ctx=await browser.newContext({viewport:{width,height:790},reducedMotion:'reduce'});
   await ctx.addInitScript(mode=>{
-    localStorage.setItem('kimse.p0.state',JSON.stringify({
+    if(!localStorage.getItem('kimse.p0.state'))localStorage.setItem('kimse.p0.state',JSON.stringify({
       version:14,account:{name:'브라우저 검증',email:'qa@example.invalid'},intent:'self',self:true,care:false,
       profile:{birthYear:''},onboarding:{profileDone:false,consentDone:true,initialDone:false,profileStep:0},
       consents:{service:true,privacy:true,health:true},
