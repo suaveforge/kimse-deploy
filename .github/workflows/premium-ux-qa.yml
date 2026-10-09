@@ -26,21 +26,21 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Wait for live Release 40 assets
+      - name: Wait for current live assets
         run: |
           for i in $(seq 1 40); do
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?qa=${GITHUB_SHA}-${i}" | grep -Fq "const VERSION='39'" && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.5 · product-first universal readable floor' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?qa=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?qa=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'kimse-pwa-20261006-cycle-09'; then
-              echo "Live Release 40 premium UX is ready."
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | cmp -s service-worker.js -; then
+              echo "Live premium UX assets match the current deployment."
               exit 0
             fi
             echo "Waiting for Pages propagation ($i/40)..."
             sleep 5
           done
-          echo "Live Release 40 did not propagate in time."
+          echo "Current live assets did not propagate in time."
           exit 1
       - name: Install Playwright Chromium
         run: |
@@ -90,7 +90,7 @@ jobs:
                 check(await p.locator('input[data-a11y="captions"],input[data-a11y="colorIcons"],input[data-a11y="screenReader"]').count()===0,'no-fake-a11y-controls');
                 check(await p.locator('.a11y-setting-row label').count()>=6,'a11y-setting-names');
                 const footer=await p.locator('.app-footer').innerText();
-                check((footer.match(/Release 40/g)||[]).length===1&&!footer.includes('Release 40.0'),'footer-release-normalized',footer);
+                check(!/Release\s+\d+(?:\.\d+)?/i.test(footer),'footer-internal-release-hidden',footer);
               }
               if(route==='monitoring-status'){
                 await p.waitForSelector('#monitoring-a11y-summary');check(await p.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-labels');

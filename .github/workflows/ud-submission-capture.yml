@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Wait for live Release 40 submission assets
+      - name: Wait for current live submission assets
         run: |
           for i in $(seq 1 40); do
             if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.css?ud=${GITHUB_SHA}-${i}" | grep -Fq ':root{--kimse-primary:#12735e}' && \
@@ -31,8 +31,8 @@ jobs:
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'deltaValue' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?ud=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
                curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?ud=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | grep -Fq 'kimse-pwa-20261006-cycle-09'; then
-              echo "Live Release 40 submission assets are ready."
+               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?ud=${GITHUB_SHA}-${i}" | cmp -s service-worker.js -; then
+              echo "Current live submission assets match the deployment."
               exit 0
             fi
             echo "Waiting for Pages propagation ($i/40)..."
