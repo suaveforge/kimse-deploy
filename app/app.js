@@ -2224,19 +2224,37 @@ function clinicalCooccurrenceView(r){
 }
 
 function clinicalDeliveryPreflight(report){
-  const status=window.KIMSE_CLINICAL_SUBMISSION?.evaluate?.(report);
+  const gate=window.KIMSE_CLINICAL_SUBMISSION;
+  const status=gate?.evaluate?.(report);
+  const selection=gate?.getSelection?.()||{country:'KR',institutionId:'',department:'',clinician:''};
+  const countryLabels=gate?.countryLabels||{KR:'대한민국',GB:'영국',US:'미국'};
+  const targets=gate?.getTargets?.(selection.country)||[];
   const ready=!!status?.printReady;
   const warnings=Array.isArray(status?.warnings)?status.warnings:[];
   const blockers=Array.isArray(status?.printBlockers)?status.printBlockers:[];
   const list=(rows)=>rows.map(x=>'<li>'+esc(x)+'</li>').join('');
+  const option=(value,label,selected)=>'<option value="'+esc(value)+'" '+(selected?'selected':'')+'>'+esc(label)+'</option>';
+  const countries=Object.entries(countryLabels).map(([code,label])=>option(code,label,code===selection.country)).join('');
+  const institutions=option('','기관 선택 안 함 · 병원 직접 제출 미연동',!selection.institutionId)
+    +targets.map(x=>option(x.id,x.name+' (공개 요건 조사)',x.id===selection.institutionId)).join('');
+  const target=status?.selectedResearchTarget;
   return '<section class="clinical-delivery-preflight" aria-labelledby="clinical-delivery-title">'
     +'<div class="clinical-delivery-top"><div><span class="clinical-delivery-kicker">SUBMISSION READINESS</span><h2 id="clinical-delivery-title">병원 제출 준비 상태</h2></div><strong class="clinical-delivery-badge">실제 병원 전자제출 미연동</strong></div>'
-    +'<div class="clinical-delivery-grid"><div><span>현재 보고서</span><strong>'+(ready?'인쇄·PDF 준비됨':'출력 전 확인 필요')+'</strong><small>국내 일반 진료용 · 환자가 직접 전달하는 형식</small></div><div><span>병원별 연결</span><strong>검증된 수신 기관 없음</strong><small>병원·진료과별 필수 항목 및 전송 채널 미승인</small></div><div><span>병원 수신 확인</span><strong>접수 이력 없음</strong><small>전송 요청·병원 수신·의료진 확인은 서로 다릅니다.</small></div></div>'
+    +'<div class="clinical-target-controls" aria-label="진료 대상기관 조사 및 선택">'
+      +'<label>진료 국가<select id="clinical-target-country">'+countries+'</select></label>'
+      +'<label>의료기관<select id="clinical-target-institution">'+institutions+'</select></label>'
+      +'<label>진료과 (선택)<input id="clinical-target-department" value="'+esc(selection.department)+'" placeholder="예: 신경과" maxlength="100" autocomplete="off"></label>'
+      +'<label>담당 의료진 (선택)<input id="clinical-target-clinician" value="'+esc(selection.clinician)+'" placeholder="기관 확인 전 임시 입력" maxlength="100" autocomplete="off"></label>'
+    +'</div>'
+    +(target?'<p class="clinical-delivery-disclaimer">선택 기관의 <a href="'+esc(target.url)+'" target="_blank" rel="noopener noreferrer">공식 의뢰 안내</a>는 자료 조사용입니다. 환자 직접 제출 또는 낌새 연동이 승인된 경로가 아닙니다.</p>':'<p class="clinical-delivery-disclaimer">이 목록은 실제 연동기관 목록이 아닙니다. 국내 승인 수신기관은 현재 등록되지 않았습니다.</p>')
+    +'<div class="clinical-delivery-grid"><div><span>현재 보고서</span><strong>'+(ready?'인쇄·PDF 준비됨':'출력 전 확인 필요')+'</strong><small>한국어 일반 진료용 · 환자가 직접 전달하는 형식</small></div><div><span>병원별 연결</span><strong>'+(target?'공개 의뢰 요건만 확인':'검증된 수신 기관 없음')+'</strong><small>기관별 필수항목·의료진 선호·전송 권한 미승인</small></div><div><span>병원 수신 확인</span><strong>접수 이력 없음</strong><small>전송 성공과 기관 수신·의료진 확인은 서로 다릅니다.</small></div></div>'
     +(blockers.length?'<div class="clinical-delivery-notes" role="status"><b>출력 전 확인</b><ul>'+list(blockers)+'</ul></div>':'')
     +(warnings.length?'<div class="clinical-delivery-notes"><b>자료 확인 권장</b><ul>'+list(warnings)+'</ul></div>':'')
+    +'<div class="clinical-delivery-notes"><b>전자제출 선행조건</b><ul>'+list(status?.electronicBlockers||['실제 의료기관 연동이 필요합니다.'])+'</ul></div>'
     +'<div class="clinical-delivery-actions"><button type="button" id="clinical-preflight-print" class="btn-kimse btn-secondary-k" '+(ready?'':'disabled')+'>인쇄·PDF로 저장</button><button type="button" id="clinical-electronic-submit" class="btn-kimse btn-primary-k" disabled>병원에 바로 제출 (미연동)</button></div>'
-    +'<p class="clinical-delivery-disclaimer">병원별 요구사항·수신 방식·환자 식별·제공 동의가 공식 검증될 때까지 전자제출 버튼을 활성화하지 않습니다. PDF를 생성하거나 인쇄하는 것은 병원 접수를 의미하지 않습니다.</p></section>';
+    +'<p class="clinical-delivery-disclaimer">병원별 요구사항·수신 방식·환자 식별·제공 동의가 공식 검증될 때까지 전자제출 버튼을 활성화하지 않습니다. 기관·의료진 선택값은 이 화면에서만 임시 유지되며 병원으로 전송하지 않습니다.</p></section>';
 }
+
 page['clinical-handoff']=()=>{
   const r=S.clinicalReport;
   if(!r)return wrap('<div class="eyebrow">병원 방문 준비 · Clinical Handoff</div><h1 class="page-title">최근 변화를 정리해<br>병원에 가져갈 수 있어요</h1><p class="page-desc">개인 기준선·최근 변화·가족 확인·병원·검사 결과를 한 문서에 모아 진료 전에 확인할 수 있습니다.</p>'+notice('없는 내용은 채우지 않아요.','실제로 기록된 데이터만 정리하며, 기록이 없으면 정상으로 추정하지 않습니다.')+'<button id="load-clinical-report" class="btn-kimse btn-primary-k btn-full">병원 방문용 리포트 만들기</button>',{title:'의료진 전달'});
@@ -2386,6 +2404,13 @@ document.addEventListener('click',async e=>{
     catch(err){feedback(err.message==='BASELINE_SYNC_REQUIRED'?'초기 기준 동기화가 필요합니다. 잠시 뒤 다시 시도해주세요.':'반복 체크를 저장하지 못했습니다. 연결 상태를 확인해주세요.','warning');e.target.disabled=false;e.target.textContent='개인 기준과 비교'}
     return;
   }
+});
+document.addEventListener('change',e=>{
+  const ids={'clinical-target-country':'country','clinical-target-institution':'institutionId','clinical-target-department':'department','clinical-target-clinician':'clinician'};
+  const field=ids[e.target?.id];
+  if(!field||route()!=='clinical-handoff')return;
+  window.KIMSE_CLINICAL_SUBMISSION?.setSelection?.({[field]:e.target.value});
+  render();
 });
 document.addEventListener('click',e=>{
   if(e.target.id==='save-recall'){

@@ -1357,3 +1357,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .clinical-delivery-disclaimer{margin:0;font-size:13px;line-height:1.5;color:#50646d}
 @media(max-width:650px){.clinical-delivery-preflight{padding:15px 13px;border-radius:17px}.clinical-delivery-grid{grid-template-columns:1fr}.clinical-delivery-grid>div{padding:11px 12px}.clinical-delivery-top h2{font-size:20px}}
 @media print{.clinical-delivery-preflight{display:none!important}}
+
+/* Clinical Handoff destination review: matches existing clinical delivery cards. */
+.clinical-target-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.clinical-target-controls label{display:grid;gap:6px;min-width:0;font-size:13px;font-weight:750;color:#35545a}
+.clinical-target-controls select,.clinical-target-controls input{min-width:0;width:100%;min-height:46px;padding:9px 12px;border:1px solid #cddfe3;border-radius:12px;background:#fff;color:var(--kimse-text);font:inherit;font-weight:500}
+.clinical-target-controls select:focus-visible,.clinical-target-controls input:focus-visible{outline:3px solid #a1d5cd;outline-offset:2px}
+.clinical-delivery-disclaimer a{color:#0e6b8a;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:650px){.clinical-target-controls{grid-template-columns:1fr}}
