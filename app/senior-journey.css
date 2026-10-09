@@ -306,3 +306,31 @@
 
 /* Year grid has one forward action; choosing another decade already provides the back action. */
 .screen-onboarding-profile .kimse-birth-year-actions{grid-template-columns:minmax(0,1fr)!important}
+
+
+/* Tap the year once: no redundant confirmation and no oversized two-column blocks. */
+.screen-onboarding-profile .kimse-birth-picker{gap:12px}
+.screen-onboarding-profile .kimse-birth-decade-grid,
+.screen-onboarding-profile .kimse-birth-year-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{
+  min-height:65px!important;padding:9px 5px!important;border-radius:15px!important;
+  border-width:1.5px!important;box-shadow:0 1px 5px rgba(17,88,65,.04)!important;
+}
+.screen-onboarding-profile .kimse-birth-decade strong{font-size:19px!important;line-height:1.25;font-weight:800}
+.screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:21px!important;line-height:1.3}
+.screen-onboarding-profile .kimse-birth-year{flex-direction:row;justify-content:center}
+.screen-onboarding-profile .kimse-birth-change{width:100%;min-height:55px;margin:0;padding:10px 12px;font-size:17px}
+.screen-onboarding-profile .kimse-birth-range-actions{display:none!important}
+.screen-onboarding-profile .kimse-birth-year-actions{display:none!important}
+.large-text .screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{min-height:80px!important}
+.large-text .screen-onboarding-profile .kimse-birth-decade strong{font-size:22px!important}
+.large-text .screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:24px!important}
+.high-contrast .screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{
+ border:3px solid #111!important;box-shadow:none!important;background:#fff!important;
+}
+@media(max-width:360px){
+ .screen-onboarding-profile .kimse-birth-decade-grid,.screen-onboarding-profile .kimse-birth-year-grid{gap:8px}
+ .screen-onboarding-profile .kimse-birth-decade strong{font-size:17px!important}
+ .screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:18px!important}
+ .screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{min-height:60px!important;padding:7px 3px!important}
+}
