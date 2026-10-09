@@ -30,7 +30,7 @@ jobs:
             if curl -fsSL --max-time 15 "https://kimse.suaveforge.com/index.html?audit=${GITHUB_SHA}" -o /tmp/kimse-audit-index.html &&
                curl -fsSL --max-time 15 "https://kimse.suaveforge.com/app.js?audit=${GITHUB_SHA}" -o /tmp/kimse-audit-app.js &&
                curl -fsSL --max-time 15 "https://kimse.suaveforge.com/app.css?audit=${GITHUB_SHA}" -o /tmp/kimse-audit-app.css &&
-               grep -Fq '20261009-49' /tmp/kimse-audit-index.html &&
+               grep -Fq '20261009-50' /tmp/kimse-audit-index.html &&
                grep -Fq "['both','users'" /tmp/kimse-audit-app.js &&
                grep -Fq 'Role selection: fixed pictogram' /tmp/kimse-audit-app.css; then
               echo 'AUDIT_PUBLIC_PARITY=yes'
