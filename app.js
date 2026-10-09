@@ -1678,8 +1678,8 @@ page['onboarding-profile']=()=>{
    '<div class="kimse-journey-prompt"><h1 class="kimse-wizard-title">'+esc(title)+'</h1>'+
    (hint?'<p id="profile-wizard-hint" class="kimse-wizard-hint">'+esc(hint)+'</p>':'')+'</div>'+
    '<form id="profile-form" novalidate>'+choices+
-   '<div class="kimse-wizard-actions kimse-journey-actions'+(birth&&phase==='decade'?' kimse-birth-actions':'')+'">'+
-     (birth&&phase==='decade'?'':'<button type="button" class="kimse-wizard-previous" data-profile-prev '+(showPrev?'':'disabled')+'>이전</button>')+
+   '<div class="kimse-wizard-actions kimse-journey-actions'+(birth&&phase==='decade'?' kimse-birth-actions':birth?' kimse-birth-year-actions':'')+'">'+
+     (birth?'':'<button type="button" class="kimse-wizard-previous" data-profile-prev '+(showPrev?'':'disabled')+'>이전</button>')+
      (birth&&phase==='decade'?'':'<button type="submit" id="profile-wizard-next" class="btn-kimse btn-primary-k kimse-wizard-next" '+(valid?'':'disabled')+'>'+(last?'초기 과제로 계속':'다음')+'</button>')+
    '</div></form></section>';
  return wrap(html,{title:'기본정보',narrow:true});
