@@ -81,6 +81,8 @@ async function run(browser,screen,mode,width){
  }
  if(screen==='initial-result'){
   assert.equal(await page.locator('.kimse-summary-row').count(),6,'result rows lost');
+  assert((await page.locator('.kimse-summary-row').allInnerTexts()).some(v=>v.includes('숫자 계산')&&v.includes('응답 기록')),'non-diagnostic response label missing');
+  assert(!((await page.locator('main').innerText()).includes('정답')),'answer correctness should not be presented as a diagnosis');
   assert.equal(await page.locator('#start-monitoring-after-initial').count(),1,'primary CTA missing');
   assert.equal(await page.locator('[data-go="brain-map"]').count(),1,'secondary action missing');
  }
