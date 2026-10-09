@@ -2493,6 +2493,7 @@ document.addEventListener('click',async e=>{
   if(range){range.disabled=true;const ok=await syncClinicalReport(Number(range.dataset.clinicalRange)||180);feedback(ok?'표시 기간을 변경했습니다.':'리포트 기간 데이터를 불러오지 못했습니다.',ok?'success':'warning');render();return}
   if(e.target.id==='load-clinical-report'||e.target.id==='clinical-report-refresh'){e.target.disabled=true;const current=Number(S.clinicalReport?.report_context?.view_horizon_days||180);const ok=await syncClinicalReport(current);feedback(ok?'실제 데이터로 병원 방문용 리포트를 갱신했습니다.':'리포트 데이터를 불러오지 못했습니다.',ok?'success':'warning');render();return}
   if(e.target.id==='clinical-report-print'||e.target.id==='clinical-preflight-print'){window.print();return}
+  if(e.target.id==='clinical-electronic-submit'){feedback('병원 전자제출은 실제 수신기관 승인과 환자별 동의·검증이 완료된 뒤 사용할 수 있습니다.','warning');return}
 });
 document.addEventListener('submit',e=>{if(e.target.id==='market-search-form'){e.preventDefault();S.marketSearch=$('#market-search')?.value.trim()||'';save();feedback(S.marketSearch?'검색 결과를 보여드립니다.':'전체 항목을 보여드립니다.');render()}});
 document.addEventListener('click',e=>{if(e.target.id==='market-search-clear'){S.marketSearch='';save();feedback('검색어를 지웠습니다.');render()}});
