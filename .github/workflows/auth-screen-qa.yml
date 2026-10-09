@@ -101,6 +101,20 @@ jobs:
                     }catch(e){return {available:false,status:e?.status||0,code:String(e?.message||'unknown').slice(0,90)}}
                   });
                   console.log('KIMSE_AUTHHUB_PUBLIC_CONFIG '+JSON.stringify(config));
+                  assert.equal(config.available,true,'AuthHub public config must load from KIMSE browser');
+                  assert.equal(config.socialConfigured,true,'AuthHub social UI script config missing');
+                  const anonTest=await page.evaluate(async()=>{
+                    try{
+                      const r=await fetch('https://api-authhub.suaveforge.com/v1/auth/p45/signup?environment=production',{
+                        method:'POST',headers:{'Content-Type':'application/json','X-AuthHub-Client':'kimse-p45'},
+                        credentials:'include',body:'{}'
+                      });
+                      const body=await r.json().catch(()=>({}));
+                      return {status:r.status,error:body.error||''};
+                    }catch(e){return {status:0,error:String(e.message||e)}}
+                  });
+                  assert.deepEqual(anonTest,{status:400,error:'invalid_signup'},'signup API CORS/route contract failure');
+                  console.log('KIMSE_AUTHHUB_EMAIL_SIGNUP_ROUTE_OK=yes');
                 }
                 await page.close();
               }
