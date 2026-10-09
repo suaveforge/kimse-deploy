@@ -1603,6 +1603,16 @@ function profileWizardValueValid(step,value){
   if(step.type==='sleep')return v.length>0;
   return !!step.options?.some(([code])=>code===v);
 }
+
+/* Quiet Signal journey primitives: design-only; existing values are not mapped here. */
+const journeyTop=(section,step,total,subtitle='')=>
+  '<div class="kimse-journey-top">'+
+    '<div class="kimse-journey-eyebrow"><span class="kimse-journey-brandmark" aria-hidden="true"><i></i><i></i><i></i></span>'+
+      '<span>'+esc(section)+'</span><span class="kimse-journey-count">'+step+' <em>/</em> '+total+'</span></div>'+
+    '<div class="kimse-journey-track" role="progressbar" aria-label="'+esc(section)+' 진행률" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+step+'"><span style="width:'+(step/total*100)+'%"></span></div>'+
+    (subtitle?'<div class="kimse-journey-subtitle">'+esc(subtitle)+'</div>':'')+
+  '</div>';
+
 page['onboarding-profile']=()=>{
   const i=profileWizardStepIndex(),step=PROFILE_WIZARD_STEPS[i],current=String(S.profile[step.key]??''),last=i===PROFILE_WIZARD_STEPS.length-1,valid=profileWizardValueValid(step,current);
   const progress=Math.round((i+1)/PROFILE_WIZARD_STEPS.length*100);
@@ -1616,13 +1626,12 @@ page['onboarding-profile']=()=>{
     choices='<div class="kimse-wizard-field"><label for="profile-wizard-input">'+(step.type==='year'?'출생연도':'하루 수면시간')+'</label>'+
       '<div class="kimse-wizard-input-wrap"><input id="profile-wizard-input" type="text" inputmode="'+(step.type==='year'?'numeric':'decimal')+'" autocomplete="off" '+(step.type==='year'?'maxlength="4" pattern="[0-9]{4}"':'maxlength="40"')+' value="'+esc(current)+'" placeholder="'+(step.type==='year'?'예: 1956':'예: 7시간 30분')+'" aria-describedby="profile-wizard-hint"></div></div>';
   }
-  const html='<section class="kimse-profile-wizard" aria-label="기본정보 입력">'+
-    '<div class="kimse-wizard-progress-head"><span>처음 설정 · 기본정보</span><strong>'+String(i+1)+' / '+PROFILE_WIZARD_STEPS.length+'</strong></div>'+
-    '<div class="kimse-wizard-progress-track" role="progressbar" aria-label="기본정보 진행 정도" aria-valuemin="0" aria-valuemax="'+PROFILE_WIZARD_STEPS.length+'" aria-valuenow="'+(i+1)+'"><span style="width:'+progress+'%"></span></div>'+
-    '<h1 class="kimse-wizard-title">'+esc(step.title)+'</h1>'+
-    (step.hint?'<p id="profile-wizard-hint" class="kimse-wizard-hint">'+esc(step.hint)+'</p>':'')+
+  const html='<section class="kimse-profile-wizard kimse-journey" aria-label="기본정보 입력">'+
+    journeyTop('나를 알아가는 첫 단계',i+1,PROFILE_WIZARD_STEPS.length,'기본정보')+
+    '<div class="kimse-journey-prompt"><h1 class="kimse-wizard-title">'+esc(step.title)+'</h1>'+
+    (step.hint?'<p id="profile-wizard-hint" class="kimse-wizard-hint">'+esc(step.hint)+'</p>':'')+'</div>'+
     '<form id="profile-form" novalidate>'+choices+
-    '<div class="kimse-wizard-actions"><button type="button" class="kimse-wizard-previous" data-profile-prev '+(i===0?'disabled':'')+'>이전</button>'+
+    '<div class="kimse-wizard-actions kimse-journey-actions"><button type="button" class="kimse-wizard-previous" data-profile-prev '+(i===0?'disabled':'')+'>이전</button>'+
     '<button type="submit" id="profile-wizard-next" class="btn-kimse btn-primary-k kimse-wizard-next" '+(valid?'':'disabled')+'>'+(last?'초기 과제로 계속':'다음')+'</button></div></form>'+
     (i===0?'<p class="kimse-wizard-reassurance">이전 단계로 돌아가 답을 수정할 수 있어요.</p>':'')+'</section>';
   return wrap(html,{title:'기본정보',narrow:true});
@@ -1651,15 +1660,13 @@ page['initial-check']=()=>{
     initialActiveTimedStep=i;
     save();
   }
-  const top='<section class="kimse-initial-journey" aria-label="첫 상태 확인">'+
-    '<div class="kimse-initial-progress-label"><span>처음 설정 · 나의 첫 상태</span><strong>'+(i+1)+' / 6</strong></div>'+
-    '<div class="kimse-initial-progress-track" role="progressbar" aria-label="첫 상태 확인 진행률" aria-valuemin="0" aria-valuemax="6" aria-valuenow="'+(i+1)+'"><span style="width:'+Math.round((i+1)/6*100)+'%"></span></div>';
-  const foot='<div class="kimse-initial-footer">'+
+  const top='<section class="kimse-initial-journey kimse-journey" aria-label="첫 상태 확인">'+journeyTop('나의 첫 상태',i+1,6,'기억과 생활을 살펴볼게요');
+  const foot='<div class="kimse-initial-footer kimse-journey-footer">'+
     (i>1?'<button type="button" class="kimse-initial-prev" data-initial-back aria-label="이전 질문으로 돌아가 수정하기">← 이전 질문</button>':'')+
     '</div></section>';
   if(i===0)return wrap(top+
-    '<h1 class="kimse-initial-title">세 단어를 기억해주세요</h1>'+
-    '<p class="kimse-initial-hint">한 번 천천히 읽어보세요. 마지막에 다시 물어볼게요.</p>'+
+    '<div class="kimse-journey-prompt"><h1 class="kimse-initial-title">세 단어를 기억해주세요</h1>'+
+    '<p class="kimse-initial-hint">한 번 천천히 읽어보세요. 마지막에 다시 물어볼게요.</p></div>'+
     '<div class="kimse-initial-memory" aria-label="기억할 세 단어"><strong>나무</strong><strong>기차</strong><strong>우산</strong></div>'+
 
     '<button type="button" class="btn-kimse btn-primary-k kimse-initial-cta" data-initial-next>기억했어요</button>'+foot,
@@ -1676,14 +1683,14 @@ page['initial-check']=()=>{
       step.options.map(([code,label])=>'<button type="button" class="kimse-initial-answer" data-initial-answer="'+step.key+':'+code+'" aria-pressed="'+(code===value?'true':'false')+'"><span>'+esc(label)+'</span><span class="kimse-initial-choice-mark" aria-hidden="true">'+(code===value?'✓':'')+'</span></button>').join('')+
       '</div>';
     return wrap(top+
-      '<h1 class="kimse-initial-title">'+esc(title)+'</h1>'+
-      '<p class="kimse-initial-hint">'+esc(hint)+'</p>'+options+
+      '<div class="kimse-journey-prompt"><h1 class="kimse-initial-title">'+esc(title)+'</h1>'+
+      '<p class="kimse-initial-hint">'+esc(hint)+'</p></div>'+options+
 
       foot,{title:'처음 상태 확인',narrow:true});
   }
   return wrap(top+
-    '<h1 class="kimse-initial-title">처음 보여드린 세 단어가 기억나세요?</h1>'+
-    '<p class="kimse-initial-hint">생각나는 단어를 적어주세요. 순서는 상관없어요.</p>'+
+    '<div class="kimse-journey-prompt"><h1 class="kimse-initial-title">처음 보여드린 세 단어가 기억나세요?</h1>'+
+    '<p class="kimse-initial-hint">생각나는 단어를 적어주세요. 순서는 상관없어요.</p></div>'+
     '<div class="kimse-initial-recall-field"><label for="recall-input">기억나는 단어</label>'+
     '<textarea id="recall-input" rows="2" autocomplete="off" spellcheck="false" placeholder="여기에 입력해주세요" aria-describedby="kimse-initial-recall-help">'+esc(S.initial.recall||'')+'</textarea>'+
     '<p id="kimse-initial-recall-help">기억나지 않으면 ‘없음’이라고 적어도 됩니다.</p></div>'+
@@ -1691,9 +1698,60 @@ page['initial-check']=()=>{
     foot,{title:'처음 상태 확인',narrow:true});
 };
 
-page['voice-check']=()=>{const done=S.initial.voiceSamples.filter(Boolean).length,recording=!!voiceRecorder;return wrap(`<div class="eyebrow">처음 설정 4/4 · Yamada 2021 / Speech biomarker 근거</div><h1 class="page-title">말하는 습관도<br>개인 baseline이 됩니다</h1><p class="page-desc">자발화·사건 설명·의미 유창성 과제에서 말의 멈춤·음향 특징 등을 장기 비교합니다. 원 연구의 진단 정확도를 낌새 성능으로 사용하지 않습니다.</p><div class="voice-task-list">${VOICE_PROMPTS.map((p,i)=>{const v=S.initial.voiceSamples[i];const active=recording&&voiceTask===i;return `<section class="voice-task ${v?'done':''}"><div class="voice-index">${v?'✓':i+1}</div><div><strong>${p}</strong><small>${v?`녹음 완료 · ${v.durationSec}초 · 이 기기에 저장`:'30초 이상 편하게 말해주세요.'}</small></div><button class="btn-kimse ${active?'btn-danger-k':'btn-blue-k'} compact-btn" data-voice-task="${i}" ${recording&&!active?'disabled':''}>${active?'녹음 종료':v?'다시 녹음':'녹음 시작'}</button></section>`}).join('')}</div>${S.permissions.microphone==='denied'?notice('마이크 권한이 꺼져 있어요.','브라우저 사이트 설정에서 마이크를 허용하면 다시 녹음할 수 있습니다.'):''}<div class="hero-actions"><button id="finish-voice" class="btn-kimse btn-primary-k" ${done<3?'disabled':''}>첫 상태 결과 보기</button><button id="skip-voice" class="btn-kimse btn-secondary-k">음성 없이 계속</button></div>${notice('개인정보 원칙','현재 음성 원본은 서버로 전송하지 않고 이 기기의 전용 저장공간에 보관합니다. 향후 분석·연구 전송은 별도 동의를 받습니다.')}`,{title:'음성 기준',narrow:true})};
+const voiceJourneyStep=()=>Math.min(2,Math.max(0,Math.trunc(Number(S.initial.voiceStep)||0)));
+page['voice-check']=()=>{
+  const step=voiceJourneyStep(),done=S.initial.voiceSamples.filter(Boolean).length,sample=S.initial.voiceSamples[step];
+  const active=!!voiceRecorder&&voiceTask===step,recording=!!voiceRecorder;
+  const taskName=['최근 이야기','기억에 남는 일','동물 이름 말하기'][step];
+  const intro='<div class="kimse-voice-task-label">말하기 '+(step+1)+' · '+taskName+'</div>';
+  const state=active?'<div class="kimse-voice-state is-recording" role="status"><span class="kimse-voice-pulse" aria-hidden="true"></span>녹음 중이에요. 편하게 말씀해주세요.</div>':
+    sample?'<div class="kimse-voice-state is-complete" role="status"><span aria-hidden="true">✓</span>녹음했어요 · '+sample.durationSec+'초 저장됨</div>':
+    '<div class="kimse-voice-state">30초 이상 편하게 이야기해주세요.</div>';
+  const primary=sample&&!active?
+    (step===2?'<button type="button" id="finish-voice" class="kimse-flow-primary" '+(done===3?'':'disabled')+'>나의 첫 기록 보기 <span aria-hidden="true">→</span></button>':
+      '<button type="button" class="kimse-flow-primary" data-voice-next>다음 이야기로 <span aria-hidden="true">→</span></button>'):
+    '<button type="button" class="kimse-flow-primary '+(active?'is-danger':'')+'" data-voice-task="'+step+'" '+(recording&&!active?'disabled':'')+'>'+
+      (active?'녹음 마치기':'녹음 시작하기')+'</button>';
+  const other=sample&&!active?'<button type="button" class="kimse-flow-quiet" data-voice-task="'+step+'">다시 녹음할게요</button>':'';
+  return wrap('<section class="kimse-voice-journey kimse-journey" aria-label="첫 음성 기록">'+
+    journeyTop('나의 목소리',step+1,3,'말하기 과제')+
+    '<div class="kimse-journey-prompt"><div class="kimse-journey-overline">목소리로 남기는 나의 첫 기록</div>'+
+      '<h1 class="kimse-flow-title">편하게 말씀해주세요</h1>'+
+      '<p class="kimse-flow-hint">녹음을 시작한 다음 천천히 이야기하시면 돼요.</p></div>'+
+    '<div class="kimse-voice-prompt">'+intro+'<p>'+esc(VOICE_PROMPTS[step])+'</p><span class="kimse-voice-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>'+
+    state+
+    (S.permissions.microphone==='denied'?'<p class="kimse-flow-warning" role="alert">마이크 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.</p>':'')+
+    '<div class="kimse-flow-actions">'+primary+other+'</div>'+
+    '<div class="kimse-flow-secondary"><button type="button" class="kimse-flow-back" data-voice-back '+(recording?'disabled':'')+'>← 이전 단계</button>'+
+      '<button type="button" class="kimse-flow-skip" id="skip-voice" '+(recording?'disabled':'')+'>음성 없이 계속</button></div>'+
+    '<p class="kimse-flow-privacy">녹음 파일은 이 기기에만 보관돼요. 외부 분석·연구에 사용하려면 별도 동의가 필요해요.</p>'+
+    '</section>',{title:'목소리 기록',narrow:true});
+};
 
-page['initial-result']=()=>{if(!S.initial.completedAt)return wrap(`<h1 class="page-title">첫 상태 확인이 필요해요</h1>${notice('아직 기준을 만들 수 없습니다.','초기 과제와 음성 기준 만들기를 먼저 진행해주세요.')}<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">초기 과제 시작</button>`,{title:'첫 상태 참고',narrow:true});const a=S.initial.answers||{},recall=initialRecallCount(),rt=(S.initial.responseTimes||[])[0];const freq=v=>v==='no'?'평소와 비슷함':v==='some'?'가끔 어려움':v==='often'?'자주 어려움':'기록 없음';return wrap(`<div class="eyebrow">연구 근거 기반 · 개인 baseline</div><h1 class="page-title">오늘의 원자료를<br>비교 기준으로 저장했어요</h1><p class="page-desc">낌새 자체 과제를 임상 점수로 환산하지 않습니다. 다음 측정에서 같은 종류의 원자료와 반응시간 변화를 비교합니다.</p><div class="list">${row('🧠 지연회상','KIMSE 3단어 과제 · 임상 cutoff 없음','<strong>'+recall+' / 3개</strong>')}${row('➖ 연속 뺄셈','Yamada 2021 과제 패러다임','<strong>'+(a.subtraction?(a.subtraction==='79'?'정답':'응답 기록'):'기록 없음')+(rt?' · '+Math.round(rt/100)/10+'초':'')+'</strong>')}${row('📅 사건·약속 기억','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.events)+'</strong>')}${row('💳 금전관리','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.finances)+'</strong>')}${row('🧭 외출·이동','FAQ6 기능영역 기반 KIMSE 자가문항','<strong>'+freq(a.travel)+'</strong>')}${row('🗣️ 음성 샘플','자발화·의미유창성 연구 기반','<strong>'+S.initial.voiceSamples.filter(Boolean).length+'개</strong>')}</div>${notice('해석 원칙','이 값만으로 정상·이상·치매 여부를 판정하지 않습니다. 현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.')}<div class="hero-actions"><button class="btn-kimse btn-blue-k" data-go="brain-map">관찰 영역 보기</button><button id="start-monitoring-after-initial" class="btn-kimse btn-primary-k">생활패턴 기록 시작</button></div>`,{title:'첫 상태 참고',narrow:true})};
+page['initial-result']=()=>{
+  if(!S.initial.completedAt)return wrap('<section class="kimse-journey kimse-complete-journey"><h1 class="kimse-flow-title">첫 상태 확인이 아직 끝나지 않았어요</h1><p class="kimse-flow-hint">기억 과제와 말하기 기록을 먼저 진행해주세요.</p><button class="kimse-flow-primary" data-go="initial-check">첫 상태 확인하기</button></section>',{title:'첫 기록',narrow:true});
+  const a=S.initial.answers||{},count=initialRecallCount(),rt=(S.initial.responseTimes||[])[0],audio=S.initial.voiceSamples.filter(Boolean).length;
+  const freq=v=>v==='no'?'평소와 비슷해요':v==='some'?'가끔 어려웠어요':v==='often'?'자주 어려웠어요':'기록하지 않음';
+  const row=(name,value,detail)=>'<div class="kimse-summary-row"><div><strong>'+esc(name)+'</strong><small>'+esc(detail)+'</small></div><b>'+esc(value)+'</b></div>';
+  return wrap('<section class="kimse-complete-journey kimse-journey">'+
+    '<div class="kimse-complete-mark" aria-hidden="true"><span>✓</span></div>'+
+    '<div class="kimse-journey-overline">나의 첫 기록이 만들어졌어요</div>'+
+    '<h1 class="kimse-flow-title">오늘의 기록을<br>잘 저장했어요</h1>'+
+    '<p class="kimse-flow-hint">앞으로의 변화를 살펴볼 수 있도록 첫 기준을 남겼어요. 오늘 결과만으로 건강 상태를 판단하지 않아요.</p>'+
+    '<div class="kimse-summary-sheet"><h2>오늘 남긴 기록</h2>'+
+    row('단어 기억',count+' / 3개','보았던 단어를 기억한 개수')+
+    row('숫자 계산',a.subtraction?(a.subtraction==='79'?'기록했어요':'응답했어요'):'기록하지 않음','답변과 반응시간 보관'+(rt?' · '+(rt/1000).toFixed(1)+'초':''))+
+    row('약속과 최근 일',freq(a.events),'최근 4주')+
+    row('돈 관리',freq(a.finances),'최근 4주')+
+    row('외출과 이동',freq(a.travel),'최근 4주')+
+    row('목소리',audio+'개','기기에만 저장된 음성')+
+    '</div>'+
+    '<div class="kimse-complete-message"><strong>앞으로 이렇게 사용해요</strong><span>평소 생활을 기록하면, 시간이 지나면서 달라진 점을 함께 살펴볼 수 있어요.</span></div>'+
+    '<div class="kimse-flow-actions"><button type="button" id="start-monitoring-after-initial" class="kimse-flow-primary">생활 기록 시작하기 <span aria-hidden="true">→</span></button></div>'+
+    '<button class="kimse-flow-quiet kimse-complete-more" data-go="brain-map">관찰하는 항목 알아보기</button>'+
+    '<p class="kimse-flow-privacy">이 기록은 의료 진단이나 치매 여부 판정에 사용되는 검사 결과가 아닙니다.</p>'+
+    '</section>',{title:'첫 기록',narrow:true});
+};
 
 page['cognitive-recheck']=()=>{
   const x=S.cognitiveRecheck||D.cognitiveRecheck,s=Math.min(5,Math.max(0,Number(x.step)||0));
@@ -2352,7 +2410,7 @@ async function loadAdminInquiries(){
 }
 page.settings=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">설정</h1><div class="summary-card"><h3>${S.account.name}</h3><p>${S.account.email}</p></div><div class="list"><a class="list-row" href="#/account">내 프로필 / 역할 관리 ${I('chevron-right')}</a><a class="list-row" href="#/family">가족 / 보호자 관리 ${I('chevron-right')}</a><a class="list-row" href="#/accessibility">접근성 설정 ${I('chevron-right')}</a><a class="list-row" href="#/brain-map">뇌 기능 연관 지도 ${I('chevron-right')}</a><a class="list-row" href="#/brain-trends">기능별 변화 흐름 보기 ${I('chevron-right')}</a><a class="list-row" href="#/monitoring-status">개인 변화 관찰 상태 ${I('chevron-right')}</a><a class="list-row" href="#/collection-status">실제 수집 상태 ${I('chevron-right')}</a><a class="list-row" href="#/medical-records">병원·검사 기록 ${I('chevron-right')}</a><a class="list-row" href="#/consent">데이터 수집 / 공유 동의 ${I('chevron-right')}</a><a class="list-row" href="#/plan">구독 관리 ${I('chevron-right')}</a><a class="list-row" href="#/market">치매 케어관 ${I('chevron-right')}</a><a class="list-row" href="#/partnership">사업자 입점 / 제휴 문의 ${I('chevron-right')}</a><a class="list-row" href="${evidenceUrl()}" target="_blank">연구 근거 / Evidence ${I('external-link')}</a></div>`,{title:'설정',narrow:true})};
 function applyA11y(){document.documentElement.classList.toggle('large-text',S.a11y.largeText);document.documentElement.classList.toggle('large-touch',S.a11y.largeTouchTargets);document.documentElement.classList.toggle('high-contrast',S.a11y.highContrast)}
-function render(){applyA11y();let r=route();if(r==='start'&&S.account&&S.remote?.accountId&&S.remote?.token&&AUTH()?.session?.()?.refreshToken){go(authNextRoute());return}let f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();syncAppStatusIcon();if(r==='auth')setTimeout(mountAuthHubSocial,20);if(['family','family-call'].includes(r))setTimeout(()=>syncFamilyData(true),30);if(['family-call','call-room'].includes(r))setTimeout(()=>syncCallSessions(true),40);if(r==='call-room')setTimeout(startCallRoomPolling,80);if(['caregiver-home','family-feedback'].includes(r)&&S.remote.activeCareSubjectId){const age=Date.now()-new Date(S.careOverview.lastSyncAt||0).getTime();if(!Number.isFinite(age)||age>10000)setTimeout(()=>syncCareOverview(true),50)};setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;const voiceScreenKey=r==='initial-check'?r+':'+initialCurrentStep():r;if(voiceScreenKey!==lastSpokenRoute){lastSpokenRoute=voiceScreenKey;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
+function render(){applyA11y();let r=route();if(r==='start'&&S.account&&S.remote?.accountId&&S.remote?.token&&AUTH()?.session?.()?.refreshToken){go(authNextRoute());return}let f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();syncAppStatusIcon();if(r==='auth')setTimeout(mountAuthHubSocial,20);if(['family','family-call'].includes(r))setTimeout(()=>syncFamilyData(true),30);if(['family-call','call-room'].includes(r))setTimeout(()=>syncCallSessions(true),40);if(r==='call-room')setTimeout(startCallRoomPolling,80);if(['caregiver-home','family-feedback'].includes(r)&&S.remote.activeCareSubjectId){const age=Date.now()-new Date(S.careOverview.lastSyncAt||0).getTime();if(!Number.isFinite(age)||age>10000)setTimeout(()=>syncCareOverview(true),50)};setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;const voiceScreenKey=r==='initial-check'?r+':'+initialCurrentStep():r==='voice-check'?r+':'+voiceJourneyStep():r;if(voiceScreenKey!==lastSpokenRoute){lastSpokenRoute=voiceScreenKey;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
 document.addEventListener('click',e=>{
   if(route()!=='onboarding-profile')return;
   const choice=e.target.closest('[data-profile-choice]');
@@ -2375,7 +2433,20 @@ document.addEventListener('input',e=>{
   const next=$('#profile-wizard-next');if(next)next.disabled=!profileWizardValueValid(step,S.profile[step.key]);
 });
 document.addEventListener('click',e=>{if(route()==='initial-check'&&e.target.closest('[data-initial-back]')){tone('tap');initialStepBack()}});
-document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');if(t.dataset.go==='cognitive-recheck'&&route()!=='cognitive-recheck')resetCognitiveRecheck();go(t.dataset.go)}if(t.hasAttribute('data-initial-next')&&route()==='initial-check'&&initialCurrentStep()===0){S.initial.step=1;initialActiveTimedStep=-1;save();feedback('다음 질문으로 이동합니다.');render()}if(t.dataset.initialAnswer&&route()==='initial-check'){const i=initialCurrentStep(),step=INITIAL_TASK_OPTIONS[i];const [k,v]=t.dataset.initialAnswer.split(':');if(step?.key===k&&step.options.some(([code])=>code===v)){const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes[i-1]=rt;S.initial.answers[k]=v;S.initial.step=Math.min(5,i+1);initialActiveTimedStep=-1;save();tone('tap');if(!demoAutoRunning&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){t.classList.add('is-confirming');t.setAttribute('aria-pressed','true');const mark=t.querySelector('.kimse-initial-choice-mark');if(mark)mark.textContent='✓';t.closest('.kimse-initial-answer-list')?.querySelectorAll('button').forEach(b=>b.disabled=true);setTimeout(()=>{if(route()==='initial-check')render()},180)}else render()}}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');if(route()==='initial-check'){initialStepBack()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();render()}else{history.length>1?history.back():go('start')}}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
+
+document.addEventListener('click',e=>{
+  if(route()!=='voice-check')return;
+  if(e.target.closest('[data-voice-next]')){
+    const i=voiceJourneyStep();if(i<2&&S.initial.voiceSamples[i]&&!voiceRecorder){S.initial.voiceStep=i+1;save();tone('tap');render()}return;
+  }
+  if(e.target.closest('[data-voice-back]')){
+    if(voiceRecorder)return;
+    if(voiceJourneyStep()>0){S.initial.voiceStep=voiceJourneyStep()-1;save();render()}
+    else {S.initial.step=5;save();go('initial-check')}return;
+  }
+});
+
+document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');if(t.dataset.go==='cognitive-recheck'&&route()!=='cognitive-recheck')resetCognitiveRecheck();go(t.dataset.go)}if(t.hasAttribute('data-initial-next')&&route()==='initial-check'&&initialCurrentStep()===0){S.initial.step=1;initialActiveTimedStep=-1;save();feedback('다음 질문으로 이동합니다.');render()}if(t.dataset.initialAnswer&&route()==='initial-check'){const i=initialCurrentStep(),step=INITIAL_TASK_OPTIONS[i];const [k,v]=t.dataset.initialAnswer.split(':');if(step?.key===k&&step.options.some(([code])=>code===v)){const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes[i-1]=rt;S.initial.answers[k]=v;S.initial.step=Math.min(5,i+1);initialActiveTimedStep=-1;save();tone('tap');if(!demoAutoRunning&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){t.classList.add('is-confirming');t.setAttribute('aria-pressed','true');const mark=t.querySelector('.kimse-initial-choice-mark');if(mark)mark.textContent='✓';t.closest('.kimse-initial-answer-list')?.querySelectorAll('button').forEach(b=>b.disabled=true);setTimeout(()=>{if(route()==='initial-check')render()},180)}else render()}}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');if(route()==='voice-check'){if(!voiceRecorder){if(voiceJourneyStep()>0){S.initial.voiceStep=voiceJourneyStep()-1;save();render()}else{S.initial.step=5;save();go('initial-check')}}}else if(route()==='initial-check'){initialStepBack()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();render()}else{history.length>1?history.back():go('start')}}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
 document.addEventListener('click',async e=>{
   if(e.target.id==='start-monitoring-after-initial'){
     if(!S.onboarding.consentDone){feedback('데이터 이용 동의를 먼저 확인해주세요.','warning');go('consent');return}
