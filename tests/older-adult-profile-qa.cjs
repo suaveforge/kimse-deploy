@@ -54,7 +54,7 @@ async function checkMode(browser,width,mode){
      await page.locator('[data-birth-decade="1950"]').click();
      assert.equal(await page.locator('[data-birth-phase="year"]').count(),1);
      await page.locator('[data-birth-year="1956"]').click();
-     assert.equal(await page.locator('[data-birth-year="1956"]').getAttribute('aria-pressed'),'true');
+     assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'2 / 12','Birth year tap must auto advance');
    }else if(field==='sleepHours'){
      await page.locator('#profile-wizard-input').fill(value);
    }else{
@@ -75,7 +75,10 @@ async function checkMode(browser,width,mode){
      await page.locator('#profile-wizard-next').click();
      assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'3 / 12','Forward after correction');
    }
-   if(i===0&&(width===320||width===375||width===1280)){await page.screenshot({path:'qa-artifacts/kimse-wizard-'+width+'-'+mode+'.png',fullPage:true})}
+   if(i===0){
+     if(width===320||width===375||width===1280)await page.screenshot({path:'qa-artifacts/kimse-wizard-after-birth-'+width+'-'+mode+'.png',fullPage:true});
+     continue;
+   }
    const next=page.locator('#profile-wizard-next');
    assert.equal(await next.isDisabled(),false,'Next must become active once answered');
    await next.click();
