@@ -1613,28 +1613,76 @@ const journeyTop=(section,step,total,subtitle='')=>
     (subtitle?'<div class="kimse-journey-subtitle">'+esc(subtitle)+'</div>':'')+
   '</div>';
 
+// Senior birth-year selector: no keyboard and no spinner; original birthYear stores the same YYYY string.
+function birthYearPhase(){
+ const phase=S.onboarding.birthPhase;
+ return phase==='decade'||phase==='year'?phase:profileWizardValueValid(PROFILE_WIZARD_STEPS[0],S.profile.birthYear)?'year':'decade';
+}
+function birthYearDecade(){
+ const saved=Number(S.onboarding.birthDecade);
+ if(Number.isInteger(saved)&&saved>=1900&&saved<=2100&&saved%10===0)return saved;
+ const year=Number(S.profile.birthYear);
+ return Number.isInteger(year)&&year>=1900?Math.floor(year/10)*10:1950;
+}
+function birthDecadeChoices(){
+ const max=new Date().getFullYear()-18,min=new Date().getFullYear()-120;
+ return Array.from({length:Math.floor(max/10)-Math.floor(min/10)+1},(_,i)=>(Math.floor(min/10)+i)*10).filter(d=>Math.max(min,d)<=Math.min(max,d+9));
+}
+function birthYearsForDecade(decade){
+ const year=new Date().getFullYear(),min=year-120,max=year-18;
+ return Array.from({length:10},(_,i)=>decade+i).filter(y=>y>=min&&y<=max);
+}
+function birthDecadeMarkup(){
+ const decades=birthDecadeChoices(),group=String(S.onboarding.birthRange||'common');
+ const ranges={common:decades.filter(d=>d>=1930&&d<=1980),earlier:decades.filter(d=>d<1930),later:decades.filter(d=>d>1980)};
+ const active=ranges[group]?.length?group:'common';
+ const buttons=ranges[active].map(d=>
+   '<button type="button" class="kimse-birth-option kimse-birth-decade" data-birth-decade="'+d+'" aria-label="'+d+'년대 선택">'+
+   '<strong>'+d+'년대</strong><small>'+Math.max(new Date().getFullYear()-120,d)+'~'+Math.min(new Date().getFullYear()-18,d+9)+'년</small></button>'
+ ).join('');
+ const move=active==='common'?
+   '<button type="button" class="kimse-birth-range" data-birth-range="earlier">← 더 이전</button>'+
+   '<button type="button" class="kimse-birth-range" data-birth-range="later">더 이후 →</button>':
+   '<button type="button" class="kimse-birth-range" data-birth-range="common">← 다른 연대 보기</button>';
+ return '<div class="kimse-birth-picker" data-birth-phase="decade">'+
+   '<div class="kimse-birth-grid kimse-birth-decade-grid" role="group" aria-label="출생 연대 선택">'+buttons+'</div>'+
+   '<div class="kimse-birth-range-actions">'+move+'</div></div>';
+}
+function birthYearMarkup(){
+ const decade=birthYearDecade(),years=birthYearsForDecade(decade),current=String(S.profile.birthYear||'');
+ return '<div class="kimse-birth-picker" data-birth-phase="year">'+
+   '<div class="kimse-birth-grid kimse-birth-year-grid" role="group" aria-label="출생연도 선택">'+
+   years.map(y=>'<button type="button" class="kimse-birth-option kimse-birth-year" data-birth-year="'+y+'" aria-pressed="'+String(current===String(y))+'">'+
+     '<span>'+y+'년</span><span class="kimse-birth-check" aria-hidden="true">'+(current===String(y)?'✓':'')+'</span></button>').join('')+
+   '</div><button type="button" class="kimse-birth-change" data-birth-back>← 다른 연대 선택</button></div>';
+}
+
 page['onboarding-profile']=()=>{
-  const i=profileWizardStepIndex(),step=PROFILE_WIZARD_STEPS[i],current=String(S.profile[step.key]??''),last=i===PROFILE_WIZARD_STEPS.length-1,valid=profileWizardValueValid(step,current);
-  const progress=Math.round((i+1)/PROFILE_WIZARD_STEPS.length*100);
-  let choices='';
-  if(step.options){
-    choices='<div class="kimse-wizard-choices" role="group" aria-label="'+esc(step.title)+'">'+step.options.map(([code,label])=>
-      '<button type="button" class="kimse-wizard-choice" data-profile-choice="'+esc(code)+'" aria-pressed="'+String(current===code)+'">'+
-      '<span class="kimse-wizard-choice-label">'+esc(label)+'</span><span class="kimse-wizard-choice-check" aria-hidden="true">'+(current===code?'✓':'')+'</span></button>'
-    ).join('')+'</div>';
-  }else{
-    choices='<div class="kimse-wizard-field"><label for="profile-wizard-input">'+(step.type==='year'?'출생연도':'하루 수면시간')+'</label>'+
-      '<div class="kimse-wizard-input-wrap"><input id="profile-wizard-input" type="text" inputmode="'+(step.type==='year'?'numeric':'decimal')+'" autocomplete="off" '+(step.type==='year'?'maxlength="4" pattern="[0-9]{4}"':'maxlength="40"')+' value="'+esc(current)+'" placeholder="'+(step.type==='year'?'예: 1956':'예: 7시간 30분')+'" aria-describedby="profile-wizard-hint"></div></div>';
-  }
-  const html='<section class="kimse-profile-wizard kimse-journey" aria-label="기본정보 입력">'+
-    journeyTop('나를 알아가는 첫 단계',i+1,PROFILE_WIZARD_STEPS.length,'기본정보')+
-    '<div class="kimse-journey-prompt"><h1 class="kimse-wizard-title">'+esc(step.title)+'</h1>'+
-    (step.hint?'<p id="profile-wizard-hint" class="kimse-wizard-hint">'+esc(step.hint)+'</p>':'')+'</div>'+
-    '<form id="profile-form" novalidate>'+choices+
-    '<div class="kimse-wizard-actions kimse-journey-actions"><button type="button" class="kimse-wizard-previous" data-profile-prev '+(i===0?'disabled':'')+'>이전</button>'+
-    '<button type="submit" id="profile-wizard-next" class="btn-kimse btn-primary-k kimse-wizard-next" '+(valid?'':'disabled')+'>'+(last?'초기 과제로 계속':'다음')+'</button></div></form>'+
-    (i===0?'<p class="kimse-wizard-reassurance">이전 단계로 돌아가 답을 수정할 수 있어요.</p>':'')+'</section>';
-  return wrap(html,{title:'기본정보',narrow:true});
+ const i=profileWizardStepIndex(),step=PROFILE_WIZARD_STEPS[i],current=String(S.profile[step.key]??''),last=i===PROFILE_WIZARD_STEPS.length-1;
+ const birth=i===0,phase=birth?birthYearPhase():null,decade=birth?birthYearDecade():null;
+ const valid=profileWizardValueValid(step,current)&&(!birth||phase==='year'&&Math.floor(Number(current)/10)*10===decade);
+ let choices='';
+ if(birth)choices=phase==='decade'?birthDecadeMarkup():birthYearMarkup();
+ else if(step.options){
+   choices='<div class="kimse-wizard-choices" role="group" aria-label="'+esc(step.title)+'">'+step.options.map(([code,label])=>
+     '<button type="button" class="kimse-wizard-choice" data-profile-choice="'+esc(code)+'" aria-pressed="'+String(current===code)+'">'+
+     '<span class="kimse-wizard-choice-label">'+esc(label)+'</span><span class="kimse-wizard-choice-check" aria-hidden="true">'+(current===code?'✓':'')+'</span></button>'
+   ).join('')+'</div>';
+ }else choices='<div class="kimse-wizard-field"><label for="profile-wizard-input">하루 수면시간</label>'+
+      '<div class="kimse-wizard-input-wrap"><input id="profile-wizard-input" type="text" inputmode="decimal" autocomplete="off" maxlength="40" value="'+esc(current)+'" placeholder="예: 7시간 30분" aria-describedby="profile-wizard-hint"></div></div>';
+ const title=birth?(phase==='decade'?'어느 연대에 태어나셨나요?':decade+'년대 중 몇 년에 태어나셨나요?'):step.title;
+ const hint=birth?(phase==='decade'?'먼저 태어난 연대를 눌러주세요.':'정확한 연도를 눌러주세요.'):step.hint;
+ const showPrev=i>0||birth&&phase==='year';
+ const html='<section class="kimse-profile-wizard kimse-journey" aria-label="기본정보 입력">'+
+   journeyTop('나를 알아가는 첫 단계',i+1,PROFILE_WIZARD_STEPS.length,'기본정보')+
+   '<div class="kimse-journey-prompt"><h1 class="kimse-wizard-title">'+esc(title)+'</h1>'+
+   (hint?'<p id="profile-wizard-hint" class="kimse-wizard-hint">'+esc(hint)+'</p>':'')+'</div>'+
+   '<form id="profile-form" novalidate>'+choices+
+   '<div class="kimse-wizard-actions kimse-journey-actions'+(birth&&phase==='decade'?' kimse-birth-actions':'')+'">'+
+     (birth&&phase==='decade'?'':'<button type="button" class="kimse-wizard-previous" data-profile-prev '+(showPrev?'':'disabled')+'>이전</button>')+
+     (birth&&phase==='decade'?'':'<button type="submit" id="profile-wizard-next" class="btn-kimse btn-primary-k kimse-wizard-next" '+(valid?'':'disabled')+'>'+(last?'초기 과제로 계속':'다음')+'</button>')+
+   '</div></form></section>';
+ return wrap(html,{title:'기본정보',narrow:true});
 };
 
 // One question per screen: preserved task words, codes and server submission data.
@@ -2412,6 +2460,27 @@ function applyA11y(){document.documentElement.classList.toggle('large-text',S.a1
 function render(){applyA11y();let r=route();if(r==='start'&&S.account&&S.remote?.accountId&&S.remote?.token&&AUTH()?.session?.()?.refreshToken){go(authNextRoute());return}let f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();syncAppStatusIcon();if(r==='auth')setTimeout(mountAuthHubSocial,20);if(['family','family-call'].includes(r))setTimeout(()=>syncFamilyData(true),30);if(['family-call','call-room'].includes(r))setTimeout(()=>syncCallSessions(true),40);if(r==='call-room')setTimeout(startCallRoomPolling,80);if(['caregiver-home','family-feedback'].includes(r)&&S.remote.activeCareSubjectId){const age=Date.now()-new Date(S.careOverview.lastSyncAt||0).getTime();if(!Number.isFinite(age)||age>10000)setTimeout(()=>syncCareOverview(true),50)};setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;const voiceScreenKey=r==='initial-check'?r+':'+initialCurrentStep():r==='voice-check'?r+':'+voiceJourneyStep():r;if(voiceScreenKey!==lastSpokenRoute){lastSpokenRoute=voiceScreenKey;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
 document.addEventListener('click',e=>{
   if(route()!=='onboarding-profile')return;
+  if(profileWizardStepIndex()===0){
+    const range=e.target.closest('[data-birth-range]');
+    if(range){S.onboarding.birthRange=range.dataset.birthRange;save();tone('tap');render();return}
+    const decade=e.target.closest('[data-birth-decade]');
+    if(decade){
+      const d=Number(decade.dataset.birthDecade);
+      if(birthDecadeChoices().includes(d)){S.onboarding.birthDecade=d;S.onboarding.birthPhase='year';save();tone('tap');render()}
+      return;
+    }
+    const year=e.target.closest('[data-birth-year]');
+    if(year&&birthYearPhase()==='year'){
+      const value=String(year.dataset.birthYear);
+      if(birthYearsForDecade(birthYearDecade()).includes(Number(value))){
+        S.profile.birthYear=value;save();tone('tap');render();
+      }
+      return;
+    }
+    if(e.target.closest('[data-birth-back]')){
+      S.onboarding.birthPhase='decade';S.onboarding.birthRange='common';save();tone('tap');render();return;
+    }
+  }
   const choice=e.target.closest('[data-profile-choice]');
   if(choice){
     const step=PROFILE_WIZARD_STEPS[profileWizardStepIndex()];
@@ -2421,7 +2490,8 @@ document.addEventListener('click',e=>{
     return;
   }
   if(e.target.closest('[data-profile-prev]')){
-    if(profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();tone('tap');render()}
+    if(profileWizardStepIndex()===0&&birthYearPhase()==='year'){S.onboarding.birthPhase='decade';S.onboarding.birthRange='common';save();tone('tap');render()}
+    else if(profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();tone('tap');render()}
   }
 });
 document.addEventListener('input',e=>{
@@ -2445,7 +2515,7 @@ document.addEventListener('click',e=>{
   }
 });
 
-document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');if(t.dataset.go==='cognitive-recheck'&&route()!=='cognitive-recheck')resetCognitiveRecheck();go(t.dataset.go)}if(t.hasAttribute('data-initial-next')&&route()==='initial-check'&&initialCurrentStep()===0){S.initial.step=1;initialActiveTimedStep=-1;save();feedback('다음 질문으로 이동합니다.');render()}if(t.dataset.initialAnswer&&route()==='initial-check'){const i=initialCurrentStep(),step=INITIAL_TASK_OPTIONS[i];const [k,v]=t.dataset.initialAnswer.split(':');if(step?.key===k&&step.options.some(([code])=>code===v)){const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes[i-1]=rt;S.initial.answers[k]=v;S.initial.step=Math.min(5,i+1);initialActiveTimedStep=-1;save();tone('tap');if(!demoAutoRunning&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){t.classList.add('is-confirming');t.setAttribute('aria-pressed','true');const mark=t.querySelector('.kimse-initial-choice-mark');if(mark)mark.textContent='✓';t.closest('.kimse-initial-answer-list')?.querySelectorAll('button').forEach(b=>b.disabled=true);setTimeout(()=>{if(route()==='initial-check')render()},180)}else render()}}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');if(route()==='voice-check'){if(!voiceRecorder){if(voiceJourneyStep()>0){S.initial.voiceStep=voiceJourneyStep()-1;save();render()}else{S.initial.step=5;save();go('initial-check')}}}else if(route()==='initial-check'){initialStepBack()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();render()}else{history.length>1?history.back():go('start')}}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
+document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');if(t.dataset.go==='cognitive-recheck'&&route()!=='cognitive-recheck')resetCognitiveRecheck();go(t.dataset.go)}if(t.hasAttribute('data-initial-next')&&route()==='initial-check'&&initialCurrentStep()===0){S.initial.step=1;initialActiveTimedStep=-1;save();feedback('다음 질문으로 이동합니다.');render()}if(t.dataset.initialAnswer&&route()==='initial-check'){const i=initialCurrentStep(),step=INITIAL_TASK_OPTIONS[i];const [k,v]=t.dataset.initialAnswer.split(':');if(step?.key===k&&step.options.some(([code])=>code===v)){const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes[i-1]=rt;S.initial.answers[k]=v;S.initial.step=Math.min(5,i+1);initialActiveTimedStep=-1;save();tone('tap');if(!demoAutoRunning&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){t.classList.add('is-confirming');t.setAttribute('aria-pressed','true');const mark=t.querySelector('.kimse-initial-choice-mark');if(mark)mark.textContent='✓';t.closest('.kimse-initial-answer-list')?.querySelectorAll('button').forEach(b=>b.disabled=true);setTimeout(()=>{if(route()==='initial-check')render()},180)}else render()}}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');if(route()==='voice-check'){if(!voiceRecorder){if(voiceJourneyStep()>0){S.initial.voiceStep=voiceJourneyStep()-1;save();render()}else{S.initial.step=5;save();go('initial-check')}}}else if(route()==='initial-check'){initialStepBack()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()===0&&birthYearPhase()==='year'){S.onboarding.birthPhase='decade';save();render()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();render()}else{history.length>1?history.back():go('start')}}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined){S.answers[S.q]=+t.dataset.answer;save();feedback('선택했습니다.');render()}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
 document.addEventListener('click',async e=>{
   if(e.target.id==='start-monitoring-after-initial'){
     if(!S.onboarding.consentDone){feedback('데이터 이용 동의를 먼저 확인해주세요.','warning');go('consent');return}
@@ -2516,8 +2586,8 @@ document.addEventListener('submit',async e=>{
     const i=profileWizardStepIndex(),step=PROFILE_WIZARD_STEPS[i];
     const input=$('#profile-wizard-input');
     if(input)S.profile[step.key]=input.value.trim();
-    if(!profileWizardValueValid(step,S.profile[step.key])){
-      feedback(step.type==='year'?'출생연도를 숫자 4자리로 확인해주세요.':'답을 선택하거나 입력해주세요.','warning');return;
+    if(!profileWizardValueValid(step,S.profile[step.key])||(step.type==='year'&&(birthYearPhase()!=='year'||Math.floor(Number(S.profile.birthYear)/10)*10!==birthYearDecade()))){
+      feedback(step.type==='year'?'태어난 연대를 고른 다음 정확한 연도를 선택해주세요.':'답을 선택하거나 입력해주세요.','warning');return;
     }
     save();
     if(i<PROFILE_WIZARD_STEPS.length-1){
