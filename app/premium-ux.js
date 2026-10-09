@@ -192,6 +192,8 @@ function enhanceBrainMap(screen){
     views.querySelectorAll('button').forEach(btn=>{btn.textContent=btn.dataset.brainView==='side'?'옆면 보기':'윗면 보기'});
     const controls=make('div','brain-map-controls');
     views.before(controls);controls.append(views);
+    // Keep the map view selector above the large visualization so it is visible and usable immediately.
+    tabs.after(controls);
     if(actions){
       const btn=actions.querySelector('button');
       if(btn){btn.classList.add('brain-trend-cta');btn.innerHTML=icon('chart-line')+'<span>시간에 따른 변화 보기</span>';controls.append(btn)}
