@@ -1176,3 +1176,168 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .clinical-deviation-copy span{display:inline-flex;gap:4px;align-items:center;padding:5px 8px;border-radius:999px;background:#f3f7fa;color:#445468;font-size:11px;line-height:1.25}
 .clinical-deviation-copy b{color:#22303d}
 .clinical-deviation-copy.muted span{background:#f7f8fa;color:var(--kimse-muted)}
+
+/* Release 45 · start screen visual reset */
+.screen-start{
+  max-width:560px!important;
+  padding-top:18px!important;
+  padding-bottom:26px!important;
+}
+.screen-start .app-footer{
+  padding-top:16px!important;
+  color:#89928f!important;
+}
+.start-hero{
+  position:relative;
+  overflow:hidden;
+  padding:26px 24px 24px;
+  border:1px solid #e3e8e5;
+  border-radius:28px;
+  background:#fff;
+  box-shadow:0 16px 44px rgba(35,64,58,.08);
+}
+.start-hero:after{
+  content:'';
+  position:absolute;
+  width:210px;height:210px;
+  right:-92px;top:-96px;
+  border-radius:50%;
+  background:radial-gradient(circle,#e8f4ef 0,#f5faf7 58%,rgba(255,255,255,0) 72%);
+  pointer-events:none;
+}
+.start-brand{
+  position:relative;z-index:1;
+  display:flex;align-items:center;gap:14px;
+}
+.start-logo{
+  width:64px;height:64px;
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 8px 22px rgba(27,74,62,.10);
+}
+.start-brand h1{
+  margin:1px 0 0!important;
+  font-size:34px!important;
+  line-height:1!important;
+  letter-spacing:-.05em;
+  color:#102f38!important;
+}
+.start-kicker{
+  display:block;
+  margin-bottom:7px;
+  color:#687a76;
+  font-size:14px;
+  font-weight:850;
+  letter-spacing:-.015em;
+}
+.start-copy{
+  position:relative;z-index:1;
+  margin-top:28px;
+}
+.start-copy h2{
+  margin:0;
+  color:#122f37;
+  font-size:34px;
+  line-height:1.17;
+  letter-spacing:-.045em;
+  font-weight:900;
+  word-break:keep-all;
+}
+.start-copy p{
+  margin:13px 0 0!important;
+  color:#5a6966!important;
+  font-size:16px!important;
+  line-height:1.62;
+  letter-spacing:-.015em;
+  word-break:keep-all;
+}
+.start-signals{
+  position:relative;z-index:1;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:22px;
+}
+.start-signals span{
+  min-height:58px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  border:1px solid #e4ebe8;
+  border-radius:16px;
+  background:#f8fbf9;
+  color:#355d54;
+  font-size:14px;
+  font-weight:850;
+}
+.start-signals i{
+  font-size:21px;
+  color:#16755f;
+}
+.start-actions{
+  position:relative;z-index:1;
+  gap:10px!important;
+  margin-top:22px!important;
+}
+.start-actions .btn-kimse{
+  min-height:58px;
+  border-radius:17px;
+  font-size:17px;
+}
+.start-actions .btn-primary-k{
+  background:#14785f;
+  box-shadow:0 8px 20px rgba(20,120,95,.17);
+}
+.start-actions .btn-secondary-k{
+  border-color:#d9e1de;
+  background:#fff;
+  color:#24413b;
+}
+.start-accessibility{
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr);
+  gap:11px;
+  align-items:center;
+  margin:14px 2px 0;
+  padding:12px 14px;
+  color:#53635f;
+}
+.start-accessibility>i{
+  width:38px;height:38px;
+  display:grid;place-items:center;
+  border-radius:12px;
+  background:#eef5f2;
+  color:#176a58;
+  font-size:20px;
+}
+.start-accessibility strong,
+.start-accessibility span{display:block}
+.start-accessibility strong{
+  color:#2c4841;
+  font-size:14px;
+}
+.start-accessibility span{
+  margin-top:2px;
+  font-size:13px;
+  line-height:1.45;
+  color:#72807c;
+}
+@media(max-width:460px){
+  .screen-start{padding:14px 14px 22px!important}
+  .start-hero{padding:22px 20px 20px;border-radius:24px}
+  .start-logo{width:58px;height:58px;border-radius:18px}
+  .start-brand h1{font-size:31px!important}
+  .start-copy{margin-top:24px}
+  .start-copy h2{font-size:31px}
+  .start-copy p{font-size:15px!important}
+  .start-signals{gap:6px;margin-top:19px}
+  .start-signals span{min-height:54px;border-radius:14px;font-size:13px}
+  .start-actions{margin-top:19px!important}
+}
+@media(max-width:340px){
+  .start-copy h2{font-size:28px}
+  .start-signals{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .start-signals span{min-height:50px;flex-direction:row}
+}
