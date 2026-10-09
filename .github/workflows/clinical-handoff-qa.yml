@@ -8,6 +8,10 @@ on:
       - '.github/workflows/clinical-handoff-qa.yml'
       - 'app.js'
       - 'app.css'
+      - 'clinical-submission.js'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'evidence/evidence-application-tabs.js'
 
 permissions:
   contents: read
@@ -22,7 +26,7 @@ jobs:
         run: node --check app.js
       - name: Install Playwright Chromium
         run: |
-          npm install playwright --no-save --no-fund --no-audit
+          npm install playwright pdf-lib --no-save --no-fund --no-audit
           npx playwright install --with-deps chromium
       - name: Verify live Clinical Handoff explorer
         run: |
@@ -98,6 +102,22 @@ jobs:
             await p.goto(BASE+'#/clinical-handoff',{waitUntil:'domcontentloaded',timeout:30000});
             await p.waitForSelector('.screen-clinical-handoff',{timeout:15000});
             await p.waitForSelector('.clinical-explorer',{timeout:15000});
+            check(await p.locator('#clinical-target-country').count()===1,'recipient-country-selector-present');
+            check(await p.locator('#clinical-electronic-submit').isDisabled(),'no-approved-hospital-cannot-send');
+            await p.locator('#clinical-target-country').selectOption('GB');
+            await p.locator('#clinical-target-institution').selectOption('GB-DORSET-MAS');
+            check(await p.locator('#clinical-electronic-submit').isDisabled(),'research-only-nhs-recipient-is-blocked');
+            check((await p.locator('.clinical-delivery-preflight').innerText()).includes('수신 승인'),'unverified-destination-warning-visible');
+            await p.locator('#clinical-target-department').fill('Research department');
+            await p.locator('#clinical-target-department').press('Tab');
+            await p.locator('#clinical-target-clinician').fill('Unverified clinician');
+            await p.locator('#clinical-target-clinician').press('Tab');
+            await p.locator('#clinical-target-institution').selectOption('GB-LEEDS-MAS');
+            check((await p.locator('#clinical-target-department').inputValue())==='','hospital-change-clears-stale-department');
+            check((await p.locator('#clinical-target-clinician').inputValue())==='','hospital-change-clears-stale-clinician');
+            await p.locator('#clinical-target-country').selectOption('KR');
+            check((await p.locator('#clinical-target-institution').inputValue())==='','country-change-clears-recipient');
+            check(await p.locator('#clinical-electronic-submit').isDisabled(),'no-hospital-ack-fabricated');
             check(await p.locator('[data-clinical-domain]').count()===6,'six-domain-filters');
             check(await p.locator('.clinical-metric').count()===6,'all-metrics-visible');
             check(await p.locator('.clinical-quality-band').count()===1,'quality-overlay-visible');
@@ -147,6 +167,9 @@ jobs:
             check(await dp.locator('.clinical-print-page').isVisible(),'print-summary-visible');
             const pdf=await dp.pdf({format:'A4',printBackground:true,margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
             check(pdf.length>10000,'a4-pdf-generated',String(pdf.length));
+            const {PDFDocument}=require(process.cwd()+'/node_modules/pdf-lib');
+            const pdfDocument=await PDFDocument.load(pdf);
+            check(pdfDocument.getPageCount()===1,'a4-summary-exactly-one-page',String(pdfDocument.getPageCount()));
             fs.writeFileSync(path.join(out,'clinical-handoff-a4.pdf'),pdf);
             fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,checkedAt:new Date().toISOString(),pdfBytes:pdf.length},null,2));
             await desktop.close();await ctx.close();await browser.close();
