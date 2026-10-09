@@ -1276,3 +1276,31 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  .kimse-entry-tile-label{font-size:23px}
 }
 @media(prefers-reduced-motion:reduce){.kimse-entry-tile{transition:none}}
+
+/* Role selection: fixed pictogram; no wrapping, no card/content collisions */
+.screen-role .role-card{
+  grid-template-columns:64px minmax(0,1fr) 24px;
+  column-gap:15px;align-items:center;min-width:0;min-height:104px;
+  overflow:hidden;isolation:isolate;
+}
+.screen-role .role-card .avatar-lg{
+  box-sizing:border-box;width:64px;height:64px;max-width:64px;min-width:64px;
+  display:grid;place-items:center;overflow:hidden;border-radius:19px;
+  background:rgba(255,255,255,.60);font-size:30px;line-height:1;
+}
+.screen-role .role-card .avatar-lg .ti{display:block;font-size:30px;line-height:1}
+.screen-role .role-card .role-card-copy{min-width:0;overflow-wrap:break-word;word-break:keep-all}
+.screen-role .role-card h3{font-size:clamp(18px,4.7vw,22px);line-height:1.35;word-break:keep-all}
+.screen-role .role-card p{font-size:14px;line-height:1.55;word-break:keep-all}
+.screen-role .role-card>.ti{justify-self:center;align-self:center}
+@media(max-width:390px){
+ .screen-role .role-card{grid-template-columns:54px minmax(0,1fr) 20px;column-gap:11px;padding:13px}
+ .screen-role .role-card .avatar-lg{width:54px;min-width:54px;max-width:54px;height:54px;border-radius:16px}
+ .screen-role .role-card .avatar-lg .ti{font-size:26px}
+ .screen-role .role-card h3{font-size:18px}
+ .screen-role .role-card p{font-size:13px}
+}
+@media(min-width:391px) and (max-width:460px){
+ .screen-role .role-card{grid-template-columns:60px minmax(0,1fr) 20px;column-gap:12px}
+ .screen-role .role-card .avatar-lg{width:60px;min-width:60px;max-width:60px;height:60px}
+}

@@ -14,7 +14,7 @@ const D={version:STATE_VERSION,account:null,intent:null,self:false,care:false,mo
   permissions:{microphone:'unknown',location:'unknown',motion:'unknown',notifications:'unknown'},
   remote:{accountId:'',subjectId:'',selfSubjectId:'',careSubjects:[],activeCareSubjectId:'',token:''},
   auth:{lastError:'',pending:false,authhubUserId:''},
-  monitoring:{pending:[],summary:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},liveSteps:null,liveStepProvider:'',liveStepAt:'',daily:{date:'',movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0,locationInitialized:false,motionInitialized:false}},
+  monitoring:{pending:[],summary:null,coverage:null,alerts:[],lastFlushAt:null,lastSyncError:'',initialSignalsQueued:false,lastObserved:{},liveSteps:null,liveStepProvider:'',liveStepAt:'',daily:{date:'',movementDistanceM:0,locationRadiusM:0,outings:0,motionActiveMs:0,appActiveMs:0,locationInitialized:false,motionInitialized:false}},
   stage:{summary:null,lastSyncAt:null,lastError:''},careOverview:{subjectId:'',summary:null,alerts:[],stage:null,lastSyncAt:null},familyFeedback:[],professionalOutcomes:[],externalClinicalRecords:[],clinicalReport:null,callSessions:[],activeCallSessionId:'',
   brainView:'side',brainRange:'week',brainFocus:'memory',brainTrendDomain:'overall',brainHistory:[],
   selectedTraining:'memory',trainingResult:null,selectedHealth:'sleep',marketCategory:'all',marketSearch:'',marketItem:null,marketFavorites:[],partnerStatus:null,
@@ -170,7 +170,7 @@ const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-prima
 const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><img class="brand-status-icon" src="${appStatusIconSrc()}" alt="" aria-hidden="true"><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
-const foot=()=>`<div class="app-footer">Updated 2026.10.06 · Release 44<br>의료 진단을 대신하지 않으며 변화 관찰과 기록을 돕습니다.</div>`;
+const foot=()=>`<div class="app-footer">인지·생활 변화를 관찰하는 서비스이며 의료 진단을 대신하지 않습니다.</div>`;
 function nav(care=false,active=route()){let x=care?[['home','caregiver-home','홈'],['bell','emergency','알림'],['users','family','가족'],['chart-line','report','리포트'],['dots','settings','더보기']]:[['home','home','홈'],['checkbox','assessment-start','체크'],['barbell','training','훈련'],['clipboard-heart','health','기록'],['dots','settings','더보기']];return `<nav class="bottom-nav" aria-label="주요 메뉴"><div class="bottom-nav-inner">${x.map(([i,p,t])=>`<a class="nav-item ${p===active?'active':''}" href="#/${p}">${I(i)}<span>${t}</span></a>`).join('')}</div></nav>`}
 const standaloneLang=()=>'';
 function captureScenarioRibbon(){return ''}
@@ -1119,8 +1119,8 @@ async function syncMonitoring(){
   if(!monitoringEnabled()||!navigator.onLine)return false;if(!await startRemoteMonitoring())return false;
   try{
     await flushSignals();const base=API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId),h={'X-KIMSE-ACCOUNT-TOKEN':S.remote.token};
-    const pair=await Promise.all([fetch(base+'/monitoring/summary?account_id='+encodeURIComponent(S.remote.accountId),{headers:h}),fetch(base+'/change-alerts?account_id='+encodeURIComponent(S.remote.accountId)+'&limit=30',{headers:h})]);
-    if(pair[0].ok)S.monitoring.summary=await pair[0].json();if(pair[1].ok){const rows=await pair[1].json();for(const a of rows.slice().reverse())handleMonitoringAlert(a)}await syncObservationStage();S.monitoring.lastSyncError='';save();syncAppStatusIcon();return true;
+    const pair=await Promise.all([fetch(base+'/monitoring/summary?account_id='+encodeURIComponent(S.remote.accountId),{headers:h}),fetch(base+'/change-alerts?account_id='+encodeURIComponent(S.remote.accountId)+'&limit=30',{headers:h}),fetch(base+'/monitoring/coverage?account_id='+encodeURIComponent(S.remote.accountId)+'&days=28',{headers:h})]);
+    if(pair[0].ok)S.monitoring.summary=await pair[0].json();if(pair[1].ok){const rows=await pair[1].json();for(const a of rows.slice().reverse())handleMonitoringAlert(a)}S.monitoring.coverage=pair[2].ok?await pair[2].json():null;await syncObservationStage();S.monitoring.lastSyncError='';save();syncAppStatusIcon();return true;
   }catch{S.monitoring.lastSyncError='최근 상태를 동기화하지 못했습니다.';save();return false}
 }
 function parseSleepMinutes(v){const s=String(v||'');let m=0;const h=s.match(/(\d+(?:\.\d+)?)\s*시간/),mm=s.match(/(\d+)\s*분/);if(h)m+=Number(h[1])*60;if(mm)m+=Number(mm[1]);if(!m&&/^\d+(?:\.\d+)?$/.test(s.trim()))m=Number(s)*60;return m>0?m:null}
@@ -1537,7 +1537,7 @@ page.start=()=>wrap(`<section class="kimse-entry" aria-label="낌새 시작 화�
     <a class="kimse-entry-login-link" href="#/auth">로그인</a>
   </div>
 </section>`,{nohead:true,narrow:true});
-page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','👵','제가 사용해요','내 건강을 스스로 관리해요.','bg-blue'],['care','👩','가족을 돌보고 있어요','가족의 상태를 함께 살펴봐요.','bg-pink'],['both','👵👩','둘 다 사용해요','내 건강도 챙기고 가족도 돌봐요.','bg-purple']].map(x=>`<button class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg">${x[1]}</span><span><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}${notice('계정은 하나, 역할은 여러 개.','보호자로 시작해도 나중에 사용자 역할을 추가할 수 있어요.')}`,{title:'역할 선택',narrow:true});
+page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','user','제가 사용해요','나의 변화를 살펴봐요.','bg-blue'],['care','heart-handshake','가족을 돌보고 있어요','가족의 변화를 함께 살펴봐요.','bg-pink'],['both','users','둘 다 사용해요','나와 가족의 변화를 함께 살펴봐요.','bg-purple']].map(x=>`<button type="button" class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg" aria-hidden="true">${I(x[1])}</span><span class="role-card-copy"><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}`,{title:'역할 선택',narrow:true});
 page.auth=()=>{
   const pending=AUTH()?.pendingVerification?.(),err=S.auth?.lastError||'';
   if(pending)return wrap(`<div class="eyebrow">이메일 확인</div><h1 class="page-title">보내드린 인증번호를<br>입력해주세요</h1><p class="page-desc">${esc(pending.challenge?.maskedEmail||pending.user?.email||'입력한 이메일')}로 인증번호를 보냈습니다.</p>${err?notice('확인이 필요해요.',esc(err)):''}<div class="form-stack"><div class="field"><label for="authhub-code">인증번호</label><input id="authhub-code" inputmode="numeric" autocomplete="one-time-code" placeholder="인증번호"></div><button id="authhub-verify" class="btn-kimse btn-primary-k">인증하고 계속</button></div>`,{title:'이메일 확인',narrow:true});
@@ -1749,11 +1749,21 @@ page['monitoring-status']=()=>{
 };
 page['collection-status']=()=>{
   const d=ensureMonitoringDay(),pending=S.monitoring.pending.length,last=S.monitoring.lastFlushAt?fmtDate(S.monitoring.lastFlushAt):'아직 없음';
+  const coverage=S.monitoring.coverage,sourceLabels={MANUAL_ENTRY:'직접 입력',FOREGROUND_SENSOR:'앱 실행 중 센서',FOREGROUND_APP:'앱 실행',NATIVE_SENSOR:'네이티브 센서',IN_APP_CALL:'낌새 통화',OTHER_OR_UNVERIFIED:'기타·출처 확인 필요'};
+  const coverageRows=Array.isArray(coverage?.metrics)?coverage.metrics.map(metric=>{
+    const modes=[...new Set((metric.sources||[]).map(s=>sourceLabels[s.collection_mode]||'출처 확인 필요'))].join(' · ');
+    return '<div class="list-row"><span><strong>'+esc(SIGNAL_LABELS[metric.metric]||metric.metric)+'</strong><small>'+metric.observed_days+'일 기록 / '+metric.eligible_days+'일 관찰 가능 · '+esc(modes)+'</small></span></div>';
+  }).join(''):'';
+  const coverageHtml='<section class="summary-card"><h3>최근 28일 · 서버 기록</h3>'+
+    (coverage?.status==='OBSERVED'?'<p>관찰 시작 이후 '+coverage.eligible_days+'일 중 '+coverage.observed_days+'일에 신호 기록이 있습니다.</p>'+(coverageRows?'<div class="list">'+coverageRows+'</div>':'<p>아직 서버에 기록된 신호가 없습니다.</p>'):
+      coverage?.status==='NOT_STARTED'?'<p>서버의 생활관찰이 아직 시작되지 않았습니다.</p>':'<p>동기화를 누르면 서버에 실제 저장된 기록일을 확인할 수 있습니다.</p>')+
+    '<p class="screen-footnote">신호가 기록된 날짜만 셉니다. 기록률은 하루 종일 자동으로 측정했다는 뜻이나 치매 진단 정확도가 아닙니다.</p></section>';
   return wrap(
     '<div class="eyebrow">오늘 · 실제 수집 상태</div>'+
     '<h1 class="page-title">지금 들어오는 생활 신호를<br>직접 확인할 수 있어요</h1>'+
     '<p class="page-desc">현재 PWA가 실제로 받은 값만 표시합니다. 앱을 닫으면 위치·움직임 센서 수집은 계속되지 않습니다.</p>'+
     '<div class="list">'+collectionStateRows()+'</div>'+
+    coverageHtml+
     '<div class="summary-card"><h3>서버 동기화</h3><p>전송 대기 '+pending+'건 · 마지막 전송 '+esc(last)+'</p>'+(S.monitoring.lastSyncError?'<p>'+esc(S.monitoring.lastSyncError)+'</p>':'')+'</div>'+
     '<div class="hero-actions"><button id="sync-monitoring" class="btn-kimse btn-primary-k btn-full">지금 동기화</button><button class="btn-kimse btn-secondary-k btn-full" data-go="consent">수집 동의·권한 확인</button></div>'+
     '<p class="screen-footnote">현재 PWA에서는 이동거리·생활반경·활동시간을 수집된 범위에서 서버 비교에 사용합니다. 일일 걸음수는 네이티브 앱의 기기 건강 데이터 연동값을 사용합니다.</p>',
