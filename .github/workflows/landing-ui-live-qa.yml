@@ -1,0 +1,99 @@
+name: KIMSE Landing UI Live QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app.js"
+      - "app.css"
+      - "index.html"
+      - ".github/workflows/landing-ui-live-qa.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kimse-landing-ui-live-qa
+  cancel-in-progress: true
+
+jobs:
+  live-landing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Confirm deployed landing files
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          base=https://kimse.suaveforge.com
+          for i in $(seq 1 24); do
+            if curl -fsSL --max-time 15 "$base/?qa=$GITHUB_SHA" -o /tmp/kimse-entry-index.html &&
+               curl -fsSL --max-time 15 "$base/app.js?qa=$GITHUB_SHA" -o /tmp/kimse-entry-app.js &&
+               curl -fsSL --max-time 15 "$base/app.css?qa=$GITHUB_SHA" -o /tmp/kimse-entry-app.css &&
+               grep -Fq '20261009-46' /tmp/kimse-entry-index.html &&
+               grep -Fq 'kimse-entry-tile' /tmp/kimse-entry-app.js &&
+               grep -Fq 'Release 46' /tmp/kimse-entry-app.css; then
+                 echo "KIMSE_LANDING_LIVE_ASSETS_OK=yes attempt=$i"
+                 exit 0
+            fi
+            sleep 10
+          done
+          echo "KIMSE_LANDING_LIVE_ASSETS_OK=no"
+          exit 1
+
+      - name: Install browser for rendered mobile test
+        run: |
+          npm install --prefix "$RUNNER_TEMP/kimse-landing-ui" playwright@1.55.0 --no-fund --no-audit
+          "$RUNNER_TEMP/kimse-landing-ui/node_modules/.bin/playwright" install --with-deps chromium
+
+      - name: Validate real rendered tiles and navigation
+        shell: bash
+        run: |
+          node <<'JS'
+          const { chromium } = require(process.env.RUNNER_TEMP+'/kimse-landing-ui/node_modules/playwright');
+          const assert = require('node:assert/strict');
+          (async () => {
+            const browser = await chromium.launch({headless:true});
+            try {
+              for (const width of [320,375,430,768]) {
+                const page = await browser.newPage({viewport:{width,height:720},deviceScaleFactor:1});
+                const jsErrors=[];
+                page.on('pageerror',err=>jsErrors.push(String(err)));
+                await page.goto('https://kimse.suaveforge.com/?v=46#/start',{waitUntil:'domcontentloaded',timeout:45000});
+                await page.waitForSelector('.kimse-entry-actions button',{timeout:18000});
+                const data=await page.evaluate(()=>{
+                  const buttons=[...document.querySelectorAll('.kimse-entry-actions button')];
+                  const rects=buttons.map(el=>{const r=el.getBoundingClientRect();return {label:el.innerText.trim(),width:r.width,height:r.height,left:r.left,right:r.right,top:r.top,bottom:r.bottom}});
+                  return {h1:document.querySelector('.screen-start h1')?.innerText,
+                    allText:document.querySelector('.screen-start')?.innerText,
+                    buttonCount:buttons.length,
+                    rects,
+                    docWidth:document.documentElement.scrollWidth,
+                    viewportWidth:window.innerWidth,
+                    footer:!!document.querySelector('.screen-start .app-footer')};
+                });
+                assert.equal(data.h1,'낌새');
+                assert.equal(data.buttonCount,2);
+                assert.deepEqual(data.rects.map(x=>x.label),['시작하기','로그인']);
+                assert.equal(data.footer,false);
+                assert(!data.allText.includes('수면')&&!data.allText.includes('Release'),'clutter on landing');
+                assert(data.docWidth<=data.viewportWidth+2,'horizontal overflow');
+                for(const r of data.rects){
+                  assert(r.width>=130 && r.height>=130 && Math.abs(r.width-r.height)<18,'tactile tile dimensions invalid: '+JSON.stringify(r));
+                  assert(r.left>=0 && r.right<=width+2,'tile clipped: '+JSON.stringify(r));
+                }
+                await page.locator('.kimse-entry-actions [data-go="role"]').click();
+                await page.waitForFunction(()=>location.hash==='#/role');
+                await page.goto('https://kimse.suaveforge.com/?v=46#/start',{waitUntil:'domcontentloaded'});
+                await page.waitForSelector('.kimse-entry-actions [data-go="auth"]');
+                await page.locator('.kimse-entry-actions [data-go="auth"]').click();
+                await page.waitForFunction(()=>location.hash==='#/auth');
+                assert.equal(jsErrors.length,0,'JavaScript errors: '+JSON.stringify(jsErrors));
+                console.log('KIMSE_LANDING_RENDER_OK=yes width='+width+' tile_metrics='+JSON.stringify(data.rects));
+                await page.close();
+              }
+              console.log('KIMSE_LANDING_BOTH_CHOICES_OK=yes');
+            } finally {await browser.close();}
+          })().catch(err=>{console.error(err);process.exitCode=1});
+          JS
