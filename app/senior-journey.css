@@ -273,3 +273,33 @@
  .kimse-journey .kimse-wizard-choice,.kimse-journey .kimse-initial-answer,.kimse-journey-track span,
  .kimse-voice-pulse{animation:none!important;transition:none!important;transform:none!important}
 }
+
+
+/* Senior birth year: choose by decade and year, no keyboard or precision wheel. */
+.screen-onboarding-profile .kimse-birth-picker{display:flex;flex-direction:column;gap:19px;min-width:0;width:100%}
+.screen-onboarding-profile .kimse-birth-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+.screen-onboarding-profile .kimse-birth-option{appearance:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;position:relative;min-width:0;width:100%;min-height:100px;padding:14px 9px;border:1.5px solid #d5e8db;border-radius:20px;background:#fff;color:#174b3b;box-shadow:var(--ks-shadow);font-weight:800;text-align:center;letter-spacing:-.025em;transition:background .15s,border-color .15s,transform .15s}
+.screen-onboarding-profile .kimse-birth-decade strong{font-size:24px;line-height:1.3;color:#183e35;white-space:nowrap}
+.screen-onboarding-profile .kimse-birth-decade small{font-size:14px;line-height:1.4;color:#557063;font-weight:630;white-space:nowrap}
+.screen-onboarding-profile .kimse-birth-year{min-height:88px;flex-direction:row;padding:13px 18px;justify-content:center}
+.screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:28px;line-height:1.35;white-space:nowrap;color:#183e35;font-weight:820;font-variant-numeric:tabular-nums}
+.screen-onboarding-profile .kimse-birth-check{position:absolute;right:10px;top:10px;display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#137b61;color:#fff;font-size:15px;opacity:0}
+.screen-onboarding-profile .kimse-birth-year[aria-pressed="true"]{background:#ecf7ef;border-color:#127965;box-shadow:0 0 0 1px #127965}
+.screen-onboarding-profile .kimse-birth-year[aria-pressed="true"] .kimse-birth-check{opacity:1}
+.screen-onboarding-profile .kimse-birth-range-actions{display:flex;justify-content:space-between;gap:12px}
+.screen-onboarding-profile .kimse-birth-range,.screen-onboarding-profile .kimse-birth-change{display:flex;align-items:center;justify-content:center;min-height:66px;padding:12px 20px;border-radius:17px;border:1px solid #cfe0d6;background:#f0f6f1;color:#235d47;font-size:18px;font-weight:750;line-height:1.4}
+.screen-onboarding-profile .kimse-birth-range{flex:1;min-width:0}
+.screen-onboarding-profile .kimse-birth-change{width:100%;margin:5px auto 0}
+.screen-onboarding-profile .kimse-birth-actions{display:none!important}
+.screen-onboarding-profile .kimse-birth-option:focus-visible,.screen-onboarding-profile .kimse-birth-range:focus-visible,.screen-onboarding-profile .kimse-birth-change:focus-visible{outline:3px solid var(--ks-focus);outline-offset:3px}
+@media(hover:hover){.screen-onboarding-profile .kimse-birth-option:hover:not([aria-pressed="true"]){background:#f7fcf8;border-color:#8eb8a4}}
+@media(max-width:360px){.screen-onboarding-profile .kimse-birth-grid{gap:10px}.screen-onboarding-profile .kimse-birth-decade strong{font-size:21px}.screen-onboarding-profile .kimse-birth-decade small{font-size:13px}.screen-onboarding-profile .kimse-birth-option{min-height:92px;padding-inline:6px}.screen-onboarding-profile .kimse-birth-year{min-height:82px}.screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:25px}.screen-onboarding-profile .kimse-birth-range,.screen-onboarding-profile .kimse-birth-change{font-size:17px;padding-inline:12px}}
+.large-text .screen-onboarding-profile .kimse-birth-option{min-height:105px}
+.large-text .screen-onboarding-profile .kimse-birth-decade strong{font-size:27px}
+.large-text .screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:31px}
+.large-text .screen-onboarding-profile .kimse-birth-range,.large-text .screen-onboarding-profile .kimse-birth-change{font-size:20px}
+.high-contrast .screen-onboarding-profile .kimse-birth-option{background:#fff;color:#111;border:3px solid #111;box-shadow:none}
+.high-contrast .screen-onboarding-profile .kimse-birth-decade strong,.high-contrast .screen-onboarding-profile .kimse-birth-decade small,.high-contrast .screen-onboarding-profile .kimse-birth-year>span:first-child{color:#111}
+.high-contrast .screen-onboarding-profile .kimse-birth-year[aria-pressed="true"]{background:#ffefae;border-color:#111;box-shadow:0 0 0 2px #111}
+.high-contrast .screen-onboarding-profile .kimse-birth-range,.high-contrast .screen-onboarding-profile .kimse-birth-change{background:#fff;color:#111;border:3px solid #111}
+@media(prefers-reduced-motion:reduce){.screen-onboarding-profile .kimse-birth-option{transition:none!important;transform:none!important}}
