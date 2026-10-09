@@ -59,7 +59,7 @@ jobs:
               for (const width of [320,375,430,768]) {
                 const page = await browser.newPage({viewport:{width,height:720},deviceScaleFactor:1});
                 const jsErrors=[];
-                page.on('pageerror',err=>jsErrors.push(String(err)));
+                page.on('pageerror',err=>{const trace=String(err.stack||err);jsErrors.push(trace);console.error('KIMSE_BROWSER_PAGEERROR '+trace)});
                 await page.goto('https://kimse.suaveforge.com/?v=46#/start',{waitUntil:'domcontentloaded',timeout:45000});
                 await page.waitForSelector('.kimse-entry-actions button',{timeout:18000});
                 const data=await page.evaluate(()=>{
