@@ -105,7 +105,16 @@ jobs:
                   });
                   await page.goto('https://kimse.suaveforge.com/?v=47#/start',{waitUntil:'domcontentloaded'});
                   await page.reload({waitUntil:'domcontentloaded'});
-                  await page.waitForFunction(()=>location.hash==='#/home',null,{timeout:15000});
+                  await page.waitForTimeout(1100);
+                  console.log('KIMSE_SIGNED_IN_DIAGNOSTIC='+JSON.stringify(await page.evaluate(()=>{
+                    const s=JSON.parse(localStorage.getItem('kimse.p0.state')||'{}');
+                    const a=window.KIMSE_AUTH?.session?.();
+                    return {hash:location.hash,identity:!!s.account,accountId:s.remote?.accountId,remoteToken:!!s.remote?.token,
+                      authLoaded:!!window.KIMSE_AUTH,authRefresh:!!a?.refreshToken,authSessionExpiry:a?.expiresAt,
+                      screen:document.querySelector('main')?.className,htmlHint:document.querySelector('#main h1')?.textContent,
+                      signedInSummary:(s.onboarding||{})};
+                  })));
+                  await page.waitForFunction(()=>location.hash==='#/home',null,{timeout:7000});
                   assert.equal(await page.locator('.screen-start').count(),0,'authenticated member still sees start');
                   console.log('KIMSE_AUTHENTICATED_SKIP_OK=yes width=375');
                 }
