@@ -42,7 +42,7 @@
 .page.screen-voice-check>.app-footer,.page.screen-initial-result>.app-footer{
   max-width:560px;width:100%;flex:none;margin:24px auto 0!important;padding:16px 0 4px!important;
   border-top:1px solid #e8efea;font-size:12px!important;line-height:1.5!important;
-  color:#85948d!important;text-align:center;
+  color:#586d62!important;text-align:center;
 }
 .kimse-journey{
   box-sizing:border-box;display:flex!important;flex-direction:column!important;flex:1 0 auto;
@@ -61,7 +61,7 @@
 .kimse-journey-count em{font-weight:550;color:#a0ada7;font-size:14px;font-style:normal;padding:0 3px}
 .kimse-journey-track{width:100%;height:7px;margin:13px 0 10px!important;border-radius:99px;background:#e4eee7!important;overflow:hidden}
 .kimse-journey-track span{display:block;height:100%;border-radius:99px;background:var(--ks-accent);transition:width .24s ease}
-.kimse-journey-subtitle{font-size:13px;font-weight:650;line-height:1.4;color:#8a9c92;letter-spacing:-.015em}
+.kimse-journey-subtitle{font-size:14px;font-weight:660;line-height:1.45;color:#536d5d;letter-spacing:-.015em}
 .kimse-journey-prompt{flex:none;margin:0 0 28px}
 .kimse-journey .kimse-wizard-title,.kimse-journey .kimse-initial-title,.kimse-journey .kimse-flow-title{
   max-width:100%;font-size:clamp(30px,5.2vw,40px)!important;line-height:1.32!important;
@@ -134,7 +134,7 @@
   color:#3e6658!important;font-size:18px!important;font-weight:750!important;box-shadow:none!important;
 }
 .kimse-journey .kimse-wizard-previous:disabled{opacity:.35!important;cursor:not-allowed}
-.kimse-journey .kimse-wizard-reassurance{margin:16px 0 0!important;color:#73867c!important;font-size:14px!important;line-height:1.5}
+.kimse-journey .kimse-wizard-reassurance{margin:16px 0 0!important;color:#506b5e!important;font-size:15px!important;line-height:1.5}
 .kimse-journey .kimse-wizard-field{margin:0 0 24px!important}
 .kimse-journey .kimse-wizard-field>label,.kimse-journey .kimse-initial-recall-field>label{
  display:block;font-size:17px!important;font-weight:750!important;color:#426d5d!important;margin:0 0 11px!important
@@ -180,7 +180,7 @@
 .kimse-journey .kimse-flow-skip{display:flex;align-items:center;justify-content:center;
  min-height:58px;padding:11px 10px;border:none;background:transparent;
  color:#59756a;font-size:16px;font-weight:730;text-decoration:underline;text-underline-offset:4px}
-.kimse-journey .kimse-flow-privacy{font-size:14px;line-height:1.55;color:#687f73;margin:25px 0 0;word-break:keep-all}
+.kimse-journey .kimse-flow-privacy{font-size:15px;line-height:1.6;color:#4e685a;margin:25px 0 0;word-break:keep-all}
 .kimse-voice-task-label{font-size:15px;font-weight:780;color:#3d7e69;letter-spacing:-.035em}
 .kimse-voice-prompt{
  position:relative;overflow:hidden;margin:0 0 20px;min-height:192px;padding:25px 27px 58px;
@@ -216,7 +216,7 @@
  padding:18px 0;border-top:1px solid #edf2ef;min-width:0}
 .kimse-summary-row>div{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
 .kimse-summary-row strong{font-size:18px;font-weight:760;color:var(--ks-ink);letter-spacing:-.035em}
-.kimse-summary-row small{font-size:14px;color:#758b7e;line-height:1.38}
+.kimse-summary-row small{font-size:15px;color:#536e60;line-height:1.45}
 .kimse-summary-row b{font-size:17px;line-height:1.45;color:#1b7257;font-weight:780;text-align:right;
  max-width:47%;word-break:keep-all}
 .kimse-complete-message{display:flex;flex-direction:column;gap:10px;border-radius:22px;
