@@ -19,7 +19,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           for i in $(seq 1 36); do
-            if curl -fsSL --max-time 15 'https://kimse.suaveforge.com/app.js?qa=20261009-53' | grep -Fq 'PROFILE_WIZARD_STEPS'; then
+            if curl -fsSL --max-time 15 'https://kimse.suaveforge.com/app.js?qa=20261009-53' -o /tmp/kimse-profile-qa-live.js && grep -Fq 'PROFILE_WIZARD_STEPS' /tmp/kimse-profile-qa-live.js; then
               echo 'KIMSE_PROFILE_LIVE_JS=yes'
               exit 0
             fi
