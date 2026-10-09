@@ -15,6 +15,8 @@
   // These institutions are sourced from published professional-referral pages.
   // NONE has approved KIMSE electronic submission or a clinician-specific profile.
   const researchTargets=Object.freeze([
+    {id:'KR-SNUH-OUTPATIENT',country:'KR',name:'서울대학교병원 · 심층진찰·외래 안내 (일반)',specialty:'일반 진료의뢰 절차',url:'https://www.snuh.org/content/Q005001003.do'},
+    {id:'KR-AMC-NEURO-MEMORY',country:'KR',name:'서울아산병원 · 신경과 기억장애·치매클리닉',specialty:'신경과 · 기억장애·치매',url:'https://amcmg.amc.seoul.kr/asan/staff/base/staffBaseInfoDetail.do?drEmpId=d011eCtGRkxaS0dVSmY2TnJ4d1NKQT09&searchHpCd=D030'},
     {id:'GB-DORSET-MAS',country:'GB',name:'Dorset HealthCare · Memory Assessment Service',specialty:'Memory Assessment',url:'https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals'},
     {id:'GB-CNTW-MAMS',country:'GB',name:'Cumbria, Northumberland, Tyne and Wear · MAMS',specialty:'Memory Assessment',url:'https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet'},
     {id:'GB-LEEDS-MAS',country:'GB',name:'Leeds and York Partnership · Memory Assessment',specialty:'Memory Assessment',url:'https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/'},
