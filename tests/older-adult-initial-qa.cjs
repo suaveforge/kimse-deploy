@@ -20,7 +20,7 @@ async function visit(browser,width,mode){
  await page.goto(base,{waitUntil:'domcontentloaded',timeout:45000});
  await page.locator('.kimse-initial-title').waitFor({timeout:25000});
  const checkStep=async(n)=>{
-   const caption=(await page.locator('.kimse-initial-progress-label strong').innerText()).trim();
+   const caption=(await page.locator('.kimse-journey-count').innerText()).trim();
    assert.equal(caption,n+' / 6','wrong step index');
    const ui=await page.evaluate(()=>{
      const el=document.querySelector('.screen-initial-check'),title=el.querySelector('.kimse-initial-title');
