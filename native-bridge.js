@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const cap=()=>window.Capacitor||null;
-let pedometer=null,listenerHandle=null,currentSteps=null,currentProvider='',listeners=new Set();
+let pedometer=null,listenerHandle=null,currentSteps=null,currentProvider='',currentObservedDay='',listeners=new Set();
 
 function plugin(){
   if(pedometer)return pedometer;
@@ -12,10 +12,19 @@ function plugin(){
   return pedometer;
 }
 function notify(payload){
-  const steps=Math.max(0,Math.round(Number(payload?.steps)||0));
+  const raw=payload?.steps;
+  if(payload?.available===false||payload?.granted===false||payload?.observedToday===false||raw===null||raw===undefined||String(raw).trim()===''||!Number.isFinite(Number(raw)))return;
+  const steps=Math.max(0,Math.round(Number(raw)));
+  const provider=String(payload?.provider||'native-pedometer');
+  const observedAt=payload?.observedAt||new Date().toISOString();
+  const observedDate=new Date(observedAt);
+  const observedDay=Number.isNaN(observedDate.getTime())?new Date().toDateString():observedDate.toDateString();
+  // A polling read of an unchanged same-day counter must not emit a second sensor event.
+  if(currentSteps===steps&&currentProvider===provider&&currentObservedDay===observedDay)return;
   currentSteps=steps;
-  currentProvider=String(payload?.provider||'native-pedometer');
-  const event={steps,provider:currentProvider,observedAt:payload?.observedAt||new Date().toISOString()};
+  currentProvider=provider;
+  currentObservedDay=observedDay;
+  const event={steps,provider,observedAt};
   for(const fn of listeners){try{fn(event)}catch{}}
   window.dispatchEvent(new CustomEvent('kimse:pedometer',{detail:event}));
 }
@@ -34,7 +43,7 @@ async function permissions(){
 async function readToday(){
   const p=plugin();if(!p)return null;
   const result=await p.getTodaySteps();
-  if(result&&Number.isFinite(Number(result.steps))){
+  if(result&&result.available!==false&&result.granted!==false&&result.observedToday!==false&&result.steps!==null&&result.steps!==undefined&&String(result.steps).trim()!==''&&Number.isFinite(Number(result.steps))){
     notify(result);
     return {steps:currentSteps,provider:currentProvider,observedAt:result.observedAt||new Date().toISOString()};
   }
@@ -44,7 +53,7 @@ async function startStepUpdates(callback){
   if(typeof callback==='function')listeners.add(callback);
   const p=plugin();if(!p)return {available:false,remove:async()=>{if(callback)listeners.delete(callback)}};
   const permission=await permissions();
-  if(!permission.granted)return {...permission,remove:async()=>{if(callback)listeners.delete(callback)}};
+  if(!permission.available||!permission.granted)return {...permission,remove:async()=>{if(callback)listeners.delete(callback)}};
   try{await readToday()}catch{}
   if(!listenerHandle&&typeof p.addListener==='function'){
     listenerHandle=await p.addListener('stepUpdate',notify);
