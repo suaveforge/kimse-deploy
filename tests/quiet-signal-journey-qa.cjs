@@ -40,7 +40,7 @@ async function run(browser,screen,mode,width){
  }
  if(screen!=='initial-result'){
   const step=await page.locator('.kimse-journey-count').innerText();
-  assert(/1[\s/]*/.test(step),'missing progress count');
+  assert(step.includes(screen==='initial-check'?'2':'1'),'missing progress count: '+screen+' '+step);
   assert.equal(await page.locator('.kimse-journey-track[role="progressbar"]').count(),1);
  }
  const mainCopy=await page.locator('main').innerText();
