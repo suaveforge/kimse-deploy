@@ -303,3 +303,6 @@
 .high-contrast .screen-onboarding-profile .kimse-birth-year[aria-pressed="true"]{background:#ffefae;border-color:#111;box-shadow:0 0 0 2px #111}
 .high-contrast .screen-onboarding-profile .kimse-birth-range,.high-contrast .screen-onboarding-profile .kimse-birth-change{background:#fff;color:#111;border:3px solid #111}
 @media(prefers-reduced-motion:reduce){.screen-onboarding-profile .kimse-birth-option{transition:none!important;transform:none!important}}
+
+/* Year grid has one forward action; choosing another decade already provides the back action. */
+.screen-onboarding-profile .kimse-birth-year-actions{grid-template-columns:minmax(0,1fr)!important}
