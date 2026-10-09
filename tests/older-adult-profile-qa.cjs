@@ -48,7 +48,14 @@ async function checkMode(browser,width,mode){
      assert(c.width>=Math.min(260,width-60),'Touch target width '+c.width);
      assert(c.fontSize>=18,'Option text is too small '+c.fontSize);
    }
-   if(field==='birthYear'||field==='sleepHours'){
+   if(field==='birthYear'){
+     assert.equal(await page.locator('#profile-wizard-input').count(),0,'Birth year must never require keyboard typing');
+     assert.equal(await page.locator('[data-birth-phase="decade"]').count(),1);
+     await page.locator('[data-birth-decade="1950"]').click();
+     assert.equal(await page.locator('[data-birth-phase="year"]').count(),1);
+     await page.locator('[data-birth-year="1956"]').click();
+     assert.equal(await page.locator('[data-birth-year="1956"]').getAttribute('aria-pressed'),'true');
+   }else if(field==='sleepHours'){
      await page.locator('#profile-wizard-input').fill(value);
    }else{
      const button=page.locator('.kimse-wizard-choice[data-profile-choice="'+value+'"]');
