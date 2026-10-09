@@ -200,7 +200,7 @@ async function demoShowCaption(topic,hold=1000){
 }
 function wrap(html,o={}){
   const r=route(),screen='screen-'+r.replace(/[^a-z0-9-]/gi,'-'),senior=SENIOR_ROUTES.has(r)?' senior-screen':'';
-  return `${captureTopicOverlay()}${o.nohead?standaloneLang():head(o.title||'낌새',o.back!==false)}<main id="main" class="page ${o.narrow?'narrow':''} ${o.overview?'overview-page':''} ${screen}${senior}" tabindex="-1">${html}${o.overview?'':foot()}</main>${o.bottom?nav(o.care,o.active):''}`
+  return `${captureTopicOverlay()}${o.nohead?standaloneLang():head(o.title||'낌새',o.back!==false)}<main id="main" class="page ${o.narrow?'narrow':''} ${o.overview?'overview-page':''} ${screen}${senior}" tabindex="-1">${html}${o.overview||r==='start'?'':foot()}</main>${o.bottom?nav(o.care,o.active):''}`
 }
 const notice=(h,p)=>`<div class="notice"><strong>${h}</strong>${p}</div>`;
 const row=(h,s='',right='')=>`<div class="list-row"><span><strong>${h}</strong>${s?`<small>${s}</small>`:''}</span>${right}</div>`;
@@ -1523,7 +1523,24 @@ async function startDemoCapture(){
 
 const page={};
 page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 50초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·동의·기본검사·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>최근 변화</span><i>→</i><span>연구</span><i>→</i><span>계속 업데이트</span><i>→</i><span>처음 상태</span><i>→</i><span>1→14일</span><i>→</i><span>변화 흐름</span><i>→</i><span>가족</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 자동촬영 시작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-50s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">녹화 시작 때 공유창에서 반드시 “현재 탭”을 선택하세요. Chrome에서는 앱 영역만 9:16 세로로 자동 크롭해 녹화합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
-page.start=()=>wrap(`<section class="start-hero"><div class="start-brand"><img class="start-logo" src="${STATUS_ICON_ASSETS.stable}" alt="낌새 로고"><div><span class="start-kicker">오늘의 작은 변화부터</span><h1>낌새</h1></div></div><div class="start-copy"><h2>평소와 달라진 순간을<br>놓치지 않도록.</h2><p>수면·말하기·이동·통화처럼 매일의 변화를 모아<br>나와 가족이 함께 살펴봅니다.</p></div><div class="start-signals" aria-label="낌새가 살펴보는 변화"><span>${I('moon-stars')}수면</span><span>${I('microphone')}말하기</span><span>${I('route')}이동</span><span>${I('phone-call')}통화</span></div><div class="hero-actions start-actions">${btn('시작하기','role')}${btn('로그인','auth','btn-secondary-k')}</div></section><div class="start-accessibility">${I('adjustments-horizontal')}<div><strong>보기 편하게 바꿀 수 있어요.</strong><span>큰 글씨·큰 터치·음성 안내를 설정할 수 있습니다.</span></div></div>`,{nohead:true,narrow:true});
+page.start=()=>wrap(`<section class="kimse-entry" aria-label="낌새 시작 화면">
+  <div class="kimse-entry-identity">
+    <div class="kimse-entry-mark"><img src="${STATUS_ICON_ASSETS.stable}" alt="" aria-hidden="true"></div>
+    <h1>낌새</h1>
+  </div>
+  <div class="kimse-entry-actions" role="group" aria-label="시작 방법">
+    <button type="button" class="kimse-entry-tile kimse-entry-new" data-go="role">
+      <span class="kimse-entry-tile-icon" aria-hidden="true">${I('sparkles')}</span>
+      <span class="kimse-entry-tile-label">시작하기</span>
+      <span class="kimse-entry-tile-arrow" aria-hidden="true">${I('arrow-up-right')}</span>
+    </button>
+    <button type="button" class="kimse-entry-tile kimse-entry-login" data-go="auth">
+      <span class="kimse-entry-tile-icon" aria-hidden="true">${I('login-2')}</span>
+      <span class="kimse-entry-tile-label">로그인</span>
+      <span class="kimse-entry-tile-arrow" aria-hidden="true">${I('arrow-up-right')}</span>
+    </button>
+  </div>
+</section>`,{nohead:true,narrow:true});
 page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','👵','제가 사용해요','내 건강을 스스로 관리해요.','bg-blue'],['care','👩','가족을 돌보고 있어요','가족의 상태를 함께 살펴봐요.','bg-pink'],['both','👵👩','둘 다 사용해요','내 건강도 챙기고 가족도 돌봐요.','bg-purple']].map(x=>`<button class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg">${x[1]}</span><span><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}${notice('계정은 하나, 역할은 여러 개.','보호자로 시작해도 나중에 사용자 역할을 추가할 수 있어요.')}`,{title:'역할 선택',narrow:true});
 page.auth=()=>{
   const pending=AUTH()?.pendingVerification?.(),err=S.auth?.lastError||'';
