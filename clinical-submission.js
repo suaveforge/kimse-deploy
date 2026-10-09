@@ -32,7 +32,12 @@
     const country=Object.hasOwn(countryLabels,input.country)?input.country:selection.country;
     const candidate=Object.hasOwn(input,'institutionId')?safeText(input.institutionId,80):(country===selection.country?selection.institutionId:'');
     const institutionId=getTargets(country).some(x=>x.id===candidate)?candidate:'';
-    selection={country,institutionId,department:safeText(input.department??selection.department),clinician:safeText(input.clinician??selection.clinician)};
+    const changedDestination=country!==selection.country||institutionId!==selection.institutionId;
+    selection={
+      country,institutionId,
+      department:safeText(input.department??(changedDestination?'':selection.department)),
+      clinician:safeText(input.clinician??(changedDestination?'':selection.clinician))
+    };
     return getSelection();
   };
   const evaluate=(report,override)=>{
@@ -47,14 +52,27 @@
     if(!report||typeof report!=='object')blockers.push('진료 리포트를 먼저 불러와야 합니다.');
     else {
       if(report.schema_version!=='KIMSE_CLINICAL_HANDOFF_PAYLOAD_V2')blockers.push('지원되는 의료리포트 데이터 형식이 아닙니다.');
-      if(!report.report_context||!report.previsit_summary)blockers.push('관찰기간 또는 진료 전 핵심 요약이 없습니다.');
-      if(!report.disclaimer)blockers.push('관찰과 의료 진단을 구분하는 안내가 없습니다.');
+      const context=report.report_context;
+      const summary=report.previsit_summary;
+      const validDay=value=>{
+        if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+        const date=new Date(value+'T00:00:00Z');
+        return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;
+      };
+      if(!context||typeof context!=='object'||Array.isArray(context)||!validDay(context.window_start)||!validDay(context.window_end)||context.window_start>context.window_end)
+        blockers.push('관찰기간의 시작일·종료일을 확인해야 합니다.');
+      if(!summary||typeof summary!=='object'||Array.isArray(summary)||!String(summary.handoff_reason||'').trim())
+        blockers.push('진료 전 핵심 요약과 상담 사유가 없습니다.');
+      if(typeof report.disclaimer!=='string'||!report.disclaimer.trim())
+        blockers.push('관찰과 의료 진단을 구분하는 안내가 없습니다.');
+      if(!Array.isArray(report.clinical_coverage))
+        blockers.push('임상 항목별 수집·결측 상태가 없습니다.');
       const missing=(Array.isArray(report.clinical_coverage)?report.clinical_coverage:[]).filter(x=>x&&x.status!=='available');
       if(missing.length)warnings.push('아직 확인되지 않은 임상 영역 '+missing.length+'개가 있습니다. 미수집은 정상 소견이 아닙니다.');
       if(!report.subject?.display_name)warnings.push('환자 표시 이름이 제공되지 않았습니다. 실제 진료 전 환자 확인이 필요합니다.');
     }
     if(choice.country!=='KR')warnings.push('현재 출력물은 한국어 일반 진료용입니다. 선택한 국가·기관에 맞춘 서식 검증이나 현지화는 완료되지 않았습니다.');
-    if(target)warnings.push('선택한 기관은 공개 전문의뢰 요건 조사 대상이며 KIMSE 리포트 수신 승인 기관이 아닙니다.');
+    if(target)warnings.push('선택한 기관은 공개 진료·의뢰 안내 조사 대상이며 KIMSE 리포트 수신 승인 기관이 아닙니다.');
     if(choice.clinician)warnings.push('입력한 의료진의 실재·진료과·리포트 선호·수신 권한은 확인되지 않았습니다.');
     const printReady=blockers.length===0;
     return Object.freeze({
