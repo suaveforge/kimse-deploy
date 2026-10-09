@@ -11,7 +11,7 @@ async function run(browser,screen,mode,width){
    version:14,account:{name:'점검',email:'qa@example.invalid'},intent:'self',self:true,care:false,
    profile:{birthYear:'1956',sex:'female',education:'7to9',activity:'active',living:'partner_family',socialSupport:'both',socialActivity:'weekly',sleepHours:'7시간',sleepDisturbance:'rare',hearing:'no',subjectiveChange:'ABSENT',functionStatus:'INDEPENDENT'},
    onboarding:{profileDone:screen!=='onboarding-profile',consentDone:true,initialDone:screen==='initial-result',completed:false,profileStep:1},
-   initial:{step:1,answers:{subtraction:'79',events:'some',finances:'no',travel:'often'},responseTimes:[1500,1200,1900,2100],recall:'나무 기차',voiceSamples:[{id:'qa-one',durationSec:35,prompt:'첫 이야기',storedLocal:true},{id:'qa-two',durationSec:40,prompt:'두번째 이야기',storedLocal:true},null],voiceStep:0,completedAt:screen==='initial-result'?new Date().toISOString():null},
+   initial:{step:1,answers:screen==='initial-result'?{subtraction:'79',events:'some',finances:'no',travel:'often'}:{},responseTimes:screen==='initial-result'?[1500,1200,1900,2100]:[],recall:screen==='initial-result'?'나무 기차':'',voiceSamples:[{id:'qa-one',durationSec:35,prompt:'첫 이야기',storedLocal:true},{id:'qa-two',durationSec:40,prompt:'두번째 이야기',storedLocal:true},null],voiceStep:0,completedAt:screen==='initial-result'?new Date().toISOString():null},
    consents:{service:true,privacy:true,health:true},
    a11y:{largeText:mode==='large',highContrast:mode==='contrast',voiceGuidance:false,soundEffects:false,largeTouchTargets:mode!=='normal'}
   };
@@ -60,7 +60,7 @@ async function run(browser,screen,mode,width){
   assert((await page.locator('.kimse-journey-count').innerText()).includes('3'),'initial advance failed');
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')));
   assert.equal(state.initial.answers.subtraction,'81');
-  assert.equal(state.initial.responseTimes.length,4);
+  assert.equal(state.initial.responseTimes.length,1,'first-time initial check should not inherit any prior response times');
   assert(Number(state.initial.responseTimes[0])>=100);
   assert(!await page.locator('main').innerText().then(v=>v.includes('나무 기차 우산')),'memory words leaked on later step');
  }
