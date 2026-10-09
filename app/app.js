@@ -1633,28 +1633,18 @@ function birthYearsForDecade(decade){
  return Array.from({length:10},(_,i)=>decade+i).filter(y=>y>=min&&y<=max);
 }
 function birthDecadeMarkup(){
- const decades=birthDecadeChoices(),group=String(S.onboarding.birthRange||'common');
- const ranges={common:decades.filter(d=>d>=1930&&d<=1980),earlier:decades.filter(d=>d<1930),later:decades.filter(d=>d>1980)};
- const active=ranges[group]?.length?group:'common';
- const buttons=ranges[active].map(d=>
-   '<button type="button" class="kimse-birth-option kimse-birth-decade" data-birth-decade="'+d+'" aria-label="'+d+'년대 선택">'+
-   '<strong>'+d+'년대</strong><small>'+Math.max(new Date().getFullYear()-120,d)+'~'+Math.min(new Date().getFullYear()-18,d+9)+'년</small></button>'
- ).join('');
- const move=active==='common'?
-   '<button type="button" class="kimse-birth-range" data-birth-range="earlier">← 더 이전</button>'+
-   '<button type="button" class="kimse-birth-range" data-birth-range="later">더 이후 →</button>':
-   '<button type="button" class="kimse-birth-range" data-birth-range="common">← 다른 연대 보기</button>';
+ const decades=birthDecadeChoices();
  return '<div class="kimse-birth-picker" data-birth-phase="decade">'+
-   '<div class="kimse-birth-grid kimse-birth-decade-grid" role="group" aria-label="출생 연대 선택">'+buttons+'</div>'+
-   '<div class="kimse-birth-range-actions">'+move+'</div></div>';
+   '<div class="kimse-birth-grid kimse-birth-decade-grid" role="group" aria-label="출생 연대 선택">'+
+   decades.map(d=>'<button type="button" class="kimse-birth-option kimse-birth-decade" data-birth-decade="'+d+'" aria-label="'+d+'년대 선택"><strong>'+d+'년대</strong></button>').join('')+
+   '</div></div>';
 }
 function birthYearMarkup(){
  const decade=birthYearDecade(),years=birthYearsForDecade(decade),current=String(S.profile.birthYear||'');
  return '<div class="kimse-birth-picker" data-birth-phase="year">'+
    '<div class="kimse-birth-grid kimse-birth-year-grid" role="group" aria-label="출생연도 선택">'+
-   years.map(y=>'<button type="button" class="kimse-birth-option kimse-birth-year" data-birth-year="'+y+'" aria-pressed="'+String(current===String(y))+'">'+
-     '<span>'+y+'년</span><span class="kimse-birth-check" aria-hidden="true">'+(current===String(y)?'✓':'')+'</span></button>').join('')+
-   '</div><button type="button" class="kimse-birth-change" data-birth-back>← 다른 연대 선택</button></div>';
+   years.map(y=>'<button type="button" class="kimse-birth-option kimse-birth-year" data-birth-year="'+y+'" aria-pressed="'+String(current===String(y))+'"><span>'+y+'년</span></button>').join('')+
+   '</div><button type="button" class="kimse-birth-change" data-birth-back>← 다른 연대 보기</button></div>';
 }
 
 page['onboarding-profile']=()=>{
@@ -1670,17 +1660,17 @@ page['onboarding-profile']=()=>{
    ).join('')+'</div>';
  }else choices='<div class="kimse-wizard-field"><label for="profile-wizard-input">하루 수면시간</label>'+
       '<div class="kimse-wizard-input-wrap"><input id="profile-wizard-input" type="text" inputmode="decimal" autocomplete="off" maxlength="40" value="'+esc(current)+'" placeholder="예: 7시간 30분" aria-describedby="profile-wizard-hint"></div></div>';
- const title=birth?(phase==='decade'?'어느 연대에 태어나셨나요?':decade+'년대 중 몇 년에 태어나셨나요?'):step.title;
- const hint=birth?(phase==='decade'?'먼저 태어난 연대를 눌러주세요.':'정확한 연도를 눌러주세요.'):step.hint;
+ const title=birth?(phase==='decade'?'태어난 연대를 골라주세요':decade+'년대, 몇 년생이세요?'):step.title;
+ const hint=birth?(phase==='decade'?'':'연도를 누르면 바로 다음 질문으로 넘어가요.'):step.hint;
  const showPrev=i>0||birth&&phase==='year';
  const html='<section class="kimse-profile-wizard kimse-journey" aria-label="기본정보 입력">'+
    journeyTop('나를 알아가는 첫 단계',i+1,PROFILE_WIZARD_STEPS.length,'기본정보')+
    '<div class="kimse-journey-prompt"><h1 class="kimse-wizard-title">'+esc(title)+'</h1>'+
    (hint?'<p id="profile-wizard-hint" class="kimse-wizard-hint">'+esc(hint)+'</p>':'')+'</div>'+
    '<form id="profile-form" novalidate>'+choices+
-   '<div class="kimse-wizard-actions kimse-journey-actions'+(birth&&phase==='decade'?' kimse-birth-actions':birth?' kimse-birth-year-actions':'')+'">'+
+   '<div class="kimse-wizard-actions kimse-journey-actions'+(birth?' kimse-birth-actions':'')+'">'+
      (birth?'':'<button type="button" class="kimse-wizard-previous" data-profile-prev '+(showPrev?'':'disabled')+'>이전</button>')+
-     (birth&&phase==='decade'?'':'<button type="submit" id="profile-wizard-next" class="btn-kimse btn-primary-k kimse-wizard-next" '+(valid?'':'disabled')+'>'+(last?'초기 과제로 계속':'다음')+'</button>')+
+     (birth?'':'<button type="submit" id="profile-wizard-next" class="btn-kimse btn-primary-k kimse-wizard-next" '+(valid?'':'disabled')+'>'+(last?'초기 과제로 계속':'다음')+'</button>')+
    '</div></form></section>';
  return wrap(html,{title:'기본정보',narrow:true});
 };
@@ -2461,8 +2451,6 @@ function render(){applyA11y();let r=route();if(r==='start'&&S.account&&S.remote?
 document.addEventListener('click',e=>{
   if(route()!=='onboarding-profile')return;
   if(profileWizardStepIndex()===0){
-    const range=e.target.closest('[data-birth-range]');
-    if(range){S.onboarding.birthRange=range.dataset.birthRange;save();tone('tap');render();return}
     const decade=e.target.closest('[data-birth-decade]');
     if(decade){
       const d=Number(decade.dataset.birthDecade);
@@ -2473,7 +2461,7 @@ document.addEventListener('click',e=>{
     if(year&&birthYearPhase()==='year'){
       const value=String(year.dataset.birthYear);
       if(birthYearsForDecade(birthYearDecade()).includes(Number(value))){
-        S.profile.birthYear=value;save();tone('tap');render();
+        S.profile.birthYear=value;S.onboarding.birthPhase='year';S.onboarding.profileStep=1;save();tone('tap');render();
       }
       return;
     }
