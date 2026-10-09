@@ -2302,13 +2302,18 @@ document.addEventListener('submit',async e=>{
     S.onboarding.consentDone=true;save();
     await requestSelectedPermissions();
     if(S.onboarding.completed){
-      await startRemoteMonitoring();await syncMonitoringPreferences();await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();flushSignals();save();
-      feedback('데이터 수집·공유 설정을 저장했습니다.','success');go('home');return;
+      feedback('데이터 수집·공유 설정을 저장했습니다.','success');go('home');
+      void (async()=>{try{await startRemoteMonitoring();await syncMonitoringPreferences();await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();flushSignals();save()}catch{feedback('설정은 저장됐지만 서버 동기화가 지연되고 있습니다. 연결 상태를 확인해주세요.','warning')}})();
+      return;
     }
     feedback('동의를 저장했습니다. 이제 초기 정보를 확인합니다.','success');
     if(!S.onboarding.profileDone){go('onboarding-profile');return}
     if(!S.onboarding.initialDone){go('initial-check');return}
-    await finishOnboardingAndStartMonitoring();go('home');return;
+    // Required consent is saved locally; do not hold the first home screen hostage to remote syncing.
+    const starting=finishOnboardingAndStartMonitoring();
+    go('home');
+    void starting.catch(()=>feedback('생활패턴 기록은 시작됐지만 서버 동기화가 지연되고 있습니다. 연결 상태를 확인해주세요.','warning'));
+    return;
   }
 });
 async function completeAuthHubLogin(result){
