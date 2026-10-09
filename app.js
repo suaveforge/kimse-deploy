@@ -1549,7 +1549,7 @@ page.start=()=>wrap(`<section class="kimse-entry" aria-label="낌새 시작 화�
 page.role=()=>wrap(`<div class="eyebrow">가입 1/3</div><h1 class="page-title">어떤 목적으로 사용하시나요?</h1><p class="page-desc">역할은 나중에 언제든 추가할 수 있어요.</p>${[['self','user','제가 사용해요','나의 변화를 살펴봐요.','bg-blue'],['care','heart-handshake','가족을 돌보고 있어요','가족의 변화를 함께 살펴봐요.','bg-pink'],['both','users','둘 다 사용해요','나와 가족의 변화를 함께 살펴봐요.','bg-purple']].map(x=>`<button type="button" class="role-card ${x[4]}" data-role="${x[0]}"><span class="avatar-lg" aria-hidden="true">${I(x[1])}</span><span class="role-card-copy"><h3>${x[2]}</h3><p>${x[3]}</p></span>${I('chevron-right')}</button>`).join('')}`,{title:'역할 선택',narrow:true});
 let authMode='login',authDraftEmail='';
 page.auth=()=>{
-  const pending=AUTH()?.pendingVerification?.(),err=S.auth?.lastError||'';
+  const pending=AUTH()?.pendingVerification?.();if(S.auth?.lastError==='AuthHub 연결을 확인해주세요.'){S.auth.lastError='';save()}const err=S.auth?.lastError||'';
   if(pending)return wrap(`<div class="eyebrow">이메일 확인</div><h1 class="page-title">이메일을 확인해주세요</h1><p class="page-desc">${esc(pending.challenge?.maskedEmail||pending.user?.email||'입력한 이메일')}로 보낸 인증번호를 입력해주세요.</p>${err?notice('확인이 필요해요.',esc(err)):''}<div class="form-stack"><div class="field"><label for="authhub-code">인증번호</label><input id="authhub-code" inputmode="numeric" autocomplete="one-time-code" placeholder="인증번호"></div><button id="authhub-verify" type="button" class="btn-kimse btn-primary-k">확인하기</button></div>`,{title:'이메일 확인',narrow:true});
   const signup=authMode==='signup',email=authDraftEmail||S.account?.email||'';
   return wrap(`<section class="auth-entry" aria-label="${signup?'계정 만들기':'로그인'}">

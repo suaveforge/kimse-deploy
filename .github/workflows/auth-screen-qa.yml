@@ -30,7 +30,7 @@ jobs:
             if curl -fsSL --max-time 15 "https://kimse.suaveforge.com/?qa=$GITHUB_SHA" -o /tmp/auth-index.html &&
                curl -fsSL --max-time 15 "https://kimse.suaveforge.com/app.js?qa=$GITHUB_SHA" -o /tmp/auth-app.js &&
                curl -fsSL --max-time 15 "https://kimse.suaveforge.com/app.css?qa=$GITHUB_SHA" -o /tmp/auth-app.css &&
-               grep -Fq '20261009-50' /tmp/auth-index.html &&
+               grep -Fq '20261009-51' /tmp/auth-index.html &&
                grep -Fq 'auth-entry-form' /tmp/auth-app.js &&
                grep -Fq 'KIMSE account: distinct minimal sign-in' /tmp/auth-app.css; then
                 echo 'KIMSE_AUTH_LIVE_ASSETS_OK=yes'
@@ -62,7 +62,7 @@ jobs:
                   const stack=String(e.stack||e);
                   if(!stack.includes('cdn.jsdelivr.net/npm/jssip@3.13.8/lib/JsSIP.min.js'))jsErrors.push(stack);
                 });
-                await page.goto('https://kimse.suaveforge.com/?v=50#/auth',{waitUntil:'domcontentloaded',timeout:45000});
+                await page.goto('https://kimse.suaveforge.com/?v=51#/auth',{waitUntil:'domcontentloaded',timeout:45000});
                 await page.waitForSelector('#auth-entry-form',{timeout:20000});
                 assert.equal(await page.locator('.screen-auth #name').count(),0,'name field on login');
                 assert.equal(await page.locator('.screen-auth #email').count(),1);

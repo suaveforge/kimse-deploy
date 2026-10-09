@@ -31,7 +31,7 @@ jobs:
             if curl -fsSL --max-time 15 "$base/?qa=$GITHUB_SHA" -o /tmp/kimse-entry-index.html &&
                curl -fsSL --max-time 15 "$base/app.js?qa=$GITHUB_SHA" -o /tmp/kimse-entry-app.js &&
                curl -fsSL --max-time 15 "$base/app.css?qa=$GITHUB_SHA" -o /tmp/kimse-entry-app.css &&
-               grep -Fq '20261009-50' /tmp/kimse-entry-index.html &&
+               grep -Fq '20261009-51' /tmp/kimse-entry-index.html &&
                grep -Fq 'kimse-entry-tile' /tmp/kimse-entry-app.js &&
                grep -Fq 'Release 47' /tmp/kimse-entry-app.css; then
                  echo "KIMSE_LANDING_LIVE_ASSETS_OK=yes attempt=$i"
@@ -60,7 +60,7 @@ jobs:
                 const page = await browser.newPage({viewport:{width,height:720},deviceScaleFactor:1});
                 const jsErrors=[];
                 page.on('pageerror',err=>{const trace=String(err.stack||err);jsErrors.push(trace);console.error('KIMSE_BROWSER_PAGEERROR '+trace)});
-                await page.goto('https://kimse.suaveforge.com/?v=50#/start',{waitUntil:'domcontentloaded',timeout:45000});
+                await page.goto('https://kimse.suaveforge.com/?v=51#/start',{waitUntil:'domcontentloaded',timeout:45000});
                 await page.waitForSelector('.kimse-entry-actions button',{timeout:18000});
                 const data=await page.evaluate(()=>{
                   const buttons=[...document.querySelectorAll('.kimse-entry-actions button')];
@@ -90,7 +90,7 @@ jobs:
                 }
                 await page.locator('.kimse-entry-actions [data-go="role"]').click();
                 await page.waitForFunction(()=>location.hash==='#/role');
-                await page.goto('https://kimse.suaveforge.com/?v=50#/start',{waitUntil:'domcontentloaded'});
+                await page.goto('https://kimse.suaveforge.com/?v=51#/start',{waitUntil:'domcontentloaded'});
                 await page.waitForSelector('.kimse-entry-login-link[href="#/auth"]');
                 await page.locator('.kimse-entry-login-link').click();
                 await page.waitForFunction(()=>location.hash==='#/auth');
