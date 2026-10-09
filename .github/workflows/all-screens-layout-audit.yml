@@ -1,0 +1,180 @@
+name: KIMSE All Screens Layout Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app.js"
+      - "app.css"
+      - "index.html"
+      - ".github/workflows/all-screens-layout-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kimse-all-screens-layout-audit
+  cancel-in-progress: true
+
+jobs:
+  audit-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Wait for public application parity
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for i in $(seq 1 28); do
+            if curl -fsSL --max-time 15 "https://kimse.suaveforge.com/index.html?audit=${GITHUB_SHA}" | grep -Fq '20261009-48' &&
+               curl -fsSL --max-time 15 "https://kimse.suaveforge.com/app.js?audit=${GITHUB_SHA}" | grep -Fq "['both','users'" &&
+               curl -fsSL --max-time 15 "https://kimse.suaveforge.com/app.css?audit=${GITHUB_SHA}" | grep -Fq 'Role selection: fixed pictogram'; then
+              echo 'AUDIT_PUBLIC_PARITY=yes'
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'AUDIT_PUBLIC_PARITY=no'
+          exit 1
+
+      - name: Install headless Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/kimse-all-audit" playwright@1.55.0 --no-audit --no-fund
+          "$RUNNER_TEMP/kimse-all-audit/node_modules/.bin/playwright" install --with-deps chromium
+
+      - name: Visit and inspect every page at six widths
+        shell: bash
+        run: |
+          node <<'JS'
+          const {chromium}=require(process.env.RUNNER_TEMP+'/kimse-all-audit/node_modules/playwright');
+          const base='https://kimse.suaveforge.com/';
+          const widths=[320,375,430,720,768,1280];
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const issueMap=new Map(),counts={pages:0,rendered:0,missing:0,scroll:0,overlap:0,text:0,touch:0,visibleDebug:0,script:0};
+            let routes=[];
+            const record=(type,route,width,detail)=>{
+              const k=type+'|'+route+'|'+width+'|'+String(detail).slice(0,200);
+              if(issueMap.has(k))return;
+              issueMap.set(k,{type,route,width,detail:String(detail).slice(0,200)});
+              counts[type]=(counts[type]||0)+1;
+            };
+            try {
+              const req=await browser.newContext();
+              const response=await req.request.get(base+'app.js?audit='+Date.now());
+              if(!response.ok())throw new Error('LIVE_APP_JS_HTTP_'+response.status());
+              const js=await response.text();
+              routes=[...new Set([...js.matchAll(/page(?:\.([a-zA-Z0-9_-]+)|\[['"]([a-zA-Z0-9_-]+)['"]\])\s*=/g)].map(m=>m[1]||m[2]))];
+              console.log('AUDIT_ROUTE_MANIFEST='+JSON.stringify(routes));
+              if(routes.length<50)throw new Error('ROUTE_COVERAGE_TOO_SMALL='+routes.length);
+              for(const width of widths){
+                const context=await browser.newContext({viewport:{width,height:740},deviceScaleFactor:1,reducedMotion:'reduce'});
+                await context.route('https://api-kimse.suaveforge.com/**',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"READ_ONLY_VISUAL_QA"}'}));
+                await context.addInitScript(()=>{
+                  const key='kimse.p0.state';
+                  const seed={
+                    version:14,account:{name:'화면점검',email:'layout-check@example.invalid'},
+                    intent:'both',self:true,care:true,mode:'self',
+                    onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+                    consents:{service:true,privacy:true,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},
+                    a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,largeTouchTargets:false,reduceMotion:true},
+                    remote:{accountId:'',subjectId:'',selfSubjectId:'',careSubjects:[],activeCareSubjectId:'',token:''},
+                    initial:{step:5,answers:{subtraction:'79'},responseTimes:[],recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:'2026-10-01T00:00:00Z'},
+                    baseline:{startedAt:'2026-10-01T00:00:00Z'}
+                  };
+                  localStorage.setItem(key,JSON.stringify(seed));
+                });
+                const page=await context.newPage();
+                page.on('pageerror',e=>{
+                  const error=String(e.stack||e);
+                  if(!error.includes('cdn.jsdelivr.net/npm/jssip@3.13.8/lib/JsSIP.min.js'))record('script',String(page.url()).split('#/')[1]||'start',width,error);
+                });
+                try{
+                  await page.goto(base+'?layoutAudit=48#/start',{waitUntil:'domcontentloaded',timeout:45000});
+                  await page.waitForSelector('#main',{timeout:20000});
+                }catch(e){record('missing','BOOT',width,String(e));await context.close();continue}
+                for(const route of routes){
+                  counts.pages++;
+                  const selector='.screen-'+route;
+                  try {
+                    if(route!=='start'){
+                      await page.evaluate(r=>{location.hash='#/'+r},route);
+                    } else {
+                      await page.evaluate(()=>{location.hash='#/start'});
+                    }
+                    await page.waitForSelector(selector,{timeout:6000});
+                    await page.waitForTimeout(45);
+                    const audit=await page.evaluate(()=>{
+                      const root=document.querySelector('main');
+                      if(!root)return {missing:true};
+                      const visible=e=>{
+                        const cs=getComputedStyle(e),r=e.getBoundingClientRect();
+                        return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>2&&r.height>2;
+                      };
+                      const box=e=>{const r=e.getBoundingClientRect();return {l:r.left,t:r.top,r:r.right,b:r.bottom,w:r.width,h:r.height}};
+                      const issue=[];
+                      const width=innerWidth;
+                      const scroll=Math.max(document.documentElement.scrollWidth,document.body.scrollWidth);
+                      if(scroll>width+4)issue.push({type:'scroll',detail:'document '+scroll+'px > viewport '+width+'px'});
+                      const minTitle=root.querySelector('.page-title,h1,h2,h3');
+                      if(!minTitle&&root.textContent.trim()==='')issue.push({type:'missing',detail:'empty route'});
+                      const pageText=(root.innerText||'');
+                      if(/Updated 20\d\d|Release\s*\d+|\[object Object\]|(?:^|\s)undefined(?:\s|$)/m.test(pageText))
+                        issue.push({type:'visibleDebug',detail:pageText.match(/Updated 20\d\d|Release\s*\d+|\[object Object\]|(?:^|\s)undefined(?:\s|$)/m)?.[0]||'visible debug'});
+                      const touch=[...root.querySelectorAll('button,.role-card,[role=button]')].filter(visible);
+                      for(const el of touch){
+                        const r=box(el);
+                        if(r.h<30||r.w<30)issue.push({type:'touch',detail:(el.textContent||el.getAttribute('aria-label')||el.className).trim().slice(0,43)+' '+Math.round(r.w)+'x'+Math.round(r.h)});
+                      }
+                      const focus=[...root.querySelectorAll('.role-card,.avatar-lg,.role-card-copy,.notice,.action-card,.summary-card,.page-title,.btn-kimse,.app-footer,.card,.field,.list-row,.nav-item')].filter(visible);
+                      for(const el of focus){
+                        if(!el.firstChild||!el.textContent?.trim())continue;
+                        const rect=box(el);
+                        // Text leaves and icons have stricter boundaries than block cards.
+                        if(el.children.length===0&&el.firstChild.nodeType===3){
+                          const rng=document.createRange();rng.selectNodeContents(el);
+                          for(const tr of rng.getClientRects()){
+                            if(tr.right>rect.r+5||tr.left<rect.l-5||tr.bottom>rect.b+8||tr.top<rect.t-8){
+                              issue.push({type:'text',detail:(el.textContent||'').trim().slice(0,44)+' exceeds '+String(el.className).slice(0,48)});
+                              break;
+                            }
+                          }
+                        }
+                      }
+                      const layouts=[root,...root.querySelectorAll('.form-stack,.card-grid,.market-grid,.list,.hero-actions,.clinical-metric-grid,.clinical-coverage-grid,.clinical-keyfact-grid,.role-card')];
+                      for(const parent of layouts){
+                        if(!visible(parent))continue;
+                        const children=[...parent.children].filter(el=>visible(el)&&!['absolute','fixed','sticky'].includes(getComputedStyle(el).position));
+                        for(let i=0;i<children.length;i++)for(let j=i+1;j<children.length;j++){
+                          const a=box(children[i]),b=box(children[j]);
+                          const iw=Math.min(a.r,b.r)-Math.max(a.l,b.l),ih=Math.min(a.b,b.b)-Math.max(a.t,b.t);
+                          if(iw>12&&ih>10&&iw*ih>Math.min(a.w*a.h,b.w*b.h)*.09){
+                            issue.push({type:'overlap',detail:(children[i].className||children[i].tagName).toString().slice(0,40)+' x '+(children[j].className||children[j].tagName).toString().slice(0,40)+' '+Math.round(iw)+'x'+Math.round(ih)});
+                          }
+                        }
+                      }
+                      return {issues:issue,route:root.className,docWidth:scroll,visibleElements:focus.length};
+                    });
+                    counts.rendered++;
+                    for(const issue of audit.issues||[])record(issue.type,route,width,issue.detail);
+                    if((audit.issues||[]).length)console.log('AUDIT_ROUTE_ISSUES '+JSON.stringify({route,width,issues:audit.issues.slice(0,22)}));
+                    else console.log('AUDIT_ROUTE_OK '+route+' '+width);
+                    if(route==='role'&&[320,375,720].includes(width)){
+                      await page.screenshot({path:process.env.RUNNER_TEMP+'/kimse-role-'+width+'.png',fullPage:true,animations:'disabled'}).catch(()=>{});
+                    }
+                  }catch(e){
+                    record('missing',route,width,'screen absent/exception '+String(e.message||e).slice(0,170));
+                    console.log('AUDIT_ROUTE_MISSING '+route+' '+width+' '+String(e.message||e).slice(0,150));
+                  }
+                }
+                await context.close();
+              }
+              console.log('AUDIT_SUMMARY '+JSON.stringify({routes:routes.length,widths,counts,uniqueIssues:issueMap.size}));
+              for(const i of [...issueMap.values()].slice(0,220))console.log('AUDIT_ISSUE '+JSON.stringify(i));
+              const blocking=(counts.missing||0)+(counts.scroll||0)+(counts.overlap||0)+(counts.text||0);
+              if(blocking>0){console.error('AUDIT_LAYOUT_BLOCKERS='+blocking);process.exitCode=1}
+              else console.log('AUDIT_ALL_SCREENS_PASS=yes');
+            }finally{await browser.close()}
+          })().catch(e=>{console.error('AUDIT_FATAL',e);process.exitCode=1});
+          JS
