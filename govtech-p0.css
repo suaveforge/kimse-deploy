@@ -19,3 +19,47 @@
 @media(max-width:360px){.gov-report-period,.gov-report-actions{grid-template-columns:1fr}.gov-care-summary li,.gov-report-changes li{display:grid;grid-template-columns:1fr}.gov-report-changes strong{text-align:left}.gov-flow-strip{justify-content:flex-start}}
 @media(prefers-reduced-motion:reduce){.govtech-toast{transition:none!important}}
 @media print{.app-header,.bottom-nav,.gov-report-actions,.govtech-toast{display:none!important}.screen-consultation-report{max-width:none!important;padding:0!important}.gov-report-card,.gov-public-actions{break-inside:avoid;box-shadow:none!important}.gov-public-actions{background:#fff!important;color:#000!important;border:1px solid #333!important}.gov-public-actions h2,.gov-public-actions>a:last-of-type{color:#000!important}.gov-public-actions>a{border:1px solid #777!important}}
+
+
+/* KIMSE older-adult profile wizard — Updated 2026.10.09 / onboarding-53 */
+.screen-onboarding-profile .kimse-profile-wizard{width:100%;max-width:620px;margin:0 auto;color:#123b43}
+.screen-onboarding-profile .kimse-wizard-progress-head{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:16px;font-weight:700;letter-spacing:-.02em;color:#3b6266}
+.screen-onboarding-profile .kimse-wizard-progress-head strong{font-size:18px;font-variant-numeric:tabular-nums;color:#116e60;white-space:nowrap}
+.screen-onboarding-profile .kimse-wizard-progress-track{height:9px;overflow:hidden;margin:12px 0 30px;background:#e2eeea;border-radius:999px}
+.screen-onboarding-profile .kimse-wizard-progress-track>span{display:block;height:100%;background:#168571;border-radius:999px;transition:width .2s ease}
+.screen-onboarding-profile .kimse-wizard-title{margin:0 0 18px!important;max-width:28ch;font-size:clamp(28px,5.2vw,38px)!important;line-height:1.32!important;font-weight:800!important;letter-spacing:-.045em;color:#123b43;overflow-wrap:break-word;word-break:keep-all}
+.screen-onboarding-profile .kimse-wizard-hint{font-size:18px;line-height:1.55;font-weight:500;color:#516c6d;margin:0 0 24px;word-break:keep-all}
+.screen-onboarding-profile .kimse-wizard-choices{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:8px 0 28px}
+.screen-onboarding-profile .kimse-wizard-choice{appearance:none;-webkit-appearance:none;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:80px;width:100%;padding:17px 20px;text-align:left;border:2px solid #d5e2df;border-radius:18px;background:#fff;color:#173d43;cursor:pointer;box-shadow:0 2px 8px rgba(15,69,83,.045);transition:background .12s,border-color .12s}
+.screen-onboarding-profile .kimse-wizard-choice-label{flex:1;min-width:0;font-size:20px;line-height:1.4;font-weight:700;letter-spacing:-.025em;word-break:keep-all;overflow-wrap:break-word}
+.screen-onboarding-profile .kimse-wizard-choice-check{display:flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;border:2px solid #aabebb;border-radius:50%;font-size:21px;font-weight:800;color:#fff}
+.screen-onboarding-profile .kimse-wizard-choice[aria-pressed="true"]{background:#eff9f5;border-color:#147b67;box-shadow:0 0 0 1px #147b67}
+.screen-onboarding-profile .kimse-wizard-choice[aria-pressed="true"] .kimse-wizard-choice-check{background:#147b67;border-color:#147b67}
+.screen-onboarding-profile .kimse-wizard-field{margin:18px 0 28px}
+.screen-onboarding-profile .kimse-wizard-field label{display:block;font-size:20px;font-weight:750;color:#244a51;margin:0 0 14px}
+.screen-onboarding-profile .kimse-wizard-input-wrap input{display:block;width:100%;min-height:76px;border:2px solid #b9d0cb;border-radius:18px;padding:16px 20px;background:#fff;color:#123b43;font-size:28px!important;font-weight:700;line-height:1.3;letter-spacing:-.015em}
+.screen-onboarding-profile .kimse-wizard-input-wrap input::placeholder{color:#748b8a;opacity:1;font-weight:500}
+.screen-onboarding-profile .kimse-wizard-actions{display:grid;grid-template-columns:minmax(104px,1fr) minmax(0,2fr);gap:12px;align-items:stretch;margin-top:8px}
+.screen-onboarding-profile .kimse-wizard-previous,.screen-onboarding-profile .kimse-wizard-next{min-height:72px!important;padding:14px 12px!important;border-radius:16px!important;font-size:20px!important;font-weight:800!important;line-height:1.35!important;white-space:normal;word-break:keep-all}
+.screen-onboarding-profile .kimse-wizard-previous{background:#fff;border:2px solid #b6ccc7;color:#244a51}
+.screen-onboarding-profile .kimse-wizard-previous:disabled{opacity:.42;cursor:not-allowed}
+.screen-onboarding-profile .kimse-wizard-next:disabled{opacity:.5;cursor:not-allowed}
+.screen-onboarding-profile .kimse-wizard-reassurance{margin:20px 0 0;text-align:center;font-size:15px;line-height:1.5;color:#526e6e}
+.screen-onboarding-profile .kimse-wizard-choice:focus-visible,.screen-onboarding-profile .kimse-wizard-previous:focus-visible,.screen-onboarding-profile .kimse-wizard-next:focus-visible,.screen-onboarding-profile .kimse-wizard-input-wrap input:focus-visible{outline:3px solid #065d94;outline-offset:4px}
+.large-text .screen-onboarding-profile .kimse-wizard-title{font-size:clamp(32px,6vw,44px)!important}
+.large-text .screen-onboarding-profile .kimse-wizard-choice-label{font-size:24px!important}
+.large-text .screen-onboarding-profile .kimse-wizard-hint{font-size:21px!important}
+.large-text .screen-onboarding-profile .kimse-wizard-choice{min-height:92px}
+.large-text .screen-onboarding-profile .kimse-wizard-progress-head{font-size:19px}
+.large-text .screen-onboarding-profile .kimse-wizard-previous,.large-text .screen-onboarding-profile .kimse-wizard-next{font-size:22px!important;min-height:80px!important}
+.high-contrast .screen-onboarding-profile .kimse-profile-wizard,.high-contrast .screen-onboarding-profile .kimse-wizard-title,.high-contrast .screen-onboarding-profile .kimse-wizard-hint{color:#111!important}
+.high-contrast .screen-onboarding-profile .kimse-wizard-choice{background:#fff!important;border:3px solid #111!important;color:#111!important}
+.high-contrast .screen-onboarding-profile .kimse-wizard-choice[aria-pressed="true"]{background:#ffec9c!important;border-color:#111!important;box-shadow:0 0 0 2px #111!important}
+.high-contrast .screen-onboarding-profile .kimse-wizard-choice-check{border-color:#111!important;color:#fff!important}
+.high-contrast .screen-onboarding-profile .kimse-wizard-choice[aria-pressed="true"] .kimse-wizard-choice-check{background:#111!important}
+.high-contrast .screen-onboarding-profile .kimse-wizard-progress-track{background:#ccc!important}
+.high-contrast .screen-onboarding-profile .kimse-wizard-progress-track>span{background:#000!important}
+.high-contrast .screen-onboarding-profile .kimse-wizard-previous{border:3px solid #111!important;color:#111!important;background:#fff!important}
+.high-contrast .screen-onboarding-profile .kimse-wizard-input-wrap input{border:3px solid #111!important;color:#111!important}
+@media(max-width:360px){.screen-onboarding-profile .kimse-wizard-title{font-size:27px!important}.screen-onboarding-profile .kimse-wizard-choice{min-height:76px;padding:14px 15px}.screen-onboarding-profile .kimse-wizard-choice-label{font-size:18px}.screen-onboarding-profile .kimse-wizard-actions{grid-template-columns:minmax(82px,1fr) minmax(0,2fr);gap:9px}}
+@media(prefers-reduced-motion:reduce){.screen-onboarding-profile .kimse-wizard-choice,.screen-onboarding-profile .kimse-wizard-progress-track>span{transition:none!important}}
