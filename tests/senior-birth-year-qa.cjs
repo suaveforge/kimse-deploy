@@ -20,6 +20,7 @@ async function caseRun(browser,width,mode,which){
   assert.equal(await page.locator('#profile-wizard-input').count(),0,'Birth year keyboard still visible');
   assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'1 / 12');
   assert.equal(await page.locator('#profile-wizard-next').count(),0,'Next should not compete with selecting the decade');
+  if(which==='typical'&&mode==='normal'&&[320,375,1280].includes(width))await page.screenshot({path:'qa-artifacts/birth-decade-options-'+width+'.png',fullPage:true});
   let expected,decade;
   if(which==='early'){await page.locator('[data-birth-range="earlier"]').click();decade=1900;expected=1906}
   else if(which==='late'){await page.locator('[data-birth-range="later"]').click();decade=2000;expected=2008}
@@ -29,6 +30,7 @@ async function caseRun(browser,width,mode,which){
   await page.locator('[data-birth-phase="year"]').waitFor();
   assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'1 / 12','Choosing decade must not skip profile question');
   assert.equal(await page.locator('#profile-wizard-input').count(),0,'No typing expected in year phase');
+  assert.equal(await page.locator('[data-profile-prev]').count(),0,'Do not duplicate back action alongside choosing another decade');
   assert.equal(await page.locator('#profile-wizard-next').isDisabled(),true,'Cannot proceed without specific year');
   assert.equal(await page.locator('[data-birth-year="'+expected+'"]').count(),1,'Exact eligible birth year missing');
   const measure=await page.evaluate(()=>{
