@@ -15,7 +15,7 @@ async function checkMode(browser,width,mode){
  const page=await ctx.newPage(),errs=[];
  page.on('pageerror',error=>errs.push(String(error)));
  await page.addInitScript(({mode})=>{
-   localStorage.setItem('kimse.p0.state',JSON.stringify({
+   if(!localStorage.getItem('kimse.p0.state'))localStorage.setItem('kimse.p0.state',JSON.stringify({
      version:14,account:{name:'사용성점검',email:'qa@example.invalid'},intent:'self',self:true,care:false,
      onboarding:{profileDone:false,initialDone:false,consentDone:true,completed:false,profileStep:0},
      consents:{service:true,privacy:true,health:true},
