@@ -12,7 +12,7 @@
   --kimse-primary:#168f73;
   --kimse-danger:#c93b4b;
   --kimse-radius:22px;
-  --kimse-touch:52px;
+  --kimse-touch:64px;
 }
 *{box-sizing:border-box}
 html{background:var(--kimse-bg);color-scheme:light}
@@ -406,13 +406,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .capture-frame-mode .app-header-inner{min-height:64px!important;padding:8px 14px!important;display:grid!important;grid-template-columns:52px 1fr 52px!important;align-items:center!important}
 .capture-frame-mode .app-header-inner:after{content:'';display:block;width:52px;height:1px}
 .capture-frame-mode .app-header-inner>strong{font-size:18px!important;text-align:center!important}
-.capture-frame-mode .app-header .icon-button{width:52px!important;height:52px!important;min-width:52px!important;min-height:52px!important;border-radius:18px!important}
+.capture-frame-mode .app-header .icon-button{width:60px!important;height:60px!important;min-width:60px!important;min-height:60px!important;border-radius:18px!important}
 .senior-screen{font-size:19px}
 .senior-screen .eyebrow{font-size:16px!important;margin-bottom:6px}
 .senior-screen .page-title{font-size:34px!important;line-height:1.15!important;margin:6px 0 14px!important}
 .senior-screen .page-desc{font-size:19px!important;line-height:1.45!important;margin-bottom:18px!important}
 .senior-screen .screen-footnote{font-size:16px!important;line-height:1.45!important;color:#53657a!important}
-.senior-screen .btn-kimse{min-height:58px!important;font-size:19px!important;border-radius:18px!important}
+.senior-screen .btn-kimse{min-height:66px!important;font-size:19px!important;border-radius:18px!important}
 .senior-screen small{font-size:16px;line-height:1.4}
 .screen-monitoring-status .result-change-grid{gap:10px!important;margin:16px 0!important}
 .screen-monitoring-status .result-change{padding:16px 10px!important;border-radius:18px!important;text-align:center!important}
@@ -457,10 +457,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .screen-brain-map .brain-focus-summary strong{font-size:22px!important}
 .screen-brain-map .brain-focus-summary span{font-size:17px!important}
 .screen-brain-map .brain-focus-summary small{font-size:16px!important}
-.screen-brain-map .brain-view-switch button{min-height:48px!important;font-size:16px!important}
-.screen-brain-trends .compact-range button{min-height:52px!important;font-size:18px!important}
+.screen-brain-map .brain-view-switch button{min-height:64px!important;font-size:16px!important}
+.screen-brain-trends .compact-range button{min-height:64px!important;font-size:18px!important}
 .screen-brain-trends .trend-domain-tabs{gap:8px!important;margin:12px 0!important}
-.screen-brain-trends .trend-domain-tabs button{min-height:50px!important;font-size:15px!important;padding:8px 10px!important}
+.screen-brain-trends .trend-domain-tabs button{min-height:64px!important;font-size:15px!important;padding:8px 10px!important}
 .screen-brain-trends .trend-hero{padding:14px!important;margin-top:12px!important}
 .screen-brain-trends .trend-hero-head strong{font-size:20px!important}
 .screen-brain-trends .trend-hero-head small,.screen-brain-trends .trend-hero-head span{font-size:15px!important}
