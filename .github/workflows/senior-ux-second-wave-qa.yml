@@ -1,0 +1,41 @@
+name: KIMSE Senior UX Second Wave Browser QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/senior-ux-second-wave-qa.cjs'
+      - '.github/workflows/senior-ux-second-wave-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for production second wave
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for i in $(seq 1 50); do
+            if curl -fsSL --max-time 15 'https://kimse.suaveforge.com/app.js?qa=ux-02' -o /tmp/k.js &&
+               curl -fsSL --max-time 15 'https://kimse.suaveforge.com/app.css?qa=ux-02' -o /tmp/k.css &&
+               grep -Fq 'kimse-consent-options' /tmp/k.js &&
+               grep -Fq -- '--kimse-touch:64px' /tmp/k.css; then echo 'SECOND_WAVE_LIVE=yes';exit 0;fi
+            sleep 10
+          done
+          exit 1
+      - name: Install Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/kimse-second-qa" playwright@1.55.0 --no-audit --no-fund
+          "$RUNNER_TEMP/kimse-second-qa/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Verify optional legal consent and medical detail, accessibility size
+        run: node tests/senior-ux-second-wave-qa.cjs
+      - name: Archive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-senior-ux-second-wave
+          path: qa-artifacts/
+          if-no-files-found: ignore
