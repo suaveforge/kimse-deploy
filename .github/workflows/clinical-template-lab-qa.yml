@@ -90,6 +90,36 @@ jobs:
               assert.match(await page.locator('#requirementsExplanation').innerText(),/환자자료 발송 금지/);
               assert.equal(await page.locator('#rawMetricRows').innerText(),immutableRows,'changing to Emory must not rewrite observed source facts');
               assert.equal(await page.locator('#fieldList .list-group-item').count(),12,'JP professional and external fields must not be hidden');
+
+              if(name==='desktop'){
+                const research=JSON.parse(require('node:fs').readFileSync('clinical-profile-authorities.json','utf8'));
+                const forms=JSON.parse(require('node:fs').readFileSync('clinical-public-form-crosswalk.json','utf8'));
+                assert.equal(research.institutions.length,11);
+                assert.equal(forms.entries.length,11);
+                assert.equal(forms.entries.reduce((sum,e)=>sum+e.requirement_groups.length,0),91);
+                assert.ok(research.institutions.every(i=>!i.clinical_reviewer_approved&&!i.kimse_electronic_receiver_approved));
+                const immutable=await page.locator('#rawMetricRows tr').evaluateAll(rows=>rows.map(r=>Array.from(r.children).slice(0,4).map(c=>c.textContent.trim())));
+                let checked=0;
+                for(const inst of research.institutions){
+                  await page.locator('#country').selectOption(inst.country);
+                  await page.locator('#institution').selectOption(inst.id);
+                  for(const days of ['28','14','7']){
+                    await page.locator('#period').selectOption(days);
+                    assert.equal(await page.locator('#fieldList .list-group-item').count(),12,inst.id+' full field coverage');
+                    assert.equal(await page.locator('#rawMetricRows tr').count(),6);
+                    const current=await page.locator('#rawMetricRows tr').evaluateAll(rows=>rows.map(r=>Array.from(r.children).slice(0,4).map(c=>c.textContent.trim())));
+                    assert.deepEqual(current,immutable,inst.id+' '+days+' must preserve canonical baseline, recent and changes');
+                    assert.equal(await page.locator('#periodInterpretation').getAttribute('data-selected-period-days'),days);
+                    assert.match(await page.locator('#periodInterpretation').innerText(),new RegExp('최근 '+days+'일.*전체 28일.*재산출값이 아닙니다'));
+                    assert.equal(await page.locator('#printPeriodInterpretation').innerText(),await page.locator('#periodInterpretation').innerText());
+                    assert.equal(await page.locator('#printSummaryRows tr').count(),6);
+                    assert.equal(await page.locator('#clinicalPrintButton').isEnabled(),true);
+                    checked++;
+                  }
+                }
+                assert.equal(checked,33);
+                console.log('KIMSE_CLINICAL_11_INSTITUTIONS_X_3_PERIODS_OK='+checked);
+              }
               await page.locator('#period').selectOption('7');
               assert.equal(await page.locator('#periodInterpretation').getAttribute('data-selected-period-days'),'7');
               assert.match(await page.locator('#periodInterpretation').innerText(),/최근 7일.*전체 28일.*재산출값이 아닙니다/);
