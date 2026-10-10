@@ -46,6 +46,7 @@ jobs:
             try{
               const cases=[
                 {code:'KR-28',country:'KR',clinic:'',period:'28'},
+                {code:'GB-28',country:'GB',clinic:'GB-DORSET-MAS',period:'28'},
                 {code:'CA-14',country:'CA',clinic:'CA-UHN-MEMORY-FORM',period:'14'},
                 {code:'JP-7',country:'JP',clinic:'JP-KYORIN-SUGINAMI-MEMORY',period:'7'}
               ];

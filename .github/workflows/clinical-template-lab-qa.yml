@@ -47,7 +47,7 @@ jobs:
               await page.locator('#country').selectOption('GB');
               await page.locator('#institution').selectOption('GB-DORSET-MAS');
               assert.match(await page.locator('#selectionStatus').innerText(),/의료진 승인 없음/);
-              assert.equal(await page.locator('#hospitalRequirements > .list-group-item').count(),6,'Dorset 5 public points plus source footer');
+              assert.equal(await page.locator('#hospitalRequirements > .list-group-item').count(),20,'Dorset 19 official published form groups plus source footer');
               assert.match(await page.locator('#hospitalRequirements').innerText(),/병원 수신 확인·의료진 승인 0건/);
               await page.locator('#country').selectOption('CA');
               await page.locator('#institution').selectOption('CA-UHN-MEMORY-FORM');

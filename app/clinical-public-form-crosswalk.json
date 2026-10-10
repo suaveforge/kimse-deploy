@@ -6,7 +6,7 @@
     "verified_receivers": 0,
     "approved_report_profiles": 0,
     "approved_clinician_reviewer_feedback": 0,
-    "source_quality": "Existing 8 published provider sources yield 45 mapped topic groups. Two additional AU/JP official clinics yield 17 groups. Total 10 sources/62 heterogeneous public research groups; no KIMSE provider approval. No implication that any group is an approved mandatory KIMSE submission field.",
+    "source_quality": "10 official institution sources and 76 heterogeneous published research groups. Dorset online referral form expanded 5 umbrella groups to 19 conditionally scoped groups; not 76 required patient fields nor an approved KIMSE referral or hospital receiver.",
     "representations": "Candidate supplement and missing-document checklist, never submission form",
     "missing": "Missing or unverified entries must not be promoted to normal/negative/provider-verified",
     "privacy": "Patient identifiers/referrer ID/medical originals never synthesized"
@@ -14,10 +14,11 @@
   "source_data": {
     "existing_crosswalk": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
     "uhm_official_form": "docs/CLINICAL_PROVIDER_FORM_CANADA_UHN_20261010.json",
-    "au_jp_provider_clinic_research": "docs/CLINICAL_PROVIDER_FORMS_AU_JP_20261010.json"
+    "au_jp_provider_clinic_research": "docs/CLINICAL_PROVIDER_FORMS_AU_JP_20261010.json",
+    "gb_dorset_detailed_official_form": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals"
   },
   "entry_count": 10,
-  "published_research_groups": 62,
+  "published_research_groups": 76,
   "entries": [
     {
       "id": "KR-SNUH-OUTPATIENT",
@@ -110,60 +111,217 @@
       "requirement_groups": [
         {
           "id": "GB-DORSET-MAS-01",
-          "wording": "GP agreement and patient consent",
+          "wording": "Referral route: Dorset GP SystmOne versus eligible health professional",
           "related_paths": [],
           "status": "PARTNER_APPROVAL_REQUIRED",
-          "limit": "GP 승인·환자 동의 및 공식 의뢰 권한은 KIMSE에 없습니다.",
+          "limit": "온라인 양식 사용 자격과 GP 별도 경로는 실제 등록기관이 확인해야 하며 KIMSE에 자동 의뢰 권한은 없음",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
           "source_page": null
         },
         {
           "id": "GB-DORSET-MAS-02",
-          "wording": "Cognitive screening test e.g. 6CIT/MMSE/GPCOG",
-          "related_paths": [
-            "professional_outcomes.validated_assessments"
-          ],
-          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
-          "limit": "검증된 인지검사 실제 결과가 필요하며 KIMSE 과제를 환산할 수 없습니다.",
+          "wording": "GP discussion and agreement about referral",
+          "related_paths": [],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "GP와 의뢰 협의 여부·승인은 기관 확인 필요",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
           "source_page": null
         },
         {
           "id": "GB-DORSET-MAS-03",
-          "wording": "Dementia screening blood tests within 6 months",
-          "related_paths": [
-            "external_clinical_records"
-          ],
-          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
-          "limit": "혈액검사 날짜·결과가 실제 기록되어야 하며 KIMSE가 검사를 시행하지 않습니다.",
+          "wording": "Patient discussion and consent to referral",
+          "related_paths": [],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "환자 동의는 실제 법적 의뢰 동의이며 임의 앱 체크로 대체 불가",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
           "source_page": null
         },
         {
           "id": "GB-DORSET-MAS-04",
-          "wording": "Rule-out of reversible physical or mental causes",
+          "wording": "Memory concern, duration and recent triggers",
           "related_paths": [
-            "risk_confounders",
+            "previsit_summary",
             "clinical_context_events"
           ],
-          "status": "CLINICIAN_ASSESSMENT_REQUIRED",
-          "limit": "가역원인 배제는 의료진 판단이며 낌새 맥락정보로 대체할 수 없습니다.",
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "합성 관찰 최초 일자는 실제 발병일·임상 경과가 아님",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
           "source_page": null
         },
         {
           "id": "GB-DORSET-MAS-05",
-          "wording": "Patient/GP identifiers and clinical history",
+          "wording": "Named cognitive screening instrument and score: 6CIT/MMSE/GPCOG",
           "related_paths": [
-            "subject",
-            "previsit_summary"
+            "professional_outcomes"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "실제 공인 검사명/점수 필요, 앱 과제 점수로 환산 불가",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-06",
+          "wording": "Physical examination completion and abnormal findings",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "CLINICIAN_ASSESSMENT_REQUIRED",
+          "limit": "실제 진찰결과·이상 소견은 의료인 기록이 필요",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-07",
+          "wording": "Reversible physical and mental health causes excluded",
+          "related_paths": [
+            "risk_confounders",
+            "clinical_context_events"
+          ],
+          "status": "CLINICIAN_ASSESSMENT_REQUIRED",
+          "limit": "가역적 원인 배제는 전문적 의료 판단으로 생활관찰로 대체 불가",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-08",
+          "wording": "Dementia screening bloods results within 6 months",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "6개월 내 검사 여부와 결과 원본 필요. 누락 시 반려될 수 있음",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-09",
+          "wording": "Specific blood tests FBC, B12, folate, TFTs, U&E, calcium, LFTs, glucose/HbA1c",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "검사 종류와 실제 원본값은 의료기관 확인 필요, 미수집을 정상값으로 바꾸지 않음",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-10",
+          "wording": "Wheelchair, disabilities and appointment accessibility",
+          "related_paths": [
+            "clinical_domains"
           ],
           "status": "PARTNER_APPROVAL_REQUIRED",
-          "limit": "GP/환자 신원 연동과 공식 의뢰 병력/식별은 미검증입니다.",
+          "limit": "접근성 수요 및 장애 정보는 별도 환자·기관 확인 필요",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-11",
+          "wording": "Other care services already involved",
+          "related_paths": [
+            "clinical_context"
+          ],
+          "status": "EXTERNAL_RECORD_REQUIRED",
+          "limit": "기존 의료·돌봄 서비스는 실 자료로 확인 필요",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-12",
+          "wording": "Known risks to attending clinical staff",
+          "related_paths": [
+            "clinical_context"
+          ],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "현장 직원 안전 위험은 별도 사실 확인, 센서 기록으로 유추 불가",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-13",
+          "wording": "Discussion with relatives when capacity is impaired",
+          "related_paths": [
+            "family_feedback"
+          ],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "가족의 동행/동의 및 환자 의사결정 능력은 실제 의뢰 주체가 확인",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-14",
+          "wording": "Lasting power of attorney and advance decisions (if applicable)",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_RECORD_REQUIRED",
+          "limit": "법적 대리권과 사전 결정 문서의 진위는 외부 확인",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-15",
+          "wording": "Additional concerns from family/friend/carer/practice staff",
+          "related_paths": [
+            "family_feedback",
+            "previsit_summary"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "가족 진술은 의료진 검증 사실과 구분하며 미입력 시 미수집",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-16",
+          "wording": "Weekly alcohol units and historical smoking status",
+          "related_paths": [
+            "risk_confounders",
+            "clinical_context"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "음주 단위 수치는 공식 질문 항목이나 임의 계산/추정하지 않음",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-17",
+          "wording": "Major and minor medical history with start dates",
+          "related_paths": [
+            "clinical_context",
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_RECORD_REQUIRED",
+          "limit": "병력 발병일·시점은 임상 원문 확인 필요",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-18",
+          "wording": "Current medicines, dose and description",
+          "related_paths": [
+            "clinical_context",
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_RECORD_REQUIRED",
+          "limit": "약물명·복용량의 실제 처방 출처와 최신성 확인 필요",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-19",
+          "wording": "Allergies/sensitivities and dates",
+          "related_paths": [
+            "clinical_context",
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_RECORD_REQUIRED",
+          "limit": "알레르기 기록 부재를 알레르기 없음으로 해석 금지",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
           "source_page": null
         }
-      ]
+      ],
+      "research_scope": "2026-10-10 official online referral form (19 granular research groups: required, optional and conditional); no provider approval of KIMSE fields",
+      "source_rechecked_on": "2026-10-10"
     },
     {
       "id": "GB-CNTW-MAMS",
