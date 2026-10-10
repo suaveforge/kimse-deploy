@@ -155,6 +155,7 @@ jobs:
               // Capture the default compact provider view; expanded evidence is already
               // independently exercised through keyboard Enter earlier in this scenario.
               await page.locator('#institutionEvidenceDisclosure').evaluate(el=>{el.open=false;});
+              await page.locator('.table-responsive').evaluateAll(tables=>tables.forEach(el=>{el.scrollLeft=0;}));
               const overflow=await page.evaluate(()=>({
                 scrollWidth:document.documentElement.scrollWidth,innerWidth:window.innerWidth,
                 offenders:Array.from(document.querySelectorAll('body *')).filter(el=>{
