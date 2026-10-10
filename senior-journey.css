@@ -628,3 +628,26 @@
 .high-contrast .screen-consent .kimse-consent-options>summary em{border:2px solid #111;color:#111;background:#fff}
 .large-text .screen-professional-outcome .kimse-professional-step strong,.large-text .screen-consent .kimse-consent-options>summary strong{font-size:25px}
 .large-text .screen-professional-outcome .kimse-clinical-accuracy-note{font-size:20px}
+
+/* P2 senior clinical result: early save, clear relative date choices, shortened first view. */
+.screen-professional-outcome .page-title{font-size:clamp(26px,7.5vw,32px);line-height:1.26;letter-spacing:-.035em;margin:8px 0 8px}
+.screen-professional-outcome>.page-desc{font-size:17px;line-height:1.47;margin:0 0 12px}
+.screen-professional-outcome #professional-outcome-form{gap:12px}
+.screen-professional-outcome #professional-outcome-form>.field{margin:0}
+.screen-professional-outcome .kimse-professional-step{padding:9px 13px;margin:0;min-height:50px;justify-content:center}
+.screen-professional-outcome .kimse-professional-step strong{font-size:18px}
+.screen-professional-outcome #professional-outcome-form>.field label{margin-bottom:6px;font-size:19px}
+.screen-professional-outcome #professional-outcome-form>.field>input,
+.screen-professional-outcome #professional-outcome-form>.field>select{min-height:64px;font-size:18px}
+.screen-professional-outcome .kimse-professional-date-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 5px}
+.screen-professional-outcome .kimse-professional-date-shortcuts button{border:1.5px solid #bad3c6;background:#fff;color:#235743;border-radius:14px;min-height:64px;font-size:19px;font-weight:780}
+.screen-professional-outcome .kimse-professional-date-shortcuts button[aria-pressed="true"]{border:2.5px solid #08755b;background:#e3f4ea;color:#104b38}
+.screen-professional-outcome .kimse-professional-date-shortcuts button:focus-visible{outline:3px solid #1155cc;outline-offset:3px}
+.screen-professional-outcome .kimse-professional-early-save{margin:1px 0 3px}
+.screen-professional-outcome .kimse-professional-early-save>button{min-height:76px;font-size:20px;font-weight:800}
+.screen-professional-outcome #professional-outcome-form>.kimse-optional-section{margin:7px 0}
+.screen-professional-outcome .kimse-clinical-accuracy-note{font-size:16px;padding:8px 12px;line-height:1.45}
+.large-text .screen-professional-outcome .kimse-professional-step strong{font-size:23px}
+.large-text .screen-professional-outcome .kimse-professional-date-shortcuts button{font-size:22px;min-height:78px}
+.high-contrast .screen-professional-outcome .kimse-professional-date-shortcuts button{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-professional-outcome .kimse-professional-date-shortcuts button[aria-pressed=true]{background:#ffe98c}
