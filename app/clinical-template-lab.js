@@ -394,7 +394,7 @@
     const researchGroups=crosswalk.entries.reduce((n,entry)=>n+entry.requirement_groups.length,0);
     if(crosswalk.entry_count!==providerCount||crosswalk.published_research_groups!==researchGroups)throw Error('PUBLISHED_REQUIREMENTS_COUNT_DRIFT');
     if(registry.institutions.some(item=>item.clinical_reviewer_approved||item.kimse_electronic_receiver_approved))throw Error('CLINICAL_APPROVAL_STATE_CONFLICT');
-    qs('demoVersion').textContent='Updated 2026.10.10 · Clinical Template Lab 03 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
+    qs('demoVersion').textContent='Updated 2026.10.10 · Clinical Template Lab 04 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
 
     const {updateInstitutions}=listControls(registry);
     const refreshProfile=()=>{renderProfile(registry,report);renderHospitalRequirements(crosswalk,qs('country').value,qs('institution').value);if(selectedSubset)renderPrintable(report,selectedSubset,registry,crosswalk)};
