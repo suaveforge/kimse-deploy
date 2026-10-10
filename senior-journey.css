@@ -444,3 +444,8 @@
 .screen-voice-check .kimse-flow-back,.screen-voice-check .kimse-flow-skip,
 .screen-initial-check .kimse-initial-prev,.screen-initial-result .kimse-flow-quiet{min-height:64px!important}
 .screen-market .compact-btn{min-height:64px!important}
+
+/* Remaining three controls detected by the 52-route >=64px audit. */
+.screen-onboarding-profile .kimse-sleep-other{min-height:66px!important}
+.screen-onboarding-profile .kimse-autonext-actions .kimse-wizard-previous{min-height:66px!important}
+.screen-cognitive-recheck .kimse-answer-back{min-height:66px!important}
