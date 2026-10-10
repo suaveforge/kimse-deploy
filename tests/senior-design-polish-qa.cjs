@@ -35,8 +35,7 @@ async function check(browser,width,mode,screen){
  assert(state.initial.responseTimes[0]>=100);
  }else{
  await page.locator('[data-profile-choice="male"]').click();
- assert.equal(await page.locator('[data-profile-choice="male"]').getAttribute('aria-pressed'),'true');
- await page.locator('#profile-wizard-next').click();
+ assert.equal(await page.locator('#profile-wizard-next').count(),0,'No double confirmation after one answer');
  assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'3 / 12');
  }
  assert.equal(errors.length,0,'Unexpected JS errors: '+errors.join(';'));
