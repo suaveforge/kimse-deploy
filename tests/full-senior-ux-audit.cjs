@@ -228,7 +228,7 @@ async function verifyRemainingSeniorP2(browser){
     assert(await p.locator('#professional-result').isVisible(),'clinical result code remains required');
     const details=p.locator('.kimse-professional-institution');
     assert(!(await details.evaluate(el=>el.open)),'optional institute and source note initially collapsed');
-    await details.locator('summary').click();
+    await details.locator('summary').first().click();
     assert(await p.locator('#professional-institution').isVisible(),'original institution field preserved');
     assert(await p.locator('#professional-source-note').isVisible(),'original provenance memo preserved');
     await p.locator('#professional-source-route').selectOption('PAPER_OR_PDF');
@@ -247,6 +247,42 @@ async function verifyRemainingSeniorP2(browser){
   }finally{await c.close()}
 }
 
+
+async function verifyFamilyCallP2(browser){
+  const ctx=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce',locale:'ko-KR'});
+  await ctx.addInitScript(()=>{
+    localStorage.setItem('kimse.p0.state',JSON.stringify({
+      version:14,account:{name:'사용성 점검',email:'qa@example.invalid'},intent:'both',self:true,care:true,mode:'self',
+      onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+      consents:{service:true,privacy:true,health:true},
+      caregivers:[{accountId:'caregiver-one',name:'가족 1',relation:'자녀'},{accountId:'caregiver-two',name:'가족 2',relation:'배우자'}],
+      callSessions:[
+        {id:'call-active',status:'SCHEDULED',self_name:'사용자',caregiver_name:'가족 1',scheduled_for:'2026-10-20T10:30:00',recording_status:'BLOCKED'},
+        {id:'call-history',status:'ENDED',self_name:'사용자',caregiver_name:'가족 2',scheduled_for:'2026-10-01T10:30:00',recording_status:'BLOCKED'}
+      ],
+      callSchedules:[{id:'schedule-test',caregiver_account_id:'caregiver-one',caregiver_name:'가족 1',interval_days:14,next_due_at:'2026-10-20T10:30:00'}]
+    }));
+  });
+  try{
+    const p=await ctx.newPage();
+    await p.goto(base+'family-call',{waitUntil:'domcontentloaded'});
+    await p.locator('[data-call-caregiver]').first().waitFor({timeout:15000});
+    assert(await p.locator('.kimse-call-current [data-open-call="call-active"]').isVisible(),'upcoming calls appear before history');
+    assert(await p.locator('.kimse-call-registered [data-create-call]').isVisible(),'existing schedule call button preserved');
+    assert(!(await p.locator('.kimse-call-history').evaluate(el=>el.open)),'past calls are secondary and collapsed');
+    assert.equal(await p.locator('#call-caregiver').inputValue(),'','multiple caregivers require explicit selection');
+    await p.locator('[data-call-caregiver="caregiver-two"]').click();
+    assert.equal(await p.locator('#call-caregiver').inputValue(),'caregiver-two','direct caregiver selection retains account ID');
+    await p.locator('[data-call-interval="7"]').click();
+    assert.equal(await p.locator('#call-interval').inputValue(),'7','interval preserves existing server parameter');
+    assert(await p.locator('#call-first-due').isVisible(),'native due-date picker remains');
+    await p.screenshot({path:'qa-artifacts/screens/family-call-choices-375.png',fullPage:false});
+    await p.locator('.kimse-call-history>summary').click();
+    assert(await p.locator('.kimse-call-history [data-open-call="call-history"]').isVisible(),'past call remains accessible');
+    console.log('KIMSE_UX_JOURNEY_FAMILY_CALL=PASS active→caregiver→interval→history');
+  }finally{await ctx.close()}
+}
+
 (async()=>{
 fs.mkdirSync('qa-artifacts/screens',{recursive:true});
 const browser=await chromium.launch({headless:true});
@@ -256,6 +292,7 @@ await verifySeniorJourneys(browser);
 await verifyHealthScheduleJourneys(browser);
 await verifyMedicalMarketProgressive(browser);
 await verifyRemainingSeniorP2(browser);
+await verifyFamilyCallP2(browser);
 const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));

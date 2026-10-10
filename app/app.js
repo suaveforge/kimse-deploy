@@ -2213,10 +2213,23 @@ page.family=()=>{
 page['family-add']=()=>wrap(`<h1 class="page-title">보호자 계정 초대</h1><p class="page-desc">보호자가 AuthHub에서 사용하는 이메일 주소로 연결합니다.</p><div class="form-stack"><div class="field"><label for="family-email">보호자 이메일</label><input id="family-email" type="email" autocomplete="email" placeholder="family@example.com"></div><div class="field"><label for="family-relation">관계</label><input id="family-relation" placeholder="예: 배우자, 자녀"></div><button id="save-family" class="btn-kimse btn-primary-k">보호자 초대</button></div>${notice('실제 계정 연결','초대된 이메일의 보호자가 로그인하면 CareSubject의 CAREGIVER 멤버십으로 연결됩니다.')}`,{title:'보호자 초대',narrow:true});
 page['family-call']=()=>{
   const caregivers=S.caregivers||[],schedules=S.callSchedules||[],sessions=S.callSessions||[];
-  const sessionRows=sessions.length?sessions.slice(0,12).map(x=>`<button class="list-row menu-row" data-open-call="${esc(x.id)}"><span><strong>${esc(x.self_name||'사용자')} ↔ ${esc(x.caregiver_name||'보호자')}</strong><small>${fmtDate(x.scheduled_for)} · 녹음 ${esc(x.recording_status||'BLOCKED')}</small></span><span><strong>${esc(x.status)}</strong> ${I('chevron-right')}</span></button>`).join(''):'<div class="empty-state"><h3>통화 기록이 아직 없어요</h3><p>사용자와 보호자가 연결되면 실제 KIMSE 통화를 시작할 수 있습니다.</p></div>';
-  const scheduleRows=schedules.length?schedules.map(x=>`<div class="list-row"><span><strong>${esc(x.caregiver_name||x.caregiver_email||'보호자')}</strong><small>${x.interval_days}일마다 · 다음 ${fmtDate(x.next_due_at)}</small></span><button class="btn-kimse btn-blue-k compact-btn" data-create-call="${esc(x.caregiver_account_id)}" data-call-schedule="${esc(x.id)}">통화 시작</button></div>`).join(''):'<div class="empty-state"><h3>아직 통화 일정이 없어요</h3></div>';
-  const setup=caregivers.length?`<h2 class="section-title">정기 일정 설정</h2><div class="form-stack"><div class="field"><label for="call-caregiver">보호자</label><select id="call-caregiver">${caregivers.map(x=>'<option value="'+esc(x.accountId)+'">'+esc(x.name)+' · '+esc(x.relation||'가족')+'</option>').join('')}</select></div><div class="field"><label for="call-interval">통화 주기</label><input id="call-interval" type="hidden" value="14"><div class="kimse-call-intervals" role="group" aria-label="정기 통화 주기"><button type="button" data-call-interval="7" aria-pressed="false">매주</button><button type="button" data-call-interval="14" aria-pressed="true">2주마다</button><button type="button" data-call-interval="30" aria-pressed="false">매월</button></div></div><div class="field"><label for="call-first-due">첫 통화 예정 <small>비워두면 선택한 주기 뒤</small></label><input id="call-first-due" type="datetime-local"></div><button id="save-call-schedule" class="btn-kimse btn-primary-k">통화 일정 저장</button></div>`:'';
-  return wrap(`<div class="eyebrow">KIMSE 가족통화 · 실제 계정 연결</div><h1 class="page-title">가족 안부 통화를<br>실제 기록으로 남겨요</h1><p class="page-desc">양쪽이 녹음·AI 분석에 동의해야 통화를 연결합니다. 종료된 KIMSE 통화의 횟수와 시간은 실제 모니터링 신호로 저장됩니다.</p><h2 class="section-title">통화 기록 / 참여할 통화</h2><div class="list">${sessionRows}</div>${S.self?'<h2 class="section-title">내 정기 통화</h2><div class="list">'+scheduleRows+'</div>':''}${setup}<p class="screen-footnote">일반 전화·외부 메신저 내용을 읽지 않습니다. 이 화면에서 연결된 KIMSE 통화만 기록합니다.</p>`,{title:'정기 안부 통화',narrow:true});
+  const pastStatuses=['ENDED','FAILED','CANCELLED'];
+  const activeSessions=sessions.filter(x=>!pastStatuses.includes(x.status)).slice(0,12);
+  const pastSessions=sessions.filter(x=>pastStatuses.includes(x.status)).slice(0,12);
+  const renderSessions=rows=>rows.map(x=>`<button class="list-row menu-row" data-open-call="${esc(x.id)}"><span><strong>${esc(x.self_name||'사용자')} ↔ ${esc(x.caregiver_name||'보호자')}</strong><small>${fmtDate(x.scheduled_for)} · 녹음 ${esc(x.recording_status||'BLOCKED')}</small></span><span><strong>${esc(x.status)}</strong> ${I('chevron-right')}</span></button>`).join('');
+  const scheduleRows=schedules.length?schedules.map(x=>`<div class="list-row"><span><strong>${esc(x.caregiver_name||x.caregiver_email||'보호자')}</strong><small>${x.interval_days}일마다 · 다음 ${fmtDate(x.next_due_at)}</small></span><button class="btn-kimse btn-blue-k" data-create-call="${esc(x.caregiver_account_id)}" data-call-schedule="${esc(x.id)}">통화 시작</button></div>`).join(''):'<div class="empty-state"><h3>정기 통화 일정이 아직 없어요</h3><p>보호자를 선택해 첫 일정을 등록할 수 있어요.</p></div>';
+  const caregiverChoices=caregivers.map((x,i)=>'<button type="button" class="kimse-call-caregiver-option" data-call-caregiver="'+esc(x.accountId||'')+'" aria-pressed="'+(caregivers.length===1?'true':'false')+'">'+esc(x.name)+' <span>'+esc(x.relation||'가족')+'</span></button>').join('');
+  const setup=caregivers.length?`<section class="kimse-call-setup"><h2 class="section-title">정기 통화 일정 만들기</h2><div class="form-stack">
+    <div class="field"><span id="call-caregiver-label" class="kimse-call-field-label">누구와 통화할까요?</span><input type="hidden" id="call-caregiver" value="${caregivers.length===1?esc(caregivers[0].accountId||''):''}"><div class="kimse-call-caregiver-options" role="group" aria-labelledby="call-caregiver-label">${caregiverChoices}</div></div>
+    <div class="field"><label for="call-interval">얼마나 자주 통화할까요?</label><input id="call-interval" type="hidden" value="14"><div class="kimse-call-intervals" role="group" aria-label="정기 통화 주기"><button type="button" data-call-interval="7" aria-pressed="false">매주</button><button type="button" data-call-interval="14" aria-pressed="true">2주마다</button><button type="button" data-call-interval="30" aria-pressed="false">매월</button></div></div>
+    <div class="field"><label for="call-first-due">첫 통화 날짜·시간 <small>선택 · 비워두면 선택한 주기 뒤</small></label><input id="call-first-due" type="datetime-local"></div>
+    <button type="button" id="save-call-schedule" class="btn-kimse btn-primary-k btn-full">통화 일정 저장</button></div></section>`:'<div class="summary-card"><strong>연결된 보호자가 아직 없어요</strong><p>가족을 연결한 뒤 통화 일정을 정할 수 있습니다.</p><button class="btn-kimse btn-primary-k btn-full" data-go="family-add">보호자 초대하기</button></div>';
+  return wrap(`<div class="eyebrow">KIMSE 가족 안부 통화</div><h1 class="page-title">가족과 안부를 나눠요</h1><p class="page-desc">앱에서 연결한 통화만 기록해요. 녹음과 음성 분석은 두 분 모두 동의해야 시작합니다.</p>
+    ${activeSessions.length?'<section class="kimse-call-current"><h2 class="section-title">참여할 통화</h2><div class="list">'+renderSessions(activeSessions)+'</div></section>':''}
+    ${S.self?'<section class="kimse-call-registered"><h2 class="section-title">등록한 정기 통화</h2><div class="list">'+scheduleRows+'</div></section>':''}
+    ${setup}
+    <details class="kimse-call-history"><summary>이전 통화 보기 (${pastSessions.length}건)</summary><div class="list">${pastSessions.length?renderSessions(pastSessions):'<p class="page-desc">종료된 통화 기록이 없어요.</p>'}</div></details>
+    <p class="screen-footnote">일반 전화·외부 메신저 내용을 읽지 않습니다. 통화 시작과 녹음 동의는 각각 확인합니다.</p>`,{title:'정기 안부 통화',narrow:true});
 };
 page['call-room']=()=>{
   const x=currentCallSession();
@@ -2914,6 +2927,14 @@ document.addEventListener('click',async e=>{
     if(!['7','14','30'].includes(value))return;
     const field=$('#call-interval');if(!field)return;field.value=value;
     document.querySelectorAll('[data-call-interval]').forEach(el=>el.setAttribute('aria-pressed',String(el===btn)));
+    tone('tap');return;
+  }
+  const caregiverButton=e.target.closest('[data-call-caregiver]');
+  if(caregiverButton&&route()==='family-call'){
+    const value=caregiverButton.dataset.callCaregiver||'';
+    if(!value)return;
+    const input=$('#call-caregiver');if(input)input.value=value;
+    document.querySelectorAll('[data-call-caregiver]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn===caregiverButton)));
     tone('tap');return;
   }
   if(e.target.id==='save-call-schedule'){

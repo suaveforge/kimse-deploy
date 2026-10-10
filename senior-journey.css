@@ -587,3 +587,26 @@
 .large-text .screen-home .kimse-home-primary-heading{font-size:26px}
 .large-text .screen-home .kimse-home-secondary>summary,.large-text .screen-professional-outcome .kimse-professional-institution>summary,.large-text .screen-clinical-context-event .kimse-context-notes>summary{font-size:22px;min-height:80px}
 @media(prefers-reduced-motion:reduce){.screen-home .kimse-home-secondary,.screen-professional-outcome .kimse-professional-institution,.screen-clinical-context-event .kimse-context-notes{transition:none!important}}
+
+/* Senior family calls: active calls and scheduled actions precede history. */
+.screen-family-call .kimse-call-current,.screen-family-call .kimse-call-registered,.screen-family-call .kimse-call-setup{margin-block:20px}
+.screen-family-call .kimse-call-current .list,.screen-family-call .kimse-call-registered .list{display:grid;gap:12px}
+.screen-family-call .kimse-call-registered .list-row{flex-wrap:wrap;gap:12px;min-height:76px}
+.screen-family-call .kimse-call-registered [data-create-call]{min-height:66px;min-width:130px;white-space:normal}
+.screen-family-call .kimse-call-field-label{display:block;color:#1c4b3a;font-size:20px;font-weight:790;margin-bottom:12px}
+.screen-family-call .kimse-call-caregiver-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.screen-family-call .kimse-call-caregiver-option{min-height:78px;padding:12px 10px;border-radius:18px;border:1.5px solid #c6dfd2;background:#fff;color:#234d3e;font-size:19px;font-weight:780;text-align:center;word-break:keep-all}
+.screen-family-call .kimse-call-caregiver-option span{display:block;color:#587263;font-size:15px;font-weight:580;margin-top:5px}
+.screen-family-call .kimse-call-caregiver-option[aria-pressed=true]{background:#e7f5eb;border:2px solid #157862}
+.screen-family-call .kimse-call-intervals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.screen-family-call .kimse-call-intervals button{min-width:0;min-height:76px;font-size:18px;font-weight:750;padding:10px 5px}
+.screen-family-call #call-first-due{min-height:76px;width:100%;font-size:20px;border-radius:16px;padding:12px}
+.screen-family-call .kimse-call-history{margin-top:24px;background:#f5faf6;border:1.5px solid #d1e2d7;border-radius:18px;overflow:visible}
+.screen-family-call .kimse-call-history>summary{display:flex;align-items:center;min-height:76px;padding:15px 18px;color:#275e49;font-size:18px;font-weight:760;cursor:pointer}
+.screen-family-call .kimse-call-history>.list{padding:4px 12px 15px}
+.screen-family-call .kimse-call-history>summary:focus-visible,.screen-family-call .kimse-call-caregiver-option:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-family-call .kimse-call-caregiver-option,.high-contrast .screen-family-call .kimse-call-history{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-family-call .kimse-call-caregiver-option[aria-pressed=true]{background:#ffed9a}
+.large-text .screen-family-call .kimse-call-caregiver-option,.large-text .screen-family-call .kimse-call-history>summary{font-size:22px}
+@media(max-width:360px){.screen-family-call .kimse-call-caregiver-options{grid-template-columns:1fr}.screen-family-call .kimse-call-intervals{gap:6px}}
+@media(prefers-reduced-motion:reduce){.screen-family-call .kimse-call-history,.screen-family-call .kimse-call-caregiver-option{transition:none!important}}
