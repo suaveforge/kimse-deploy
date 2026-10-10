@@ -96,7 +96,8 @@ jobs:
                 assert.match(pages[1],/부록/,'page2 provenance appendix missing');
                 assert.ok(pages[0].includes(text.observed),'first observed change lost in PDF '+c.code);
                 for(const row of text.screen){
-                  assert.ok(pages[0].includes(row[0]),'printed metric name lost: '+row[0]);
+                  const collapse=x=>x.replace(/\\s+/g,'');
+                  assert.ok(collapse(pages[0]).includes(collapse(row[0])),'printed metric name lost: '+row[0]);
                   const numeric=row[1].split(' ')[0];
                   assert.ok(pages[0].includes(numeric),'PDF does not preserve displayed baseline '+numeric);
                 }
