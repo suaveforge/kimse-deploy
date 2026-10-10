@@ -1,0 +1,40 @@
+name: KIMSE Global Research Atlas QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'evidence/rd-world-map.js'
+      - 'evidence/rd-world-map.css'
+      - 'evidence/rd-world-map-data.json'
+      - 'evidence/evidence-application-tabs.js'
+      - 'evidence/rd.html'
+      - 'evidence/tests/atlas-contract.test.cjs'
+      - '.github/workflows/atlas-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-map-acceptance:
+    name: Public Evidence Atlas integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static app and 249-market data contract
+        run: node evidence/tests/atlas-contract.test.cjs
+      - name: Live page status (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://kimse.suaveforge.com/evidence/rd.html"
+          echo "HTTP live document: $URL"
+          curl --fail --silent --show-error --location --retry 2 --connect-timeout 15 --max-time 45 "$URL" -o /tmp/rd-live.html
+          grep -q 'rd-world-map.js' /tmp/rd-live.html
+          echo 'Live HTML contains Atlas loader'
+          for asset in rd-world-map.js rd-world-map.css rd-world-map-data.json; do
+            curl --fail --silent --show-error --location --retry 2 --connect-timeout 15 --max-time 45 "https://kimse.suaveforge.com/evidence/$asset" -o "/tmp/$asset"
+          done
+          node -e "const j=require('/tmp/rd-world-map-data.json'); if(j.total!==92 || j.iso31661Master.length!==249) process.exit(1); console.log('Live map JSON contract PASS')"
