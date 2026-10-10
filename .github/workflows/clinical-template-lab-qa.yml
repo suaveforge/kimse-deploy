@@ -45,7 +45,7 @@ jobs:
               await page.locator('#institution').selectOption('CA-UHN-MEMORY-FORM');
               assert.equal(await page.locator('#hospitalRequirements > .list-group-item').count(),12,'UHN 11 published form groups plus source footer');
               assert.match(await page.locator('#hospitalRequirements').innerText(),/MoCA\/MMSE/);
-              assert.match(await page.locator('#hospitalRequirements').innerText(),/원본/);
+              assert.match(await page.locator('#hospitalRequirements').innerText(),/Neuroimaging CD/);
               assert.match(await page.locator('#hospitalRequirements a').last().getAttribute('href'),/uhn\.ca\/UHNReferrals/);
               await page.locator('#period').selectOption('7');
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+2),'horizontal clipping '+name);
