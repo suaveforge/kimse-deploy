@@ -139,6 +139,7 @@ async function verifyHealthScheduleJourneys(browser){
     await p.locator('#health-value').fill('4321');
     await p.screenshot({path:'qa-artifacts/screens/health-steps-entry-375.png',fullPage:true});
     await p.locator('#save-health').click();
+    await p.locator('.screen-health').waitFor({timeout:15000});
     const stepsState=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
     assert.equal(stepsState.health.steps,'4321','steps must retain manual observation');
     assert((await p.locator('#main').innerText()).includes('4321'),'steps must display when live sensor is absent');
@@ -147,6 +148,7 @@ async function verifyHealthScheduleJourneys(browser){
     await p.locator('#health-pressure-dia').fill('79');
     await p.screenshot({path:'qa-artifacts/screens/health-pressure-entry-375.png',fullPage:true});
     await p.locator('#save-health').click();
+    await p.locator('.screen-health').waitFor({timeout:15000});
     let state=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
     assert.equal(state.health.pressure,'121 / 79','pressure schema must remain backward-compatible');
     await p.locator('[data-health="pressure"]').click();
