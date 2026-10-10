@@ -151,6 +151,9 @@ jobs:
               assert.match(await page.locator('#rawMetricRows').innerText(),/7일/);
               await page.locator('[data-clinical-focus="0"]').click();
               assert.match(await page.locator('#selectionStatus').innerText(),/걸음수/,'table to chart focus did not work');
+              // Capture the default compact provider view; expanded evidence is already
+              // independently exercised through keyboard Enter earlier in this scenario.
+              await page.locator('#institutionEvidenceDisclosure').evaluate(el=>{el.open=false;});
               const overflow=await page.evaluate(()=>({
                 scrollWidth:document.documentElement.scrollWidth,innerWidth:window.innerWidth,
                 offenders:Array.from(document.querySelectorAll('body *')).filter(el=>{
