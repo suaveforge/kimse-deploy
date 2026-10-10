@@ -166,6 +166,7 @@
     if(focus && state.map && state.zoom && state.path){
       var f=state.features.find(function(x){return fromNumeric(x.id)===id});
       if(f){
+        centerMapViewport();
         var bb=state.path.bounds(f),dx=bb[1][0]-bb[0][0],dy=bb[1][1]-bb[0][1];
         var z=Math.max(1,Math.min(11,.70/Math.max(dx/state.width,dy/state.height,.006)));
         var cx=(bb[0][0]+bb[1][0])/2,cy=(bb[0][1]+bb[1][1])/2;
@@ -180,6 +181,12 @@
     document.getElementById('kimse-atlas-reset').addEventListener('click',function(){resetZoom();});
     document.getElementById('kimse-atlas-zoom-in').addEventListener('click',function(){if(state.svg&&state.zoom)state.svg.transition().duration(180).call(state.zoom.scaleBy,1.5)});
     document.getElementById('kimse-atlas-zoom-out').addEventListener('click',function(){if(state.svg&&state.zoom)state.svg.transition().duration(180).call(state.zoom.scaleBy,.67)});
+  }
+  function centerMapViewport(){
+    var viewport=document.getElementById('kimse-atlas-viewport');
+    if(viewport && viewport.scrollWidth>viewport.clientWidth){
+      viewport.scrollLeft=Math.max(0,Math.round((viewport.scrollWidth-viewport.clientWidth)/2));
+    }
   }
   function resetZoom(){if(state.svg&&state.zoom)state.svg.transition().duration(350).call(state.zoom.transform,window.d3.zoomIdentity);}
   function renderPicker() {
@@ -217,6 +224,8 @@
     state.zoom=d3.zoom().scaleExtent([1,11]).translateExtent([[-130,-100],[1310,720]]).on('zoom',function(e){state.currentScale=e.transform.k;gp.attr('transform',e.transform);state.markLayer.selectAll('g.kimse-atlas-pin circle').attr('r',function(x){return (x.records.length>1?11:7)/Math.max(1,e.transform.k)});state.markLayer.selectAll('g.kimse-atlas-pin text').attr('dy',3.8/Math.max(1,e.transform.k)).style('font-size',(10/Math.max(1,e.transform.k))+'px');});
     state.svg.call(state.zoom).on('dblclick.zoom',null);
     renderPicker();setSelected('826',false);
+    /* On narrow screens the SVG keeps a legible 780px canvas; centre its horizontal viewport. */
+    centerMapViewport();
   }
   async function jsonFallback(urls) {
     var err;
