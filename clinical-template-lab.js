@@ -15,6 +15,50 @@
   let selectedSubset=null;
   const raw=(value,unit)=>value===undefined||value===null?'미수집':Number(value).toLocaleString('ko-KR',{maximumFractionDigits:2})+' '+unit;
   const COVERAGE_LABELS={function:'일상기능',risk_confounders:'약물·질병 이력',professional:'전문검사',onset_trajectory:'변화 관찰일',cognition:'인지 관련 자료',informant:'보호자 정보'};
+  // Published Tabler text components receive user-readable explanations; canonical guard/source codes are retained in data-* attributes.
+  const GUARD_TEXT={
+    OBSERVED_AND_PATIENT_HISTORY:'관찰 기록과 본인 설명을 구분해 확인합니다.',
+    OBSERVATION_DATE_NOT_DISEASE_ONSET:'처음 기록된 변화일이며 질병 발병일은 아닙니다.',
+    KIMSE_OPERATIONAL_NOT_DIAGNOSTIC:'생활 신호의 변화이며 임상 진단 결과가 아닙니다.',
+    KIMSE_TASK_NOT_VALIDATED_SCORE:'앱 반복과제는 공인 인지검사 점수로 환산하지 않습니다.',
+    SELF_AND_INFORMANT_SEPARATE:'본인과 가족이 보고한 일상기능 상태를 각각 확인합니다.',
+    INFORMANT_NOT_CLINICIAN_VERIFIED:'가족이 전한 내용은 의료진의 검증 결과가 아닙니다.',
+    NOT_A_PSYCHIATRIC_DIAGNOSIS:'기분·행동 관찰은 정신과적 진단을 의미하지 않습니다.',
+    NOT_A_CLINICAL_NEURO_EXAM:'감각·운동 관련 기록은 의료진의 신경학적 검사와 다릅니다.',
+    MISSING_IS_NOT_NEGATIVE:'수집하지 않은 항목을 정상 또는 음성으로 간주하지 않습니다.',
+    MUST_PRESERVE_USER_ENTERED_VS_PROVIDER_LINKED:'직접 입력한 검사 결과와 의료기관에서 확인된 자료를 구분합니다.',
+    KIMSE_SUMMARY_CANNOT_REPLACE_ORIGINAL:'병원 의뢰장·영상·원검사는 원본 자료를 따로 준비해야 합니다.',
+    MISSING_AND_NONE_REPORTED_DISTINCT:'자료가 없는 상태와 이상이 없다고 보고한 상태는 다릅니다.'
+  };
+  const PROFILE_NOTE_TEXT={
+    GLOBAL:'국제 공통 정보구조를 참고한 표시 후보이며 세계 공통의 필수 치매 의뢰서는 아닙니다.',
+    KR:'국내 공개 임상지침을 참고한 후보입니다. 개별 병원의 진료 접수요건은 승인되지 않았습니다.',
+    GB:'NICE의 평가 지침을 참고한 후보로, 개별 NHS 의료기관의 의뢰서가 아닙니다.',
+    US:'알츠하이머협회 공개 권고사항을 참고했으며 미국 보험·병원 승인 서식이 아닙니다.',
+    CA:'우려 증상에 대한 평가 지침을 참고한 후보이며 무증상자 일괄 선별검사와 다릅니다.',
+    AU:'2016년 역사적 호주 일반진료 지침을 참고합니다. 2026년 개정 최종판 여부는 별도로 확인해야 합니다.',
+    JP:'2017년 일본 종합 치매지침을 참고합니다. 전문분야 추가 지침과 병원별 승인 요건은 별개입니다.'
+  };
+  const SOURCE_SCOPE_TEXT={
+    'GLOBAL-HL7-IPS-2026':'국제 환자 요약 교환구조 참고자료이며 치매 전용 의뢰양식이 아닙니다.',
+    'KR-KDA-2021':'국내 치매 진단·평가 지침 참고자료이며 개별 병원 접수양식이 아닙니다.',
+    'KR-HL7K-CORE-2':'국내 FHIR 교환규격 참고자료이며 병원 전자수신을 보증하지 않습니다.',
+    'GB-NICE-NG97':'병력·인지·행동·일상기능과 가역원인 평가 지침이며 KIMSE의 전자접수 승인과 무관합니다.',
+    'US-AA-DETECD-2025':'본인·보호자 이력, 기능·안전·검사 평가 지침이며 낌새의 임상적 유효성 승인이 아닙니다.',
+    'CA-CCCDTD5-2020':'증상 우려에 대한 의료평가와 타당화된 검사 권고를 참고하며 일괄 선별검사 지침이 아닙니다.',
+    'AU-RACGP-2016':'호주의 과거 일반진료 지침입니다. 후속 지침 개정 상태를 재확인해야 합니다.',
+    'JP-JSN-2017':'일본의 과거 종합 치매지침으로, 최신 전문 보충지침이나 병원 승인서식과 다릅니다.'
+  };
+  const SOURCE_MODE_TEXT={
+    native_step_counter_simulation:'가상 걸음수 센서',
+    manual_entry_simulation:'가상 직접 입력',
+    foreground_location_simulation:'가상 앱 사용 중 위치',
+    active_speech_task_simulation:'가상 말하기 과제',
+    kimse_call_only_simulation:'가상 낌새 앱 통화',
+    in_app_task_simulation:'가상 반복과제'
+  };
+  const SIGNAL_UNIT_TEXT={steps:'보',sleep_minutes:'분',location_radius_m:'m',voice_pause_ratio:'비율',call_count:'회',task_response_ms:'ms'};
+
   const optionColor=['#206bc4','#4299e1','#2fb344','#f59f00','#ae3ec9','#d63939'];
   async function load(url){
     const response=await fetch(url,{cache:'no-store',credentials:'omit'});
@@ -46,7 +90,8 @@
     const profile=window.KIMSE_CLINICAL_PROFILES.resolve(registry,report,{
       country:qs('country').value,institutionId:qs('institution').value
     });
-    qs('profileNote').textContent=profile.profile_note;
+    qs('profileNote').textContent=PROFILE_NOTE_TEXT[profile.profile_id]||'공개 지침 기반 표시 후보이며 병원별 승인 서식이 아닙니다.';
+    qs('profileNote').dataset.sourceNote=profile.profile_note;
     status(profile.profile_label+(profile.institution?' · '+profile.institution.name:'')+' · 공개 근거 기반 화면 후보, 의료진 승인 없음');
     const list=qs('fieldList');list.replaceChildren();
     profile.sections.slice(0,10).forEach((f,i)=>{
@@ -55,13 +100,17 @@
       head.append(make('span','fw-semibold',String(i+1).padStart(2,'0')+' · '+f.label));
       const badge=make('span','badge '+(f.availability==='available'?'bg-blue-lt':'bg-secondary-lt'),f.availability==='available'?'합성값 있음':'미수집');
       head.append(badge);
-      item.append(head,make('div','small text-secondary mt-1',f.guard));list.append(item);
+      const note=make('div','small text-secondary mt-1',GUARD_TEXT[f.guard]||'확인된 자료의 수집·검증 상태를 구분해 살펴봅니다.');
+      note.dataset.guardCode=f.guard;
+      item.append(head,note);list.append(item);
     });
     const sourceList=qs('sourceList');sourceList.replaceChildren();
     profile.sources.forEach(s=>{
       const box=make('div','mb-3 pb-2 border-bottom');
       const link=make('a','fw-semibold',s.issuer+' · '+s.id);link.href=s.url;link.target='_blank';link.rel='noopener noreferrer';
-      box.append(link,make('div','text-secondary small mt-1',s.scope));
+      const scope=make('div','text-secondary small mt-1',SOURCE_SCOPE_TEXT[s.id]||'원문 자료의 적용 범위를 개별 확인해야 합니다.');
+      scope.dataset.sourceScope=s.scope;
+      box.append(link,scope);
       sourceList.append(box);
     });
     if(profile.institution){
@@ -123,9 +172,14 @@
     subset.metrics.forEach((m,index)=>{
       const tr=make('tr');
       const first=make('th','fw-semibold',m.clinical_label);first.scope='row';tr.append(first);
-      for(const value of [raw(m.baseline,m.unit),raw(m.recent,m.unit),pct(m.relative_change),m.series.length+' / '+subset.days+'일',m.source_mode||'출처 미수집']){
+      const unit=SIGNAL_UNIT_TEXT[m.metric]||m.unit;
+      for(const value of [raw(m.baseline,unit),raw(m.recent,unit),pct(m.relative_change),m.series.length+' / '+subset.days+'일']){
         tr.append(make('td','',value));
       }
+      const source=make('td','',SOURCE_MODE_TEXT[m.source_mode]||'출처 코드 확인 필요');
+      source.dataset.sourceCode=m.source_mode||'';
+      source.dataset.originalUnit=m.unit||'';
+      tr.append(source);
       const cell=make('td');
       const focus=make('button','btn btn-outline-primary btn-sm','추이 보기');focus.type='button';focus.dataset.clinicalFocus=String(index);
       focus.setAttribute('aria-label',m.clinical_label+' 시계열 차트로 이동');cell.append(focus);tr.append(cell);rows.append(tr);
