@@ -37,7 +37,10 @@
           "status": "EXTERNAL_DOCUMENT_REQUIRED",
           "limit": "의사 발행 의뢰서는 낌새 자체 관찰로 생성하거나 대체할 수 없습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "심층진료 대상 환자",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "KR-SNUH-OUTPATIENT-02",
@@ -48,7 +51,10 @@
           "status": "EXTERNAL_DOCUMENT_REQUIRED",
           "limit": "기존 검사 영상·원본 매체는 낌새 텍스트 기록과 동일하지 않습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "진료 절차",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "KR-SNUH-OUTPATIENT-03",
@@ -57,7 +63,10 @@
           "status": "APPROVED_CHANNEL_REQUIRED",
           "limit": "기관 간 공식 시스템의 송신 권한이 확인되지 않았습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "예약 절차",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "KR-SNUH-OUTPATIENT-04",
@@ -66,7 +75,10 @@
           "status": "INSTITUTION_REVIEW_REQUIRED",
           "limit": "의료진·환자별 선별 규칙은 확인되지 않았습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "심층진료 대상 환자",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         }
       ]
     },
@@ -398,7 +410,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "가족 입력 없으면 미수집으로 유지합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information to include",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-CNTW-MAMS-02",
@@ -409,7 +424,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "ADL/IADL 실제 입력 시에만 표시합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information to include",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-CNTW-MAMS-03",
@@ -420,7 +438,10 @@
           "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
           "limit": "KIMSE 자체 과제는 공인 검사 점수가 아닙니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Diagnosis and treatment",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-CNTW-MAMS-04",
@@ -432,7 +453,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "진단·약물 이력은 출처별로 분리합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information to include",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-CNTW-MAMS-05",
@@ -444,7 +468,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "흡연·음주·물질사용 기록이 없으면 미수집입니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information to include",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-CNTW-MAMS-06",
@@ -455,7 +482,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "실제 보고된 안전 사건만 노출합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information to include",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-CNTW-MAMS-07",
@@ -464,7 +494,10 @@
           "status": "PARTNER_APPROVAL_REQUIRED",
           "limit": "동의·의뢰 권한은 사전 확인이 필요합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information to include",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-CNTW-MAMS-08",
@@ -475,7 +508,10 @@
           "status": "NOT_YET_SUPPORTED",
           "limit": "통역 필요 여부·연락처 등 기관 필수 양식은 현재 연결되지 않았습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information to include",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         }
       ]
     },
@@ -495,7 +531,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "KIMSE 관찰에 따른 방문 사유는 가능하나 기관 의뢰동의가 별도로 필요합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-LEEDS-MAS-02",
@@ -507,7 +546,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "보호자/일상 기능 입력의 부재를 정상으로 취급하지 않습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-LEEDS-MAS-03",
@@ -518,7 +560,10 @@
           "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
           "limit": "의학적 검사 결과와 1차원본을 요구할 수 있습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-LEEDS-MAS-04",
@@ -530,7 +575,10 @@
           "status": "CLINICIAN_ASSESSMENT_REQUIRED",
           "limit": "섬망·급성 질환 감별은 KIMSE 분석만으로 확정하지 않습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-LEEDS-MAS-05",
@@ -541,7 +589,10 @@
           "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
           "limit": "실제 표준인지검사 결과가 별도로 필요합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-LEEDS-MAS-06",
@@ -552,7 +603,10 @@
           "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
           "limit": "영상 의뢰/검사결과가 실제 존재할 때만 표현할 수 있습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Referral information",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         }
       ]
     },
@@ -573,7 +627,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "관찰된 최초 변화와 증상 시작일은 반드시 출처를 구분해야 합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "How to Be Referred",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-NORTHUMBRIA-02",
@@ -584,7 +641,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "실제 신고되거나 관찰된 사건만 전달합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "How to Be Referred",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-NORTHUMBRIA-03",
@@ -593,7 +653,10 @@
           "status": "PARTNER_APPROVAL_REQUIRED",
           "limit": "환자 동의와 의뢰 권한은 확인되지 않았습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "How to Be Referred",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-NORTHUMBRIA-04",
@@ -604,7 +667,10 @@
           "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
           "limit": "스크리닝 검사 결과는 실측된 것만 인정합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "How to Be Referred",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "GB-NORTHUMBRIA-05",
@@ -615,7 +681,10 @@
           "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
           "limit": "기간 요건과 검체 결과를 입력 자료로 검증해야 합니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "How to Be Referred",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         }
       ]
     },
@@ -635,7 +704,10 @@
           "status": "CAPTURE_DEPENDENT",
           "limit": "환자 표시정보는 있어도 공식 신원매칭과 연락처 검증은 아닙니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Scheduling patient appointments",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "US-MAYO-NEURO-02",
@@ -644,7 +716,10 @@
           "status": "PARTNER_APPROVAL_REQUIRED",
           "limit": "Mayo 환자 등록번호는 병원과 확인해야 하며 KIMSE가 생성하지 않습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Scheduling patient appointments",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "US-MAYO-NEURO-03",
@@ -653,7 +728,10 @@
           "status": "PARTNER_APPROVAL_REQUIRED",
           "limit": "보험 유형은 별도 수집·동의·검증 및 기관 조건 확인 대상입니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Scheduling patient appointments",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "US-MAYO-NEURO-04",
@@ -662,7 +740,10 @@
           "status": "APPROVED_CHANNEL_REQUIRED",
           "limit": "CareLink는 승인된 의뢰 의료진의 경로이며 KIMSE 자동접수 권한이 아닙니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "Mayo Clinic CareLink (referring physician portal)",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         }
       ]
     },
@@ -905,7 +986,7 @@
           "limit": "Provenance must separate patient, family and clinician reports",
           "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
           "source_page": null,
-          "source_heading": "When to visit us",
+          "source_heading": "Referral information",
           "source_locator_type": "HTML_SECTION_HEADING",
           "source_locator_reviewed_on": "2026-10-10"
         },
