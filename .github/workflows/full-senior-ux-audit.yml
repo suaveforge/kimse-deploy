@@ -1,0 +1,29 @@
+name: KIMSE Complete Senior UX Inventory
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/full-senior-ux-audit.cjs'
+      - '.github/workflows/full-senior-ux-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  all-screen-ux-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 29
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/kimse-ux-audit" playwright@1.55.0 --no-audit --no-fund
+          "$RUNNER_TEMP/kimse-ux-audit/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Audit all route markup and interaction surfaces in the live app
+        run: node tests/full-senior-ux-audit.cjs
+      - name: Upload full report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-all-routes-senior-ux-inventory
+          path: qa-artifacts/
+          if-no-files-found: ignore
