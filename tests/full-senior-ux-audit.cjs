@@ -51,7 +51,7 @@ try{
     visibleFieldCount:fields.length,inputs:control,selectCount:control.filter(x=>x.tag==='SELECT').length,
     checkboxCount:control.filter(x=>x.type==='checkbox').length,
     textareaCount:control.filter(x=>x.tag==='TEXTAREA').length,
-    buttonCount:buttons.length,smallTargets:sizes.filter(x=>x.h<44||x.w<44).slice(0,20),
+    buttonCount:buttons.length,smallTargets:sizes.filter(x=>x.h<64||x.w<44).slice(0,20),
     tinyTextButtons:sizes.filter(x=>x.font>0&&x.font<15).slice(0,12),
     actions:sizes.slice(0,22),jargon:[...new Set(jargon)],wordLeak:routeCls==='screen-cognitive-recheck'&&!![...main.querySelectorAll('input')].some(e=>(e.placeholder||'').includes('나무')),
     requiresAccess:/계정 확인|로그인이 필요|불러오는 중|먼저 연결/.test(text.slice(0,180)),
@@ -74,6 +74,8 @@ const summary={routes:unique.length,observations:report.length,
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));
 fs.writeFileSync('qa-artifacts/summary.json',JSON.stringify(summary,null,2));
 console.log('KIMSE_UX_AUDIT_TOTAL routes='+unique.length+' observations='+report.length);
+console.log('KIMSE_UX_AUDIT_SMALL_ROUTES='+summary.byRoute.filter(x=>x.smallTargets?.length).length);
+console.log('KIMSE_UX_AUDIT_OVERFLOW_ROUTES='+summary.byRoute.filter(x=>x.acrossViews.some(v=>v.overflow)).length);
 console.log('KIMSE_UX_AUDIT_ISSUES '+JSON.stringify(summary.byRoute.filter(x=>x.error||x.wordLeak||x.selects>0||x.checkboxes>3||x.fields>3||x.smallTargets?.length).map(x=>({route:x.route,selects:x.selects,checkboxes:x.checkboxes,fields:x.fields,small:x.smallTargets?.length,wordLeak:x.wordLeak}))).slice(0,3500));
 }finally{await browser.close()}
 })().catch(e=>{console.error('KIMSE_UX_AUDIT_FAILED',e.stack||e);process.exitCode=1});
