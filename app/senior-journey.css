@@ -334,3 +334,61 @@
  .screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:18px!important}
  .screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{min-height:60px!important;padding:7px 3px!important}
 }
+
+
+/* One-tap senior choices: navigation is implicit; only back remains secondary. */
+.screen-onboarding-profile .kimse-autonext-actions{display:flex!important;justify-content:flex-start!important;grid-template-columns:1fr!important;margin-top:auto!important;padding-top:6px!important}
+.screen-onboarding-profile .kimse-autonext-actions .kimse-wizard-previous{min-height:58px!important;width:160px!important;max-width:100%!important;font-size:18px!important;padding:11px 18px!important;background:transparent!important}
+.screen-onboarding-profile .kimse-sleep-picker{display:flex;flex-direction:column;gap:12px;min-width:0}
+.screen-onboarding-profile .kimse-sleep-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.screen-onboarding-profile .kimse-sleep-option{display:flex;align-items:center;justify-content:center;min-width:0;min-height:72px;padding:12px 5px;border-radius:17px;border:1.5px solid #d5e5da;background:#fff;color:#184737;box-shadow:0 1px 5px rgba(17,88,65,.045);font-size:19px;font-weight:760;letter-spacing:-.025em;white-space:normal;word-break:keep-all}
+.screen-onboarding-profile .kimse-sleep-option[aria-pressed="true"]{background:#eaf6ee;border-color:#127965;box-shadow:0 0 0 1px #127965}
+.screen-onboarding-profile .kimse-sleep-other{display:flex;align-items:center;justify-content:center;min-height:56px;padding:12px 18px;background:#f0f6f1;border:1px solid #cfe0d6;border-radius:16px;color:#236349;font-size:17px;font-weight:750}
+.screen-onboarding-profile .kimse-sleep-option:focus-visible,.screen-onboarding-profile .kimse-sleep-other:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.screen-onboarding-profile .kimse-sleep-other-input{margin-top:4px!important}
+.large-text .screen-onboarding-profile .kimse-sleep-option{min-height:85px;font-size:22px}
+.high-contrast .screen-onboarding-profile .kimse-sleep-option,.high-contrast .screen-onboarding-profile .kimse-sleep-other{border:3px solid #111;background:#fff;color:#111;box-shadow:none}
+.high-contrast .screen-onboarding-profile .kimse-sleep-option[aria-pressed="true"]{background:#ffefae;border-color:#111}
+@media(max-width:360px){.screen-onboarding-profile .kimse-sleep-options{gap:8px}.screen-onboarding-profile .kimse-sleep-option{min-height:66px;font-size:17px;padding-inline:3px}}
+
+
+/* Senior direct choices for assessment, repeat check and caregiver feedback. */
+.screen-assessment .answer-grid,.screen-cognitive-recheck .answer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.screen-assessment .answer-grid .answer,.screen-cognitive-recheck .answer-grid .answer{
+  min-height:82px;padding:16px 13px;border-radius:18px;border:1.5px solid #d5e6da;
+  background:#fff;font-size:20px;font-weight:730;letter-spacing:-.035em;color:#193f37;
+  line-height:1.38;word-break:keep-all;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(23,76,53,.045);
+}
+.screen-assessment .answer-grid .answer[aria-pressed="true"]{background:#e8f5ec;border-color:#127965}
+.screen-assessment .kimse-answer-back,.screen-cognitive-recheck .kimse-answer-back{
+  display:flex;align-items:center;justify-content:center;min-height:60px;margin:18px 0 0;
+  padding:12px 19px;border:1px solid #d2e5da;border-radius:15px;background:#f1f7f3;
+  font-size:18px;font-weight:730;color:#245b47;
+}
+.screen-cognitive-recheck .kimse-answer-back{margin:4px 0 18px}
+.screen-cognitive-recheck #recheck-recall-input{min-height:70px;font-size:21px;border-radius:16px}
+.screen-cognitive-recheck #save-cognitive-recheck{min-height:70px;font-size:20px}
+.screen-family-feedback .kimse-feedback-question{
+  display:block;font-size:21px;font-weight:810;line-height:1.42;color:#153e35;margin:0 0 16px;word-break:keep-all;
+}
+.screen-family-feedback .kimse-feedback-choices{display:grid;grid-template-columns:1fr;gap:11px}
+.screen-family-feedback .kimse-feedback-choice{display:flex;align-items:center;justify-content:flex-start;text-align:left;
+  width:100%;min-height:73px;padding:15px 20px;border-radius:18px;border:1.5px solid #d4e4da;background:#fff;
+  color:#163f35;font-size:20px;font-weight:730;line-height:1.4;word-break:keep-all;
+}
+.screen-family-feedback .kimse-feedback-choice[aria-pressed="true"]{border-color:#127965;background:#e9f6ee;
+  box-shadow:inset 0 0 0 1px #127965}
+.screen-family-feedback .kimse-feedback-choice[aria-pressed="true"]::after{content:"✓";margin-left:auto;color:#13775f;font-size:21px;padding-left:11px}
+.screen-family-feedback #family-feedback-note{font-size:19px;min-height:95px;border-radius:17px}
+.screen-family-feedback button[type="submit"]{min-height:72px;font-size:20px}
+.screen-care-schedule #schedule-date{display:block;width:100%;min-height:74px;padding:12px 15px;
+  border:1px solid #bad5c6;border-radius:16px;font-size:20px;color:#173f35;background:#fff}
+.screen-care-schedule #add-schedule{min-height:70px;font-size:20px}
+.high-contrast .screen-family-feedback .kimse-feedback-choice,.high-contrast .screen-assessment .answer-grid .answer,
+.high-contrast .screen-cognitive-recheck .answer-grid .answer{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-family-feedback .kimse-feedback-choice[aria-pressed="true"]{background:#ffefae;border-color:#111}
+.large-text .screen-family-feedback .kimse-feedback-choice,.large-text .screen-assessment .answer-grid .answer,
+.large-text .screen-cognitive-recheck .answer-grid .answer{min-height:91px;font-size:24px}
+@media(max-width:360px){.screen-assessment .answer-grid,.screen-cognitive-recheck .answer-grid{gap:9px}
+ .screen-assessment .answer-grid .answer,.screen-cognitive-recheck .answer-grid .answer{font-size:18px;padding-inline:8px}
+ .screen-family-feedback .kimse-feedback-choice{font-size:18px;padding-inline:15px}}
