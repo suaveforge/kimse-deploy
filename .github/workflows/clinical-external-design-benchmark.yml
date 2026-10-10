@@ -1,0 +1,90 @@
+name: KIMSE External Licensed Dashboard Visual Benchmark
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/clinical-external-design-benchmark.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  research-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install research browser
+        run: |
+          npm install playwright@1.56.1 --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Capture external official templates and local KIMSE without borrowing commercial code
+        run: |
+          mkdir -p comparison-captures
+          cat > ./benchmark-external.cjs <<'NODE'
+          const {chromium}=require('playwright');
+          const fs=require('node:fs');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const targets=[
+              ['KIMSE-Tabler-ECharts','https://kimse.suaveforge.com/clinical-template-lab.html','kimse'],
+              ['Highcharts-Dashboards-Sync','https://www.highcharts.com/demo/dashboards/sync','commercial'],
+              ['Highcharts-Dashboards-Minimal','https://www.highcharts.com/demo/dashboards/minimal','commercial'],
+              ['Highcharts-Core-Synchronized','https://www.highcharts.com/demo/synchronized-charts','commercial'],
+              ['Highcharts-Official-JSFiddle-Sync','https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/highcharts/demo/synchronized-charts/show','commercial']
+            ];
+            const result=[];
+            for(const [size,width,height] of [['desktop',1440,900],['tablet-landscape',1024,768]]){
+              for(const [name,url,kind] of targets){
+                const context=await browser.newContext({viewport:{width,height},serviceWorkers:'block'});
+                const page=await context.newPage(),issues=[];
+                page.on('pageerror',err=>issues.push(String(err.message).slice(0,250)));
+                let http=null;
+                try{
+                  const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:35000});
+                  http=response?.status()||null;
+                  await page.waitForTimeout(5000);
+                  for(const rx of [/Reject All/i,/Only necessary/i,/Reject non-essential/i,/Decline all/i]){
+                    const btn=page.getByRole('button',{name:rx}).first();
+                    if(await btn.count())await btn.click({timeout:1600}).catch(()=>{});
+                  }
+                  await page.waitForTimeout(4500);
+                  const frameInfo=[];
+                  for(const frame of page.frames().slice(0,20)){
+                    try{
+                      frameInfo.push({url:frame.url().slice(0,160),
+                        highcharts:await frame.locator('.highcharts-container').count(),
+                        echarts:await frame.locator('canvas').count(),
+                        uiText:(await frame.locator('body').innerText({timeout:3000})).slice(0,150)});
+                    }catch(e){frameInfo.push({url:frame.url().slice(0,160),error:String(e.message).slice(0,100)})}
+                  }
+                  await page.screenshot({path:'comparison-captures/'+name+'-'+size+'.png',fullPage:true,timeout:15000,animations:'disabled'});
+                  const renderedHighcharts=frameInfo.reduce((n,f)=>n+(f.highcharts||0),0);
+                  const kimseReady=kind==='kimse'?await page.locator('html').getAttribute('data-clinical-template-ready'):null;
+                  const record={name,size,url,http,renderedHighcharts,kimseReady,frames:frameInfo,issues};
+                  result.push(record);
+                  console.log('EXTERNAL_BENCHMARK_SAMPLE='+JSON.stringify({name,size,http,renderedHighcharts,kimseReady,frames:frameInfo.length}));
+                }catch(e){
+                  result.push({name,size,url,http,status:'NOT_COMPARABLE',reason:String(e.message).slice(0,500),issues});
+                  console.log('EXTERNAL_BENCHMARK_BLOCKED='+name+' '+size+' '+String(e.message).slice(0,120));
+                }finally{await context.close()}
+              }
+            }
+            await browser.close();
+            fs.writeFileSync('comparison-captures/benchmark-results.json',JSON.stringify({
+              purpose:'PUBLIC OFFICIAL VISUAL RESEARCH, NOT SAME-DATA QUALITY APPROVAL',
+              use:'Never redistribute or deploy commercial Highcharts code; screenshots captured only from public official pages.',
+              caveats:'External demos use their own data. Blank frames, cookie banners and automated-browser restrictions invalidate the corresponding comparison.',
+              result
+            },null,2));
+            console.log('BENCHMARK_SAMPLES='+result.length);
+            console.log('BENCHMARK_RENDERED_HIGHCHARTS='+result.filter(x=>x.renderedHighcharts>0).length);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node benchmark-external.cjs
+      - name: Upload separate visual research artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-external-official-dashboard-benchmark
+          path: comparison-captures/*
+          if-no-files-found: ignore
