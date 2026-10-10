@@ -81,6 +81,29 @@ jobs:
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
           node test-template-browser.cjs
+      - name: Capture official Highcharts Sync reference (read-only benchmark)
+        run: |
+          cat > ./capture-commercial-reference.cjs <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch();
+            try{
+              for(const [name,width,height] of [['desktop',1440,900],['tablet-landscape',1024,768],['tablet-portrait',768,1024],['mobile',390,844]]){
+                const page=await browser.newPage({viewport:{width,height}});
+                const url='https://www.highcharts.com/demo/dashboards/sync';
+                const res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+                if(!res||res.status()!==200)throw Error('HIGHCHARTS_REFERENCE_NOT_AVAILABLE_'+name);
+                await page.waitForTimeout(3000);
+                if(!(await page.locator('body').innerText()).includes('Dashboards Sync'))throw Error('HIGHCHARTS_WRONG_DEMO_'+name);
+                const detail=await page.evaluate(()=>({title:document.title,charts:document.querySelectorAll('.highcharts-container').length,frames:document.querySelectorAll('iframe').length}));
+                await page.screenshot({path:'clinical-template-qa/highcharts-official-'+name+'.png',fullPage:true});
+                console.log('HIGHCHARTS_OFFICIAL_REFERENCE_CAPTURED='+name+' '+JSON.stringify(detail));
+                await page.close();
+              }
+            }finally{await browser.close()}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node capture-commercial-reference.cjs
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
