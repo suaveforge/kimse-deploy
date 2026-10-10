@@ -227,7 +227,7 @@ async function verifyRemainingSeniorP2(browser){
     await p.locator('#professional-date').waitFor({timeout:15000});
     assert(await p.locator('#professional-source-route').isVisible(),'clinical source remains required');
     assert(await p.locator('#professional-result').isVisible(),'clinical result code remains required');
-    assert(await p.locator('.kimse-professional-step').isVisible(),'three-step professional heading present');
+    assert(await p.locator('.screen-professional-outcome .page-desc').isVisible(),'concise three-field instructions visible');
     const fieldOrder=await p.locator('#professional-outcome-form').evaluate(form=>{
       const fields=['professional-date','professional-source-route','professional-result','professional-institution'].map(id=>form.querySelector('#'+id)?.getBoundingClientRect().top);
       return fields;
@@ -236,6 +236,8 @@ async function verifyRemainingSeniorP2(browser){
     assert(!(await p.locator('.kimse-professional-institution').evaluate(el=>el.open)),'institution stays collapsed until requested');
     const early=p.locator('[data-prof-quick-save]');
     assert(await early.isVisible(),'early save available after required fields');
+    const firstViewportBox=await early.boundingBox();
+    assert(firstViewportBox&&firstViewportBox.y+firstViewportBox.height<=810,'primary save must fit within 375x810 first viewport');
     assert.equal(await p.locator('#professional-date').inputValue(),'','clinical date never guessed before user chooses');
     assert.equal(await p.locator('[data-prof-date-offset]').count(),2,'date shortcuts today and yesterday preserved');
     assert(await p.locator('#professional-outcome-form').evaluate(form=>{
