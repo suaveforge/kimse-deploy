@@ -122,7 +122,7 @@ async function verifySeniorJourneys(browser){
 
 
 async function verifyHealthScheduleJourneys(browser){
-  const context=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce'});
+  const context=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce',locale:'ko-KR'});
   await context.addInitScript(()=>{
     localStorage.setItem('kimse.p0.state',JSON.stringify({
       version:14,account:{name:'사용성 점검',email:''},intent:'self',self:true,mode:'self',
@@ -137,7 +137,8 @@ async function verifyHealthScheduleJourneys(browser){
     await p.goto(base+'health',{waitUntil:'domcontentloaded'});
     await p.locator('[data-health="steps"]').click();
     await p.locator('#health-value').fill('4321');
-    await p.screenshot({path:'qa-artifacts/screens/health-steps-entry-375.png',fullPage:true});
+    await p.evaluate(()=>window.scrollTo(0,0));
+    await p.screenshot({path:'qa-artifacts/screens/health-steps-entry-375.png',fullPage:false});
     await p.locator('#save-health').click();
     await p.locator('.screen-health').waitFor({timeout:15000});
     const stepsState=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
@@ -146,7 +147,8 @@ async function verifyHealthScheduleJourneys(browser){
     await p.locator('[data-health="pressure"]').click();
     await p.locator('#health-pressure-sys').fill('121');
     await p.locator('#health-pressure-dia').fill('79');
-    await p.screenshot({path:'qa-artifacts/screens/health-pressure-entry-375.png',fullPage:true});
+    await p.evaluate(()=>window.scrollTo(0,0));
+    await p.screenshot({path:'qa-artifacts/screens/health-pressure-entry-375.png',fullPage:false});
     await p.locator('#save-health').click();
     await p.locator('.screen-health').waitFor({timeout:15000});
     let state=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
@@ -159,12 +161,43 @@ async function verifyHealthScheduleJourneys(browser){
     assert.equal(await p.locator('#schedule-title').inputValue(),'병원 동행');
     await p.locator('#schedule-date').fill('2026-11-16');
     await p.locator('#schedule-time').fill('10:30');
-    await p.screenshot({path:'qa-artifacts/screens/care-schedule-entry-375.png',fullPage:true});
+    await p.evaluate(()=>window.scrollTo(0,0));
+    await p.screenshot({path:'qa-artifacts/screens/care-schedule-entry-375.png',fullPage:false});
     await p.locator('#add-schedule').click();
     state=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
     assert(state.schedule.some(x=>x.title==='병원 동행'&&x.date.includes('2026')),'family schedule must retain existing row schema');
     console.log('KIMSE_UX_JOURNEY_HEALTH_SCHEDULE=PASS steps→pressure→restore→date/time');
   }finally{await context.close()}
+}
+
+
+async function verifyMedicalMarketProgressive(browser){
+  const c=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce',locale:'ko-KR'});
+  await c.addInitScript(()=>{
+    localStorage.setItem('kimse.p0.state',JSON.stringify({
+      version:14,account:{name:'사용성 점검',email:''},intent:'self',self:true,mode:'self',
+      onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+      consents:{service:true,privacy:true,health:true},marketCategory:'all',marketShowAll:false
+    }));
+  });
+  try{
+    const p=await c.newPage();
+    await p.goto(base+'medical-record-add',{waitUntil:'domcontentloaded'});
+    const optional=p.locator('.kimse-medical-extras');
+    await optional.waitFor({timeout:15000});
+    assert(!(await optional.evaluate(el=>el.open)),'optional institution/title should start collapsed');
+    assert(await p.locator('#external-record-type').isVisible()&&await p.locator('#external-record-date').isVisible()&&await p.locator('#external-record-source').isVisible(),'required clinical record fields must remain visible');
+    await p.evaluate(()=>window.scrollTo(0,0));
+    await p.screenshot({path:'qa-artifacts/screens/medical-record-compact-375.png',fullPage:false});
+    await optional.locator('summary').click();
+    assert(await p.locator('#external-record-institution').isVisible()&&await p.locator('#external-record-title').isVisible(),'optional clinical fields must be expandable');
+    await p.goto(base+'market',{waitUntil:'domcontentloaded'});
+    await p.locator('.market-item').first().waitFor({timeout:15000});
+    assert.equal(await p.locator('.market-item').count(),4,'show only four care items initially');
+    await p.locator('[data-market-show-all]').click();
+    assert((await p.locator('.market-item').count())>4,'remaining care items must stay accessible');
+    console.log('KIMSE_UX_JOURNEY_MEDICAL_MARKET=PASS required-fields→optional-details→4-items→all-items');
+  }finally{await c.close()}
 }
 
 (async()=>{
@@ -174,6 +207,7 @@ try{
 for(const d of states)for(const screen of unique)await run(browser,screen,d);
 await verifySeniorJourneys(browser);
 await verifyHealthScheduleJourneys(browser);
+await verifyMedicalMarketProgressive(browser);
 const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));

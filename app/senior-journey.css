@@ -558,3 +558,13 @@
 .high-contrast .screen-care-schedule .kimse-schedule-quick>button,.high-contrast .screen-care-schedule #schedule-date,.high-contrast .screen-care-schedule #schedule-time{border:3px solid #111;background:#fff;color:#111}
 .high-contrast .screen-care-schedule .kimse-schedule-quick>button[aria-pressed="true"]{background:#ffefae}
 @media(max-width:360px){.screen-care-schedule .kimse-schedule-quick{grid-template-columns:1fr}}
+
+/* Optional documentation belongs after the three essential medical-record inputs. */
+.screen-medical-record-add .kimse-medical-extras{margin:6px 0 12px;border:1.5px solid #cfdfd4;border-radius:18px;background:#f3faf5;overflow:visible}
+.screen-medical-record-add .kimse-medical-extras>summary{display:flex;align-items:center;min-height:68px;padding:14px 18px;color:#1c6349;font-weight:760;font-size:18px;line-height:1.45;cursor:pointer}
+.screen-medical-record-add .kimse-medical-extras[open]>summary{border-bottom:1px solid #d5e6dc}
+.screen-medical-record-add .kimse-medical-extras-content{display:flex;flex-direction:column;gap:16px;padding:16px}
+.screen-medical-record-add .kimse-medical-extras>summary:focus-visible{outline:3px solid #126cbe;outline-offset:4px}
+.high-contrast .screen-medical-record-add .kimse-medical-extras{border:3px solid #111;background:#fff;color:#111}
+.large-text .screen-medical-record-add .kimse-medical-extras>summary{font-size:21px}
+@media(prefers-reduced-motion:reduce){.screen-medical-record-add .kimse-medical-extras{transition:none!important}}
