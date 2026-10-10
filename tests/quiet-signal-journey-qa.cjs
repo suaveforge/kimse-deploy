@@ -49,8 +49,7 @@ async function run(browser,screen,mode,width){
  if(width===375&&mode!=='normal')await page.screenshot({path:'qa-artifacts/'+screen+'-375-'+mode+'.png',fullPage:true});
  if(screen==='onboarding-profile'){
   await page.locator('[data-profile-choice="male"]').click();
-  assert.equal(await page.locator('[data-profile-choice="male"]').getAttribute('aria-pressed'),'true');
-  await page.locator('#profile-wizard-next').click();
+  assert.equal(await page.locator('#profile-wizard-next').count(),0,'No double confirmation after one answer');
   assert((await page.locator('.kimse-journey-count').innerText()).includes('3'),'profile next failed');
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')));
   assert.equal(state.profile.sex,'male');
