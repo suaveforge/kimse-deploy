@@ -45,6 +45,12 @@
         <div class="alert alert-warning" role="note">
           <strong>임상·보안 경계:</strong> 화면에 표시하는 값은 모두 합성값입니다. 표시된 의료기관은 공개 안내 조사 대상이며 KIMSE 리포트 수신을 승인하지 않았습니다. 이 검증실은 실제 환자 데이터를 불러오거나 전송하지 않습니다.
         </div>
+        <nav class="d-flex flex-wrap gap-2 mb-3" aria-label="진료 정보 바로가기">
+          <a class="btn btn-outline-primary btn-sm" href="#previsitSummaryHeading">10초 요약</a>
+          <a class="btn btn-outline-primary btn-sm" href="#rawObservationsHeading">6개 신호·수집 품질</a>
+          <a class="btn btn-outline-primary btn-sm" href="#trendChart">날짜별 변화</a>
+          <a class="btn btn-outline-primary btn-sm" href="#hospitalRequirementsHeading">기관별 공개자료</a>
+        </nav>
         <!-- Existing upstream Tabler alert + card patterns: clinical first-10-seconds orientation (synthetic only). -->
         <section class="card mb-3" aria-labelledby="previsitSummaryHeading">
           <div class="card-header"><h2 class="card-title" id="previsitSummaryHeading">진료 전 10초 요약</h2><span class="ms-auto badge bg-azure-lt">합성 자료 · 의료기관 미승인</span></div>
@@ -54,6 +60,16 @@
               <span>전체 28일 최초 변화 <strong id="firstObservedSummary">—</strong> (질병 발병일 아님)</span>
               <span>전체 28일 대표 변화 <strong id="topDomainSummary">—</strong></span>
               <span>확인이 필요한 결손 <strong id="missingSummary">—</strong></span>
+            </div>
+            <div class="row g-3 mt-2" aria-label="진료 전 정보의 출처 구분">
+              <div class="col-md-6">
+                <div class="subheader">가족 관찰 · 사용자 보고</div>
+                <p id="summaryFamily" class="mb-0">가족 관찰 확인 중</p>
+              </div>
+              <div class="col-md-6">
+                <div class="subheader">의료진 공식 평가 · 별도 확인</div>
+                <p id="summaryProfessional" class="mb-0">전문평가 기록 확인 중</p>
+              </div>
             </div>
           </div>
         </section>
@@ -183,11 +199,12 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-                <h2 class="card-title">선택한 의료기관의 실제 공개 의뢰·진료 안내 항목</h2>
+                <h2 class="card-title" id="hospitalRequirementsHeading">선택한 의료기관의 실제 공개 의뢰·진료 안내 항목</h2>
                 <span class="ms-auto badge bg-yellow-lt">공식 공개자료 · 기관별 수신 미승인</span>
               </div>
               <div class="card-body">
                 <p class="text-secondary small" id="requirementsExplanation">국가 공통 후보를 선택했습니다. 공개기관을 선택하면 조사된 항목과 반드시 따로 준비할 서류·확인사항이 나옵니다.</p>
+                <p id="sourceTraceSummary" class="small text-secondary" role="status" aria-live="polite">기관별 원문 위치 연결을 준비 중입니다.</p>
                 <div class="list-group list-group-flush" id="hospitalRequirements" aria-live="polite" aria-label="병원 공식 원문과 KIMSE 관련 데이터·결손 비교"></div>
               </div>
             </div>

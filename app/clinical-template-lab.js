@@ -130,9 +130,11 @@
     const root=qs('hospitalRequirements'),message=qs('requirementsExplanation');
     root.replaceChildren();
     delete message.dataset.routingConflict;
+    const traceStatus=qs('sourceTraceSummary');
     const row=crosswalk.entries.find(item=>item.id===institutionId&&item.country===country);
     if(!row){
       message.textContent='국가 공통 표시 후보입니다. 공개 의료기관을 선택해야 그 기관의 조사된 원문 요건과 추가 확인자료를 볼 수 있습니다.';
+      traceStatus.textContent='기관 원문을 선택하지 않았습니다. 승인된 제출 양식으로 오인하지 마세요.';
       root.append(make('div','list-group-item text-secondary','병원 미선택 · 승인된 제출 프로파일 없음'));
       return;
     }
@@ -142,6 +144,10 @@
       message.textContent+=' 접수 경로 공식 원문 상충: 진료과 웹·PDF 안내의 실물 배송 방법이 서로 다르며, 병원 전체 안내는 진료과별 접수 경로를 대신하지 않습니다. 담당 의료기관 확인 전 KIMSE 환자자료 발송 금지.';
       message.dataset.routingConflict='unresolved';
     } else delete message.dataset.routingConflict;
+    const located=row.requirement_groups.filter(item=>Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(row.source_url)).length;
+    traceStatus.textContent='원문 위치: 공식 PDF 쪽수 연결 '+located+' / '+row.requirement_groups.length+'개 · 나머지 '+(row.requirement_groups.length-located)+'개는 공식 공개페이지 링크만 제공(해당 절·문장 위치 미매핑). 항목 단위 검증 완료를 뜻하지 않습니다.';
+    traceStatus.dataset.pdfPageMapped=String(located);
+    traceStatus.dataset.unlocated=String(row.requirement_groups.length-located);
     for(const [index,item] of row.requirement_groups.entries()){
       const isExternal=/EXTERNAL|AUTHORIZED|APPROVED_CHANNEL|PARTNER_APPROVAL|NOT_YET_SUPPORTED|INSTITUTION_REVIEW|UNIMPLEMENTED|PROFESSIONAL|CLINICIAN/.test(item.status);
       const box=make('div','list-group-item px-0 py-3');
@@ -150,8 +156,17 @@
       top.append(make('span','badge '+(isExternal?'bg-yellow-lt':'bg-azure-lt'),
         isExternal?'외부 확인·자료 필요':'관련 정보 후보 · 승인 전'));
       box.append(top);
-      if(item.source_page)box.append(make('div','small text-secondary mt-1','공식 양식 '+item.source_page+'쪽'));
+      const exactPdfPage=Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(row.source_url);
+      const trace=make('a','d-block small mt-1',exactPdfPage?
+        '기관 공식 PDF '+item.source_page+'쪽 열기 (부분별 원문 직접 대조)':
+        '기관 공식 공개페이지 열기 (해당 절·문장 위치 미매핑)');
+      trace.href=row.source_url+(exactPdfPage?'#page='+item.source_page:'');
+      trace.rel='noopener noreferrer';trace.target='_blank';
+      trace.dataset.sourceTrace=exactPdfPage?'PDF_PAGE_INDEXED':'OFFICIAL_URL_SECTION_UNLOCATED';
+      trace.dataset.requirementId=item.id;
+      box.append(trace);
       if(item.related_paths.length)box.append(make('div','small text-secondary mt-1','연관된 데이터 경로: '+item.related_paths.join(' · ')));
+      else box.append(make('div','small text-secondary mt-1','KIMSE 직접 대응 경로 없음 · 외부 문서/기관 별도 확인 필요'));
       if(item.limit)box.append(make('div','small mt-1',item.limit));
       root.append(box);
     }
@@ -199,10 +214,12 @@
     const f=(report.family_feedback||[])[0];
     family.append(make('div','fw-semibold','가족 관찰 · 합성 사용자 보고'));
     family.append(make('p','text-secondary mb-2',f?f.note:'가족 관찰 미수집'));
+    qs('summaryFamily').textContent=f?.note||'가족 관찰 미수집 · 가족 확인이 없는 상태';
     const professional=qs('professionalContext');
     professional.textContent=report.professional_outcomes?.length?
       '외부 전문평가 기록이 존재하지만 검증등급을 별도로 확인해야 합니다.':
       '전문검사/의료진 공식 평가 결과: 미수집 (정상 판정이 아님)';
+    qs('summaryProfessional').textContent=professional.textContent;
   }
   function focusMetric(index){
     const m=selectedSubset?.metrics?.[index];

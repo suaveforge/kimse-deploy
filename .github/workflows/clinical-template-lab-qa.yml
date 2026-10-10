@@ -35,6 +35,10 @@ jobs:
               await page.waitForFunction(()=>document.documentElement.dataset.clinicalTemplateReady!==undefined,{timeout:65000});
               assert.equal(await page.evaluate(()=>document.documentElement.dataset.clinicalTemplateReady),'yes','chart assets inaccessible');
               assert.equal((await page.locator('#metricCount').innerText()).trim(),'6개');
+              assert.match(await page.locator('#summaryFamily').innerText(),/./,'family provenance must be visible in 10-second top summary');
+              assert.match(await page.locator('#summaryProfessional').innerText(),/전문검사|외부 전문평가/,'medical results provenance must be stated without invented professional score');
+              for(const anchor of ['#previsitSummaryHeading','#rawObservationsHeading','#trendChart','#hospitalRequirementsHeading'])assert.equal(await page.locator('nav[aria-label="진료 정보 바로가기"] a[href="'+anchor+'"]').count(),1,'missing clinician navigation '+anchor);
+
               assert.equal(await page.locator('#fieldList .list-group-item').count(),12,'all 12 clinical candidate fields must be accessible');
               assert.match(await page.locator('#fieldCoverage').innerText(),/12 \/ 12개/,'all candidate fields must be disclosed');
               assert.match(await page.locator('#periodInterpretation').innerText(),/최근 28일.*전체 28일.*재산출값이 아닙니다/,'28-day canonical representative scope must be explicit');
@@ -103,6 +107,17 @@ jobs:
                 for(const inst of research.institutions){
                   await page.locator('#country').selectOption(inst.country);
                   await page.locator('#institution').selectOption(inst.id);
+                  const officialGroup=forms.entries.find(entry=>entry.id===inst.id);
+                  assert.ok(officialGroup,inst.id+' no canonical published source');
+                  assert.equal(await page.locator('#hospitalRequirements [data-source-trace]').count(),officialGroup.requirement_groups.length,inst.id+' official source item links missing');
+                  const actual=await page.locator('#hospitalRequirements [data-source-trace]').evaluateAll(links=>links.map(el=>({id:el.dataset.requirementId,trace:el.dataset.sourceTrace,href:el.getAttribute('href')})));
+                  const expected=officialGroup.requirement_groups.map(item=>{
+                    const pdf=Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(officialGroup.source_url);
+                    return {id:item.id,trace:pdf?'PDF_PAGE_INDEXED':'OFFICIAL_URL_SECTION_UNLOCATED',href:officialGroup.source_url+(pdf?'#page='+item.source_page:'')};
+                  });
+                  assert.deepEqual(actual,expected,inst.id+' source hyperlinks must not fabricate HTML anchors or omit PDF pages');
+                  assert.equal(Number(await page.locator('#sourceTraceSummary').getAttribute('data-pdf-page-mapped')),expected.filter(x=>x.trace==='PDF_PAGE_INDEXED').length);
+
                   for(const days of ['28','14','7']){
                     await page.locator('#period').selectOption(days);
                     assert.equal(await page.locator('#fieldList .list-group-item').count(),12,inst.id+' full field coverage');
