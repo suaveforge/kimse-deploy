@@ -57,7 +57,7 @@ try{
     requiresAccess:/계정 확인|로그인이 필요|불러오는 중|먼저 연결/.test(text.slice(0,180)),
     textExcerpt:text.slice(0,400)};
  }));
- if(display.mode==='normal'&&display.width===375&&priority.has(screen))await page.screenshot({path:'qa-artifacts/screens/'+slug(screen)+'-375.png',fullPage:true});
+ if(display.mode==='normal'&&display.width===375)await page.screenshot({path:'qa-artifacts/screens/'+slug(screen)+'-375.png',fullPage:true});
 }catch(e){result.error=String(e).slice(0,500)}
 result.unexpectedJsErrors=errors;
 report.push(result);
@@ -247,15 +247,22 @@ async function verifyRemainingSeniorP2(browser){
     await p.locator('[data-prof-date-offset="0"]').click();
     const today=await p.locator('#professional-date').inputValue();
     assert(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(today),'today selects a valid local ISO date');
+    const localToday=await p.evaluate(()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')});
+    assert.equal(today,localToday,'today shortcut reflects browser-local current date');
+    console.log('KIMSE_UX_PROFESSIONAL_DATE_TODAY='+today);
     assert.equal(await p.locator('[data-prof-date-offset="0"]').getAttribute('aria-pressed'),'true');
     await p.locator('[data-prof-date-offset="-1"]').click();
     const yesterday=await p.locator('#professional-date').inputValue();
     assert.notEqual(yesterday,today,'yesterday is distinct from today');
+    const localYesterday=await p.evaluate(()=>{const d=new Date();d.setDate(d.getDate()-1);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')});
+    assert.equal(yesterday,localYesterday,'yesterday shortcut reflects browser-local prior calendar day');
+    console.log('KIMSE_UX_PROFESSIONAL_DATE_YESTERDAY='+yesterday);
     assert.equal(await p.locator('[data-prof-date-offset="-1"]').getAttribute('aria-pressed'),'true');
     await p.locator('#professional-date').fill('2026-09-21');
     assert.equal(await p.locator('#professional-date').inputValue(),'2026-09-21','older dates can be set manually');
     assert.equal(await p.locator('[data-prof-date-offset="-1"]').getAttribute('aria-pressed'),'false','date shortcut selection clears after manual change');
     assert(await p.locator('button[type="submit"]').count()>=2,'both early and expanded optional save actions present');
+    assert(await p.locator('#professional-outcome-form').evaluate(form=>{const early=form.querySelector('[data-prof-quick-save]'),buttons=[...form.querySelectorAll('button[type="submit"]')];return buttons.length===2&&buttons.every(button=>button.form===form)&&early===buttons[0]}),'both save buttons submit the identical professional-outcome form');
     await p.evaluate(()=>window.scrollTo(0,0));
     await p.screenshot({path:'qa-artifacts/screens/professional-quick-save-375.png',fullPage:false});
     console.log('KIMSE_UX_JOURNEY_PROFESSIONAL_QUICK=PASS blank-date→today→yesterday→manual-date→early-save→optional-save');
