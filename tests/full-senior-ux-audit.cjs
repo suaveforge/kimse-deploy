@@ -35,6 +35,20 @@ try{
  await page.goto(base+screen,{waitUntil:'domcontentloaded',timeout:45000});
  await page.locator('main').waitFor({timeout:18000});
  await page.waitForTimeout(100);
+ if(display.mode==='normal'&&display.width===375&&screen==='brain-map'){
+   assert.equal(await page.locator('.brain-domain-tabs[role="group"]').count(),1,'brain map domains must be labeled as a selection group');
+   await page.locator('[data-brain-focus="attention"]').click();
+   assert.equal(await page.locator('[data-brain-focus="attention"]').getAttribute('aria-pressed'),'true','brain map active tab must be announced');
+   await page.locator('[data-brain-view="top"]').click();
+   assert.equal(await page.locator('[data-brain-view="top"]').getAttribute('aria-pressed'),'true','brain map view must announce selection');
+ }
+ if(display.mode==='normal'&&display.width===375&&screen==='brain-trends'){
+   assert.equal(await page.locator('.compact-range[role="group"]').count(),1,'time range must be labeled as a selection group');
+   await page.locator('[data-brain-range="month"]').click();
+   assert.equal(await page.locator('[data-brain-range="month"]').getAttribute('aria-pressed'),'true','month selection must be announced');
+   await page.locator('[data-brain-domain="language"]').click();
+   assert.equal(await page.locator('[data-brain-domain="language"]').getAttribute('aria-pressed'),'true','language selection must be announced');
+ }
  result=Object.assign(result,await page.evaluate(()=>{
    const main=document.querySelector('main'),text=(main?.innerText||'').replace(/\s+/g,' ').trim();
    const mainRect=main?.getBoundingClientRect();
@@ -158,7 +172,11 @@ async function verifyHealthScheduleJourneys(browser){
     assert.equal(await p.locator('#health-pressure-sys').inputValue(),'121','existing systolic value restored');
     assert.equal(await p.locator('#health-pressure-dia').inputValue(),'79','existing diastolic value restored');
     await p.goto(base+'care-schedule',{waitUntil:'domcontentloaded'});
+    const scheduleBox=await p.locator('#add-schedule').boundingBox();
+    assert(scheduleBox&&scheduleBox.y+scheduleBox.height<=810,'375x810 schedule save must fit in the first viewport');
+    assert.equal(await p.locator('[data-schedule-name="병원 동행"]').getAttribute('aria-pressed'),'false','schedule shortcut starts unselected');
     await p.locator('[data-schedule-name="병원 동행"]').click();
+    assert.equal(await p.locator('[data-schedule-name="병원 동행"]').getAttribute('aria-pressed'),'true','chosen schedule name must be announced');
     assert.equal(await p.locator('#schedule-title').inputValue(),'병원 동행');
     await p.locator('#schedule-date').fill('2026-11-16');
     await p.locator('#schedule-time').fill('10:30');

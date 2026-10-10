@@ -657,3 +657,25 @@
 .screen-professional-outcome>.page-desc{margin:0 0 8px}
 .screen-professional-outcome #professional-outcome-form{gap:10px}
 .screen-professional-outcome #professional-outcome-form>.field>small{font-size:15px;line-height:1.35}
+
+/* KIMSE senior follow-up 2026-10-10: preserve >=64px touch targets */
+@media (min-width:361px) and (max-width:600px){
+.screen-care-schedule .kimse-schedule-quick{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:4px 0 7px}
+.screen-care-schedule .kimse-schedule-quick>button{min-height:66px;padding:8px 3px;font-size:16px;line-height:1.25}
+}
+.screen-care-schedule .page-title{margin-bottom:6px}
+.screen-care-schedule .page-desc{margin-bottom:12px;line-height:1.4}
+.screen-care-schedule .section-title{margin:11px 0 8px}
+.screen-care-schedule .kimse-care-schedule-form{gap:12px}
+.screen-care-schedule #schedule-date,.screen-care-schedule #schedule-time{min-height:66px;padding-block:10px}
+.screen-care-schedule .kimse-schedule-quick>button[aria-pressed=true]{box-shadow:inset 0 0 0 1px #127965}
+.screen-clinical-context-event .page-title{font-size:clamp(25px,6vw,32px);line-height:1.26;margin:6px 0 9px}
+.screen-clinical-context-event .page-desc{font-size:17px;line-height:1.5;margin-bottom:13px}
+.screen-clinical-context-event #clinical-context-event-form{gap:13px}
+.screen-clinical-context-event #clinical-context-event-form>.field>label{font-size:18px;font-weight:760;line-height:1.5}
+.screen-consent .consent-row strong{font-size:19px;line-height:1.4}
+.screen-consent .consent-row small{font-size:16px;line-height:1.5;color:#425d54}
+.screen-consent .consent-row{padding:14px 13px}
+.screen-brain-map .brain-domain-tabs button:focus-visible,.screen-brain-map .brain-view-switch button:focus-visible,.screen-brain-trends .compact-range button:focus-visible,.screen-brain-trends .trend-domain-tabs button:focus-visible{outline:3px solid #1155cc;outline-offset:3px}
+.screen-brain-map .brain-domain-tabs button[aria-pressed=true],.screen-brain-map .brain-view-switch button[aria-pressed=true],.screen-brain-trends .compact-range button[aria-pressed=true],.screen-brain-trends .trend-domain-tabs button[aria-pressed=true]{font-weight:800}
+.high-contrast .screen-brain-map button[aria-pressed=true],.high-contrast .screen-brain-trends button[aria-pressed=true]{outline:2px solid #111;outline-offset:-2px}
