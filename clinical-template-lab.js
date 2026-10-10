@@ -63,6 +63,9 @@
     });
     if(profile.institution){
       const info=make('div','alert alert-warning small','이 기관은 공개 의뢰 안내 조사 대상일 뿐 KIMSE 전용 필드·전송 경로·접수 승인 상태가 아닙니다.');
+      const form=make('a','d-block mt-2 fw-semibold','해당 기관의 공식 공개 안내·의뢰양식 열기');
+      form.href=profile.institution.source;form.target='_blank';form.rel='noopener noreferrer';
+      info.append(form);
       sourceList.prepend(info);
     }
     return profile;
