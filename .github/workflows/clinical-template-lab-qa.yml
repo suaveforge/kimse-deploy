@@ -37,6 +37,9 @@ jobs:
               assert.equal((await page.locator('#metricCount').innerText()).trim(),'6개');
               assert.match(await page.locator('#handoffReason').innerText(),/합성 예시/,'referral reason missing');
               assert.equal(await page.locator('#rawMetricRows tr').count(),6,'6 synthetic source-backed rows required');
+              assert.equal(await page.locator('#rawMetricRows [data-source-code="native_step_counter_simulation"]').count(),1,'canonical source provenance attribute lost');
+              assert.doesNotMatch(await page.locator('#rawMetricRows').innerText(),/native_step_counter_simulation/,'internal source code exposed as medical UI');
+              assert.match(await page.locator('#rawMetricRows').innerText(),/가상 걸음수 센서/,'human-readable source missing');
               assert.match(await page.locator('#missingSummary').innerText(),/일상기능/,'missing clinical information must be explicit');
               assert.ok(await page.evaluate(()=>Boolean(window.echarts.getInstanceByDom(document.getElementById('trendChart')).getOption().toolbox?.[0]?.feature?.restore)),'official ECharts toolbox missing');
               const immutableRows=await page.locator('#rawMetricRows').innerText();
@@ -59,6 +62,9 @@ jobs:
               await page.locator('#institution').selectOption('JP-KYORIN-SUGINAMI-MEMORY');
               assert.equal(await page.locator('#hospitalRequirements > .list-group-item').count(),8,'JP 7 groups plus original source');
               assert.equal(await page.locator('#rawMetricRows').innerText(),immutableRows,'country must not alter canonical facts');
+              assert.equal(await page.locator('#fieldList [data-guard-code="SELF_AND_INFORMANT_SEPARATE"]').count(),1,'canonical guard code must remain traceable');
+              assert.doesNotMatch(await page.locator('#fieldList').innerText(),/SELF_AND_INFORMANT_SEPARATE/,'internal clinical guard exposed');
+              assert.match(await page.locator('#fieldList').innerText(),/본인과 가족이 보고한/,'clinical explanation is missing');
               await page.locator('#period').selectOption('7');
               assert.equal(await page.locator('#rawMetricRows tr').count(),6);
               assert.match(await page.locator('#rawMetricRows').innerText(),/7일/);
