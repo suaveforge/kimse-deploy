@@ -51,7 +51,7 @@
     '</div>';
   mount.insertBefore(root,mount.firstChild);
 
-  var state = { data:null, features:[], selection:null, cities:[], svg:null, map:null, zoom:null, path:null, projection:null, polygons:null, markLayer:null, width:1180, height:620 };
+  var state = { data:null, features:[], selection:null, cities:[], svg:null, map:null, zoom:null, path:null, projection:null, polygons:null, markLayer:null, width:1180, height:620, currentScale:1 };
   var label = document.getElementById('kimse-atlas-selected-name');
   var meta = document.getElementById('kimse-atlas-selected-meta');
   var list = document.getElementById('kimse-atlas-institutions');
@@ -145,8 +145,8 @@
       .attr('tabindex',0).attr('role','button').attr('aria-label',function(d){return d.city+' 연구기관 '+d.records.length+'곳'})
       .attr('transform',function(d){var p=state.projection([d.x,d.y]);return p?'translate('+p[0]+','+p[1]+')':'translate(-100,-100)'})
       .each(function(d){
-        var g=window.d3.select(this);g.append('circle').attr('r',d.records.length>1?11:7);
-        if(d.records.length>1)g.append('text').attr('dy',3.8).text(d.records.length);
+        var g=window.d3.select(this);g.append('circle').attr('r',(d.records.length>1?11:7)/Math.max(1,state.currentScale));
+        if(d.records.length>1)g.append('text').attr('dy',3.8/Math.max(1,state.currentScale)).style('font-size',(10/Math.max(1,state.currentScale))+'px').text(d.records.length);
       })
       .on('mouseenter',function(event,d){showTip(event,'<strong>'+safe(d.city)+'</strong><div>'+d.records.length+'개 기관 · 도시 중심 참고</div>')})
       .on('mousemove',function(event,d){showTip(event,'<strong>'+safe(d.city)+'</strong><div>'+d.records.length+'개 기관 · 도시 중심 참고</div>')})
@@ -212,7 +212,7 @@
       .on('click',function(ev,f){hideTip();setSelected(fromNumeric(f.id),true)})
       .on('keydown',function(ev,f){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();setSelected(fromNumeric(f.id),true)}});
     state.markLayer=gp.append('g').attr('class','kimse-atlas-pins');
-    state.zoom=d3.zoom().scaleExtent([1,11]).translateExtent([[-130,-100],[1310,720]]).on('zoom',function(e){gp.attr('transform',e.transform)});
+    state.zoom=d3.zoom().scaleExtent([1,11]).translateExtent([[-130,-100],[1310,720]]).on('zoom',function(e){state.currentScale=e.transform.k;gp.attr('transform',e.transform);state.markLayer.selectAll('g.kimse-atlas-pin circle').attr('r',function(x){return (x.records.length>1?11:7)/Math.max(1,e.transform.k)});state.markLayer.selectAll('g.kimse-atlas-pin text').attr('dy',3.8/Math.max(1,e.transform.k)).style('font-size',(10/Math.max(1,e.transform.k))+'px');});
     state.svg.call(state.zoom).on('dblclick.zoom',null);
     renderPicker();setSelected('826',false);
   }
