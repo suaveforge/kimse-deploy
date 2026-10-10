@@ -70,12 +70,12 @@ jobs:
               await page.locator('#institution').selectOption('GB-DORSET-MAS');
               assert.match(await page.locator('#selectionStatus').innerText(),/의료진 승인 없음/);
               assert.equal(await page.locator('#hospitalRequirements > .list-group-item').count(),20,'Dorset 19 official published form groups plus source footer');
-              assert.match(await page.locator('#hospitalRequirements').innerText(),/병원 수신 확인·의료진 승인 0건/);
+              assert.match(await page.locator('#hospitalRequirements').textContent(),/병원 수신 확인·의료진 승인 0건/);
               await page.locator('#country').selectOption('CA');
               await page.locator('#institution').selectOption('CA-UHN-MEMORY-FORM');
               assert.equal(await page.locator('#hospitalRequirements > .list-group-item').count(),12,'UHN 11 published form groups plus source footer');
-              assert.match(await page.locator('#hospitalRequirements').innerText(),/MoCA\/MMSE/);
-              assert.match(await page.locator('#hospitalRequirements').innerText(),/Neuroimaging CD/);
+              assert.match(await page.locator('#hospitalRequirements').textContent(),/MoCA\/MMSE/);
+              assert.match(await page.locator('#hospitalRequirements').textContent(),/Neuroimaging CD/);
               assert.match(await page.locator('#hospitalRequirements a').last().getAttribute('href'),/uhn\.ca\/UHNReferrals/);
               await page.locator('#country').selectOption('AU');
               await page.locator('#institution').selectOption('AU-NSW-HORNSBY-MEMORY');
@@ -93,7 +93,8 @@ jobs:
               assert.equal(await page.locator('#requirementsExplanation').getAttribute('data-routing-conflict'),'unresolved','Emory source transport conflict must remain visible');
               assert.match(await page.locator('#requirementsExplanation').innerText(),/환자자료 발송 금지/);
               assert.equal(await page.locator('#institutionEvidenceDisclosure').evaluate(el=>el.open),false,'provider evidence must start collapsed');
-              await page.locator('#institutionEvidenceSummary').click();
+              await page.locator('#institutionEvidenceSummary').focus();
+              await page.keyboard.press('Enter');
               assert.equal(await page.locator('#institutionEvidenceDisclosure').evaluate(el=>el.open),true,'provider detail must be keyboard/mouse accessible');
               assert.equal(await page.locator('#hospitalRequirements [data-source-trace]').count(),15,'Emory source group links remain reachable');
               assert.equal(await page.locator('#rawMetricRows').innerText(),immutableRows,'changing to Emory must not rewrite observed source facts');
