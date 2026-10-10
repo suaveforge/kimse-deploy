@@ -6,6 +6,8 @@ on:
       - 'clinical-template-lab.html'
       - 'clinical-template-lab.js'
       - 'clinical-template-lab.css'
+      - 'clinical-template-print.css'
+      - 'clinical-public-form-crosswalk.json'
       - 'clinical-template-demo-data.json'
       - 'clinical-profile-authorities.json'
       - '.github/workflows/clinical-pdf-parity-qa.yml'
