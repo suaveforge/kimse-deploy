@@ -19,6 +19,7 @@
     <div class="container-xl">
       <a class="navbar-brand navbar-brand-autodark" href="./index.html" aria-label="낌새 홈으로 이동">낌새 <span class="badge bg-azure-lt ms-2">Clinical Template Lab</span></a>
       <div class="navbar-nav flex-row order-md-last align-items-center">
+        <button id="clinicalPrintButton" type="button" class="btn btn-primary btn-sm" disabled aria-label="합성 의료진 리포트 A4 인쇄 또는 PDF 저장">A4 리포트 인쇄 · PDF</button>
         <a class="btn btn-outline-secondary btn-sm" href="./index.html">앱으로 돌아가기</a>
       </div>
     </div>
@@ -200,6 +201,55 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- Print-only Tabler tables and typographic components; same screen DOM text, fixed synthetic fixture. -->
+<div id="clinicalPrintable" class="clinical-print" aria-label="합성 의료진 리포트 인쇄용">
+  <section class="clinical-sheet" aria-label="A4 1쪽 진료 전 요약">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div><div class="text-secondary small">KIMSE · SYNTHETIC CLINICAL REVIEW</div><h1 class="h2 mb-1">진료 전 요약 · 합성 시연</h1><p class="text-secondary small mb-0">환자 정보가 아닌 가상 자료 · 의료기관의 공식 접수 서류 아님</p></div>
+      <span class="badge bg-yellow-lt">진단 아님 · 전자제출 불가</span>
+    </div>
+    <div class="card mb-3"><div class="card-body">
+      <div class="small text-secondary">상담 준비 목적</div>
+      <div id="printHandoffReason" class="fw-semibold mt-1"></div>
+      <div class="row g-2 mt-2">
+        <div class="col-4"><div class="text-secondary small">첫 변화 관찰일</div><div class="fw-semibold" id="printFirstObserved"></div></div>
+        <div class="col-8"><div class="text-secondary small">주요 개인 기준선 변화</div><div id="printTopDomains"></div></div>
+      </div>
+      <p class="small text-secondary mb-0 mt-2">관찰일은 발병일이 아닙니다. 변화폭은 치매 진단·중증도·발생확률 점수가 아닙니다.</p>
+    </div></div>
+    <div class="small text-secondary mb-2">표시 범위: <span id="printPeriod"></span> · 후보 근거: <span id="printProfile"></span></div>
+    <h2 class="h4 mb-2">생활·인지 신호 관찰값</h2>
+    <table class="table table-sm table-striped table-vcenter" aria-label="합성 환자 데이터 화면과 일치하는 기준선 표">
+      <thead><tr><th scope="col">영역</th><th scope="col">기준선</th><th scope="col">최근값</th><th scope="col">변화</th><th scope="col">수집일</th><th scope="col">출처</th></tr></thead>
+      <tbody id="printSummaryRows"></tbody>
+    </table>
+    <h2 class="h4 mt-3 mb-2">진료 전 추가 확인 정보</h2>
+    <p id="printMissing" class="mb-2"></p>
+    <div class="alert alert-info py-2 mb-2 small" id="printFamily"></div>
+    <p class="small mb-0" id="printProfessional"></p>
+    <p class="small text-secondary mt-3">선택 국가·병원에 대한 공개지침 조사는 <strong>참고자료</strong>입니다. 의뢰장·원검사·보호자 참여 등은 의료기관이 따로 확인해야 하며, KIMSE 의료진 승인 및 전자 수신 승인 0건입니다.</p>
+  </section>
+  <section class="clinical-sheet" aria-label="A4 상세 부록">
+    <div class="text-secondary small">KIMSE · SYNTHETIC CLINICAL REVIEW</div>
+    <h1 class="h2 mt-1 mb-2">부록 · 출처·결측·원문 안내</h1>
+    <p class="small text-secondary">별도 임상 판정 없이 동일한 합성 Canonical Dataset에서 파생된 수집 품질과 자료 경계입니다.</p>
+    <h2 class="h4 mt-3">원자료 수집 품질 및 출처</h2>
+    <table class="table table-sm table-striped">
+      <thead><tr><th scope="col">관찰 영역</th><th scope="col">측정 방식(합성)</th><th scope="col">기록일</th><th scope="col">미기록일</th><th scope="col">선택 기간</th></tr></thead>
+      <tbody id="printQualityRows"></tbody>
+    </table>
+    <h2 class="h4 mt-3">미수집·전문 평가 구분</h2>
+    <p id="printMissingDetail" class="small"></p>
+    <p id="printExternal" class="small"></p>
+    <h2 class="h4 mt-3">기관 공개자료와 실제 제출의 구분</h2>
+    <p id="printInstitution" class="small"></p>
+    <p class="small mb-1">공식 공개자료 출처 (방문 전 원문 직접 확인):</p>
+    <p id="printInstitutionUrl" class="small"></p>
+    <p id="printHospitalRequirements" class="small"></p>
+    <p class="small mt-3 text-secondary">기관 공개안내는 본 서비스가 승인받은 제출서식·검사결과·접수채널이 아닙니다. 실제 의료기관 제출·환자 식별·개인정보 제공은 승인과 적법한 동의 없이는 수행되지 않습니다.</p>
+  </section>
 </div>
 </body>
 </html>

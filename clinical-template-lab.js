@@ -205,6 +205,63 @@
     status(m.clinical_label+' · 선택한 합성 원자료 '+latest+' · 진단 결과 아님');
     qs('trendChart').scrollIntoView({behavior:'smooth',block:'center'});
   }
+
+  // The print summary duplicates only already-rendered screen text and rows.
+  // Never reinterpret a metric, substitute a missing result, or create a clinical assessment.
+  function renderPrintable(report,subset,registry,crosswalk){
+    if(report.demo_marker!=='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT'||report.subject?.care_subject_id!=='SYNTHETIC_NO_REAL_PATIENT_ID'){
+      throw Error('PRINT_REAL_PATIENT_FORBIDDEN');
+    }
+    const copy=(to,from)=>{qs(to).textContent=qs(from).textContent};
+    copy('printHandoffReason','handoffReason');
+    copy('printFirstObserved','firstObservedSummary');
+    copy('printTopDomains','topDomainSummary');
+    copy('printMissing','missingSummary');
+    copy('printFamily','informantContext');
+    copy('printProfessional','professionalContext');
+    qs('printPeriod').textContent=subset.days+'일 · '+subset.earliest+' ~ '+subset.latest+' (기준선과 최근 대표값은 원본 28일 자료 기준)';
+    const country=qs('country').value,institution=qs('institution').value;
+    qs('printProfile').textContent=registry.regions.find(x=>x.code===country)?.label||'GLOBAL';
+    const printRows=qs('printSummaryRows');printRows.replaceChildren();
+    const from=Array.from(qs('rawMetricRows').querySelectorAll('tr'));
+    for(const src of from){
+      const tr=make('tr');
+      Array.from(src.children).slice(0,6).forEach(cell=>tr.append(cell.cloneNode(true)));
+      printRows.append(tr);
+    }
+    const quality=qs('printQualityRows');quality.replaceChildren();
+    for(const m of subset.metrics){
+      const tr=make('tr');
+      const mode=SOURCE_MODE_TEXT[m.source_mode]||'출처 코드 확인 필요';
+      const qualityCells=[m.clinical_label,mode,String(m.series.length),String(Math.max(0,subset.days-m.series.length)),subset.earliest+' ~ '+subset.latest];
+      qualityCells.forEach((t,i)=>{const cell=make(i===0?'th':'td','',t);if(i===0)cell.scope='row';tr.append(cell)});
+      tr.dataset.metric=m.metric;
+      tr.dataset.originalSource=m.source_mode;
+      quality.append(tr);
+    }
+    const missing=(report.clinical_coverage||[]).filter(x=>['missing','not_collected'].includes(x.status));
+    qs('printMissingDetail').textContent=missing.length?
+      missing.map(x=>(COVERAGE_LABELS[x.id]||x.id)+' · 미수집 (정상·음성 판정 아님)').join(' / '):
+      '자료 수집 범위 안에서 확인된 미수집 항목 없음. 미검사항목의 정상 판정은 아님.';
+    qs('printExternal').textContent='외부 전문검사/병원 원자료: '+
+      (report.professional_outcomes?.length||report.external_clinical_records?.length?
+        '별도 출처와 검증등급 확인 필요':'미수집 (검사 정상 또는 음성이라는 뜻이 아님)');
+    const row=crosswalk.entries.find(x=>x.id===institution&&x.country===country);
+    qs('printInstitution').textContent=row?
+      '공개 조사 기관: '+(registry.institutions.find(x=>x.id===institution)?.name||institution)+' · 공식 공개자료의 항목/그룹 '+row.requirement_groups.length+'개 · KIMSE 승인된 제출 프로파일 아님':
+      '의료기관 미선택 · 국가 공통 공개지침 후보만 참고. 승인된 병원 제출 프로파일 없음';
+    const target=qs('printInstitutionUrl');target.replaceChildren();
+    if(row){const a=make('a','',row.source_url);a.href=row.source_url;target.append(a)}
+    else target.textContent='해당 의료기관 제출 원문 없음';
+    qs('printHospitalRequirements').textContent=row?
+      '공개자료 조사 항목 예시 (승인된 필수 제출 요건 아님): '+
+       row.requirement_groups.slice(0,3).map(x=>x.wording).join(' / ')+
+       (row.requirement_groups.length>3?' / 이외 '+(row.requirement_groups.length-3)+'개는 화면에서 원문과 대조':''):
+      '병원별 추가 서류는 미확인 · 의사 발행 의뢰장, 전문검사, 영상 등은 외부에서 준비';
+    qs('clinicalPrintButton').disabled=false;
+    document.documentElement.dataset.clinicalPrintReady='yes';
+  }
+
   function createChart(id,option){
     const el=qs(id);
     if(!el)return;
@@ -278,15 +335,17 @@
     if(report.demo_marker!=='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT')throw Error('REAL_PATIENT_DATA_FORBIDDEN_IN_PUBLIC_DEMO');
     if(report.subject?.care_subject_id!=='SYNTHETIC_NO_REAL_PATIENT_ID')throw Error('PATIENT_ID_FORBIDDEN');
     const {updateInstitutions}=listControls(registry);
-    const refreshProfile=()=>{renderProfile(registry,report);renderHospitalRequirements(crosswalk,qs('country').value,qs('institution').value)};
+    const refreshProfile=()=>{renderProfile(registry,report);renderHospitalRequirements(crosswalk,qs('country').value,qs('institution').value);if(selectedSubset)renderPrintable(report,selectedSubset,registry,crosswalk)};
     qs('country').addEventListener('change',()=>{updateInstitutions();refreshProfile()});
     qs('institution').addEventListener('change',refreshProfile);
     const refresh=()=>{
       const subset=getSelectedReport(report,Number(qs('period').value));
       renderMeta(report,subset);
       renderCharts(subset);
+      renderPrintable(report,subset,registry,crosswalk);
     };
     qs('period').addEventListener('change',refresh);
+    qs('clinicalPrintButton').addEventListener('click',()=>{if(document.documentElement.dataset.clinicalPrintReady==='yes')window.print()});
     qs('rawMetricRows').addEventListener('click',e=>{const button=e.target.closest('[data-clinical-focus]');if(button)focusMetric(Number(button.dataset.clinicalFocus))});
     refreshProfile();refresh();
     window.addEventListener('resize',()=>charts.forEach(c=>c.resize()),{passive:true});

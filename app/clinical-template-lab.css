@@ -16,3 +16,24 @@
   #fieldList,#sourceList {max-height:none}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* Print geometry only. Card/table typography and styling remain upstream Tabler;
+   no original chart, decorative infographic or recreated clinical score. */
+.clinical-print {display:none}
+@page {size:A4 portrait;margin:12mm}
+@media print {
+  body {background:#fff!important;color:#172536!important}
+  .page {display:none!important}
+  .clinical-print {display:block!important;font-size:9pt;line-height:1.4}
+  .clinical-sheet {max-width:186mm;break-after:page;page-break-after:always;break-inside:avoid}
+  .clinical-sheet:last-child {break-after:auto;page-break-after:auto}
+  .clinical-print .card {border:1px solid #d9e1e9;box-shadow:none!important}
+  .clinical-print .card-body {padding:10px}
+  .clinical-print .table {font-size:8pt;margin-bottom:8px;table-layout:auto;width:100%}
+  .clinical-print .table th,.clinical-print .table td {padding:5px 4px;vertical-align:top;overflow-wrap:anywhere}
+  .clinical-print .h2 {font-size:16pt}
+  .clinical-print .h4 {font-size:11pt}
+  .clinical-print p,.clinical-print tr,.clinical-print .card,.clinical-print .alert {break-inside:avoid}
+  .clinical-print .alert {padding:7px 9px!important}
+  .clinical-print a {color:inherit;text-decoration:none}
+}
