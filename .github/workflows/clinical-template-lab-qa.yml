@@ -35,6 +35,7 @@ jobs:
               await page.waitForFunction(()=>document.documentElement.dataset.clinicalTemplateReady!==undefined,{timeout:65000});
               assert.equal(await page.evaluate(()=>document.documentElement.dataset.clinicalTemplateReady),'yes','chart assets inaccessible');
               assert.equal((await page.locator('#metricCount').innerText()).trim(),'6개');
+              assert.match(await page.locator('#demoVersion').innerText(),/공개조사 11기관 · 91개 연구 그룹 · 승인 0건/,'release label must be derived from the live official research registry');
               assert.match(await page.locator('#handoffReason').innerText(),/합성 예시/,'referral reason missing');
               assert.equal(await page.locator('#rawMetricRows tr').count(),6,'6 synthetic source-backed rows required');
               assert.equal(await page.locator('#rawMetricRows [data-source-code="native_step_counter_simulation"]').count(),1,'canonical source provenance attribute lost');
