@@ -244,7 +244,7 @@ async function verifyRemainingSeniorP2(browser){
     }),'primary save appears before optional details');
     await p.locator('[data-prof-date-offset="0"]').click();
     const today=await p.locator('#professional-date').inputValue();
-    assert(/^\\d{4}-\\d{2}-\\d{2}$/.test(today),'today selects a valid local ISO date');
+    assert(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(today),'today selects a valid local ISO date');
     assert.equal(await p.locator('[data-prof-date-offset="0"]').getAttribute('aria-pressed'),'true');
     await p.locator('[data-prof-date-offset="-1"]').click();
     const yesterday=await p.locator('#professional-date').inputValue();
