@@ -47,7 +47,7 @@
           '<div class="kimse-atlas-institutions" id="kimse-atlas-institutions"><div class="kimse-atlas-empty">세계지도에서 국가를 선택하면 적합성 평가 대상과 근거가 표시됩니다.</div></div>' +
         '</aside>' +
       '</div>' +
-      '<div class="kimse-atlas-foot"><strong>상태 표시 기준</strong> · ‘검토 예정’과 ‘적합성 검토 중’은 낌새의 내부 후보 평가입니다. 자료요청 발송·접수 확인은 실제 기록 기준이며, 외부 기관의 승인·보증·제휴나 협의 착수를 뜻하지 않습니다. ISO 3166-1 기준 249개 국가·지역이 검토대상이며, 현재 기관이 등록된 곳은 24개 국가·지역입니다. 도시 핀은 기관 건물의 정확한 위치가 아닌 도시 중심 참고좌표입니다. 지도 경계는 Natural Earth 110m 기반으로 일부 소국가·영역은 확대 지도에 나타나지 않을 수 있습니다.</div>' +
+      '<div class="kimse-atlas-foot"><strong>상태·영향력 표시 기준</strong> · ‘검토 예정’과 ‘적합성 검토 중’은 낌새의 내부 후보 평가입니다. 자료요청 발송·접수 확인은 실제 기록 기준이며, 외부 기관의 승인·보증·제휴나 협의 착수를 뜻하지 않습니다. ISO 3166-1 기준 249개 국가·지역이 검토대상이며, 현재 기관이 등록된 곳은 24개 국가·지역입니다. 영향력 A/B/C는 기관 유형과 공개 연구·거래 근거를 토대로 한 낌새 내부 참고 분류이며 독립적 공식 순위가 아닙니다. 도시 핀은 기관 건물의 정확한 위치가 아닌 도시 중심 참고좌표입니다. 지도 경계는 Natural Earth 110m 기반으로 일부 소국가·영역은 확대 지도에 나타나지 않을 수 있습니다.</div>' +
     '</div>';
   mount.insertBefore(root,mount.firstChild);
 
@@ -130,7 +130,7 @@
       return '<article class="kimse-atlas-institution" id="kimse-atlas-inst-'+safe(x.id)+'"><h4>'+safe(x.name)+'</h4><div class="kimse-atlas-chiprow">'+
         '<span class="kimse-atlas-chip '+stageClass(x)+'">'+safe(x.stageLabel)+'</span>'+
         '<span class="kimse-atlas-chip">'+safe(x.sector)+'</span>'+
-        '<span class="kimse-atlas-chip">'+safe(x.authority)+'</span></div>'+place+desc+source+'</article>';
+        '<span class="kimse-atlas-chip tier-'+safe(norm(x.authorityTier))+'" title="낌새 내부 평가용 영향력 분류 · 외부 공식 순위가 아닙니다">영향력 '+safe(x.authorityTier)+' · '+safe(x.authorityTierDescription)+'</span></div>'+place+desc+source+'</article>';
     }).join('');
   }
   function renderPins() {
