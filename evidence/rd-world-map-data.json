@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-10.map.2",
+  "schemaVersion": "2026-10-10.map.3",
   "asOf": "2026-10-10",
   "displayPolicy": "Institution locations are city-centre reference points only, not building addresses; unlocated institutions remain in the country list. No affiliation or confirmed business cooperation is implied.",
   "mapSource": "Natural Earth 110m geography via world-atlas topojson",
@@ -29,7 +29,9 @@
         -3.17,
         56.2
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "cornwall_council",
@@ -49,7 +51,9 @@
         -5.05,
         50.26
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "darlington_borough_council",
@@ -69,7 +73,9 @@
         -1.55,
         54.52
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "manchester_city_council",
@@ -89,7 +95,9 @@
         -2.24,
         53.48
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "east_sussex_county_council",
@@ -106,7 +114,9 @@
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "hull_city_council",
@@ -126,7 +136,9 @@
         -0.34,
         53.75
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "blackburn_with_darwen_borough_council",
@@ -143,7 +155,9 @@
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "oxfordshire_county_council",
@@ -160,7 +174,9 @@
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "staffordshire_county_council",
@@ -177,7 +193,9 @@
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "wokingham_borough_council",
@@ -197,7 +215,9 @@
         -0.84,
         51.41
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "stoke_on_trent_city_council",
@@ -217,7 +237,9 @@
         -2.18,
         53
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "southampton_city_council",
@@ -237,7 +259,9 @@
         -1.4,
         50.91
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "shropshire_council",
@@ -254,7 +278,9 @@
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "portsmouth_city_council",
@@ -274,7 +300,9 @@
         -1.09,
         50.8
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "hackney_council",
@@ -291,7 +319,9 @@
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "warrington_borough_council",
@@ -311,7 +341,9 @@
         -2.59,
         53.39
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "north_lincolnshire_council",
@@ -328,7 +360,9 @@
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "south_tyneside_council",
@@ -345,7 +379,9 @@
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "leicestershire_county_council",
@@ -362,7 +398,9 @@
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "sefton_council",
@@ -379,7 +417,9 @@
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "westminster_city_council",
@@ -399,7 +439,9 @@
         -0.13,
         51.51
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "hillingdon_council",
@@ -416,7 +458,9 @@
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "kensington_and_chelsea_council",
@@ -433,7 +477,9 @@
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "southwark_council",
@@ -453,7 +499,9 @@
         -0.09,
         51.5
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "leeds_city_council",
@@ -473,7 +521,9 @@
         -1.55,
         53.8
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "newham_council",
@@ -490,7 +540,9 @@
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "nottinghamshire_county_council",
@@ -507,7 +559,9 @@
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "daejeon_jung_gu",
@@ -527,7 +581,9 @@
         127.38,
         36.35
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "yesan_county_public_health_center",
@@ -547,7 +603,9 @@
         126.84,
         36.68
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "yecheon_county_public_health_center",
@@ -567,7 +625,9 @@
         128.46,
         36.65
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "geumcheon_gu_seoul",
@@ -587,7 +647,9 @@
         126.9,
         37.46
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "gunsan_city_dementia_safety_center",
@@ -607,7 +669,9 @@
         126.74,
         35.97
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "sancheong_county_health_medical_center",
@@ -627,7 +691,9 @@
         127.87,
         35.42
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "dongducheon_city_dementia_safety_center",
@@ -647,7 +713,9 @@
         127.06,
         37.9
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "seoul_metropolitan_government",
@@ -667,7 +735,9 @@
         126.98,
         37.57
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "just_checking_ltd",
@@ -684,7 +754,9 @@
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "B",
+      "authorityTierDescription": "전문 연구·데이터"
     },
     {
       "id": "neurophet",
@@ -701,7 +773,9 @@
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "nvp_healthcare",
@@ -718,7 +792,9 @@
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "B",
+      "authorityTierDescription": "전문 연구·데이터"
     },
     {
       "id": "cambridge_cognition",
@@ -735,7 +811,9 @@
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "cogstate",
@@ -755,7 +833,9 @@
         144.96,
         -37.81
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "ixico",
@@ -772,7 +852,9 @@
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "akrivia_health",
@@ -789,7 +871,9 @@
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "certara",
@@ -806,7 +890,9 @@
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "global_alzheimer_s_platform_foundation",
@@ -823,7 +909,9 @@
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "B",
+      "authorityTierDescription": "전문 연구·데이터"
     },
     {
       "id": "university_of_edinburgh_epad_consortium",
@@ -843,7 +931,9 @@
         -3.19,
         55.95
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "B",
+      "authorityTierDescription": "전문 연구·데이터"
     },
     {
       "id": "wrexham_county_borough_council",
@@ -863,7 +953,9 @@
         -2.99,
         53.05
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "middlesbrough_council",
@@ -883,7 +975,9 @@
         -1.23,
         54.58
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "flintshire_county_council",
@@ -900,7 +994,9 @@
       "sourceScope": "Historic official dementia/passive monitoring reference; confirm responsible authority and recoverable records",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "rhondda_cynon_taf_county_borough_council",
@@ -917,7 +1013,9 @@
       "sourceScope": "Historic official dementia/passive monitoring reference; confirm responsible authority and recoverable records",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "coventry_city_council",
@@ -937,7 +1035,9 @@
         -1.51,
         52.41
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "cambridgeshire_county_council",
@@ -957,7 +1057,9 @@
         0.12,
         52.2
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "walsall_council",
@@ -977,7 +1079,9 @@
         -1.98,
         52.59
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "C",
+      "authorityTierDescription": "지역 공공·돌봄"
     },
     {
       "id": "kbase_research_group_snu",
@@ -997,7 +1101,9 @@
         126.95,
         37.46
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "university_of_tokyo_j_trc",
@@ -1017,7 +1123,9 @@
         139.76,
         35.71
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "eisai_co_ltd",
@@ -1037,7 +1145,9 @@
         139.76,
         35.68
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "adni_initiative",
@@ -1054,7 +1164,9 @@
       "sourceScope": null,
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "ccna_compass_nd",
@@ -1071,7 +1183,9 @@
       "sourceScope": null,
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "aibl_study_australia",
@@ -1091,7 +1205,9 @@
         144.96,
         -37.81
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "actinogen_medical",
@@ -1111,7 +1227,9 @@
         151.21,
         -33.87
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "vivoryon_therapeutics",
@@ -1128,7 +1246,9 @@
       "sourceScope": null,
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "eli_lilly_and_company",
@@ -1148,7 +1268,9 @@
         -86.16,
         39.77
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "biogen_inc",
@@ -1168,7 +1290,9 @@
         -71.11,
         42.37
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "merck_and_co_msd",
@@ -1188,7 +1312,9 @@
         -74.28,
         40.61
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "evidation_health",
@@ -1208,7 +1334,9 @@
         -122.33,
         37.56
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "iqvia_real_world_solutions",
@@ -1228,7 +1356,9 @@
         -78.9,
         35.99
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "johnson_and_johnson_innovative_medicine",
@@ -1248,7 +1378,9 @@
         -74.45,
         40.49
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "linus_health_inc",
@@ -1265,7 +1397,9 @@
       "sourceScope": "Named by GAP as Bio-Hermes-002 technology/study partner, not proven buyer of external cohorts.",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "shionogi_and_co",
@@ -1285,7 +1419,9 @@
         135.5,
         34.69
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "ncgg_japan",
@@ -1305,7 +1441,9 @@
         136.95,
         35.01
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "B",
+      "authorityTierDescription": "전문 연구·데이터"
     },
     {
       "id": "fujirebio_holdings",
@@ -1325,7 +1463,9 @@
         139.76,
         35.68
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "national_institute_of_health_korea_bridge",
@@ -1342,7 +1482,9 @@
       "sourceScope": "KDCA BRIDGE programme operates early-onset/late-onset dementia and community high-risk cohorts with standardized clinical and imaging data; not a direct KIMSE customer.",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "kdrc_dementia_research_program",
@@ -1362,7 +1504,9 @@
         126.98,
         37.57
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "dzne_germany",
@@ -1382,7 +1526,9 @@
         7.1,
         50.74
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "ki_elements_gmbh",
@@ -1399,7 +1545,9 @@
       "sourceScope": "Lists PROSPECT-AD with DZNE and ReTain with J&J among digital speech cognition assessment research; no KIMSE relation.",
       "city": null,
       "cityCoordinate": null,
-      "positionAccuracy": null
+      "positionAccuracy": null,
+      "authorityTier": "B",
+      "authorityTierDescription": "전문 연구·데이터"
     },
     {
       "id": "amsterdam_umc_dementia_cohort",
@@ -1419,7 +1567,9 @@
         4.9,
         52.37
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "roche_holding",
@@ -1439,7 +1589,9 @@
         7.59,
         47.56
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "sanofi",
@@ -1459,7 +1611,9 @@
         2.35,
         48.86
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "unsw_cheba_mas",
@@ -1479,7 +1633,9 @@
         151.23,
         -33.92
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "B",
+      "authorityTierDescription": "전문 연구·데이터"
     },
     {
       "id": "sweden_lund_biofinder",
@@ -1499,7 +1655,9 @@
         13.19,
         55.7
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "spain_bbrc_alfa10",
@@ -1519,7 +1677,9 @@
         2.17,
         41.39
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "finland_finger_uef",
@@ -1539,7 +1699,9 @@
         29.76,
         62.6
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "ireland_tilda_tcd",
@@ -1559,7 +1721,9 @@
         -6.26,
         53.34
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "india_lasi_dad",
@@ -1579,7 +1743,9 @@
         77.21,
         28.61
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "italy_interceptor_irccs",
@@ -1599,7 +1765,9 @@
         12.45,
         41.9
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "singapore_nni_dementia",
@@ -1619,7 +1787,9 @@
         103.85,
         1.3
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "taiwan_twadni",
@@ -1639,7 +1809,9 @@
         121.3,
         25.01
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "denmark_ddrc",
@@ -1659,7 +1831,9 @@
         12.57,
         55.68
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "norway_ntnu_hunt",
@@ -1679,7 +1853,9 @@
         10.4,
         63.43
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "brazil_fiocruz_elsi",
@@ -1699,7 +1875,9 @@
         -43.94,
         -19.92
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "mexico_mhas_mexcog",
@@ -1719,7 +1897,9 @@
         -99.13,
         19.43
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "south_africa_wits_haalsi",
@@ -1739,7 +1919,9 @@
         28.03,
         -26.19
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     },
     {
       "id": "new_zealand_auckland_dprc",
@@ -1759,7 +1941,9 @@
         174.77,
         -36.85
       ],
-      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING"
+      "positionAccuracy": "CITY_CENTER_REFERENCE_NOT_BUILDING",
+      "authorityTier": "A",
+      "authorityTierDescription": "국제 산업·연구 코호트"
     }
   ],
   "iso31661Master": [
@@ -2762,5 +2946,6 @@
   ],
   "isoMasterCount": 249,
   "untouchedCountryAreaCount": 225,
-  "masterPolicy": "ISO 3166-1 249 official country/territory codes are planned-screening master only, not all researched. Institution records currently cover 24 geographically assigned codes."
+  "masterPolicy": "ISO 3166-1 249 official country/territory codes are planned-screening master only, not all researched. Institution records currently cover 24 geographically assigned codes.",
+  "authorityScale": "KIMSE internal contextual research-influence band A/B/C, determined from published institutional type and research evidence only. Not an independent ranking, endorsement, scientific validity grade, or partnership validation."
 }
