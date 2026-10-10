@@ -4,6 +4,10 @@ on:
     branches: [main]
     paths:
       - 'tests/full-senior-ux-audit.cjs'
+      - 'app.js'
+      - 'app/app.js'
+      - 'index.html'
+      - 'app/index.html'
       - '.github/workflows/full-senior-ux-audit.yml'
   workflow_dispatch:
 permissions:

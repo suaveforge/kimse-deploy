@@ -325,7 +325,7 @@ function trendSeriesSvg(key=S.brainTrendDomain){
 }
 
 const MIN_VOICE_SECONDS=30;
-let voiceRecorder=null,voiceStartedAt=0,voiceChunks=[],voiceStream=null,voiceTask=-1;
+let voiceRecorder=null,voiceStartedAt=0,voiceChunks=[],voiceStream=null,voiceTask=-1,voiceSaving=false;
 function openVoiceDb(){
   return new Promise((resolve,reject)=>{
     if(!('indexedDB' in window)){resolve(null);return}
@@ -441,25 +441,66 @@ async function analyzeVoiceBlob(blob){
 }
 
 async function startVoiceRecording(index){
-  if(!navigator.mediaDevices?.getUserMedia||!('MediaRecorder'in window)){S.permissions.microphone='unsupported';save();feedback('이 기기에서는 브라우저 음성 녹음을 사용할 수 없습니다.','warning');render();return}
+  if(voiceRecorder||voiceSaving)return;
+  if(!navigator.mediaDevices?.getUserMedia||!('MediaRecorder'in window)){
+    S.permissions.microphone='unsupported';save();
+    feedback('이 기기에서는 브라우저 음성 녹음을 사용할 수 없습니다.','warning');render();return;
+  }
+  let stream=null;
   try{
-    voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
-    voiceChunks=[];voiceTask=index;voiceStartedAt=Date.now();voiceRecorder=new MediaRecorder(voiceStream);
-    voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data)};
-    voiceRecorder.onstop=async()=>{
-      const blob=new Blob(voiceChunks,{type:voiceRecorder?.mimeType||'audio/webm'}),id='voice-'+Date.now(),durationSec=Math.floor((Date.now()-voiceStartedAt)/1000);
-      // Never persist a clipped or empty sample as a completed baseline.
-      if(durationSec<MIN_VOICE_SECONDS||!blob.size){
-        voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;voiceTask=-1;
-        feedback('녹음이 너무 짧거나 소리가 저장되지 않았어요. 30초 이상 다시 녹음해주세요.','warning');render();return;
-      }
-      const stored=await persistVoiceBlob(id,blob),features=await analyzeVoiceBlob(blob);
-      S.permissions.microphone='granted';
-      S.initial.voiceSamples[index]={id,prompt:VOICE_PROMPTS[index],durationSec,size:blob.size,capturedAt:new Date().toISOString(),storedLocal:stored,features};
-      voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;voiceTask=-1;save();feedback((index+1)+'번째 음성 샘플을 저장했습니다.','success');render();
+    stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    if(voiceRecorder||voiceSaving){stream.getTracks().forEach(t=>t.stop());return}
+    const recorder=new MediaRecorder(stream),chunks=[];
+    let failed=false,interrupted=false,recordingStarted=0;
+    const release=()=>{
+      stream.getTracks().forEach(t=>{try{t.stop()}catch{}});
+      if(voiceStream===stream)voiceStream=null;
+      if(voiceRecorder===recorder){voiceRecorder=null;voiceTask=-1}
     };
-    voiceRecorder.start();S.permissions.microphone='granted';save();render();feedback((index+1)+'번째 음성 녹음을 시작합니다.');
-  }catch{S.permissions.microphone='denied';save();feedback('마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요.','warning');render()}
+    recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
+    recorder.onerror=()=>{
+      failed=true;
+      if(recorder.state!=='inactive'){try{recorder.stop()}catch{release();feedback('녹음 장치에 문제가 생겼어요. 다시 녹음해주세요.','warning');render()}}
+    };
+    recorder.onstop=async()=>{
+      const durationSec=Math.floor((Date.now()-recordingStarted)/1000);
+      const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
+      release();
+      if(failed||interrupted||durationSec<MIN_VOICE_SECONDS||!blob.size){
+        feedback(failed||interrupted?'녹음이 중단되었어요. 마이크를 확인하고 다시 녹음해주세요.':'녹음이 너무 짧거나 소리가 저장되지 않았어요. 30초 이상 다시 녹음해주세요.','warning');
+        render();return;
+      }
+      voiceSaving=true;render();
+      try{
+        const id='voice-'+Date.now();
+        const stored=await persistVoiceBlob(id,blob);
+        if(!stored){
+          feedback('기기에 녹음 파일을 저장하지 못했어요. 저장 공간이나 브라우저 설정을 확인하고 다시 시도해주세요.','warning');
+          return;
+        }
+        const features=await analyzeVoiceBlob(blob);
+        S.initial.voiceSamples[index]={id,prompt:VOICE_PROMPTS[index],durationSec,size:blob.size,capturedAt:new Date().toISOString(),storedLocal:true,features};
+        save();feedback((index+1)+'번째 음성 샘플을 저장했습니다.','success');
+      }catch{
+        feedback('녹음 결과를 처리하지 못했어요. 다시 시도해주세요.','warning');
+      }finally{voiceSaving=false;render()}
+    };
+    stream.getTracks().forEach(track=>track.addEventListener('ended',()=>{
+      if(recorder.state==='recording'){interrupted=true;try{recorder.stop()}catch{release();render()}}
+    }));
+    voiceStream=stream;voiceRecorder=recorder;voiceTask=index;
+    recorder.start();
+    recordingStarted=Date.now();voiceStartedAt=recordingStarted;voiceChunks=chunks;
+    S.permissions.microphone='granted';save();render();
+    feedback((index+1)+'번째 음성 녹음을 시작합니다.');
+  }catch(err){
+    stream?.getTracks().forEach(t=>t.stop());
+    voiceStream=null;voiceRecorder=null;voiceTask=-1;
+    const denied=['NotAllowedError','PermissionDeniedError','SecurityError'].includes(err?.name);
+    S.permissions.microphone=denied?'denied':'unknown';save();
+    feedback(denied?'마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요.':err?.name==='NotFoundError'?'연결된 마이크를 찾지 못했어요. 마이크 연결을 확인해주세요.':'녹음을 시작하지 못했어요. 기기 상태를 확인하고 다시 시도해주세요.','warning');
+    render();
+  }
 }
 function stopVoiceRecording(){
   if(!voiceRecorder||voiceRecorder.state!=='recording')return;
@@ -469,7 +510,9 @@ function stopVoiceRecording(){
     feedback('30초 이상 이야기해주세요. '+left+'초 더 녹음하면 마칠 수 있어요.','warning');
     return;
   }
-  voiceRecorder.stop();
+  try{voiceRecorder.stop()}catch{
+    feedback('녹음을 마치지 못했어요. 다시 시도해주세요.','warning');
+  }
 }
 async function requestSelectedPermissions(){
   const waits=[];
@@ -1596,7 +1639,7 @@ const PROFILE_WIZARD_STEPS=[
   {key:'living',title:'지금 누구와 살고 계세요?',options:[['alone','혼자 살아요'],['partner_family','배우자 또는 가족과 살아요'],['other','기타']]},
   {key:'socialSupport',title:'어려울 때 의지할 사람이 있나요?',hint:'도움이 필요할 때와 이야기를 나누고 싶을 때를 생각해주세요.',options:[['both','도와줄 사람도, 이야기할 사람도 있어요'],['one','둘 중 한쪽만 있어요'],['none','둘 다 거의 없어요']]},
   {key:'socialActivity',title:'모임이나 사회활동에 얼마나 참여하세요?',hint:'친목모임, 동호회, 종교·지역 활동 등을 생각해주세요.',options:[['weekly','주 1회 이상'],['monthly','월 1~3회'],['rare','드물게'],['never','거의 참여하지 않아요']]},
-  {key:'sleepHours',type:'sleep',title:'평소 하루에 몇 시간 주무세요?',hint:'낮잠을 제외한 평균 수면시간을 적어주세요.'},
+  {key:'sleepHours',type:'sleep',title:'평소 하루에 몇 시간 주무세요?',hint:'낮잠을 제외한 평소 수면시간을 골라주세요.'},
   {key:'sleepDisturbance',title:'잠을 이루기 어려운 날이 얼마나 자주 있나요?',hint:'잠들기 어렵거나, 자주 깨거나, 너무 일찍 깨는 경우예요.',options:[['rare','주 1회 이하'],['sometimes','주 2~3회'],['frequent','주 4회 이상']]},
   {key:'hearing',title:'대화할 때 듣기 불편한가요?',options:[['no','거의 불편하지 않아요'],['some','가끔 불편해요'],['yes','자주 불편해요']]},
   {key:'subjectiveChange',title:'최근 기억하거나 생각하는 능력이 계속 나빠졌다고 느끼세요?',options:[['PRESENT','그렇게 느껴요'],['ABSENT','그렇지 않아요'],['UNKNOWN','잘 모르겠어요']]},
@@ -1675,20 +1718,30 @@ function advanceProfileWizard(){
  S.onboarding.profileDone=true;S.onboarding.profileStep=0;S.initial.step=0;save();
  feedback('기본정보를 저장했어요.','success');go('initial-check');return true;
 }
-const SLEEP_QUICK_OPTIONS=[
- '7시간','8시간','6시간','7시간 30분','6시간 30분','8시간 30분',
- '5시간','9시간','4시간','5시간 30분','9시간 30분','10시간'
-];
+// Keep legacy quick values for the separate health diary; profile uses hour/minute picker.
+const SLEEP_QUICK_OPTIONS=['7시간','8시간','6시간','7시간 30분','6시간 30분','8시간 30분','5시간','9시간','4시간','5시간 30분','9시간 30분','10시간'];
+// Two large-button selections, no keyboard or redundant Next. Saves existing '7시간 30분' schema.
+function existingSleepParts(value){
+  const m=/^(\\d{1,2})시간(?:\\s*(\\d{1,2})분)?$/.exec(String(value||'').trim());
+  if(!m)return null;
+  const hour=Number(m[1]),minute=Number(m[2]||0);
+  return hour>=0&&hour<=16&&minute>=0&&minute<60?{hour,minute}:null;
+}
 function sleepQuickMarkup(current){
- const other=!!S.onboarding.sleepCustom||(!!current&&!SLEEP_QUICK_OPTIONS.includes(current));
- return '<div class="kimse-sleep-picker" aria-label="평소 수면시간 선택">'+
-   '<div class="kimse-sleep-options">'+SLEEP_QUICK_OPTIONS.map(v=>
-     '<button type="button" class="kimse-sleep-option" data-sleep-choice="'+esc(v)+'" aria-pressed="'+String(current===v)+'">'+esc(v)+'</button>'
-   ).join('')+'</div>'+
-   '<button type="button" class="kimse-sleep-other" data-sleep-other>다른 시간 직접 적기</button>'+
-   (other?'<div class="kimse-wizard-field kimse-sleep-other-input"><label for="profile-wizard-input">직접 입력</label>'+
-      '<div class="kimse-wizard-input-wrap"><input id="profile-wizard-input" type="text" inputmode="decimal" autocomplete="off" maxlength="40" value="'+esc(current)+'" placeholder="예: 3시간 30분" aria-describedby="profile-wizard-hint"></div></div>':'')+
- '</div>';
+  const parsed=existingSleepParts(current);
+  const selectedHour=Number.isInteger(S.onboarding.sleepPickHour)?S.onboarding.sleepPickHour:parsed?.hour;
+  const minutePhase=S.onboarding.sleepPickPhase==='minute'&&Number.isInteger(selectedHour);
+  const hours=Array.from({length:17},(_,i)=>i),minutes=Array.from({length:12},(_,i)=>i*5);
+  const buttons=minutePhase?
+    minutes.map(v=>'<button type="button" class="kimse-sleep-option" data-sleep-minute="'+v+'" aria-pressed="'+String(parsed?.hour===selectedHour&&parsed?.minute===v)+'">'+v+'분</button>').join(''):
+    hours.map(v=>'<button type="button" class="kimse-sleep-option" data-sleep-hour="'+v+'" aria-pressed="'+String(parsed?.hour===v)+'">'+v+'시간</button>').join('');
+  return '<div class="kimse-sleep-picker" aria-label="평소 수면시간 선택">'+
+    (current?'<p class="kimse-sleep-current">현재 기록: <strong>'+esc(current)+'</strong></p>':'')+
+    '<p class="kimse-sleep-instruction">'+(minutePhase?selectedHour+'시간을 선택했어요. 분을 골라주세요.':'먼저 하루 수면시간의 시간을 골라주세요.')+'</p>'+
+    '<div class="kimse-sleep-options '+(minutePhase?'kimse-sleep-minute-options':'kimse-sleep-hour-options')+'" role="group" aria-label="'+(minutePhase?'분 선택':'시간 선택')+'">'+
+    buttons+'</div>'+
+    (minutePhase?'<button type="button" class="kimse-sleep-change-hour" data-sleep-change-hour>← 시간 다시 고르기</button>':'')+
+    '</div>';
 }
 page['onboarding-profile']=()=>{
  const i=profileWizardStepIndex(),step=PROFILE_WIZARD_STEPS[i],current=String(S.profile[step.key]??''),last=i===PROFILE_WIZARD_STEPS.length-1;
@@ -1705,7 +1758,7 @@ page['onboarding-profile']=()=>{
  const title=birth?(phase==='decade'?'태어난 연대를 골라주세요':decade+'년대, 몇 년생이세요?'):step.title;
  const hint=birth?(phase==='decade'?'':'연도를 누르면 바로 다음 질문으로 넘어가요.'):step.hint;
  const showPrev=i>0||birth&&phase==='year';
- const autoChoice=!!step.options||(step.type==='sleep'&&!S.onboarding.sleepCustom&&(!current||SLEEP_QUICK_OPTIONS.includes(current)));
+ const autoChoice=!!step.options||step.type==='sleep';
  const html='<section class="kimse-profile-wizard kimse-journey" aria-label="기본정보 입력">'+
    journeyTop('나를 알아가는 첫 단계',i+1,PROFILE_WIZARD_STEPS.length,'기본정보')+
    '<div class="kimse-journey-prompt"><h1 class="kimse-wizard-title">'+esc(title)+'</h1>'+
@@ -1782,10 +1835,10 @@ page['initial-check']=()=>{
 const voiceJourneyStep=()=>Math.min(2,Math.max(0,Math.trunc(Number(S.initial.voiceStep)||0)));
 page['voice-check']=()=>{
   const step=voiceJourneyStep(),done=S.initial.voiceSamples.filter(x=>Number(x?.durationSec)>=MIN_VOICE_SECONDS).length,sample=Number(S.initial.voiceSamples[step]?.durationSec)>=MIN_VOICE_SECONDS?S.initial.voiceSamples[step]:null;
-  const active=!!voiceRecorder&&voiceTask===step,recording=!!voiceRecorder;
+  const active=!!voiceRecorder&&voiceTask===step,recording=!!voiceRecorder||voiceSaving;
   const taskName=['최근 이야기','기억에 남는 일','동물 이름 말하기'][step];
   const intro='<div class="kimse-voice-task-label">말하기 '+(step+1)+' · '+taskName+'</div>';
-  const state=active?'<div class="kimse-voice-state is-recording" role="status"><span class="kimse-voice-pulse" aria-hidden="true"></span>녹음 중이에요. 편하게 말씀해주세요.</div>':
+  const state=voiceSaving?'<div class="kimse-voice-state" role="status">녹음을 안전하게 저장하고 있어요.</div>':active?'<div class="kimse-voice-state is-recording" role="status"><span class="kimse-voice-pulse" aria-hidden="true"></span>녹음 중이에요. 편하게 말씀해주세요.</div>':
     sample?'<div class="kimse-voice-state is-complete" role="status"><span aria-hidden="true">✓</span>녹음했어요 · '+sample.durationSec+'초 저장됨</div>':
     '<div class="kimse-voice-state">30초 이상 편하게 이야기해주세요.</div>';
   const primary=sample&&!active?
@@ -2512,16 +2565,28 @@ document.addEventListener('click',e=>{
       S.onboarding.birthPhase='decade';S.onboarding.birthRange='common';save();tone('tap');render();return;
     }
   }
-  const sleepChoice=e.target.closest('[data-sleep-choice]');
-  if(sleepChoice&&PROFILE_WIZARD_STEPS[profileWizardStepIndex()].key==='sleepHours'){
-    const value=sleepChoice.dataset.sleepChoice;
-    if(SLEEP_QUICK_OPTIONS.includes(value)){
-      S.profile.sleepHours=value;S.onboarding.sleepCustom=false;save();tone('tap');advanceProfileWizard();
+  if(PROFILE_WIZARD_STEPS[profileWizardStepIndex()].key==='sleepHours'){
+    const hour=e.target.closest('[data-sleep-hour]');
+    if(hour){
+      const h=Number(hour.dataset.sleepHour);
+      if(Number.isInteger(h)&&h>=0&&h<=16){
+        S.onboarding.sleepPickHour=h;S.onboarding.sleepPickPhase='minute';save();tone('tap');render();
+      }
+      return;
     }
-    return;
-  }
-  if(e.target.closest('[data-sleep-other]')&&PROFILE_WIZARD_STEPS[profileWizardStepIndex()].key==='sleepHours'){
-    S.onboarding.sleepCustom=true;save();render();$('#profile-wizard-input')?.focus();return;
+    const minute=e.target.closest('[data-sleep-minute]');
+    if(minute){
+      const h=S.onboarding.sleepPickHour,m=Number(minute.dataset.sleepMinute);
+      if(Number.isInteger(h)&&h>=0&&h<=16&&Number.isInteger(m)&&m>=0&&m<60&&m%5===0){
+        S.profile.sleepHours=h+'시간'+(m?' '+m+'분':'');
+        S.onboarding.sleepPickPhase='hour';delete S.onboarding.sleepPickHour;
+        save();tone('tap');advanceProfileWizard();
+      }
+      return;
+    }
+    if(e.target.closest('[data-sleep-change-hour]')){
+      S.onboarding.sleepPickPhase='hour';save();tone('tap');render();return;
+    }
   }
   const choice=e.target.closest('[data-profile-choice]');
   if(choice){
@@ -2533,6 +2598,9 @@ document.addEventListener('click',e=>{
   }
   if(e.target.closest('[data-profile-prev]')){
     if(profileWizardStepIndex()===0&&birthYearPhase()==='year'){S.onboarding.birthPhase='decade';S.onboarding.birthRange='common';save();tone('tap');render()}
+    else if(PROFILE_WIZARD_STEPS[profileWizardStepIndex()].key==='sleepHours'&&S.onboarding.sleepPickPhase==='minute'){
+      S.onboarding.sleepPickPhase='hour';save();tone('tap');render();
+    }
     else if(profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();tone('tap');render()}
   }
 });

@@ -483,3 +483,14 @@
 .high-contrast .screen-family-call .kimse-call-intervals button{border:3px solid #111;background:#fff;color:#111}
 .high-contrast .screen-family-call .kimse-call-intervals button[aria-pressed="true"]{background:#ffefaa;box-shadow:0 0 0 2px #111}
 @media(max-width:360px){.screen-family-call .kimse-call-intervals button{font-size:17px;padding:10px 5px}}
+
+/* Senior sleep picker: hour, then minute, each a direct action. */
+.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(4,minmax(0,1fr))}
+.screen-onboarding-profile .kimse-sleep-current{font-size:16px;color:#4f685d;margin:0}
+.screen-onboarding-profile .kimse-sleep-current strong{color:#184737;font-weight:800}
+.screen-onboarding-profile .kimse-sleep-instruction{font-size:19px;line-height:1.5;font-weight:720;color:#184737;margin:0}
+.screen-onboarding-profile .kimse-sleep-change-hour{min-height:66px;width:100%;border-radius:16px;border:1px solid #cfe0d6;background:#f0f6f1;color:#236349;font-size:18px;font-weight:750;padding:13px 20px}
+.screen-onboarding-profile .kimse-sleep-change-hour:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-onboarding-profile .kimse-sleep-change-hour{border:3px solid #111;background:#fff;color:#111}
+@media(max-width:360px){.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.screen-onboarding-profile .kimse-sleep-option{transition:none!important}}
