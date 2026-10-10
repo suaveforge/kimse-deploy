@@ -63,3 +63,5 @@
 @media(max-width:1099px){.kimse-atlas-grid{grid-template-columns:1fr}.kimse-atlas-side{border-left:0;border-top:1px solid #dbe6f3;min-height:0}.kimse-atlas-institutions{max-height:440px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.kimse-atlas-canvas-scroll{min-height:auto}}
 @media(max-width:700px){.kimse-atlas-wrap{width:calc(100vw - 20px)}.kimse-atlas-head{padding:22px 17px}.kimse-atlas-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.kimse-atlas-stat{padding:11px 13px;min-height:76px}.kimse-atlas-toolbar{left:9px;right:9px;top:11px}.kimse-atlas-mapnote{text-align:left}.kimse-atlas-legend{left:10px;right:10px;bottom:35px;gap:7px}.kimse-atlas-sidehead{padding:20px 17px}.kimse-atlas-institutions{display:block;max-height:500px;padding:0 17px 16px}.kimse-atlas-foot{padding:14px 17px}}
 @media(prefers-reduced-motion:reduce){.kimse-atlas-country,.kimse-atlas-btn{transition:none!important}}
+
+.kimse-atlas-chip.tier-a{color:#86510e;background:#fff3d9;border-color:#f3d69c}.kimse-atlas-chip.tier-b{color:#3159a2;background:#eaf2ff;border-color:#c5d8f6}.kimse-atlas-chip.tier-c{color:#53657e;background:#f3f6fa;border-color:#dbe4ed}
