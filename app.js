@@ -2124,10 +2124,35 @@ page['training-play']=()=>{const x=TRAINING[S.selectedTraining]||TRAINING.memory
 page.medication=()=>wrap(`<h1 class="page-title">복약 관리</h1><p class="page-desc">등록한 약마다 복용 여부를 바로 기록할 수 있어요.</p><div class="list">${S.medicines.map(m=>row('💊 '+m.name,`${m.time} · ${m.note||'복용 메모 없음'}`,`<button class="btn-kimse ${m.taken?'btn-secondary-k':'btn-primary-k'}" data-med-id="${m.id}">${m.taken?'복용 완료 ✓':'복용 기록'}</button>`)).join('')}</div><div class="hero-actions">${btn('+ 약 등록하기','medication-add','btn-blue-k')}</div>`,{title:'복약 관리',narrow:true});
 page['medication-add']=()=>wrap(`<h1 class="page-title">약 등록</h1><div class="form-stack"><div class="field"><label for="med-name">약 이름</label><input id="med-name" placeholder="예: 혈압약"></div><div class="field"><label for="med-time">복용 시간</label><input id="med-time" type="time" value="08:00"></div><div class="field"><label for="med-note">복용 메모</label><input id="med-note" placeholder="예: 아침 식사 후"></div><button id="save-med" class="btn-kimse btn-primary-k">등록하기</button></div>`,{title:'약 등록',narrow:true});
 const HEALTH_META={sleep:['🌙','수면','지난밤'],steps:['🚶','활동량','오늘'],pressure:['❤️','혈압','최근']};
-const liveStepText=()=>Number.isFinite(Number(S.monitoring.liveSteps))?Math.max(0,Math.round(Number(S.monitoring.liveSteps))).toLocaleString('ko-KR')+' 걸음':'';
+const liveStepText=()=>{const raw=S.monitoring?.liveSteps;return raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>=0?Math.round(Number(raw)).toLocaleString('ko-KR')+' 걸음':''};
 const healthDisplayValue=k=>k==='steps'&&liveStepText()?liveStepText():S.health[k]||'기록 없음';
 page.health=()=>wrap(`<h1 class="page-title">건강 기록</h1>${liveStepText()?`<div class="summary-card bg-mint"><div class="eyebrow">실시간 만보기 · 기기 센서</div><h3 style="font-size:36px">${liveStepText()}</h3><p>${esc(S.monitoring.liveStepProvider||'기기 걸음 센서')} · 오늘 측정값</p></div>`:''}<button class="summary-card bg-pink" data-go="clinical-context-event"><div class="eyebrow">진료에 중요한 최근 변화</div><h3>약 변경·급성질환·낙상 같은 사건 기록</h3><p>평소 생활신호와 같은 시간축에 올려 의료진이 변화 전후 맥락을 확인할 수 있게 합니다.</p><span class="context-chip">30초 기록</span></button><button class="summary-card bg-blue" data-go="medical-records"><div class="eyebrow">병원·검사 기록</div><h3>새 검사·피검사·건강검진도 여기에</h3><p>새 결과가 생길 때마다 1분 안에 추가하고, 다음 진료 리포트와 변화 맥락에 함께 정리합니다.</p><span class="context-chip">${clinicalRecordStats().total?clinicalRecordStats().total+'회 연결됨':'첫 기록 연결하기'}</span></button><div class="summary-card"><h3>오늘의 기분</h3><div class="answer-grid" style="grid-template-columns:repeat(3,1fr)">${[['🙂','좋아요'],['😐','보통이에요'],['🙁','안 좋아요']].map(x=>`<button class="answer" data-mood="${x[1]}" aria-pressed="${S.mood===x[1]}"><span class="emoji">${x[0]}</span>${x[1]}</button>`).join('')}</div></div><div class="list">${Object.entries(HEALTH_META).map(([k,x])=>`<button class="list-row menu-row" data-health="${k}"><span><strong>${x[0]} ${x[1]}</strong><small>${x[2]}</small></span><span><strong>${healthDisplayValue(k)}</strong> ${I('chevron-right')}</span></button>`).join('')}</div>`,{title:'건강 기록',bottom:true,active:'health'});
-page['health-detail']=()=>{const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',x=HEALTH_META[k];const quick=k==='sleep'?'<div class="kimse-health-sleep-quick" role="group" aria-label="지난밤 수면시간">'+SLEEP_QUICK_OPTIONS.map(v=>'<button type="button" class="kimse-health-sleep-option" data-health-sleep="'+esc(v)+'" aria-label="'+esc(v)+' 수면시간 저장">'+esc(v)+'</button>').join('')+'</div><details class="kimse-health-manual"><summary>다른 시간 직접 입력하기</summary><div class="field"><label for="health-value">수면시간</label><input id="health-value" value="'+esc(S.health.sleep||'')+'" placeholder="예: 3시간 30분"></div><div class="field"><label for="health-memo">메모 (선택)</label><textarea id="health-memo" rows="3">'+esc(S.health.memo||'')+'</textarea></div><button id="save-health" class="btn-kimse btn-primary-k">직접 입력한 시간 저장</button></details>':'';return wrap(k==='sleep'?'<h1 class="page-title">지난밤 몇 시간 주무셨어요?</h1><p class="page-desc">가까운 시간을 누르면 바로 기록돼요.</p>'+quick:'<div class="eyebrow">'+x[0]+' '+x[1]+'</div><h1 class="page-title">'+x[1]+' 기록 수정</h1><div class="form-stack"><div class="field"><label for="health-value">'+x[1]+' 값</label><input id="health-value" value="'+esc(S.health[k]||'')+'" placeholder="'+(k==='steps'?'예: 4,320 걸음':'예: 120 / 80')+'"></div><div class="field"><label for="health-memo">메모</label><textarea id="health-memo" rows="4">'+esc(S.health.memo||'')+'</textarea></div><button id="save-health" class="btn-kimse btn-primary-k">저장하기</button></div>',{title:x[1]+' 기록',narrow:true})};
+function healthNumberControl(id,label,value,suffix,step=1){
+  return '<div class="kimse-health-measure"><label for="'+id+'">'+esc(label)+'</label>'+
+    '<div class="kimse-health-stepper"><button type="button" data-health-adjust="'+id+'" data-health-delta="'+(-step)+'" aria-label="'+esc(label)+' '+step+' 줄이기">−</button>'+
+    '<input id="'+id+'" type="number" inputmode="numeric" min="1" max="999999" step="1" value="'+esc(value)+'" placeholder="측정값" aria-label="'+esc(label)+'">'+
+    '<span class="kimse-health-unit">'+esc(suffix)+'</span>'+
+    '<button type="button" data-health-adjust="'+id+'" data-health-delta="'+step+'" aria-label="'+esc(label)+' '+step+' 늘리기">+</button></div></div>';
+}
+page['health-detail']=()=>{
+  const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',x=HEALTH_META[k];
+  const quick=k==='sleep'?'<div class="kimse-health-sleep-quick" role="group" aria-label="지난밤 수면시간">'+SLEEP_QUICK_OPTIONS.map(v=>'<button type="button" class="kimse-health-sleep-option" data-health-sleep="'+esc(v)+'" aria-label="'+esc(v)+' 수면시간 저장">'+esc(v)+'</button>').join('')+'</div><details class="kimse-health-manual"><summary>다른 시간 직접 입력하기</summary><div class="field"><label for="health-value">수면시간</label><input id="health-value" value="'+esc(S.health.sleep||'')+'" placeholder="예: 3시간 30분"></div><div class="field"><label for="health-memo">메모 (선택)</label><textarea id="health-memo" rows="3">'+esc(S.health.memo||'')+'</textarea></div><button id="save-health" class="btn-kimse btn-primary-k">직접 입력한 시간 저장</button></details>':'';
+  if(k==='sleep')return wrap('<h1 class="page-title">지난밤 몇 시간 주무셨어요?</h1><p class="page-desc">가까운 시간을 누르면 바로 기록돼요.</p>'+quick,{title:'수면 기록',narrow:true});
+  const pressure=String(S.health.pressure||'').split('/').map(v=>v.trim());
+  const measuredSteps=parseSteps(S.health.steps),fromSensor=Number(S.monitoring.liveSteps);
+  const live=Number.isFinite(fromSensor)&&fromSensor>0?Math.round(fromSensor):null;
+  const fields=k==='steps'?
+    '<p class="page-desc">오늘 측정한 걸음 수를 숫자로 입력하세요. 기기에서 확인한 값이 있으면 그대로 가져올 수 있어요.</p>'+
+    (live?'<button type="button" class="kimse-health-use-live" data-health-live-step>기기에서 확인한 '+live.toLocaleString('ko-KR')+'걸음 가져오기</button>':'')+
+    healthNumberControl('health-value','걸음 수',measuredSteps===null?'':Math.round(measuredSteps),'걸음',500):
+    '<p class="page-desc">혈압계에 표시된 위·아래 숫자를 각각 적어주세요. 낌새에서 임의로 측정값을 만들지 않아요.</p>'+
+    healthNumberControl('health-pressure-sys','높은 혈압',pressure[0]||'','mmHg',5)+
+    healthNumberControl('health-pressure-dia','낮은 혈압',pressure[1]||'','mmHg',5);
+  return wrap('<div class="eyebrow">'+x[0]+' '+x[1]+'</div><h1 class="page-title">'+x[1]+' 기록 수정</h1>'+
+    '<div class="form-stack kimse-health-edit">'+fields+
+    '<div class="field"><label for="health-memo">메모 (선택)</label><textarea id="health-memo" rows="3">'+esc(S.health.memo||'')+'</textarea></div>'+
+    '<button type="button" id="save-health" class="btn-kimse btn-primary-k btn-full">기록 저장하기</button></div>',{title:x[1]+' 기록',narrow:true});
+};
 page['caregiver-home']=()=>{if(!demo())return accountRequired();
   const co=S.careOverview||{},stage=co.stage,sm=observationStageMeta(stage),summary=co.summary||{},changes=summary.changes||[],status=monitoringUiStatus(summary,changes),alert=pendingCareAlert(co),subjects=S.remote.careSubjects||[];
   const selector=subjects.length>1?`<div class="field"><label for="care-subject-select">확인할 가족</label><select id="care-subject-select">${subjects.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===S.remote.activeCareSubjectId?'selected':'')+'>'+esc(x.displayName)+' · '+esc(x.relation||'가족')+'</option>').join('')}</select></div>`:'';
@@ -2168,7 +2193,19 @@ page['family-feedback']=()=>{
         '<button type="button" class="kimse-feedback-back" data-feedback-back="action">← 이전 답변 수정</button></section></form>'+
     '<p class="screen-footnote">확인한 시각과 전화·방문·상담 등 대응도 함께 기록됩니다.</p>',{title:'가족 확인',narrow:true});
 };
-page['care-schedule']=()=>wrap(`<h1 class="page-title">가족 일정 관리</h1><p class="page-desc">복약·안부·진료 같은 가족 일정을 한곳에 적어둘 수 있어요.</p><div class="list">${S.schedule.map(x=>row('📅 '+x.title,x.date,'예정')).join('')}</div><h2 class="section-title">일정 추가</h2><div class="form-stack"><div class="field"><label for="schedule-title">일정</label><input id="schedule-title" placeholder="예: 병원 동행"></div><div class="field"><label for="schedule-date">날짜/시간</label><input id="schedule-date" type="datetime-local" aria-label="가족 일정 날짜와 시간" required></div><button id="add-schedule" class="btn-kimse btn-primary-k">일정 추가</button></div>`,{title:'일정 관리',narrow:true});
+page['care-schedule']=()=>wrap(
+  '<h1 class="page-title">가족 일정 관리</h1><p class="page-desc">어떤 일정인지 고르고 날짜와 시간을 선택해주세요.</p>'+
+  '<div class="list">'+S.schedule.map(x=>row('📅 '+x.title,x.date,'예정')).join('')+'</div>'+
+  '<h2 class="section-title">일정 추가</h2>'+
+  '<div class="form-stack kimse-care-schedule-form">'+
+    '<div class="field"><label for="schedule-title">어떤 일정인가요?</label>'+
+      '<div class="kimse-schedule-quick" role="group" aria-label="일정 종류 바로 선택">'+
+      ['병원 동행','약 챙기기','안부 전화'].map(v=>'<button type="button" data-schedule-name="'+esc(v)+'">'+esc(v)+'</button>').join('')+
+      '</div><input id="schedule-title" type="text" placeholder="다른 일정은 직접 적어주세요" autocomplete="off"></div>'+
+    '<div class="field"><label for="schedule-date">날짜 선택</label><input id="schedule-date" type="date" aria-label="가족 일정 날짜" required></div>'+
+    '<div class="field"><label for="schedule-time">시간 선택</label><input id="schedule-time" type="time" aria-label="가족 일정 시간" required></div>'+
+    '<button type="button" id="add-schedule" class="btn-kimse btn-primary-k btn-full">일정 추가</button>'+
+  '</div>',{title:'일정 관리',narrow:true});
 page.family=()=>{
   const connected=S.caregivers||[],pending=(S.caregiverInvites||[]).filter(x=>x.status==='PENDING'),schedule=S.callSchedules?.[0];
   return wrap(`<h1 class="page-title">가족 연결 관리</h1><div class="summary-card bg-blue"><h3>보호자 ${connected.length}명 연결</h3><p>초대받은 보호자가 자신의 AuthHub 계정으로 로그인하면 실제 보호자 계정으로 연결됩니다.</p></div><div class="list">${connected.map(x=>row(x.name,(x.relation||'가족')+(x.email?' · '+x.email:''),'연결됨')).join('')||'<div class="empty-state"><h3>연결된 보호자가 없어요</h3><p>이메일로 보호자를 초대할 수 있습니다.</p></div>'}</div>${pending.length?'<h2 class="section-title">초대 대기</h2><div class="list">'+pending.map(x=>row(x.email,x.relation||'가족','대기 중')).join('')+'</div>':''}<div class="hero-actions"><button class="btn-kimse btn-primary-k btn-full" data-go="family-add">+ 보호자 초대하기</button>${connected.length?'<button class="btn-kimse btn-secondary-k btn-full" data-go="family-call">정기 안부 통화 설정'+(schedule?' · '+schedule.interval_days+'일':'')+'</button>':''}</div>`,{title:'가족 연결 관리',narrow:true});
@@ -2822,7 +2859,47 @@ document.addEventListener('change',e=>{
     if(sensory)sensory.hidden=!SENSORY_MOTOR_EVENT_TYPES.includes(type);
   }
 });
-document.addEventListener('click',e=>{if(e.target.id==='begin'){tone('tap');S.q=0;S.answers=[];save();go('assessment')}if(e.target.id==='next'){if(S.answers[S.q]===undefined)return;if(S.q>=Q.length-1){feedback('결과를 확인합니다.');go('result')}else{S.q++;save();feedback((S.q+1)+'번째 문항입니다.');render()}}if(e.target.id==='save-alert'){const name=$('#alert-name').value.trim(),relation=$('#alert-relation').value.trim(),phone=$('#alert-phone').value.trim();if(!name||!phone){feedback('이름과 연락처를 입력해주세요.','warning');return}if(S.alertRecipients.length>=1&&S.plan!=='PREMIUM'){feedback('비상알림 수신자 2인째부터 구독이 필요합니다.','warning');go('plan')}else{S.alertRecipients.push({name,relation:relation||'가족',phone});save();feedback('비상알림 수신자를 저장했습니다.','success');go('emergency')}}if(e.target.id==='save-med'){const name=$('#med-name').value.trim(),time=$('#med-time').value||'08:00',note=$('#med-note').value.trim();if(!name){feedback('약 이름을 입력해주세요.','warning');return}S.medicines.push({id:'m'+Date.now(),name,time,note,taken:false});save();syncClinicalContextSnapshot().catch(()=>{});feedback('약을 등록했습니다.','success');go('medication')}if(e.target.closest('[data-health-sleep]')&&route()==='health-detail'&&S.selectedHealth==='sleep'){const v=e.target.closest('[data-health-sleep]').dataset.healthSleep;if(SLEEP_QUICK_OPTIONS.includes(v)){S.health.sleep=v;save();syncClinicalContextSnapshot().catch(()=>{});const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health');flushSignals();tone('tap');feedback('수면시간을 기록했어요.','success');go('health')}return}if(e.target.id==='save-health'){const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',v=$('#health-value').value.trim();if(!v){feedback('기록할 값을 입력해주세요.','warning');return}S.health[k]=v;S.health.memo=$('#health-memo').value.trim();save();syncClinicalContextSnapshot().catch(()=>{});if(k==='sleep'){const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health')}if(k==='steps'){const n=parseSteps(v);if(n)queueSignal('steps',n,'count','manual-health')}flushSignals();feedback(HEALTH_META[k][1]+' 기록을 저장했습니다.','success');go('health')}if(e.target.id==='add-schedule'){const title=$('#schedule-title').value.trim(),date=$('#schedule-date').value.trim();if(!title||!date){feedback('일정과 날짜/시간을 입력해주세요.','warning');return}const parsed=new Date(date);if(!Number.isFinite(parsed.getTime())){feedback('날짜와 시간을 선택해주세요.','warning');return}S.schedule.push({id:'s'+Date.now(),title,date:parsed.toLocaleString('ko-KR',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'})});save();feedback('가족 일정을 추가했습니다.','success');render()}});
+document.addEventListener('click',e=>{
+  if(route()!=='health-detail')return;
+  if(e.target.closest('[data-health-live-step]')){
+    const input=$('#health-value'),n=Number(S.monitoring.liveSteps);
+    if(input&&Number.isFinite(n)&&n>0){input.value=String(Math.round(n));tone('tap');feedback('기기에서 확인한 걸음 수를 입력했어요. 저장 버튼으로 기록해주세요.')}
+    return;
+  }
+  const btn=e.target.closest('[data-health-adjust]');
+  if(!btn)return;
+  const allowed=['health-value','health-pressure-sys','health-pressure-dia'];
+  const id=btn.dataset.healthAdjust,delta=Number(btn.dataset.healthDelta),input=allowed.includes(id)?document.getElementById(id):null;
+  if(!input||!Number.isFinite(delta)||Math.abs(delta)>500)return;
+  const current=Number(input.value);
+  if(input.value===''||!Number.isFinite(current)||current<=0){input.focus();feedback('측정한 숫자를 먼저 입력한 뒤 조절해주세요.');return}
+  input.value=String(Math.max(1,Math.round(current+delta)));tone('tap');
+});
+document.addEventListener('click',e=>{
+  if(route()!=='care-schedule')return;
+  const choice=e.target.closest('[data-schedule-name]');
+  if(!choice)return;
+  const v=choice.dataset.scheduleName;
+  if(!['병원 동행','약 챙기기','안부 전화'].includes(v))return;
+  const input=$('#schedule-title');if(input)input.value=v;
+  document.querySelectorAll('[data-schedule-name]').forEach(b=>b.setAttribute('aria-pressed',String(b===choice)));
+  tone('tap');
+  $('#schedule-date')?.focus();
+});
+document.addEventListener('click',e=>{if(e.target.id==='begin'){tone('tap');S.q=0;S.answers=[];save();go('assessment')}if(e.target.id==='next'){if(S.answers[S.q]===undefined)return;if(S.q>=Q.length-1){feedback('결과를 확인합니다.');go('result')}else{S.q++;save();feedback((S.q+1)+'번째 문항입니다.');render()}}if(e.target.id==='save-alert'){const name=$('#alert-name').value.trim(),relation=$('#alert-relation').value.trim(),phone=$('#alert-phone').value.trim();if(!name||!phone){feedback('이름과 연락처를 입력해주세요.','warning');return}if(S.alertRecipients.length>=1&&S.plan!=='PREMIUM'){feedback('비상알림 수신자 2인째부터 구독이 필요합니다.','warning');go('plan')}else{S.alertRecipients.push({name,relation:relation||'가족',phone});save();feedback('비상알림 수신자를 저장했습니다.','success');go('emergency')}}if(e.target.id==='save-med'){const name=$('#med-name').value.trim(),time=$('#med-time').value||'08:00',note=$('#med-note').value.trim();if(!name){feedback('약 이름을 입력해주세요.','warning');return}S.medicines.push({id:'m'+Date.now(),name,time,note,taken:false});save();syncClinicalContextSnapshot().catch(()=>{});feedback('약을 등록했습니다.','success');go('medication')}if(e.target.closest('[data-health-sleep]')&&route()==='health-detail'&&S.selectedHealth==='sleep'){const v=e.target.closest('[data-health-sleep]').dataset.healthSleep;if(SLEEP_QUICK_OPTIONS.includes(v)){S.health.sleep=v;save();syncClinicalContextSnapshot().catch(()=>{});const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health');flushSignals();tone('tap');feedback('수면시간을 기록했어요.','success');go('health')}return}if(e.target.id==='save-health'){
+  const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep';
+  let v='';
+  if(k==='pressure'){
+    const sys=$('#health-pressure-sys')?.value.trim()||'',dia=$('#health-pressure-dia')?.value.trim()||'';
+    if(!sys||!dia||!Number.isSafeInteger(Number(sys))||!Number.isSafeInteger(Number(dia))||Number(sys)<1||Number(dia)<1){feedback('혈압계의 높은 혈압과 낮은 혈압을 모두 입력해주세요.','warning');return}
+    v=String(Number(sys))+' / '+String(Number(dia));
+  }else if(k==='steps'){
+    const raw=$('#health-value')?.value.trim()||'',n=Number(raw);
+    if(!raw||!Number.isSafeInteger(n)||n<1){feedback('걸음 수를 숫자로 입력해주세요.','warning');return}
+    v=String(n);
+  }else v=$('#health-value')?.value.trim()||'';
+  if(!v){feedback('기록할 값을 입력해주세요.','warning');return}
+  S.health[k]=v;S.health.memo=$('#health-memo')?.value.trim()||'';save();syncClinicalContextSnapshot().catch(()=>{});if(k==='sleep'){const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health')}if(k==='steps'){const n=parseSteps(v);if(n)queueSignal('steps',n,'count','manual-health')}flushSignals();feedback(HEALTH_META[k][1]+' 기록을 저장했습니다.','success');go('health')}if(e.target.id==='add-schedule'){const title=$('#schedule-title')?.value.trim()||'',day=$('#schedule-date')?.value.trim()||'',time=$('#schedule-time')?.value.trim()||'',date=day&&time?day+'T'+time:'';if(!title||!date){feedback('일정과 날짜/시간을 입력해주세요.','warning');return}const parsed=new Date(date);if(!Number.isFinite(parsed.getTime())){feedback('날짜와 시간을 선택해주세요.','warning');return}S.schedule.push({id:'s'+Date.now(),title,date:parsed.toLocaleString('ko-KR',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'})});save();feedback('가족 일정을 추가했습니다.','success');render()}});
 document.addEventListener('click',async e=>{
   if(e.target.id==='save-family'){
     const email=$('#family-email')?.value.trim()||'',relation=$('#family-relation')?.value.trim()||'';

@@ -120,12 +120,58 @@ async function verifySeniorJourneys(browser){
   }finally{await s.close()}
 }
 
+
+async function verifyHealthScheduleJourneys(browser){
+  const context=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce'});
+  await context.addInitScript(()=>{
+    localStorage.setItem('kimse.p0.state',JSON.stringify({
+      version:14,account:{name:'사용성 점검',email:''},intent:'self',self:true,mode:'self',
+      onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+      consents:{service:true,privacy:true,health:true},
+      health:{sleep:'',steps:'',pressure:'',memo:''},schedule:[],
+      monitoring:{liveSteps:null}
+    }));
+  });
+  try{
+    const p=await context.newPage();
+    await p.goto(base+'health',{waitUntil:'domcontentloaded'});
+    await p.locator('[data-health="steps"]').click();
+    await p.locator('#health-value').fill('4321');
+    await p.screenshot({path:'qa-artifacts/screens/health-steps-entry-375.png',fullPage:true});
+    await p.locator('#save-health').click();
+    const stepsState=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
+    assert.equal(stepsState.health.steps,'4321','steps must retain manual observation');
+    assert((await p.locator('#main').innerText()).includes('4321'),'steps must display when live sensor is absent');
+    await p.locator('[data-health="pressure"]').click();
+    await p.locator('#health-pressure-sys').fill('121');
+    await p.locator('#health-pressure-dia').fill('79');
+    await p.screenshot({path:'qa-artifacts/screens/health-pressure-entry-375.png',fullPage:true});
+    await p.locator('#save-health').click();
+    let state=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
+    assert.equal(state.health.pressure,'121 / 79','pressure schema must remain backward-compatible');
+    await p.locator('[data-health="pressure"]').click();
+    assert.equal(await p.locator('#health-pressure-sys').inputValue(),'121','existing systolic value restored');
+    assert.equal(await p.locator('#health-pressure-dia').inputValue(),'79','existing diastolic value restored');
+    await p.goto(base+'care-schedule',{waitUntil:'domcontentloaded'});
+    await p.locator('[data-schedule-name="병원 동행"]').click();
+    assert.equal(await p.locator('#schedule-title').inputValue(),'병원 동행');
+    await p.locator('#schedule-date').fill('2026-11-16');
+    await p.locator('#schedule-time').fill('10:30');
+    await p.screenshot({path:'qa-artifacts/screens/care-schedule-entry-375.png',fullPage:true});
+    await p.locator('#add-schedule').click();
+    state=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
+    assert(state.schedule.some(x=>x.title==='병원 동행'&&x.date.includes('2026')),'family schedule must retain existing row schema');
+    console.log('KIMSE_UX_JOURNEY_HEALTH_SCHEDULE=PASS steps→pressure→restore→date/time');
+  }finally{await context.close()}
+}
+
 (async()=>{
 fs.mkdirSync('qa-artifacts/screens',{recursive:true});
 const browser=await chromium.launch({headless:true});
 try{
 for(const d of states)for(const screen of unique)await run(browser,screen,d);
 await verifySeniorJourneys(browser);
+await verifyHealthScheduleJourneys(browser);
 const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));

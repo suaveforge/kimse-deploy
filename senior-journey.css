@@ -530,3 +530,31 @@
 .screen-professional-outcome .kimse-professional-benefits .list-row{white-space:nowrap;column-gap:14px}
 .screen-professional-outcome .kimse-professional-benefits .list-row>span{white-space:normal;flex:1 1 0;min-width:0}
 .high-contrast .screen-professional-outcome .kimse-professional-benefits{border:3px solid #111;background:#fff}
+
+/* Health inputs: keep exact measurements numeric without sacrificing accessible touch targets. */
+.screen-health-detail .kimse-health-edit{display:flex;flex-direction:column;gap:22px}
+.screen-health-detail .kimse-health-measure{display:flex;flex-direction:column;gap:12px}
+.screen-health-detail .kimse-health-measure>label{color:#183e35;font-size:21px;font-weight:790}
+.screen-health-detail .kimse-health-stepper{display:flex;align-items:stretch;width:100%;min-width:0;gap:8px}
+.screen-health-detail .kimse-health-stepper>button{flex:0 0 66px;min-width:66px;min-height:76px;border:1.5px solid #b9d9c9;border-radius:16px;background:#eff7f1;color:#166c52;font-size:32px;font-weight:740;touch-action:manipulation}
+.screen-health-detail .kimse-health-stepper>input{min-width:0;flex:1 1 0;min-height:76px;padding:12px 4px;text-align:center;border:1.5px solid #b9d9c9;border-radius:16px;background:#fff;color:#183e35;font-size:25px;font-weight:780;font-variant-numeric:tabular-nums;appearance:textfield;-moz-appearance:textfield}
+.screen-health-detail .kimse-health-stepper>input::-webkit-inner-spin-button,.screen-health-detail .kimse-health-stepper>input::-webkit-outer-spin-button{appearance:none;margin:0}
+.screen-health-detail .kimse-health-unit{display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#486b59;min-width:32px}
+.screen-health-detail .kimse-health-use-live{min-height:70px;padding:12px 18px;border:1.5px solid #a9d0b8;background:#ecf7ef;color:#12674b;border-radius:17px;font-size:18px;font-weight:750;text-align:left}
+.screen-health-detail .kimse-health-stepper>button:focus-visible,.screen-health-detail .kimse-health-stepper>input:focus-visible,.screen-health-detail .kimse-health-use-live:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-health-detail .kimse-health-stepper>button,.high-contrast .screen-health-detail .kimse-health-stepper>input,.high-contrast .screen-health-detail .kimse-health-use-live{background:#fff;color:#111;border:3px solid #111}
+.large-text .screen-health-detail .kimse-health-measure>label{font-size:24px}
+@media(max-width:360px){.screen-health-detail .kimse-health-stepper{gap:5px}.screen-health-detail .kimse-health-stepper>button{flex-basis:58px;min-width:58px}.screen-health-detail .kimse-health-stepper>input{font-size:22px}.screen-health-detail .kimse-health-unit{min-width:28px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.screen-health-detail .kimse-health-stepper>button{transition:none!important}}
+
+/* Care schedule: quick activity labels and separate, native date/time pickers. */
+.screen-care-schedule .kimse-care-schedule-form{gap:19px}
+.screen-care-schedule .kimse-schedule-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 16px}
+.screen-care-schedule .kimse-schedule-quick>button{min-width:0;min-height:70px;padding:12px 9px;border:1.5px solid #cfe0d6;border-radius:17px;background:#fff;color:#1d4c3b;font-size:18px;line-height:1.4;font-weight:760;word-break:keep-all}
+.screen-care-schedule .kimse-schedule-quick>button[aria-pressed="true"]{background:#e9f6ee;border-color:#127965}
+.screen-care-schedule #schedule-date,.screen-care-schedule #schedule-time{width:100%;min-height:74px;padding:14px 16px;border-radius:16px;border:1.5px solid #cfe0d6;background:#fff;color:#183e35;font-size:21px;font-weight:700}
+.screen-care-schedule .kimse-schedule-quick>button:focus-visible,.screen-care-schedule #schedule-date:focus-visible,.screen-care-schedule #schedule-time:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.large-text .screen-care-schedule .kimse-schedule-quick>button{min-height:80px;font-size:21px}
+.high-contrast .screen-care-schedule .kimse-schedule-quick>button,.high-contrast .screen-care-schedule #schedule-date,.high-contrast .screen-care-schedule #schedule-time{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-care-schedule .kimse-schedule-quick>button[aria-pressed="true"]{background:#ffefae}
+@media(max-width:360px){.screen-care-schedule .kimse-schedule-quick{grid-template-columns:1fr}}
