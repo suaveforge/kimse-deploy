@@ -70,6 +70,7 @@ jobs:
             check(await p.locator('localize-switcher').count()===0,'no-localize-live-dom');
             await p.screenshot({path:path.join(OUT,'screens','01-consent.png')});
             for(const id of ['#consent-service','#consent-privacy','#consent-health'])await p.check(id);
+            await p.locator('.kimse-consent-options').evaluate(el=>{el.open=true});
             for(const id of ['#consent-microphone','#consent-location','#consent-motion','#consent-usage','#consent-notifications','#consent-caregiver'])if(await p.locator(id).isChecked())await p.uncheck(id);
             await p.locator('#consent-form button[type="submit"]').click();await p.waitForFunction(()=>location.hash==='#/home',null,{timeout:15000}).catch(async err=>{const diag=await p.evaluate(()=>{let state=null;try{const s=JSON.parse(localStorage.getItem('kimse.p0.state')||'{}');state={account:!!s.account,onboarding:s.onboarding,consents:s.consents}}catch{}return {hash:location.hash,state,consentForm:!!document.querySelector('#consent-form'),screen:(document.querySelector('#app')?.innerText||'').slice(0,1000)}});console.error('KIMSE_CONSENT_HOME_DIAGNOSTIC',JSON.stringify(diag));throw err});
             await p.waitForSelector('.baseline-home-card',{timeout:15000});const ht=await p.locator('#app').innerText();check(ht.includes('생활패턴 확인 중')&&ht.includes('오늘은 1/14일째예요'),'consent-home-day1 '+JSON.stringify({inProgress:ht.includes('생활패턴 확인 중'),dayOne:ht.includes('오늘은 1/14일째예요'),hasBaselineButton:ht.includes('14일 진행 보기')}));
