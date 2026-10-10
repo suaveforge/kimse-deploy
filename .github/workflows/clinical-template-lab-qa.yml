@@ -117,9 +117,10 @@ jobs:
                   assert.equal(await page.locator('#hospitalRequirements [data-source-trace]').count(),officialGroup.requirement_groups.length,inst.id+' official source item links missing');
                   const actual=await page.locator('#hospitalRequirements [data-source-trace]').evaluateAll(links=>links.map(el=>({id:el.dataset.requirementId,trace:el.dataset.sourceTrace,href:el.getAttribute('href')})));
                   const expected=officialGroup.requirement_groups.map(item=>{
-                    const pdf=Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(officialGroup.source_url);
+                    const url=item.source_url||officialGroup.source_url;
+                    const pdf=Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(url);
                     const heading=!pdf&&item.source_locator_type==='HTML_SECTION_HEADING'&&Boolean(item.source_heading);
-                    return {id:item.id,trace:pdf?'PDF_PAGE_INDEXED':heading?'HTML_SECTION_HEADING':'OFFICIAL_URL_SECTION_UNLOCATED',href:officialGroup.source_url+(pdf?'#page='+item.source_page:'')};
+                    return {id:item.id,trace:pdf?'PDF_PAGE_INDEXED':heading?'HTML_SECTION_HEADING':'OFFICIAL_URL_SECTION_UNLOCATED',href:url+(pdf?'#page='+item.source_page:'')};
                   });
                   assert.deepEqual(actual,expected,inst.id+' source hyperlinks must not fabricate HTML anchors or omit PDF pages');
                   assert.equal(Number(await page.locator('#sourceTraceSummary').getAttribute('data-pdf-page-mapped')),expected.filter(x=>x.trace==='PDF_PAGE_INDEXED').length);
