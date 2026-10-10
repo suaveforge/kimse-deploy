@@ -200,6 +200,53 @@ async function verifyMedicalMarketProgressive(browser){
   }finally{await c.close()}
 }
 
+
+async function verifyRemainingSeniorP2(browser){
+  const c=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce',locale:'ko-KR'});
+  await c.addInitScript(()=>{
+    localStorage.setItem('kimse.p0.state',JSON.stringify({
+      version:14,account:{name:'사용성 점검',email:'qa@example.invalid'},
+      intent:'both',self:true,care:true,mode:'self',
+      onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+      consents:{service:true,privacy:true,health:true},caregivers:[],
+      monitoring:{liveSteps:null},medicalRecords:[]
+    }));
+  });
+  try{
+    const p=await c.newPage();
+    await p.goto(base+'home',{waitUntil:'domcontentloaded'});
+    await p.locator('.kimse-home-actions').waitFor({timeout:15000});
+    assert(await p.locator('.kimse-home-primary-heading').first().isVisible(),'priority heading shown on home');
+    assert.equal(await p.locator('.kimse-home-actions .action-card').count(),4,'four primary home actions preserved');
+    assert(!(await p.locator('.kimse-home-secondary').evaluate(el=>el.open)),'secondary home details collapsed initially');
+    await p.screenshot({path:'qa-artifacts/screens/home-priority-375.png',fullPage:false});
+    await p.locator('.kimse-home-secondary>summary').click();
+    assert(await p.locator('.kimse-home-secondary [data-go="medical-records"]').isVisible(),'medical records remain reachable');
+    await p.goto(base+'professional-outcome',{waitUntil:'domcontentloaded'});
+    await p.locator('#professional-date').waitFor({timeout:15000});
+    assert(await p.locator('#professional-source-route').isVisible(),'clinical source remains required');
+    assert(await p.locator('#professional-result').isVisible(),'clinical result code remains required');
+    const details=p.locator('.kimse-professional-institution');
+    assert(!(await details.evaluate(el=>el.open)),'optional institute and source note initially collapsed');
+    await details.locator('summary').click();
+    assert(await p.locator('#professional-institution').isVisible(),'original institution field preserved');
+    assert(await p.locator('#professional-source-note').isVisible(),'original provenance memo preserved');
+    await p.locator('#professional-source-route').selectOption('PAPER_OR_PDF');
+    await p.locator('#professional-result').selectOption('MCI');
+    assert.equal(await p.locator('#professional-result').inputValue(),'MCI','clinical enum must be unchanged');
+    await p.screenshot({path:'qa-artifacts/screens/professional-optional-open-375.png',fullPage:false});
+    await p.goto(base+'clinical-context-event',{waitUntil:'domcontentloaded'});
+    await p.locator('#context-event-type').waitFor({timeout:15000});
+    const notes=p.locator('.kimse-context-notes');
+    assert(!(await notes.evaluate(el=>el.open)),'narrative fields initially collapsed');
+    await notes.locator('summary').click();
+    assert(await p.locator('#context-event-summary').isVisible(),'original event summary preserved');
+    assert(await p.locator('#context-event-detail').isVisible(),'original event detail preserved');
+    await p.screenshot({path:'qa-artifacts/screens/context-optional-open-375.png',fullPage:false});
+    console.log('KIMSE_UX_JOURNEY_HOME_CLINICAL=PASS home→details→professional codes→context fields');
+  }finally{await c.close()}
+}
+
 (async()=>{
 fs.mkdirSync('qa-artifacts/screens',{recursive:true});
 const browser=await chromium.launch({headless:true});
@@ -208,6 +255,7 @@ for(const d of states)for(const screen of unique)await run(browser,screen,d);
 await verifySeniorJourneys(browser);
 await verifyHealthScheduleJourneys(browser);
 await verifyMedicalMarketProgressive(browser);
+await verifyRemainingSeniorP2(browser);
 const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));

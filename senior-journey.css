@@ -568,3 +568,22 @@
 .high-contrast .screen-medical-record-add .kimse-medical-extras{border:3px solid #111;background:#fff;color:#111}
 .large-text .screen-medical-record-add .kimse-medical-extras>summary{font-size:21px}
 @media(prefers-reduced-motion:reduce){.screen-medical-record-add .kimse-medical-extras{transition:none!important}}
+
+/* KIMSE Senior UX P2: action-first home and progressive clinical details. */
+.screen-home .kimse-home-primary-heading{font-size:22px;line-height:1.4;font-weight:830;color:#204d3d;margin:22px 0 12px;letter-spacing:-.025em}
+.screen-home .kimse-home-actions{margin-top:4px}
+.screen-home .kimse-home-secondary{margin-top:22px;border:1.5px solid #d6e6dc;border-radius:18px;background:#f6faf7;overflow:visible}
+.screen-home .kimse-home-secondary>summary{min-height:72px;padding:16px 18px;display:flex;align-items:center;color:#235943;font-size:18px;font-weight:780;line-height:1.4;cursor:pointer}
+.screen-home .kimse-home-secondary-content{padding:4px 12px 12px;display:grid;gap:14px}
+.screen-home .kimse-home-secondary-content .summary-card{margin:0}
+.screen-home .kimse-home-secondary-content .brain-home-card{width:100%;min-height:76px}
+.screen-home .kimse-home-secondary>summary:focus-visible,.screen-professional-outcome .kimse-professional-institution>summary:focus-visible,.screen-clinical-context-event .kimse-context-notes>summary:focus-visible{outline:3px solid #126cbe;outline-offset:4px}
+.screen-professional-outcome .kimse-professional-institution,.screen-clinical-context-event .kimse-context-notes{border:1.5px solid #cedfd5;border-radius:18px;background:#f4faf6;margin:3px 0 13px;overflow:visible}
+.screen-professional-outcome .kimse-professional-institution>summary,.screen-clinical-context-event .kimse-context-notes>summary{display:flex;align-items:center;min-height:70px;padding:14px 18px;font-size:18px;line-height:1.5;font-weight:760;color:#245d46;cursor:pointer}
+.screen-professional-outcome .kimse-professional-institution-content,.screen-clinical-context-event .kimse-context-notes-content{display:flex;flex-direction:column;gap:18px;padding:16px}
+.screen-professional-outcome .kimse-professional-institution-content>details{margin:0}
+.screen-professional-outcome .kimse-professional-benefits{margin-top:22px}
+.high-contrast .screen-home .kimse-home-secondary,.high-contrast .screen-professional-outcome .kimse-professional-institution,.high-contrast .screen-clinical-context-event .kimse-context-notes{border:3px solid #111;background:#fff;color:#111}
+.large-text .screen-home .kimse-home-primary-heading{font-size:26px}
+.large-text .screen-home .kimse-home-secondary>summary,.large-text .screen-professional-outcome .kimse-professional-institution>summary,.large-text .screen-clinical-context-event .kimse-context-notes>summary{font-size:22px;min-height:80px}
+@media(prefers-reduced-motion:reduce){.screen-home .kimse-home-secondary,.screen-professional-outcome .kimse-professional-institution,.screen-clinical-context-event .kimse-context-notes{transition:none!important}}
