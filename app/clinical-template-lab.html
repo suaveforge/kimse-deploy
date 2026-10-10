@@ -29,12 +29,12 @@
     <div class="page-header d-print-none">
       <div class="container-xl">
         <div class="row align-items-center g-3">
-          <div class="col">
+          <div class="col-12 col-md">
             <div class="page-pretitle">KIMSE CLINICAL REVIEW · SYNTHETIC DATA ONLY</div>
             <h1 class="page-title">의료진용 리포트 · 템플릿 검증실</h1>
             <div class="text-secondary mt-2">국제 공통 → 국가별 → 공개 병원정보를 구분한 표현 후보. <strong>합성 데이터 전용</strong>이며 실제 병원 승인 서식이 아닙니다.</div>
           </div>
-          <div class="col-auto">
+          <div class="col-12 col-md-auto">
             <span class="badge bg-yellow-lt">병원별 미승인 · 전자제출 불가</span>
           </div>
         </div>
@@ -205,7 +205,10 @@
               <div class="card-body">
                 <p class="text-secondary small" id="requirementsExplanation">국가 공통 후보를 선택했습니다. 공개기관을 선택하면 조사된 항목과 반드시 따로 준비할 서류·확인사항이 나옵니다.</p>
                 <p id="sourceTraceSummary" class="small text-secondary" role="status" aria-live="polite">기관별 원문 위치 연결을 준비 중입니다.</p>
-                <div class="list-group list-group-flush" id="hospitalRequirements" aria-live="polite" aria-label="병원 공식 원문과 KIMSE 관련 데이터·결손 비교"></div>
+                <details id="institutionEvidenceDisclosure" class="mt-3">
+                  <summary id="institutionEvidenceSummary" class="fw-semibold" aria-controls="hospitalRequirements">공식 원문 항목 펼쳐 보기</summary>
+                  <div class="list-group list-group-flush mt-2" id="hospitalRequirements" aria-live="polite" aria-label="병원 공식 원문과 KIMSE 관련 데이터·결손 비교"></div>
+                </details>
               </div>
             </div>
           </div>
