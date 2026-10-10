@@ -494,3 +494,22 @@
 .high-contrast .screen-onboarding-profile .kimse-sleep-change-hour{border:3px solid #111;background:#fff;color:#111}
 @media(max-width:360px){.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.screen-onboarding-profile .kimse-sleep-option{transition:none!important}}
+
+/* Guided caregiver feedback: one question at a time, large targets, explicit back. */
+.screen-family-feedback .kimse-feedback-stage[hidden]{display:none!important}
+.screen-family-feedback .kimse-feedback-stage{display:flex;flex-direction:column;gap:19px;min-width:0}
+.screen-family-feedback .kimse-feedback-count{font-size:16px;font-weight:800;color:#166b55}
+.screen-family-feedback .kimse-feedback-question{font-size:clamp(22px,5.1vw,28px);line-height:1.37;color:#183e35;font-weight:820;letter-spacing:-.025em;margin:0}
+.screen-family-feedback .kimse-feedback-question:focus{outline:none}
+.screen-family-feedback .kimse-feedback-question:focus-visible{outline:3px solid #126cbe;outline-offset:4px}
+.screen-family-feedback .kimse-feedback-choices{gap:12px}
+.screen-family-feedback .kimse-feedback-choice{min-height:76px!important;font-size:19px}
+.screen-family-feedback .kimse-feedback-back{min-height:66px;width:100%;border:1px solid #cfe0d6;background:#f0f6f1;border-radius:16px;padding:12px 17px;color:#236349;font-size:18px;font-weight:750;text-align:center}
+.screen-family-feedback .kimse-feedback-back:focus-visible,.screen-family-feedback .kimse-feedback-context>summary:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.screen-family-feedback .kimse-feedback-summary{margin-bottom:25px}
+.screen-family-feedback .kimse-feedback-context{border-top:1px solid #d9e6dc;padding-top:12px;margin-top:15px}
+.screen-family-feedback .kimse-feedback-context>summary{cursor:pointer;min-height:66px;display:flex;align-items:center;color:#236349;font-size:17px;font-weight:750}
+.screen-family-feedback .kimse-feedback-context>.list{margin-block:12px}
+.high-contrast .screen-family-feedback .kimse-feedback-back{background:#fff;border:3px solid #111;color:#111}
+.large-text .screen-family-feedback .kimse-feedback-question{font-size:29px}
+@media(prefers-reduced-motion:reduce){.screen-family-feedback .kimse-feedback-stage{transition:none!important}}

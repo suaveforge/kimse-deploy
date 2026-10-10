@@ -1872,6 +1872,7 @@ page['initial-result']=()=>{
     '<div class="kimse-journey-overline">나의 첫 기록이 만들어졌어요</div>'+
     '<h1 class="kimse-flow-title">오늘의 기록을<br>잘 저장했어요</h1>'+
     '<p class="kimse-flow-hint">앞으로의 변화를 살펴볼 수 있도록 첫 기준을 남겼어요. 오늘 결과만으로 건강 상태를 판단하지 않아요.</p>'+
+    '<div class="kimse-flow-actions"><button type="button" id="start-monitoring-after-initial" class="kimse-flow-primary">생활 기록 시작하기 <span aria-hidden="true">→</span></button></div>'+
     '<div class="kimse-summary-sheet"><h2>오늘 남긴 기록</h2>'+
     row('단어 기억',count+' / 3개','보았던 단어를 기억한 개수')+
     row('숫자 계산',a.subtraction?'응답 기록':'기록하지 않음','답변과 반응시간 보관'+(rt?' · '+(rt/1000).toFixed(1)+'초':''))+
@@ -1881,7 +1882,6 @@ page['initial-result']=()=>{
     row('목소리',audio+'개','기기에만 저장된 음성')+
     '</div>'+
     '<div class="kimse-complete-message"><strong>앞으로 이렇게 사용해요</strong><span>평소 생활을 기록하면, 시간이 지나면서 달라진 점을 함께 살펴볼 수 있어요.</span></div>'+
-    '<div class="kimse-flow-actions"><button type="button" id="start-monitoring-after-initial" class="kimse-flow-primary">생활 기록 시작하기 <span aria-hidden="true">→</span></button></div>'+
     '<button class="kimse-flow-quiet kimse-complete-more" data-go="brain-map">관찰하는 항목 알아보기</button>'+
     '</section>',{title:'첫 기록',narrow:true});
 };
@@ -1901,7 +1901,7 @@ page['cognitive-recheck-result']=()=>{
   if(!r)return wrap('<h1 class="page-title">반복 인지 체크가 필요해요</h1>'+notice('아직 비교 결과가 없습니다.','같은 KIMSE 과제를 반복하면 초기 원자료와 비교합니다.')+'<button class="btn-kimse btn-primary-k btn-full" data-go="cognitive-recheck">반복 체크 시작</button>',{title:'반복 체크 결과',narrow:true});
   if(!c||c.status==='BASELINE_MISSING')return wrap('<div class="eyebrow">나의 첫 기록과 비교</div><h1 class="page-title">초기 기준을 먼저<br>동기화해야 합니다</h1>'+notice('비교 보류','처음 저장한 기록과 연결되지 않았어요. 잠시 뒤 다시 시도해주세요.')+'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="cognitive-recheck">다시 확인</button><button class="btn-kimse btn-secondary-k" data-go="monitoring-status">최근 변화로 돌아가기</button></div>',{title:'반복 체크 결과',narrow:true});
   const d=c.delayed_recall||{},sub=c.serial_subtraction||{},changed=c.objective_state==='CHANGED';
-  return wrap('<div class="eyebrow">나의 첫 기록과 비교</div><h1 class="page-title">'+(changed?'첫 기록보다 낮아진<br>수행 원자료가 있습니다':'이번 기록에서는<br>낮아진 수행 원자료가 없습니다')+'</h1><p class="page-desc">첫 기록과 이번 기록의 차이를 확인했어요. 이 결과만으로 건강 상태를 판단하지 않습니다.</p><div class="list">'+row('🧠 지연회상','기억난 단어 수','<strong>'+d.baseline+' → '+d.current+'개</strong>')+row('➖ 연속 뺄셈','계산 답변 비교','<strong>'+(sub.baseline_correct?'정답':'응답 기록')+' → '+(sub.current_correct?'정답':'응답 기록')+'</strong>')+row('⏱ 반응시간','계산 답변에 걸린 시간','<strong>'+((sub.response_ms_baseline||0)/1000).toFixed(1)+'초 → '+((sub.response_ms_current||0)/1000).toFixed(1)+'초</strong>')+'</div>'+notice(changed?'원자료 변화 관찰':'비교 결과','반응이 늦어졌다는 이유만으로 상태가 나빠졌다고 판단하지 않아요. 계속된 변화는 의료진에게 상담할 때 참고할 수 있어요.')+'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">관찰 패턴 확인</button><button class="btn-kimse btn-secondary-k" data-go="clinical-handoff">상담 준비 리포트</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'반복 체크 결과',narrow:true});
+  return wrap('<div class="eyebrow">나의 첫 기록과 비교</div><h1 class="page-title">'+(changed?'첫 기록과 비교해<br>달라진 답변이 있어요':'이번 기록은<br>첫 기록과 비슷해요')+'</h1><p class="page-desc">첫 기록과 이번 기록의 차이를 확인했어요. 이 결과만으로 건강 상태를 판단하지 않습니다.</p><div class="list">'+row('🧠 단어 기억','기억난 단어 수','<strong>'+d.baseline+' → '+d.current+'개</strong>')+row('➖ 연속 뺄셈','계산 답변 비교','<strong>'+(sub.baseline_correct?'정답':'응답 기록')+' → '+(sub.current_correct?'정답':'응답 기록')+'</strong>')+row('⏱ 반응시간','계산 답변에 걸린 시간','<strong>'+((sub.response_ms_baseline||0)/1000).toFixed(1)+'초 → '+((sub.response_ms_current||0)/1000).toFixed(1)+'초</strong>')+'</div>'+notice(changed?'기록의 변화 확인':'비교 결과','반응이 늦어졌다는 이유만으로 상태가 나빠졌다고 판단하지 않아요. 계속된 변화는 의료진에게 상담할 때 참고할 수 있어요.')+'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">관찰 패턴 확인</button><button class="btn-kimse btn-secondary-k" data-go="clinical-handoff">상담 준비 리포트</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'반복 체크 결과',narrow:true});
 };
 
 page.consent=()=>wrap(`<div class="eyebrow">처음 설정 1/4</div><h1 class="page-title">어떤 데이터를 모을지<br>직접 선택해주세요</h1><p class="page-desc">필수 항목 외에는 언제든 설정에서 끌 수 있습니다.</p><form id="consent-form" class="form-stack"><div class="consent-panel"><label class="consent-row"><input id="consent-service" type="checkbox" ${S.consents.service?'checked':''}><span><strong>필수 · 서비스 이용</strong><small>계정과 기본 기능 제공</small></span></label><label class="consent-row"><input id="consent-privacy" type="checkbox" ${S.consents.privacy?'checked':''}><span><strong>필수 · 개인정보 수집·이용</strong><small>프로필과 이용 기록 처리</small></span></label><label class="consent-row"><input id="consent-health" type="checkbox" ${S.consents.health?'checked':''}><span><strong>필수 · 건강 관련 민감정보</strong><small>인지·생활 변화 기록 처리</small></span></label></div><details class="kimse-consent-options"><summary><strong>선택 정보 6가지 직접 설정하기</strong><span>마이크·위치·움직임·앱 사용·알림·가족 공유</span></summary><h2 class="section-title">관찰에 사용할 신호</h2><p class="kimse-consent-options-hint">필수가 아니에요. 필요한 항목만 체크하세요. 선택하지 않아도 기본 기능을 이용할 수 있어요.</p><div class="consent-panel"><label class="consent-row"><input id="consent-microphone" type="checkbox" ${S.consents.microphone?'checked':''}><span><strong>마이크·음성 샘플</strong><small>말하기 시간과 잠시 멈추는 습관의 변화를 살펴봐요.</small></span></label><label class="consent-row"><input id="consent-location" type="checkbox" ${S.consents.location?'checked':''}><span><strong>위치·이동</strong><small>앱을 사용하는 동안 동의한 위치 정보로 이동 변화를 살펴봐요. 기기에서 별도 허용이 필요해요.</small></span></label><label class="consent-row"><input id="consent-motion" type="checkbox" ${S.consents.motion?'checked':''}><span><strong>움직임 센서</strong><small>지원되는 기기에서 움직임을 살펴봐요. 걸음 수는 기기 건강 데이터 연결이 필요해요.</small></span></label><label class="consent-row"><input id="consent-usage" type="checkbox" ${S.consents.usage?'checked':''}><span><strong>낌새 앱 사용 패턴</strong><small>반응시간·사용 시간대·과제 참여 변화</small></span></label><label class="consent-row"><input id="consent-notifications" type="checkbox" ${S.consents.notifications?'checked':''}><span><strong>이 기기에서 변화 알림 받기</strong><small>여러 변화가 함께 지속될 때 지원 기기에서는 앱을 닫아도 푸시 알림을 받습니다.</small></span></label><label class="consent-row"><input id="consent-caregiver" type="checkbox" ${S.consents.caregiverShare?'checked':''}><span><strong>보호자와 변화 알림 공유</strong><small>연결된 가족에게 의미 있는 변화가 있을 때 공유</small></span></label></div></details><div class="signal-limit"><strong>외부 전화·메신저</strong><p>일반 전화나 메신저 대화는 읽거나 수집하지 않아요. 낌새에서 연결한 가족 통화만 기록해요.</p></div><button class="btn-kimse btn-primary-k" type="submit">동의 완료</button></form>`,{title:'데이터 이용 동의',narrow:true});
@@ -2132,9 +2132,38 @@ page['caregiver-home']=()=>{if(!demo())return accountRequired();
 };
 page['family-feedback']=()=>{
   const co=S.careOverview||{},alert=pendingCareAlert(co),stage=co.stage,sm=observationStageMeta(stage),changes=co.summary?.changes||[];
-  if(!alert)return wrap(`<h1 class="page-title">확인할 변화 알림이 없어요</h1><p class="page-desc">가족에게 공유된 새 변화 알림이 있을 때 직접 확인한 내용을 남길 수 있습니다.</p><button class="btn-kimse btn-secondary-k btn-full" data-go="caregiver-home">보호자 홈</button>`,{title:'가족 확인',narrow:true});
+  if(!alert)return wrap('<h1 class="page-title">확인할 변화 알림이 없어요</h1><p class="page-desc">가족에게 공유된 새 변화 알림이 있을 때 직접 확인한 내용을 남길 수 있습니다.</p><button class="btn-kimse btn-secondary-k btn-full" data-go="caregiver-home">보호자 홈</button>',{title:'가족 확인',narrow:true});
   const details=changes.slice(0,4).map(x=>{const p=Math.round(Number(x.relative_change||0)*100);return row(SIGNAL_LABELS[x.metric]||x.metric,'14일 기준 '+formatMonitoringValue(x.metric,x.baseline)+' → 최근 '+formatMonitoringValue(x.metric,x.recent),'<strong>'+(p>0?'+':'')+p+'%</strong>')}).join('');
-  return wrap(`<div class="eyebrow">가족 확인</div><h1 class="page-title">직접 보셨을 때도<br>평소와 달랐나요?</h1><p class="page-desc">가족이 확인한 내용은 알림이 실제 생활과 맞았는지 확인하고, 다음 관찰을 보완하는 데 사용됩니다.</p><div class="summary-card"><div class="eyebrow">낌새가 본 변화</div><strong>${esc(sm.label)}</strong><p>${esc(alert.summary||'평소와 다른 변화가 함께 관찰되었습니다.')}</p><div class="list-row"><span><strong>왜 이렇게 보나요?</strong><small>${esc(stageWhyText(stage,changes))}</small></span></div></div><div class="list">${details}</div><form id="family-feedback-form" class="form-stack"><input type="hidden" id="family-feedback-alert" value="${esc(alert.id)}"><div class="field"><div class="kimse-feedback-question" id="family-feedback-assessment-label">직접 보셨을 때도 평소와 달랐나요?</div><input id="family-feedback-assessment" type="hidden" value=""><div class="kimse-feedback-choices" role="group" aria-labelledby="family-feedback-assessment-label"><button type="button" class="kimse-feedback-choice" data-feedback-field="assessment" data-feedback-value="CONFIRMED" aria-pressed="false">실제로 평소와 달랐어요</button><button type="button" class="kimse-feedback-choice" data-feedback-field="assessment" data-feedback-value="NO_CHANGE" aria-pressed="false">특별한 변화는 없었어요</button><button type="button" class="kimse-feedback-choice" data-feedback-field="assessment" data-feedback-value="UNKNOWN" aria-pressed="false">잘 모르겠어요</button></div></div><div class="field"><div class="kimse-feedback-question" id="family-feedback-action-label">어떤 행동을 했나요?</div><input id="family-feedback-action" type="hidden" value=""><div class="kimse-feedback-choices" role="group" aria-labelledby="family-feedback-action-label"><button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="CALL" aria-pressed="false">전화했어요</button><button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="MESSAGE" aria-pressed="false">메시지를 보냈어요</button><button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="VISIT" aria-pressed="false">방문했어요</button><button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="CONSULT" aria-pressed="false">상담을 연결했어요</button><button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="HOSPITAL" aria-pressed="false">병원에 연결했어요</button><button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="NONE" aria-pressed="false">별도로 하지는 않았어요</button></div></div><div class="field"><label for="family-feedback-note">메모 <small>선택</small></label><textarea id="family-feedback-note" rows="3" placeholder="직접 확인한 상황이 있으면 적어주세요."></textarea></div><button class="btn-kimse btn-primary-k" type="submit">가족 확인 저장</button></form><p class="screen-footnote">확인한 시각과 전화·방문·상담 등 대응도 함께 기록됩니다.</p>`,{title:'가족 확인',narrow:true});
+  return wrap('<div class="eyebrow">가족 확인</div>'+
+    '<h1 class="page-title">가족에게 나타난 변화를 확인해주세요</h1>'+
+    '<p class="page-desc">한 번에 한 가지만 선택하면 다음 질문으로 넘어가요.</p>'+
+    '<div class="summary-card kimse-feedback-summary"><strong>'+esc(sm.label)+'</strong><p>'+esc(alert.summary||'평소와 다른 변화가 함께 관찰되었습니다.')+'</p>'+
+      '<details class="kimse-feedback-context"><summary>낌새가 살펴본 변화 자세히 보기</summary><div class="list">'+details+'</div><p>'+esc(stageWhyText(stage,changes))+'</p></details></div>'+
+    '<form id="family-feedback-form" class="form-stack"><input type="hidden" id="family-feedback-alert" value="'+esc(alert.id)+'">'+
+      '<input id="family-feedback-assessment" type="hidden" value=""><input id="family-feedback-action" type="hidden" value="">'+
+      '<section class="kimse-feedback-stage" data-feedback-stage="assessment"><span class="kimse-feedback-count">확인 1 / 3</span>'+
+        '<h2 class="kimse-feedback-question" id="family-feedback-assessment-label" tabindex="-1">직접 보셨을 때도 평소와 달랐나요?</h2>'+
+        '<div class="kimse-feedback-choices" role="group" aria-labelledby="family-feedback-assessment-label">'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="assessment" data-feedback-value="CONFIRMED" aria-pressed="false">실제로 평소와 달랐어요</button>'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="assessment" data-feedback-value="NO_CHANGE" aria-pressed="false">특별한 변화는 없었어요</button>'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="assessment" data-feedback-value="UNKNOWN" aria-pressed="false">잘 모르겠어요</button>'+
+        '</div></section>'+
+      '<section class="kimse-feedback-stage" data-feedback-stage="action" hidden><span class="kimse-feedback-count">확인 2 / 3</span>'+
+        '<h2 class="kimse-feedback-question" id="family-feedback-action-label" tabindex="-1">어떤 행동을 하셨나요?</h2>'+
+        '<div class="kimse-feedback-choices" role="group" aria-labelledby="family-feedback-action-label">'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="CALL" aria-pressed="false">전화했어요</button>'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="MESSAGE" aria-pressed="false">메시지를 보냈어요</button>'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="VISIT" aria-pressed="false">방문했어요</button>'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="CONSULT" aria-pressed="false">상담을 연결했어요</button>'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="HOSPITAL" aria-pressed="false">병원에 연결했어요</button>'+
+          '<button type="button" class="kimse-feedback-choice" data-feedback-field="action" data-feedback-value="NONE" aria-pressed="false">별도로 하지는 않았어요</button>'+
+        '</div><button type="button" class="kimse-feedback-back" data-feedback-back="assessment">← 이전 답변 수정</button></section>'+
+      '<section class="kimse-feedback-stage" data-feedback-stage="finish" hidden><span class="kimse-feedback-count">확인 3 / 3</span>'+
+        '<h2 class="kimse-feedback-question" tabindex="-1">확인 내용을 저장할게요</h2>'+
+        '<div class="field"><label for="family-feedback-note">메모 <small>선택</small></label><textarea id="family-feedback-note" rows="3" placeholder="직접 확인한 상황이 있으면 적어주세요."></textarea></div>'+
+        '<button class="btn-kimse btn-primary-k" type="submit">가족 확인 저장</button>'+
+        '<button type="button" class="kimse-feedback-back" data-feedback-back="action">← 이전 답변 수정</button></section></form>'+
+    '<p class="screen-footnote">확인한 시각과 전화·방문·상담 등 대응도 함께 기록됩니다.</p>',{title:'가족 확인',narrow:true});
 };
 page['care-schedule']=()=>wrap(`<h1 class="page-title">가족 일정 관리</h1><p class="page-desc">복약·안부·진료 같은 가족 일정을 한곳에 적어둘 수 있어요.</p><div class="list">${S.schedule.map(x=>row('📅 '+x.title,x.date,'예정')).join('')}</div><h2 class="section-title">일정 추가</h2><div class="form-stack"><div class="field"><label for="schedule-title">일정</label><input id="schedule-title" placeholder="예: 병원 동행"></div><div class="field"><label for="schedule-date">날짜/시간</label><input id="schedule-date" type="datetime-local" aria-label="가족 일정 날짜와 시간" required></div><button id="add-schedule" class="btn-kimse btn-primary-k">일정 추가</button></div>`,{title:'일정 관리',narrow:true});
 page.family=()=>{
@@ -2829,6 +2858,14 @@ document.addEventListener('click',async e=>{
 });
 document.addEventListener('click',e=>{
   if(route()!=='family-feedback')return;
+  const previous=e.target.closest('[data-feedback-back]');
+  if(previous){
+    const destination=previous.dataset.feedbackBack;
+    const current=destination==='assessment'?'action':'finish';
+    const from=$('[data-feedback-stage="'+current+'"]'),to=$('[data-feedback-stage="'+destination+'"]');
+    if(from&&to){from.hidden=true;to.hidden=false;to.querySelector('h2')?.focus();tone('tap')}
+    return;
+  }
   const choice=e.target.closest('[data-feedback-field][data-feedback-value]');
   if(!choice)return;
   const field=choice.dataset.feedbackField;
@@ -2839,6 +2876,8 @@ document.addEventListener('click',e=>{
   input.value=choice.dataset.feedbackValue;
   const group=choice.closest('.kimse-feedback-choices');
   group?.querySelectorAll('[data-feedback-value]').forEach(b=>b.setAttribute('aria-pressed',String(b===choice)));
+  const current=$('[data-feedback-stage="'+field+'"]'),next=$('[data-feedback-stage="'+(field==='assessment'?'action':'finish')+'"]');
+  if(current&&next){current.hidden=true;next.hidden=false;next.querySelector('h2')?.focus()}
   tone('tap');
 });
 document.addEventListener('change',e=>{if(e.target.id==='care-subject-select'){S.remote.activeCareSubjectId=e.target.value;S.careOverview={...D.careOverview,subjectId:e.target.value};save();syncCareOverview(true)}});
