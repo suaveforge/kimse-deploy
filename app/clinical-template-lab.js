@@ -156,8 +156,8 @@
       message.textContent+=' 접수 경로 공식 원문 상충: 진료과 웹·PDF 안내의 실물 배송 방법이 서로 다르며, 병원 전체 안내는 진료과별 접수 경로를 대신하지 않습니다. 담당 의료기관 확인 전 KIMSE 환자자료 발송 금지.';
       message.dataset.routingConflict='unresolved';
     } else delete message.dataset.routingConflict;
-    const located=row.requirement_groups.filter(item=>Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(row.source_url)).length;
-    const htmlLocated=row.requirement_groups.filter(item=>item.source_locator_type==='HTML_SECTION_HEADING'&&typeof item.source_heading==='string'&&item.source_heading.trim()&&item.source_page===null&&!/\.pdf(?:\?|$)/i.test(row.source_url)).length;
+    const located=row.requirement_groups.filter(item=>Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(item.source_url||row.source_url)).length;
+    const htmlLocated=row.requirement_groups.filter(item=>item.source_locator_type==='HTML_SECTION_HEADING'&&typeof item.source_heading==='string'&&item.source_heading.trim()&&item.source_page===null&&!/\.pdf(?:\?|$)/i.test(item.source_url||row.source_url)).length;
     const unlocated=row.requirement_groups.length-located-htmlLocated;
     traceStatus.textContent='원문 위치: 공식 PDF 쪽수 '+located+'개 · 공식 HTML 절 제목 '+htmlLocated+'개 · 상세 위치 미매핑 '+unlocated+'개 (조사 '+row.requirement_groups.length+'개). 원문 위치 검증은 기관의 제출 승인과 다릅니다.';
     traceStatus.dataset.pdfPageMapped=String(located);
@@ -171,14 +171,15 @@
       top.append(make('span','badge '+(isExternal?'bg-yellow-lt':'bg-azure-lt'),
         isExternal?'외부 확인·자료 필요':'관련 정보 후보 · 승인 전'));
       box.append(top);
-      const exactPdfPage=Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(row.source_url);
-      const htmlHeading=!exactPdfPage&&item.source_locator_type==='HTML_SECTION_HEADING'&&typeof item.source_heading==='string'&&item.source_heading.trim()&&!/\.pdf(?:\?|$)/i.test(row.source_url);
+      const officialSourceUrl=item.source_url||row.source_url;
+      const exactPdfPage=Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(officialSourceUrl);
+      const htmlHeading=!exactPdfPage&&item.source_locator_type==='HTML_SECTION_HEADING'&&typeof item.source_heading==='string'&&item.source_heading.trim()&&!/\.pdf(?:\?|$)/i.test(officialSourceUrl);
       const trace=make('a','d-block small mt-1',exactPdfPage?
         '기관 공식 PDF '+item.source_page+'쪽 열기 (부분별 원문 직접 대조)':
         htmlHeading?'기관 공식 HTML 원문 열기 · 절: '+item.source_heading:
         '기관 공식 공개페이지 열기 (해당 절·문장 위치 미매핑)');
       // HTML heading is a searchable section label, NOT an invented anchor ID.
-      trace.href=row.source_url+(exactPdfPage?'#page='+item.source_page:'');
+      trace.href=officialSourceUrl+(exactPdfPage?'#page='+item.source_page:'');
       trace.rel='noopener noreferrer';trace.target='_blank';
       trace.dataset.sourceTrace=exactPdfPage?'PDF_PAGE_INDEXED':htmlHeading?'HTML_SECTION_HEADING':'OFFICIAL_URL_SECTION_UNLOCATED';
       trace.dataset.requirementId=item.id;

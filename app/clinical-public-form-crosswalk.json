@@ -1175,7 +1175,10 @@
           "related_paths": [],
           "limit": "의뢰 의료진이 환자 동의를 확인·기록해야 함. KIMSE 단순 동의체크로 대체 불가",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": 1,
+          "source_url": "https://www.emoryhealthcare.org/-/media/Project/EH/Emory/ui/pdfs/cognitive-neurology/Referral-Form-2022.pdf",
+          "source_locator_type": "PDF_PAGE_INDEXED",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "US-EMORY-CN-05",
@@ -1196,7 +1199,10 @@
           "related_paths": [],
           "limit": "의뢰서에 적는 회신 채널임. 환자자료의 들어오는 허용 접수 채널이 아님",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": 1,
+          "source_url": "https://www.emoryhealthcare.org/-/media/Project/EH/Emory/ui/pdfs/cognitive-neurology/Referral-Form-2022.pdf",
+          "source_locator_type": "PDF_PAGE_INDEXED",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "US-EMORY-CN-07",
@@ -1305,7 +1311,10 @@
           ],
           "limit": "가상 식별자 전송 금지; 환자 매칭·가족 정보 동의 및 의료진 인증 미확보",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": 1,
+          "source_url": "https://www.emoryhealthcare.org/-/media/Project/EH/Emory/ui/pdfs/cognitive-neurology/Referral-Form-2022.pdf",
+          "source_locator_type": "PDF_PAGE_INDEXED",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "US-EMORY-CN-15",
