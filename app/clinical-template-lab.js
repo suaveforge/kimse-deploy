@@ -70,6 +70,39 @@
     }
     return profile;
   }
+  // Tabler's published list-group component, not a new infographic.
+  // Grouping preserves the exact recorded public source descriptions; no "met"
+  // flags, clinical score, provider verification or electronic routing is inferred.
+  function renderHospitalRequirements(crosswalk,country,institutionId){
+    const root=qs('hospitalRequirements'),message=qs('requirementsExplanation');
+    root.replaceChildren();
+    const row=crosswalk.entries.find(item=>item.id===institutionId&&item.country===country);
+    if(!row){
+      message.textContent='국가 공통 표시 후보입니다. 공개 의료기관을 선택해야 그 기관의 조사된 원문 요건과 추가 확인자료를 볼 수 있습니다.';
+      root.append(make('div','list-group-item text-secondary','병원 미선택 · 승인된 제출 프로파일 없음'));
+      return;
+    }
+    if(row.approval_status==='APPROVED'||crosswalk.policy.verified_receivers!==0)throw Error('PUBLIC_FORM_APPROVAL_STATE_CONFLICT');
+    message.textContent='공식 공개자료 조사 '+row.requirement_groups.length+'개 항목/그룹입니다. 아래 내용은 필수항목의 승인된 체크리스트가 아니며, KIMSE 데이터만으로 서류·전문검사를 대신하지 못합니다.';
+    for(const [index,item] of row.requirement_groups.entries()){
+      const isExternal=/EXTERNAL|AUTHORIZED|APPROVED_CHANNEL|PARTNER_APPROVAL|NOT_YET_SUPPORTED|INSTITUTION_REVIEW|UNIMPLEMENTED|PROFESSIONAL|CLINICIAN/.test(item.status);
+      const box=make('div','list-group-item px-0 py-3');
+      const top=make('div','d-flex flex-wrap justify-content-between align-items-start gap-2');
+      top.append(make('div','fw-semibold',String(index+1).padStart(2,'0')+' · '+item.wording));
+      top.append(make('span','badge '+(isExternal?'bg-yellow-lt':'bg-azure-lt'),
+        isExternal?'외부 확인·자료 필요':'관련 정보 후보 · 승인 전'));
+      box.append(top);
+      if(item.source_page)box.append(make('div','small text-secondary mt-1','공식 양식 '+item.source_page+'쪽'));
+      if(item.related_paths.length)box.append(make('div','small text-secondary mt-1','연관된 데이터 경로: '+item.related_paths.join(' · ')));
+      if(item.limit)box.append(make('div','small mt-1',item.limit));
+      root.append(box);
+    }
+    const footer=make('div','list-group-item border-top pt-3');
+    footer.append(make('strong','text-danger','병원 수신 확인·의료진 승인 0건'));
+    const source=make('a','d-block mt-2','이 기관의 공개 원문 직접 확인');
+    source.href=row.source_url;source.target='_blank';source.rel='noopener noreferrer';
+    footer.append(source);root.append(footer);
+  }
   function renderMeta(report,subset){
     qs('firstDate').textContent=String(report.previsit_summary.first_observed_change_at||'미수집').slice(0,10);
     qs('metricCount').textContent=subset.metrics.length+'개';
@@ -149,19 +182,21 @@
   }
   async function initialize(){
     if(!window.KIMSE_CLINICAL_PROFILES)throw Error('PROFILE_RESOLVER_MISSING');
-    const [registry,report]=await Promise.all([load('./clinical-profile-authorities.json'),load('./clinical-template-demo-data.json')]);
+    const [registry,report,crosswalk]=await Promise.all([load('./clinical-profile-authorities.json'),load('./clinical-template-demo-data.json'),load('./clinical-public-form-crosswalk.json')]);
+    if(crosswalk.status!=='PUBLIC_SOURCE_CROSSWALK_NOT_INSTITUTION_APPROVAL'||crosswalk.policy.verified_receivers!==0)throw Error('PUBLIC_FORM_CONTRACT_NOT_SAFE');
     if(report.demo_marker!=='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT')throw Error('REAL_PATIENT_DATA_FORBIDDEN_IN_PUBLIC_DEMO');
     if(report.subject?.care_subject_id!=='SYNTHETIC_NO_REAL_PATIENT_ID')throw Error('PATIENT_ID_FORBIDDEN');
     const {updateInstitutions}=listControls(registry);
-    qs('country').addEventListener('change',()=>{updateInstitutions();renderProfile(registry,report)});
-    qs('institution').addEventListener('change',()=>renderProfile(registry,report));
+    const refreshProfile=()=>{renderProfile(registry,report);renderHospitalRequirements(crosswalk,qs('country').value,qs('institution').value)};
+    qs('country').addEventListener('change',()=>{updateInstitutions();refreshProfile()});
+    qs('institution').addEventListener('change',refreshProfile);
     const refresh=()=>{
       const subset=getSelectedReport(report,Number(qs('period').value));
       renderMeta(report,subset);
       renderCharts(subset);
     };
     qs('period').addEventListener('change',refresh);
-    renderProfile(registry,report);refresh();
+    refreshProfile();refresh();
     window.addEventListener('resize',()=>charts.forEach(c=>c.resize()),{passive:true});
     // Browser QA can read this marker; no network requests or user data.
     document.documentElement.dataset.clinicalTemplateReady=window.echarts?'yes':'charts-unavailable';

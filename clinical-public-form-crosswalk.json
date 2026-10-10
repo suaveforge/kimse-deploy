@@ -1,0 +1,578 @@
+{
+  "schema_version": "2026-10-10.1",
+  "status": "PUBLIC_SOURCE_CROSSWALK_NOT_INSTITUTION_APPROVAL",
+  "last_reviewed_on": "2026-10-10",
+  "policy": {
+    "verified_receivers": 0,
+    "approved_report_profiles": 0,
+    "approved_clinician_reviewer_feedback": 0,
+    "source_quality": "7 public guide sources mapped to 34 published items; UHN 3 page published physician referral form mapped to 11 topic groups. Group granularity differs; do not interpret as 45 independently approved mandatory fields.",
+    "representations": "Candidate supplement and missing-document checklist, never submission form",
+    "missing": "Missing or unverified entries must not be promoted to normal/negative/provider-verified",
+    "privacy": "Patient identifiers/referrer ID/medical originals never synthesized"
+  },
+  "source_data": {
+    "existing_crosswalk": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
+    "uhm_official_form": "docs/CLINICAL_PROVIDER_FORM_CANADA_UHN_20261010.json"
+  },
+  "entry_count": 8,
+  "published_research_groups": 45,
+  "entries": [
+    {
+      "id": "KR-SNUH-OUTPATIENT",
+      "country": "KR",
+      "source_url": "https://www.snuh.org/content/Q005001003.do",
+      "source_type": "PROVIDER_OFFICIAL_OUTPATIENT_REFERRAL_GUIDE",
+      "approval_status": "PUBLIC_RESEARCH_ONLY",
+      "requirement_groups": [
+        {
+          "id": "KR-SNUH-OUTPATIENT-01",
+          "wording": "1·2차 의료기관의 의사 소견이 포함된 진료의뢰서 (심층진찰 대상 조건)",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_DOCUMENT_REQUIRED",
+          "limit": "의사 발행 의뢰서는 낌새 자체 관찰로 생성하거나 대체할 수 없습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "KR-SNUH-OUTPATIENT-02",
+          "wording": "기존 진료자료 및 영상 CD 등의 내원 지참 안내",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_DOCUMENT_REQUIRED",
+          "limit": "기존 검사 영상·원본 매체는 낌새 텍스트 기록과 동일하지 않습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "KR-SNUH-OUTPATIENT-03",
+          "wording": "기관 간 온라인 진료의뢰는 공식 진료정보교류·진료의뢰 회송중계·병원 협력시스템을 통한 의료기관 경로",
+          "related_paths": [],
+          "status": "APPROVED_CHANNEL_REQUIRED",
+          "limit": "기관 간 공식 시스템의 송신 권한이 확인되지 않았습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "KR-SNUH-OUTPATIENT-04",
+          "wording": "의료진별 심층진찰 적격성 및 선별 기준이 다를 수 있음",
+          "related_paths": [],
+          "status": "INSTITUTION_REVIEW_REQUIRED",
+          "limit": "의료진·환자별 선별 규칙은 확인되지 않았습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        }
+      ]
+    },
+    {
+      "id": "KR-AMC-NEURO-MEMORY",
+      "country": "KR",
+      "source_url": "https://amcmg.amc.seoul.kr/asan/staff/base/staffBaseInfoDetail.do?drEmpId=d011eCtGRkxaS0dVSmY2TnJ4d1NKQT09&searchHpCd=D030",
+      "source_type": "PROVIDER_OFFICIAL_CLINICIAN_SERVICE_PAGE",
+      "approval_status": "PUBLIC_RESEARCH_ONLY",
+      "requirement_groups": [
+        {
+          "id": "KR-AMC-NEURO-MEMORY-01",
+          "wording": "신경과 기억력장애·알츠하이머병·혈관성치매·경도인지장애 진료 분야 공시",
+          "related_paths": [
+            "previsit_summary",
+            "clinical_domains"
+          ],
+          "status": "PUBLIC_CONTEXT_ONLY",
+          "limit": "진료 분야 소개이지 낌새 리포트 수락 항목을 뜻하지 않습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "KR-AMC-NEURO-MEMORY-02",
+          "wording": "해당 의료진 신환·타 병원 초진이 외부 약 복용 중일 때 외부 처방전 지참 안내",
+          "related_paths": [
+            "clinical_context",
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_DOCUMENT_REQUIRED",
+          "limit": "기록된 복용약 맥락은 보여줄 수 있으나 공식 처방전의 대체가 아닙니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        }
+      ]
+    },
+    {
+      "id": "GB-DORSET-MAS",
+      "country": "GB",
+      "source_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "source_type": "PROVIDER_OFFICIAL_FORM",
+      "approval_status": "PUBLIC_RESEARCH_ONLY",
+      "requirement_groups": [
+        {
+          "id": "GB-DORSET-MAS-01",
+          "wording": "GP agreement and patient consent",
+          "related_paths": [],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "GP 승인·환자 동의 및 공식 의뢰 권한은 KIMSE에 없습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-02",
+          "wording": "Cognitive screening test e.g. 6CIT/MMSE/GPCOG",
+          "related_paths": [
+            "professional_outcomes.validated_assessments"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "검증된 인지검사 실제 결과가 필요하며 KIMSE 과제를 환산할 수 없습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-03",
+          "wording": "Dementia screening blood tests within 6 months",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "혈액검사 날짜·결과가 실제 기록되어야 하며 KIMSE가 검사를 시행하지 않습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-04",
+          "wording": "Rule-out of reversible physical or mental causes",
+          "related_paths": [
+            "risk_confounders",
+            "clinical_context_events"
+          ],
+          "status": "CLINICIAN_ASSESSMENT_REQUIRED",
+          "limit": "가역원인 배제는 의료진 판단이며 낌새 맥락정보로 대체할 수 없습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-DORSET-MAS-05",
+          "wording": "Patient/GP identifiers and clinical history",
+          "related_paths": [
+            "subject",
+            "previsit_summary"
+          ],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "GP/환자 신원 연동과 공식 의뢰 병력/식별은 미검증입니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        }
+      ]
+    },
+    {
+      "id": "GB-CNTW-MAMS",
+      "country": "GB",
+      "source_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "source_type": "PROVIDER_OFFICIAL_REFERRER_GUIDE",
+      "approval_status": "PUBLIC_RESEARCH_ONLY",
+      "requirement_groups": [
+        {
+          "id": "GB-CNTW-MAMS-01",
+          "wording": "Patient and informant history",
+          "related_paths": [
+            "previsit_summary",
+            "family_feedback"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "가족 입력 없으면 미수집으로 유지합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-CNTW-MAMS-02",
+          "wording": "Daily function impact",
+          "related_paths": [
+            "clinical_domains.function_independence"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "ADL/IADL 실제 입력 시에만 표시합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-CNTW-MAMS-03",
+          "wording": "Cognitive test scores",
+          "related_paths": [
+            "professional_outcomes.validated_assessments"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "KIMSE 자체 과제는 공인 검사 점수가 아닙니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-CNTW-MAMS-04",
+          "wording": "Medical and medication history",
+          "related_paths": [
+            "clinical_context",
+            "external_clinical_records"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "진단·약물 이력은 출처별로 분리합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-CNTW-MAMS-05",
+          "wording": "Alcohol/smoking/substance use",
+          "related_paths": [
+            "risk_confounders",
+            "clinical_context_events"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "흡연·음주·물질사용 기록이 없으면 미수집입니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-CNTW-MAMS-06",
+          "wording": "Safety risks",
+          "related_paths": [
+            "clinical_domains.safety_support"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "실제 보고된 안전 사건만 노출합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-CNTW-MAMS-07",
+          "wording": "Patient agreement",
+          "related_paths": [],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "동의·의뢰 권한은 사전 확인이 필요합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-CNTW-MAMS-08",
+          "wording": "Next-of-kin and interpreter needs",
+          "related_paths": [
+            "subject"
+          ],
+          "status": "NOT_YET_SUPPORTED",
+          "limit": "통역 필요 여부·연락처 등 기관 필수 양식은 현재 연결되지 않았습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        }
+      ]
+    },
+    {
+      "id": "GB-LEEDS-MAS",
+      "country": "GB",
+      "source_url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "source_type": "PROVIDER_OFFICIAL_SERVICE_PAGE",
+      "approval_status": "PUBLIC_RESEARCH_ONLY",
+      "requirement_groups": [
+        {
+          "id": "GB-LEEDS-MAS-01",
+          "wording": "Referral consent and reason for concern",
+          "related_paths": [
+            "previsit_summary"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "KIMSE 관찰에 따른 방문 사유는 가능하나 기관 의뢰동의가 별도로 필요합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-LEEDS-MAS-02",
+          "wording": "Family or caregiver input on daily function",
+          "related_paths": [
+            "family_feedback",
+            "clinical_domains.function_independence"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "보호자/일상 기능 입력의 부재를 정상으로 취급하지 않습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-LEEDS-MAS-03",
+          "wording": "Dementia screening blood tests",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "의학적 검사 결과와 1차원본을 요구할 수 있습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-LEEDS-MAS-04",
+          "wording": "Physical examination and exclusion of delirium",
+          "related_paths": [
+            "clinical_context_events",
+            "external_clinical_records"
+          ],
+          "status": "CLINICIAN_ASSESSMENT_REQUIRED",
+          "limit": "섬망·급성 질환 감별은 KIMSE 분석만으로 확정하지 않습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-LEEDS-MAS-05",
+          "wording": "Cognitive screening test",
+          "related_paths": [
+            "professional_outcomes.validated_assessments"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "실제 표준인지검사 결과가 별도로 필요합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-LEEDS-MAS-06",
+          "wording": "Imaging request where clinically indicated",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "영상 의뢰/검사결과가 실제 존재할 때만 표현할 수 있습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        }
+      ]
+    },
+    {
+      "id": "GB-NORTHUMBRIA",
+      "country": "GB",
+      "source_url": "https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside",
+      "source_type": "PROVIDER_OFFICIAL_SERVICE_PAGE",
+      "approval_status": "PUBLIC_RESEARCH_ONLY",
+      "requirement_groups": [
+        {
+          "id": "GB-NORTHUMBRIA-01",
+          "wording": "Memory concerns onset and duration",
+          "related_paths": [
+            "previsit_summary.first_observed_change_at",
+            "previsit_summary"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "관찰된 최초 변화와 증상 시작일은 반드시 출처를 구분해야 합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-NORTHUMBRIA-02",
+          "wording": "Risk and safeguarding",
+          "related_paths": [
+            "clinical_domains.safety_support"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "실제 신고되거나 관찰된 사건만 전달합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-NORTHUMBRIA-03",
+          "wording": "Referral consent",
+          "related_paths": [],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "환자 동의와 의뢰 권한은 확인되지 않았습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-NORTHUMBRIA-04",
+          "wording": "Recent cognitive screening",
+          "related_paths": [
+            "professional_outcomes.validated_assessments"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "스크리닝 검사 결과는 실측된 것만 인정합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "GB-NORTHUMBRIA-05",
+          "wording": "Blood tests within 6 months",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_RESULT_REQUIRED",
+          "limit": "기간 요건과 검체 결과를 입력 자료로 검증해야 합니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        }
+      ]
+    },
+    {
+      "id": "US-MAYO-NEURO",
+      "country": "US",
+      "source_url": "https://www.mayoclinic.org/medical-professionals/neurology-neurosurgery/referrals",
+      "source_type": "PROVIDER_OFFICIAL_REFERRAL_PAGE",
+      "approval_status": "PUBLIC_RESEARCH_ONLY",
+      "requirement_groups": [
+        {
+          "id": "US-MAYO-NEURO-01",
+          "wording": "Patient demographics and contact information",
+          "related_paths": [
+            "subject"
+          ],
+          "status": "CAPTURE_DEPENDENT",
+          "limit": "환자 표시정보는 있어도 공식 신원매칭과 연락처 검증은 아닙니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "US-MAYO-NEURO-02",
+          "wording": "Existing Mayo registration number when applicable",
+          "related_paths": [],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "Mayo 환자 등록번호는 병원과 확인해야 하며 KIMSE가 생성하지 않습니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "US-MAYO-NEURO-03",
+          "wording": "Insurance category",
+          "related_paths": [],
+          "status": "PARTNER_APPROVAL_REQUIRED",
+          "limit": "보험 유형은 별도 수집·동의·검증 및 기관 조건 확인 대상입니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        },
+        {
+          "id": "US-MAYO-NEURO-04",
+          "wording": "Physician CareLink referral access",
+          "related_paths": [],
+          "status": "APPROVED_CHANNEL_REQUIRED",
+          "limit": "CareLink는 승인된 의뢰 의료진의 경로이며 KIMSE 자동접수 권한이 아닙니다.",
+          "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
+          "source_page": null
+        }
+      ]
+    },
+    {
+      "id": "CA-UHN-MEMORY-FORM",
+      "country": "CA",
+      "source_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "source_type": "PROVIDER_PUBLISHED_REFERRAL_PDF",
+      "approval_status": "PUBLIC_FORM_ONLY_NO_KIMSE_APPROVAL",
+      "requirement_groups": [
+        {
+          "id": "UHN-01",
+          "wording": "Patient identity, date of birth, address, health card data",
+          "related_paths": [],
+          "status": "EXTERNAL_PATIENT_ADMINISTRATIVE_IDENTIFIERS_REQUIRED",
+          "limit": "KIMSE public sandbox contains no real patient identity; do not fabricate identifiers",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 1
+        },
+        {
+          "id": "UHN-02",
+          "wording": "Preferred language and ability to communicate in English",
+          "related_paths": [],
+          "status": "UNIMPLEMENTED_PROFILE_FIELD",
+          "limit": "Language and interpretation preferences need a verified capture/consent workflow",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 1
+        },
+        {
+          "id": "UHN-03",
+          "wording": "Family/caregiver contact for appointment",
+          "related_paths": [
+            "family_feedback"
+          ],
+          "status": "RELATED_OBSERVATION_ONLY",
+          "limit": "Informant observation is not an authorized appointment contact",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 1
+        },
+        {
+          "id": "UHN-04",
+          "wording": "Referring physician identity and OHIP provider number",
+          "related_paths": [],
+          "status": "AUTHORIZED_REFERRER_REQUIRED",
+          "limit": "KIMSE cannot replace an actual referring clinician or create OHIP identifiers",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 1
+        },
+        {
+          "id": "UHN-05",
+          "wording": "Reason for referral",
+          "related_paths": [
+            "previsit_summary.handoff_reason"
+          ],
+          "status": "SUPPLEMENTARY_NARRATIVE_CANDIDATE",
+          "limit": "KIMSE text is an adjunct, not signed referral",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 2
+        },
+        {
+          "id": "UHN-06",
+          "wording": "Falls risk",
+          "related_paths": [
+            "clinical_domains.safety_support"
+          ],
+          "status": "CANDIDATE_USER_REPORT_ONLY",
+          "limit": "No clinical fall risk assessment performed by KIMSE",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 2
+        },
+        {
+          "id": "UHN-07",
+          "wording": "Medical history",
+          "related_paths": [
+            "risk_confounders"
+          ],
+          "status": "PARTIAL_HISTORY_CONTEXT",
+          "limit": "Unverified patient-entered summary cannot substitute clinical record",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 2
+        },
+        {
+          "id": "UHN-08",
+          "wording": "Medication list",
+          "related_paths": [
+            "risk_confounders.current_medications"
+          ],
+          "status": "PARTIAL_USER_MEDICATION_HISTORY",
+          "limit": "Provider medication reconciliation not performed",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 2
+        },
+        {
+          "id": "UHN-09",
+          "wording": "Lab and diagnostic testing including blood work and ECG",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_ORIGINAL_DOCUMENT_REQUIRED",
+          "limit": "Never invent test values or convert no record into a normal result",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 2
+        },
+        {
+          "id": "UHN-10",
+          "wording": "Cognitive testing results such as MoCA/MMSE",
+          "related_paths": [
+            "professional_outcomes"
+          ],
+          "status": "VALIDATED_PROFESSIONAL_TEST_ONLY",
+          "limit": "KIMSE repeatable cognitive tasks cannot be relabeled as MoCA/MMSE",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 2
+        },
+        {
+          "id": "UHN-11",
+          "wording": "Neuroimaging CD when performed and collateral history at appointment",
+          "related_paths": [
+            "external_clinical_records",
+            "family_feedback"
+          ],
+          "status": "EXTERNAL_DOCUMENT_AND_INFORMANT_REQUIRED",
+          "limit": "Text summary cannot replace imaging CD or attendance of an informant",
+          "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
+          "source_page": 2
+        }
+      ]
+    }
+  ]
+}
