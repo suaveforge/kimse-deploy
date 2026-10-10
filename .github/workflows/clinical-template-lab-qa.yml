@@ -92,6 +92,10 @@ jobs:
               assert.equal(await page.locator('#hospitalRequirements > .list-group-item').count(),16,'Emory 15 public research groups plus source footer');
               assert.equal(await page.locator('#requirementsExplanation').getAttribute('data-routing-conflict'),'unresolved','Emory source transport conflict must remain visible');
               assert.match(await page.locator('#requirementsExplanation').innerText(),/환자자료 발송 금지/);
+              assert.equal(await page.locator('#institutionEvidenceDisclosure').evaluate(el=>el.open),false,'provider evidence must start collapsed');
+              await page.locator('#institutionEvidenceSummary').click();
+              assert.equal(await page.locator('#institutionEvidenceDisclosure').evaluate(el=>el.open),true,'provider detail must be keyboard/mouse accessible');
+              assert.equal(await page.locator('#hospitalRequirements [data-source-trace]').count(),15,'Emory source group links remain reachable');
               assert.equal(await page.locator('#rawMetricRows').innerText(),immutableRows,'changing to Emory must not rewrite observed source facts');
               assert.equal(await page.locator('#fieldList .list-group-item').count(),12,'JP professional and external fields must not be hidden');
 
@@ -113,10 +117,13 @@ jobs:
                   const actual=await page.locator('#hospitalRequirements [data-source-trace]').evaluateAll(links=>links.map(el=>({id:el.dataset.requirementId,trace:el.dataset.sourceTrace,href:el.getAttribute('href')})));
                   const expected=officialGroup.requirement_groups.map(item=>{
                     const pdf=Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(officialGroup.source_url);
-                    return {id:item.id,trace:pdf?'PDF_PAGE_INDEXED':'OFFICIAL_URL_SECTION_UNLOCATED',href:officialGroup.source_url+(pdf?'#page='+item.source_page:'')};
+                    const heading=!pdf&&item.source_locator_type==='HTML_SECTION_HEADING'&&Boolean(item.source_heading);
+                    return {id:item.id,trace:pdf?'PDF_PAGE_INDEXED':heading?'HTML_SECTION_HEADING':'OFFICIAL_URL_SECTION_UNLOCATED',href:officialGroup.source_url+(pdf?'#page='+item.source_page:'')};
                   });
                   assert.deepEqual(actual,expected,inst.id+' source hyperlinks must not fabricate HTML anchors or omit PDF pages');
                   assert.equal(Number(await page.locator('#sourceTraceSummary').getAttribute('data-pdf-page-mapped')),expected.filter(x=>x.trace==='PDF_PAGE_INDEXED').length);
+                  assert.equal(Number(await page.locator('#sourceTraceSummary').getAttribute('data-html-section-mapped')),expected.filter(x=>x.trace==='HTML_SECTION_HEADING').length);
+                  assert.equal(Number(await page.locator('#sourceTraceSummary').getAttribute('data-unlocated')),expected.filter(x=>x.trace==='OFFICIAL_URL_SECTION_UNLOCATED').length);
 
                   for(const days of ['28','14','7']){
                     await page.locator('#period').selectOption(days);
