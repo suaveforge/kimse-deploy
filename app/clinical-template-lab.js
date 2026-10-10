@@ -295,7 +295,7 @@
       legend:{type:'scroll',top:0},color:optionColor,grid:{top:68,left:55,right:18,bottom:62,containLabel:false},
       xAxis:{type:'category',boundaryGap:false,data:days,axisLabel:{fontSize:10,hideOverlap:true}},
       yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#e9eef3'}}},
-      dataZoom:[{type:'inside',xAxisIndex:0,filterMode:'none'},{type:'slider',height:16,bottom:12,showDetail:false,filterMode:'none'}],
+      dataZoom:[{id:'kimse-observed-days',type:'inside',xAxisIndex:0,filterMode:'none'},{id:'kimse-observed-days-slider',type:'slider',height:16,bottom:12,showDetail:false,filterMode:'none'}],
       series:lines};
   }
   // Pattern: official Apache ECharts cartesian heatmap, with visible missing days.
@@ -308,6 +308,7 @@
       grid:{top:20,bottom:42,left:118,right:12},
       xAxis:{type:'category',data:days,splitArea:{show:true},axisLabel:{interval:Math.max(1,Math.floor(subset.days/6)),formatter:v=>v.slice(5),rotate:35,fontSize:10}},
       yAxis:{type:'category',data:names,splitArea:{show:true},axisLabel:{width:104,overflow:'truncate',fontSize:10}},
+      dataZoom:[{id:'kimse-observed-days',type:'inside',xAxisIndex:0,filterMode:'none'}],
       visualMap:{show:false,min:0,max:1,inRange:{color:['#e2e8f0','#206bc4']}},
       series:[{name:'관찰일',type:'heatmap',data:heat,label:{show:false},emphasis:{itemStyle:{shadowBlur:4,shadowColor:'rgba(0,0,0,.28)'}}}]};
   }
@@ -332,6 +333,13 @@
     createChart('trendChart',trendOption(subset));
     createChart('coverageChart',coverageOption(subset));
     createChart('changeChart',changeOption(subset));
+    // Apache ECharts 5.6.0 upstream connect API: link only charts with the same calendar-day x-axis.
+    // The %-by-domain bar has a different x-axis and must never be synchronized by position.
+    const trend=window.echarts.getInstanceByDom(qs('trendChart'));
+    const coverage=window.echarts.getInstanceByDom(qs('coverageChart'));
+    trend.group='kimse-synthetic-calendar-days';
+    coverage.group='kimse-synthetic-calendar-days';
+    window.echarts.connect('kimse-synthetic-calendar-days');
   }
   async function initialize(){
     if(!window.KIMSE_CLINICAL_PROFILES)throw Error('PROFILE_RESOLVER_MISSING');

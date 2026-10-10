@@ -42,6 +42,20 @@ jobs:
               assert.match(await page.locator('#rawMetricRows').innerText(),/가상 걸음수 센서/,'human-readable source missing');
               assert.match(await page.locator('#missingSummary').innerText(),/일상기능/,'missing clinical information must be explicit');
               assert.ok(await page.evaluate(()=>Boolean(window.echarts.getInstanceByDom(document.getElementById('trendChart')).getOption().toolbox?.[0]?.feature?.restore)),'official ECharts toolbox missing');
+              const connectedZoom=await page.evaluate(async ()=>{
+                const line=window.echarts.getInstanceByDom(document.getElementById('trendChart'));
+                const heat=window.echarts.getInstanceByDom(document.getElementById('coverageChart'));
+                const bars=window.echarts.getInstanceByDom(document.getElementById('changeChart'));
+                line.dispatchAction({type:'dataZoom',start:23,end:78});
+                await new Promise(resolve=>setTimeout(resolve,240));
+                const p=line.getOption().dataZoom[0],q=heat.getOption().dataZoom[0];
+                const result={trend:p.start,heat:q.start,heatHasZoom:!!q,distinctBarGroup:bars.group!==line.group};
+                line.dispatchAction({type:'restore'});
+                return result;
+              });
+              assert.equal(connectedZoom.heatHasZoom,true,'linked coverage dataZoom missing');
+              assert.ok(Math.abs(connectedZoom.trend-connectedZoom.heat)<1,'official ECharts connected date range out of sync '+JSON.stringify(connectedZoom));
+              assert.ok(connectedZoom.distinctBarGroup,'bar chart has unlike x-axis and must remain independent');
               const immutableRows=await page.locator('#rawMetricRows').innerText();
               for(const id of ['trendChart','coverageChart','changeChart'])assert.equal(await page.locator('#'+id+' canvas').count(),1,name+':'+id);
               await page.locator('#country').selectOption('GB');
