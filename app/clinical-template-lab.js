@@ -291,7 +291,7 @@
     });
     return {backgroundColor:'transparent',animationDuration:650,
       toolbox:{show:true,top:33,right:8,feature:{dataZoom:{yAxisIndex:'none',title:{zoom:'범위 확대',back:'확대 뒤로'}},restore:{title:'확대 원복'}}},
-      tooltip:{trigger:'axis',axisPointer:{type:'cross'},valueFormatter:v=>v==null?'미수집':(v>0?'+':'')+Number(v).toFixed(1)+'%'},
+      tooltip:{trigger:'axis',confine:true,axisPointer:{type:'cross'},valueFormatter:v=>v==null?'미수집':(v>0?'+':'')+Number(v).toFixed(1)+'%'},
       legend:{type:'scroll',top:0},color:optionColor,grid:{top:68,left:55,right:18,bottom:62,containLabel:false},
       xAxis:{type:'category',boundaryGap:false,data:days,axisLabel:{fontSize:10,hideOverlap:true}},
       yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#e9eef3'}}},
@@ -304,7 +304,7 @@
     const names=subset.metrics.map(m=>m.clinical_label);
     const heat=[];
     subset.metrics.forEach((m,y)=>{const present=new Set(m.series.map(p=>p.day));days.forEach((d,x)=>heat.push([x,y,present.has(d)?1:0]))});
-    return {backgroundColor:'transparent',tooltip:{position:'top',formatter:p=>names[p.data[1]]+'<br>'+days[p.data[0]]+' · '+(p.data[2]===1?'실제 합성 기록':'미수집')},
+    return {backgroundColor:'transparent',tooltip:{position:'top',confine:true,formatter:p=>names[p.data[1]]+'<br>'+days[p.data[0]]+' · '+(p.data[2]===1?'실제 합성 기록':'미수집')},
       grid:{top:20,bottom:42,left:118,right:12},
       xAxis:{type:'category',data:days,splitArea:{show:true},axisLabel:{interval:Math.max(1,Math.floor(subset.days/6)),formatter:v=>v.slice(5),rotate:35,fontSize:10}},
       yAxis:{type:'category',data:names,splitArea:{show:true},axisLabel:{width:104,overflow:'truncate',fontSize:10}},
