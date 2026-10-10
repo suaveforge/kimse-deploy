@@ -73,8 +73,11 @@ const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));
 fs.writeFileSync('qa-artifacts/summary.json',JSON.stringify(summary,null,2));
+console.log('KIMSE_UX_AUDIT_RELEASE=20261010-uxaudit-03');
 console.log('KIMSE_UX_AUDIT_TOTAL routes='+unique.length+' observations='+report.length);
 console.log('KIMSE_UX_AUDIT_SMALL_ROUTES='+summary.byRoute.filter(x=>x.smallTargets?.length).length);
+const undersized=summary.byRoute.filter(x=>x.smallTargets?.length);
+if(undersized.length)throw Error('Senior touch target under 64px: '+JSON.stringify(undersized.map(x=>({route:x.route,buttons:x.smallTargets}))));
 console.log('KIMSE_UX_AUDIT_OVERFLOW_ROUTES='+summary.byRoute.filter(x=>x.acrossViews.some(v=>v.overflow)).length);
 console.log('KIMSE_UX_AUDIT_ISSUES '+JSON.stringify(summary.byRoute.filter(x=>x.error||x.wordLeak||x.selects>0||x.checkboxes>3||x.fields>3||x.smallTargets?.length).map(x=>({route:x.route,selects:x.selects,checkboxes:x.checkboxes,fields:x.fields,small:x.smallTargets?.length,wordLeak:x.wordLeak}))).slice(0,3500));
 }finally{await browser.close()}
