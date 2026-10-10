@@ -9,6 +9,7 @@ on:
       - 'evidence/evidence-application-tabs.js'
       - 'evidence/rd.html'
       - 'evidence/tests/atlas-contract.test.cjs'
+      - 'evidence/tests/atlas-browser.test.cjs'
       - '.github/workflows/atlas-contract.yml'
   workflow_dispatch:
 
@@ -38,3 +39,32 @@ jobs:
             curl --fail --silent --show-error --location --retry 2 --connect-timeout 15 --max-time 45 "https://kimse.suaveforge.com/evidence/$asset" -o "/tmp/$asset"
           done
           node -e "const j=require('/tmp/rd-world-map-data.json'); if(j.total!==92 || j.iso31661Master.length!==249) process.exit(1); console.log('Live map JSON contract PASS')"
+
+  browser-map-integration:
+    name: Real Chromium map / mobile / country drilldown
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install browser and deterministic local map fixtures
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1 d3@7.9.0 topojson-client@3.1.0 world-atlas@2 @tabler/core@1.5.1
+          npx playwright install --with-deps chromium
+      - name: Serve public Pages branch locally
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/kimse-atlas-server.log 2>&1 &
+          sleep 2
+          curl --fail --silent http://127.0.0.1:8765/evidence/rd.html > /dev/null
+      - name: Browser screenshot and interactive map assertions
+        run: node evidence/tests/atlas-browser.test.cjs
+      - name: Preserve desktop and mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-global-atlas-browser-qa
+          path: evidence/test-results/*.png
+          if-no-files-found: warn
+          retention-days: 14
