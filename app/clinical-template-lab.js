@@ -128,6 +128,7 @@
   function renderHospitalRequirements(crosswalk,country,institutionId){
     const root=qs('hospitalRequirements'),message=qs('requirementsExplanation');
     root.replaceChildren();
+    delete message.dataset.routingConflict;
     const row=crosswalk.entries.find(item=>item.id===institutionId&&item.country===country);
     if(!row){
       message.textContent='국가 공통 표시 후보입니다. 공개 의료기관을 선택해야 그 기관의 조사된 원문 요건과 추가 확인자료를 볼 수 있습니다.';
@@ -136,6 +137,10 @@
     }
     if(row.approval_status==='APPROVED'||crosswalk.policy.verified_receivers!==0)throw Error('PUBLIC_FORM_APPROVAL_STATE_CONFLICT');
     message.textContent='공식 공개자료 조사 '+row.requirement_groups.length+'개 항목/그룹입니다. 아래 내용은 필수항목의 승인된 체크리스트가 아니며, KIMSE 데이터만으로 서류·전문검사를 대신하지 못합니다.';
+    if(row.source_conflict?.status==='UNRESOLVED_OFFICIAL_SOURCE_CONFLICT'){
+      message.textContent+=' 접수 경로 공식 원문 상충: 진료과 웹·PDF 안내의 실물 배송 방법이 서로 다르며, 병원 전체 안내는 진료과별 접수 경로를 대신하지 않습니다. 담당 의료기관 확인 전 KIMSE 환자자료 발송 금지.';
+      message.dataset.routingConflict='unresolved';
+    } else delete message.dataset.routingConflict;
     for(const [index,item] of row.requirement_groups.entries()){
       const isExternal=/EXTERNAL|AUTHORIZED|APPROVED_CHANNEL|PARTNER_APPROVAL|NOT_YET_SUPPORTED|INSTITUTION_REVIEW|UNIMPLEMENTED|PROFESSIONAL|CLINICIAN/.test(item.status);
       const box=make('div','list-group-item px-0 py-3');
@@ -248,7 +253,7 @@
         '별도 출처와 검증등급 확인 필요':'미수집 (검사 정상 또는 음성이라는 뜻이 아님)');
     const row=crosswalk.entries.find(x=>x.id===institution&&x.country===country);
     qs('printInstitution').textContent=row?
-      '공개 조사 기관: '+(registry.institutions.find(x=>x.id===institution)?.name||institution)+' · 공식 공개자료의 항목/그룹 '+row.requirement_groups.length+'개 · KIMSE 승인된 제출 프로파일 아님':
+      '공개 조사 기관: '+(registry.institutions.find(x=>x.id===institution)?.name||institution)+' · 공식 공개자료의 항목/그룹 '+row.requirement_groups.length+'개 · KIMSE 승인된 제출 프로파일 아님'+(row.source_conflict?.status==='UNRESOLVED_OFFICIAL_SOURCE_CONFLICT'?' · 공식 배송 안내 상충, 전달방식 미확정·환자자료 발송 금지':''):
       '의료기관 미선택 · 국가 공통 공개지침 후보만 참고. 승인된 병원 제출 프로파일 없음';
     const target=qs('printInstitutionUrl');target.replaceChildren();
     if(row){const a=make('a','',row.source_url);a.href=row.source_url;target.append(a)}

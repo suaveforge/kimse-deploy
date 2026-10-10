@@ -65,6 +65,12 @@ jobs:
               assert.equal(await page.locator('#fieldList [data-guard-code="SELF_AND_INFORMANT_SEPARATE"]').count(),1,'canonical guard code must remain traceable');
               assert.doesNotMatch(await page.locator('#fieldList').innerText(),/SELF_AND_INFORMANT_SEPARATE/,'internal clinical guard exposed');
               assert.match(await page.locator('#fieldList').innerText(),/본인과 가족이 보고한/,'clinical explanation is missing');
+              await page.locator('#country').selectOption('US');
+              await page.locator('#institution').selectOption('US-EMORY-COGNITIVE-NEUROLOGY');
+              assert.equal(await page.locator('#hospitalRequirements > .list-group-item').count(),16,'Emory 15 public research groups plus source footer');
+              assert.equal(await page.locator('#requirementsExplanation').getAttribute('data-routing-conflict'),'unresolved','Emory source transport conflict must remain visible');
+              assert.match(await page.locator('#requirementsExplanation').innerText(),/환자자료 발송 금지/);
+              assert.equal(await page.locator('#rawMetricRows').innerText(),immutableRows,'changing to Emory must not rewrite observed source facts');
               await page.locator('#period').selectOption('7');
               assert.equal(await page.locator('#rawMetricRows tr').count(),6);
               assert.match(await page.locator('#rawMetricRows').innerText(),/7일/);

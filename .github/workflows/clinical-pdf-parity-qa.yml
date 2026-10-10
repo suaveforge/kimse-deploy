@@ -47,6 +47,7 @@ jobs:
               const cases=[
                 {code:'KR-28',country:'KR',clinic:'',period:'28'},
                 {code:'GB-28',country:'GB',clinic:'GB-DORSET-MAS',period:'28'},
+                {code:'US-28',country:'US',clinic:'US-EMORY-COGNITIVE-NEUROLOGY',period:'28'},
                 {code:'CA-14',country:'CA',clinic:'CA-UHN-MEMORY-FORM',period:'14'},
                 {code:'JP-7',country:'JP',clinic:'JP-KYORIN-SUGINAMI-MEMORY',period:'7'}
               ];
@@ -84,6 +85,7 @@ jobs:
                 assert.deepEqual(text.print,text.screen,'print summary must use same rendered DOM cells');
                 for(const [a,b] of [['reason','printReason'],['observed','printObserved'],['top','printTop'],['missing','printMissing']])assert.equal(text[a],text[b],a+' mismatch');
                 assert.match(text.institution,/승인된|승인/,'hospital approval boundary missing');
+                if(c.code==='US-28')assert.match(text.institution,/발송 금지/,'Emory route conflict must appear in printed report');
                 if(baseline.length)assert.deepEqual(text.screen.map(row=>row.slice(0,4)),baseline,'country/period must not rewrite canonical baseline/recent facts');
                 else baseline.push(...text.screen.map(row=>row.slice(0,4)));
                 await page.emulateMedia({media:'print'});
