@@ -99,7 +99,10 @@
           "status": "PUBLIC_CONTEXT_ONLY",
           "limit": "진료 분야 소개이지 낌새 리포트 수락 항목을 뜻하지 않습니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "진료일정",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         },
         {
           "id": "KR-AMC-NEURO-MEMORY-02",
@@ -111,7 +114,10 @@
           "status": "EXTERNAL_DOCUMENT_REQUIRED",
           "limit": "기록된 복용약 맥락은 보여줄 수 있으나 공식 처방전의 대체가 아닙니다.",
           "interpretation": "SOURCE_RESEARCH_MAPPING_NOT_A_HOSPITAL_APPROVED_KIMSE_FORM",
-          "source_page": null
+          "source_page": null,
+          "source_heading": "진료일정",
+          "source_locator_type": "HTML_SECTION_HEADING",
+          "source_locator_reviewed_on": "2026-10-10"
         }
       ]
     },
