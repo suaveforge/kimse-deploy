@@ -91,7 +91,8 @@ async function verifySeniorJourneys(browser){
     assert(await p.locator('[data-feedback-stage="finish"]').isVisible(),'family finish must be visible');
     assert.equal(await p.locator('#family-feedback-assessment').inputValue(),'UNKNOWN');
     assert.equal(await p.locator('#family-feedback-action').inputValue(),'NONE');
-    await p.screenshot({path:'qa-artifacts/screens/family-feedback-selected-375.png',fullPage:true});
+    await p.evaluate(()=>window.scrollTo(0,0));
+    await p.screenshot({path:'qa-artifacts/screens/family-feedback-selected-375.png',fullPage:false});
     console.log('KIMSE_UX_JOURNEY_FAMILY=PASS assessment→action→back→action→finish');
   }finally{await c.close()}
   const s=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce'});
@@ -226,6 +227,13 @@ async function verifyRemainingSeniorP2(browser){
     await p.locator('#professional-date').waitFor({timeout:15000});
     assert(await p.locator('#professional-source-route').isVisible(),'clinical source remains required');
     assert(await p.locator('#professional-result').isVisible(),'clinical result code remains required');
+    assert(await p.locator('.kimse-professional-step').isVisible(),'three-step professional heading present');
+    const fieldOrder=await p.locator('#professional-outcome-form').evaluate(form=>{
+      const fields=['professional-date','professional-source-route','professional-result','professional-institution'].map(id=>form.querySelector('#'+id)?.getBoundingClientRect().top);
+      return fields;
+    });
+    assert(fieldOrder[0]<fieldOrder[1]&&fieldOrder[1]<fieldOrder[2],'mandatory clinical fields shown in sequence');
+    assert(!(await p.locator('.kimse-professional-institution').evaluate(el=>el.open)),'institution stays collapsed until requested');
     const details=p.locator('.kimse-professional-institution');
     assert(!(await details.evaluate(el=>el.open)),'optional institute and source note initially collapsed');
     await details.locator('summary').first().click();
@@ -243,6 +251,21 @@ async function verifyRemainingSeniorP2(browser){
     assert(await p.locator('#context-event-summary').isVisible(),'original event summary preserved');
     assert(await p.locator('#context-event-detail').isVisible(),'original event detail preserved');
     await p.screenshot({path:'qa-artifacts/screens/context-optional-open-375.png',fullPage:false});
+    
+    await p.goto(base+'consent',{waitUntil:'domcontentloaded'});
+    await p.locator('#consent-service').waitFor({timeout:15000});
+    assert.equal(await p.locator('#consent-form input[type="checkbox"]').count(),9,'all mandatory and optional consents retained');
+    assert(!(await p.locator('.kimse-consent-options').evaluate(el=>el.open)),'six optional choices initially collapsed');
+    await p.locator('.kimse-consent-options>summary').click();
+    assert.equal(await p.locator('.kimse-consent-options input[type="checkbox"]').count(),6,'six optional consent choices remain independent');
+    await p.locator('.kimse-consent-options>summary').click();
+    await p.screenshot({path:'qa-artifacts/screens/consent-priority-375.png',fullPage:false});
+    await p.locator('.skip-link').focus();
+    await p.keyboard.press('Enter');
+    assert.equal(new URL(p.url()).hash,'#/consent','skip link activation must not change SPA route');
+    assert(await p.locator('#main').evaluate(el=>document.activeElement===el),'skip link must focus main');
+    assert(await p.locator('.skip-link').evaluate(el=>el.getBoundingClientRect().top<0),'keyboard skip overlay hides after use');
+    console.log('KIMSE_UX_JOURNEY_CLINICAL_CONSENT_SKIP=PASS mandatory-fields→consent9→optional6→route-preserving-keyboard-skip');
     console.log('KIMSE_UX_JOURNEY_HOME_CLINICAL=PASS home→details→professional codes→context fields');
   }finally{await c.close()}
 }
