@@ -1,0 +1,60 @@
+name: KIMSE Licensed Clinical Template Browser QA
+on:
+  push:
+    branches: [main]
+    paths: ['clinical-template-lab.html','clinical-template-lab.js','clinical-profile-resolver.js','clinical-profile-authorities.json','.github/workflows/clinical-template-lab-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: clinical-template-lab-browser
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Chromium browser
+        run: |
+          npm install playwright@1.56.1 --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Test live Tabler dashboard and ECharts charts
+        run: |
+          mkdir -p clinical-template-qa
+          cat > ./test-template-browser.cjs <<'NODE'
+          const {chromium}=require('playwright'),assert=require('node:assert/strict');
+          (async()=>{
+            const browser=await chromium.launch(),issues=[];
+            for(const [name,width,height] of [['desktop',1440,900],['tablet',1024,768],['mobile',390,844]]){
+              const ctx=await browser.newContext({viewport:{width,height},serviceWorkers:'block'}),page=await ctx.newPage();
+              page.on('pageerror',e=>issues.push(name+':'+e.message));
+              page.on('request',r=>{if(/api-kimse\.suaveforge\.com|\/api\/v1\//.test(r.url()))issues.push('UNSAFE_API_CALL:'+r.url())});
+              const response=await page.goto('https://kimse.suaveforge.com/clinical-template-lab.html',{waitUntil:'domcontentloaded',timeout:45000});
+              assert.equal(response.status(),200);
+              await page.waitForFunction(()=>document.documentElement.dataset.clinicalTemplateReady!==undefined,{timeout:65000});
+              assert.equal(await page.evaluate(()=>document.documentElement.dataset.clinicalTemplateReady),'yes','chart assets inaccessible');
+              assert.equal((await page.locator('#metricCount').innerText()).trim(),'6개');
+              for(const id of ['trendChart','coverageChart','changeChart'])assert.equal(await page.locator('#'+id+' canvas').count(),1,name+':'+id);
+              await page.locator('#country').selectOption('GB');
+              await page.locator('#institution').selectOption('GB-DORSET-MAS');
+              assert.match(await page.locator('#selectionStatus').innerText(),/의료진 승인 없음/);
+              await page.locator('#period').selectOption('7');
+              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+2),'horizontal clipping '+name);
+              await page.screenshot({path:'clinical-template-qa/'+name+'.png',fullPage:true});
+              await ctx.close();
+              console.log('KIMSE_TEMPLATE_SCREEN_PASS='+name);
+            }
+            await browser.close();
+            assert.deepEqual(issues,[]);
+            console.log('KIMSE_LICENSED_CLINICAL_TEMPLATE_BROWSER_OK=yes');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node test-template-browser.cjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-licensed-clinical-template-qa
+          path: clinical-template-qa/*.png
+          if-no-files-found: ignore
