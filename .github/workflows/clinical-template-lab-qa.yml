@@ -94,8 +94,16 @@ jobs:
                 const res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
                 if(!res||res.status()!==200)throw Error('HIGHCHARTS_REFERENCE_NOT_AVAILABLE_'+name);
                 await page.waitForTimeout(3000);
+                const reject=page.getByRole('button',{name:/Reject all/i});
+                if(await reject.count()){await reject.first().click({timeout:5000});await page.waitForTimeout(800)}
+                await page.keyboard.press('Escape');
+                const cancel=page.getByText('Cancel',{exact:true});
+                if(await cancel.count()&&await cancel.first().isVisible())await cancel.first().click({timeout:3000});
+                if(await page.getByText('This site uses cookies').first().isVisible().catch(()=>false))throw Error('HIGHCHARTS_COOKIE_LAYER_UNDISMISSED_'+name);
                 if(!(await page.locator('body').innerText()).includes('Dashboards Sync'))throw Error('HIGHCHARTS_WRONG_DEMO_'+name);
-                const detail=await page.evaluate(()=>({title:document.title,charts:document.querySelectorAll('.highcharts-container').length,frames:document.querySelectorAll('iframe').length}));
+                const frameMetrics=[];
+                for(const frame of page.frames()){frameMetrics.push({url:frame.url().slice(0,100),charts:await frame.locator('.highcharts-container').count().catch(()=>-1)})}
+                const detail={title:await page.title(),frameMetrics};
                 await page.screenshot({path:'clinical-template-qa/highcharts-official-'+name+'.png',fullPage:true});
                 console.log('HIGHCHARTS_OFFICIAL_REFERENCE_CAPTURED='+name+' '+JSON.stringify(detail));
                 await page.close();
