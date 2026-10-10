@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'self'; form-action 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; font-src 'self' https://cdn.jsdelivr.net; connect-src 'self'; object-src 'none'; frame-ancestors 'none'">
+  <title>낌새 | 공식 템플릿 기반 의료진 뷰 검증실</title>
+  <!-- Upstream prebuilt Tabler dashboard UI; MIT license. NOT a bespoke infographic. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.6.1/dist/css/tabler.min.css">
+  <link rel="stylesheet" href="./clinical-template-lab.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+  <script defer src="./clinical-profile-resolver.js"></script>
+  <script defer src="./clinical-template-lab.js"></script>
+</head>
+<body>
+<div class="page">
+  <header class="navbar navbar-expand-md navbar-light d-print-none">
+    <div class="container-xl">
+      <a class="navbar-brand navbar-brand-autodark" href="./index.html" aria-label="낌새 홈으로 이동">낌새 <span class="badge bg-azure-lt ms-2">Clinical Template Lab</span></a>
+      <div class="navbar-nav flex-row order-md-last align-items-center">
+        <a class="btn btn-outline-secondary btn-sm" href="./index.html">앱으로 돌아가기</a>
+      </div>
+    </div>
+  </header>
+  <div class="page-wrapper">
+    <div class="page-header d-print-none">
+      <div class="container-xl">
+        <div class="row align-items-center g-3">
+          <div class="col">
+            <div class="page-pretitle">OFFICIAL TABLER TEMPLATE × APACHE ECHARTS EXAMPLES</div>
+            <h1 class="page-title">의료진용 리포트 · 템플릿 검증실</h1>
+            <div class="text-secondary mt-2">국제 공통 → 국가별 → 공개 병원정보를 구분한 표현 후보. <strong>합성 데이터 전용</strong>이며 실제 병원 승인 서식이 아닙니다.</div>
+          </div>
+          <div class="col-auto">
+            <span class="badge bg-yellow-lt">병원별 미승인 · 전자제출 불가</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="container-xl">
+        <div class="alert alert-warning" role="note">
+          <strong>임상·보안 경계:</strong> 화면에 표시하는 값은 모두 합성값입니다. 의료기관 7곳은 공개 안내 조사 대상이며 KIMSE 리포트 수신을 승인하지 않았습니다. 이 검증실은 실제 환자 데이터를 불러오거나 전송하지 않습니다.
+        </div>
+        <div class="row row-cards mb-3">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="row g-3 align-items-end">
+                  <div class="col-lg-3 col-md-4">
+                    <label for="country" class="form-label">리포트 근거 적용범위</label>
+                    <select id="country" class="form-select" aria-label="국가별 공개지침 후보 선택"></select>
+                  </div>
+                  <div class="col-lg-4 col-md-4">
+                    <label for="institution" class="form-label">의료기관 공개자료 (승인된 수신처 아님)</label>
+                    <select id="institution" class="form-select" aria-label="공개정보 조사 기관 선택"></select>
+                  </div>
+                  <div class="col-lg-2 col-md-4">
+                    <label for="period" class="form-label">관찰 기간</label>
+                    <select id="period" class="form-select" aria-label="관찰 일수 선택">
+                      <option value="28" selected>28일</option>
+                      <option value="14">최근 14일</option>
+                      <option value="7">최근 7일</option>
+                    </select>
+                  </div>
+                  <div class="col-lg-3">
+                    <div id="selectionStatus" class="small text-secondary" role="status" aria-live="polite">공개 근거 및 화면 템플릿을 로딩하고 있습니다.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- These are unchanged Tabler dashboard card/layout patterns, NOT an original infographic design. -->
+        <div class="row row-cards mb-3" aria-label="진료 전 핵심 사실">
+          <div class="col-md-6 col-xl-3"><div class="card card-sm"><div class="card-body">
+            <div class="subheader">첫 개인 기준선 이탈 관찰일</div>
+            <div class="h2 mt-2 mb-0" id="firstDate">—</div>
+            <div class="text-secondary small mt-1">발병일 추정 아님</div>
+          </div></div></div>
+          <div class="col-md-6 col-xl-3"><div class="card card-sm"><div class="card-body">
+            <div class="subheader">보고서에 존재하는 생활 신호</div>
+            <div class="h2 mt-2 mb-0" id="metricCount">—</div>
+            <div class="text-secondary small mt-1">인지 임상 점수나 진단이 아님</div>
+          </div></div></div>
+          <div class="col-md-6 col-xl-3"><div class="card card-sm"><div class="card-body">
+            <div class="subheader">추적 중 개인 기준선 변화</div>
+            <div class="h2 mt-2 mb-0" id="changesCount">—</div>
+            <div class="text-secondary small mt-1">운영상 관찰값 · 중증도 아님</div>
+          </div></div></div>
+          <div class="col-md-6 col-xl-3"><div class="card card-sm"><div class="card-body">
+            <div class="subheader">실제 의료기관 전자수신 승인</div>
+            <div class="h2 mt-2 mb-0">0곳</div>
+            <div class="text-secondary small mt-1">의료기관 회신·승인 전용 단계</div>
+          </div></div></div>
+        </div>
+
+        <div class="row row-cards">
+          <div class="col-lg-8">
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">개인 기준선 대비 종단 변화</h2><span class="ms-auto badge bg-blue-lt">ECharts · Line / DataZoom 공식 예제 활용</span></div>
+              <div class="card-body">
+                <p class="text-secondary small">서로 다른 단위를 혼합해 해석하지 않도록 각 신호를 해당 개인 기준선 대비 증감률(%)로 표시합니다. 결측일은 연결하지 않습니다.</p>
+                <div id="trendChart" class="clinical-chart" role="img" aria-label="일별 개인 기준선 대비 변화 그래프, 마우스 또는 터치로 상세정보 확인"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">자료가 기록된 날</h2><span class="ms-auto badge bg-azure-lt">ECharts · Calendar/Heatmap 예제</span></div>
+              <div class="card-body">
+                <p class="text-secondary small">진한 칸은 기록된 날, 옅은 칸은 미수집일입니다. 미수집을 정상으로 간주하지 않습니다.</p>
+                <div id="coverageChart" class="clinical-chart" role="img" aria-label="신호별 수집 및 미수집일 히트맵"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">개인 기준선 ↔ 최근 수치</h2><span class="ms-auto badge bg-blue-lt">ECharts · Horizontal Bar 예제</span></div>
+              <div class="card-body">
+                <p class="text-secondary small">값은 기준선 대비 증감률이며 임상 위험점수나 인지 기능의 정상·비정상을 뜻하지 않습니다.</p>
+                <div id="changeChart" class="clinical-chart" role="img" aria-label="기준선 대비 영역별 변화율 막대 그래프"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">의료진에게 보여줄 정보 우선순위</h2><span class="ms-auto badge bg-orange-lt">후보 순서 · 미승인</span></div>
+              <div class="card-body">
+                <p id="profileNote" class="text-secondary small"></p>
+                <div class="list-group list-group-flush" id="fieldList" aria-label="국가별 리포트 필드 후보 목록"></div>
+                <p class="small text-secondary mt-3 mb-0">순서만 국가별로 바뀝니다. 관찰값·출처·결측은 바뀌지 않습니다.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">지침 및 표준 원문</h2></div>
+              <div class="card-body" id="sourceList"></div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">가족 관찰·외부 전문평가 구분</h2></div>
+              <div class="card-body">
+                <div id="informantContext" class="mb-2"></div>
+                <div class="text-secondary" id="professionalContext"></div>
+                <div class="alert alert-info mt-3 mb-0">FHIR IPS·KR Core는 데이터 구조/교환의 근거이지 의료진이 요구하는 진료 의뢰 서식을 자동 확정해주는 규격이 아닙니다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 mb-4 text-secondary small">
+          <strong>원본 상용급 템플릿:</strong> <a href="https://tabler.io/admin-template" target="_blank" rel="noopener noreferrer">Tabler Dashboard (MIT)</a> /
+          <a href="https://echarts.apache.org/examples/en/index.html" target="_blank" rel="noopener noreferrer">Apache ECharts 공식 완성형 차트 갤러리 (Apache-2.0)</a>.
+          ApexCharts 상용/OEM 별도 라이선스 구성요소는 사용하지 않습니다. 이 페이지는 <strong>템플릿 적합성 검증용</strong>입니다.
+          <span class="ms-2" id="demoVersion">Updated 2026.10.10 · Clinical Template Lab 01</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

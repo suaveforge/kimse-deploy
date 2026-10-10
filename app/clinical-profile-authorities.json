@@ -1,0 +1,507 @@
+{
+  "schema_version": "2026-10-10.1",
+  "status": "PUBLIC_EVIDENCE_CANDIDATES_NOT_PROVIDER_APPROVED",
+  "scope": "Clinical handoff report profile display planning, not clinical diagnostic logic or authorized submission",
+  "reviewed_at": "2026-10-10",
+  "guarantees": [
+    "One immutable Clinical Dataset across views",
+    "No missing-to-normal coercion",
+    "No user-entered-to-provider-verified promotion",
+    "Never label first observed deviation disease onset",
+    "No fabricated mandatory hospital requirements",
+    "Published guidance is not a hospital-approved recipient"
+  ],
+  "sources": [
+    {
+      "id": "GLOBAL-HL7-IPS-2026",
+      "jurisdiction": "GLOBAL",
+      "issuer": "HL7 International",
+      "title": "International Patient Summary Implementation Guide 2.0.1",
+      "url": "https://hl7.org/fhir/uv/ips/2.0.1/en/Structure-of-the-International-Patient-Summary.html",
+      "year": 2026,
+      "role": "INTEROPERABILITY_ONLY",
+      "authority_scope": "Required IPS sections for cross-border summaries, NOT a dementia referral form or universal physician preference",
+      "source_status": "OFFICIAL_PUBLISHED"
+    },
+    {
+      "id": "KR-KDA-2021",
+      "jurisdiction": "KR",
+      "issuer": "Korean Dementia Association",
+      "title": "Clinical Practice Guideline for Dementia (Diagnosis and Evaluation): 2021 Revised Edition",
+      "url": "https://pc.dnd.or.kr/search.php?code=0196DND&id=10.12779%2Fdnd.2022.21.1.42&vmode=FT&where=aview",
+      "year": 2022,
+      "role": "DEMENTIA_CLINICAL_GUIDELINE",
+      "authority_scope": "Korean national specialty clinical content guidance, not an individual hospital intake form",
+      "source_status": "OFFICIAL_PUBLISHED_2022_NEEDS_CURRENTNESS_REVIEW"
+    },
+    {
+      "id": "KR-HL7K-CORE-2",
+      "jurisdiction": "KR",
+      "issuer": "HL7 Korea",
+      "title": "KR Core Implementation Guide v2.0.0 STU2",
+      "url": "https://hl7korea.or.kr/fhir/krcore/index.html",
+      "year": 2025,
+      "role": "INTEROPERABILITY_ONLY",
+      "authority_scope": "FHIR R4 national exchange constraints; no automatic clinical or hospital acceptance",
+      "source_status": "OFFICIAL_PUBLISHED_TRIAL_USE"
+    },
+    {
+      "id": "GB-NICE-NG97",
+      "jurisdiction": "GB",
+      "issuer": "NICE",
+      "title": "NG97 Dementia diagnosis recommendations 1.2.1-1.2.6",
+      "url": "https://www.nice.org.uk/guidance/ng97/chapter/recommendations",
+      "year": 2018,
+      "role": "DEMENTIA_CLINICAL_GUIDELINE",
+      "authority_scope": "History from patient and informant, cognitive/behavioral/functional impact, tests and reversible causes; does not authorize a digital KIMSE submission",
+      "source_status": "OFFICIAL_LIVE_GUIDANCE"
+    },
+    {
+      "id": "US-AA-DETECD-2025",
+      "jurisdiction": "US",
+      "issuer": "Alzheimer's Association",
+      "title": "DETeCD-ADRD primary-care recommendations",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12173843/",
+      "year": 2025,
+      "role": "DEMENTIA_CLINICAL_GUIDELINE",
+      "authority_scope": "Patient and informant history, longitudinal onset and sequence, cognition, ADL/IADL, mood, sensory/motor, safety; no automatic KIMSE clinical validity",
+      "source_status": "PUBLISHED_PRIMARY_GUIDELINE"
+    },
+    {
+      "id": "CA-CCCDTD5-2020",
+      "jurisdiction": "CA",
+      "issuer": "Canadian Consensus Conference on the Diagnosis and Treatment of Dementia",
+      "title": "CCCDTD5 early/timely assessment with cognitive, behavioral and functional scales",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7657153/",
+      "year": 2020,
+      "role": "DEMENTIA_CLINICAL_GUIDELINE",
+      "authority_scope": "Informant essential, validated instruments for concern-triggered assessment; routine asymptomatic mass screening not recommended",
+      "source_status": "PUBLISHED_PRIMARY_GUIDELINE_NEEDS_CURRENTNESS_REVIEW"
+    },
+    {
+      "id": "AU-RACGP-2016",
+      "jurisdiction": "AU",
+      "issuer": "Royal Australian College of General Practitioners",
+      "title": "Clinical practice guidelines and principles of care for people with dementia in Australia (GP summary)",
+      "url": "https://www.racgp.org.au/afp/2016/december/clinical-practice-guidelines-and-principles-of-car",
+      "year": 2016,
+      "role": "DEMENTIA_CLINICAL_GUIDELINE",
+      "authority_scope": "History, informant, cognitive test, medication and reversible causes; historical GP guidance needs currency review",
+      "source_status": "OFFICIAL_HISTORICAL_NEEDS_CURRENTNESS_REVIEW"
+    },
+    {
+      "id": "JP-JSN-2017",
+      "jurisdiction": "JP",
+      "issuer": "Japanese Society of Neurology",
+      "title": "Clinical Practice Guideline for Dementia 2017",
+      "url": "https://www.neurology-jp.org/guidelinem/dementia/index.html",
+      "year": 2017,
+      "role": "DEMENTIA_CLINICAL_GUIDELINE",
+      "authority_scope": "Japanese historical clinical guidance, not a verified current hospital requirement",
+      "source_status": "OFFICIAL_HISTORICAL_NOT_CURRENTLY_VERIFIED"
+    }
+  ],
+  "fields": [
+    {
+      "id": "consultation_reason",
+      "label": "상담·의뢰 사유",
+      "canonical_path": "previsit_summary.handoff_reason",
+      "guard": "OBSERVED_AND_PATIENT_HISTORY",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "onset_trajectory",
+      "label": "관찰된 변화의 시작·순서·지속",
+      "canonical_path": "previsit_summary.first_observed_change_at",
+      "guard": "OBSERVATION_DATE_NOT_DISEASE_ONSET",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "longitudinal_signals",
+      "label": "수면·활동·이동·음성 등 개인 기준선 변화",
+      "canonical_path": "monitoring.metrics",
+      "guard": "KIMSE_OPERATIONAL_NOT_DIAGNOSTIC",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "cognitive_history",
+      "label": "인지 관련 변화/반복과제",
+      "canonical_path": "clinical_domains.cognition",
+      "guard": "KIMSE_TASK_NOT_VALIDATED_SCORE",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "function_independence",
+      "label": "ADL·IADL·안전 영향",
+      "canonical_path": "clinical_domains.function_independence",
+      "guard": "SELF_AND_INFORMANT_SEPARATE",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "informant_history",
+      "label": "가족·보호자 정보·불일치",
+      "canonical_path": "clinical_domains.subjective_change",
+      "guard": "INFORMANT_NOT_CLINICIAN_VERIFIED",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "mood_neuropsychiatric",
+      "label": "기분·행동·정신증상 맥락",
+      "canonical_path": "clinical_domains.mood_behavior",
+      "guard": "NOT_A_PSYCHIATRIC_DIAGNOSIS",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "sensory_motor",
+      "label": "청각·시각·보행·운동 맥락",
+      "canonical_path": "clinical_domains.sensory_motor",
+      "guard": "NOT_A_CLINICAL_NEURO_EXAM",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "medication_reversible_context",
+      "label": "약물·질병·급성혼란·가역요인",
+      "canonical_path": "risk_confounders",
+      "guard": "MISSING_IS_NOT_NEGATIVE",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "professional_assessments",
+      "label": "의료진 시행 검사/진단 결과",
+      "canonical_path": "professional_outcomes",
+      "guard": "MUST_PRESERVE_USER_ENTERED_VS_PROVIDER_LINKED",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "external_records",
+      "label": "원문 검사·진료의뢰·영상 기록",
+      "canonical_path": "external_clinical_records",
+      "guard": "KIMSE_SUMMARY_CANNOT_REPLACE_ORIGINAL",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    },
+    {
+      "id": "coverage_provenance",
+      "label": "출처·자료 품질·미수집",
+      "canonical_path": "clinical_coverage",
+      "guard": "MISSING_AND_NONE_REPORTED_DISTINCT",
+      "source_status": "CANONICAL_EXISTING_FIELD"
+    }
+  ],
+  "regions": [
+    {
+      "code": "GLOBAL",
+      "label": "국제 공통 후보",
+      "evidence": [
+        "GLOBAL-HL7-IPS-2026",
+        "US-AA-DETECD-2025",
+        "GB-NICE-NG97"
+      ],
+      "presentation_order": [
+        "consultation_reason",
+        "onset_trajectory",
+        "cognitive_history",
+        "function_independence",
+        "informant_history",
+        "longitudinal_signals",
+        "medication_reversible_context",
+        "coverage_provenance",
+        "external_records",
+        "professional_assessments"
+      ],
+      "notes": "International common clinical content is an evidence-informed KIMSE candidate, not a universal mandated report.",
+      "clinical_approval": "NOT_REVIEWED"
+    },
+    {
+      "code": "KR",
+      "label": "대한민국 진료전 요약 후보",
+      "evidence": [
+        "KR-KDA-2021",
+        "KR-HL7K-CORE-2",
+        "US-AA-DETECD-2025"
+      ],
+      "presentation_order": [
+        "consultation_reason",
+        "onset_trajectory",
+        "cognitive_history",
+        "function_independence",
+        "informant_history",
+        "longitudinal_signals",
+        "medication_reversible_context",
+        "professional_assessments",
+        "external_records",
+        "coverage_provenance"
+      ],
+      "notes": "Korean clinical guidelines plus trial-use interoperability; actual institutional receiving requirements not approved.",
+      "clinical_approval": "NOT_REVIEWED"
+    },
+    {
+      "code": "GB",
+      "label": "영국 Memory Assessment 후보",
+      "evidence": [
+        "GB-NICE-NG97"
+      ],
+      "presentation_order": [
+        "consultation_reason",
+        "onset_trajectory",
+        "informant_history",
+        "function_independence",
+        "cognitive_history",
+        "medication_reversible_context",
+        "mood_neuropsychiatric",
+        "sensory_motor",
+        "external_records",
+        "coverage_provenance",
+        "longitudinal_signals"
+      ],
+      "notes": "NICE NG97 1.2.1-1.2.6 outlines assessment, not a particular NHS provider form.",
+      "clinical_approval": "NOT_REVIEWED"
+    },
+    {
+      "code": "US",
+      "label": "미국 Primary/Specialty Care 후보",
+      "evidence": [
+        "US-AA-DETECD-2025"
+      ],
+      "presentation_order": [
+        "consultation_reason",
+        "onset_trajectory",
+        "informant_history",
+        "cognitive_history",
+        "function_independence",
+        "mood_neuropsychiatric",
+        "sensory_motor",
+        "medication_reversible_context",
+        "professional_assessments",
+        "coverage_provenance",
+        "longitudinal_signals"
+      ],
+      "notes": "Alzheimer's Association guidance, not a Medicare or Mayo Clinic-approved KIMSE form.",
+      "clinical_approval": "NOT_REVIEWED"
+    },
+    {
+      "code": "CA",
+      "label": "캐나다 인지저하 평가 후보",
+      "evidence": [
+        "CA-CCCDTD5-2020"
+      ],
+      "presentation_order": [
+        "consultation_reason",
+        "informant_history",
+        "function_independence",
+        "cognitive_history",
+        "mood_neuropsychiatric",
+        "onset_trajectory",
+        "medication_reversible_context",
+        "coverage_provenance",
+        "professional_assessments",
+        "longitudinal_signals"
+      ],
+      "notes": "CCCDTD5 explicitly separates concern-triggered assessment from asymptomatic screening; 2020 source may need updates.",
+      "clinical_approval": "NOT_REVIEWED"
+    },
+    {
+      "code": "AU",
+      "label": "호주 1차 진료 후보",
+      "evidence": [
+        "AU-RACGP-2016"
+      ],
+      "presentation_order": [
+        "consultation_reason",
+        "informant_history",
+        "onset_trajectory",
+        "cognitive_history",
+        "function_independence",
+        "medication_reversible_context",
+        "professional_assessments",
+        "external_records",
+        "coverage_provenance",
+        "longitudinal_signals"
+      ],
+      "notes": "2016 general practice guidance, HISTORICAL; do not claim current guideline completeness.",
+      "clinical_approval": "NOT_REVIEWED"
+    },
+    {
+      "code": "JP",
+      "label": "일본 인지저하 평가 후보",
+      "evidence": [
+        "JP-JSN-2017"
+      ],
+      "presentation_order": [
+        "consultation_reason",
+        "onset_trajectory",
+        "informant_history",
+        "cognitive_history",
+        "function_independence",
+        "medication_reversible_context",
+        "coverage_provenance",
+        "longitudinal_signals"
+      ],
+      "notes": "2017 society guideline is historical; current Japanese hospital-specific format NOT verified.",
+      "clinical_approval": "NOT_REVIEWED"
+    }
+  ],
+  "institutions": [
+    {
+      "id": "KR-SNUH-OUTPATIENT",
+      "country": "KR",
+      "name": "서울대학교병원",
+      "public_source_url": "https://www.snuh.org/content/Q005001003.do",
+      "published_requirements_count": 4,
+      "public_ledger": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
+      "requirement_status": "PUBLIC_RESEARCH_ONLY",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "patient matching",
+        "department preferred fields",
+        "original referral documents",
+        "consent and retention",
+        "official delivery channel",
+        "receiving acknowledgement"
+      ]
+    },
+    {
+      "id": "KR-AMC-NEURO-MEMORY",
+      "country": "KR",
+      "name": "서울아산병원",
+      "public_source_url": "https://amcmg.amc.seoul.kr/asan/staff/base/staffBaseInfoDetail.do?drEmpId=d011eCtGRkxaS0dVSmY2TnJ4d1NKQT09&searchHpCd=D030",
+      "published_requirements_count": 2,
+      "public_ledger": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
+      "requirement_status": "PUBLIC_RESEARCH_ONLY",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "patient matching",
+        "department preferred fields",
+        "original referral documents",
+        "consent and retention",
+        "official delivery channel",
+        "receiving acknowledgement"
+      ]
+    },
+    {
+      "id": "GB-DORSET-MAS",
+      "country": "GB",
+      "name": "Dorset HealthCare NHS Memory Assessment",
+      "public_source_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "published_requirements_count": 5,
+      "public_ledger": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
+      "requirement_status": "PUBLIC_RESEARCH_ONLY",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "patient matching",
+        "department preferred fields",
+        "original referral documents",
+        "consent and retention",
+        "official delivery channel",
+        "receiving acknowledgement"
+      ]
+    },
+    {
+      "id": "GB-CNTW-MAMS",
+      "country": "GB",
+      "name": "CNTW NHS MAMS",
+      "public_source_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "published_requirements_count": 8,
+      "public_ledger": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
+      "requirement_status": "PUBLIC_RESEARCH_ONLY",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "patient matching",
+        "department preferred fields",
+        "original referral documents",
+        "consent and retention",
+        "official delivery channel",
+        "receiving acknowledgement"
+      ]
+    },
+    {
+      "id": "GB-LEEDS-MAS",
+      "country": "GB",
+      "name": "Leeds and York NHS Memory Assessment",
+      "public_source_url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "published_requirements_count": 6,
+      "public_ledger": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
+      "requirement_status": "PUBLIC_RESEARCH_ONLY",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "patient matching",
+        "department preferred fields",
+        "original referral documents",
+        "consent and retention",
+        "official delivery channel",
+        "receiving acknowledgement"
+      ]
+    },
+    {
+      "id": "GB-NORTHUMBRIA",
+      "country": "GB",
+      "name": "Northumbria NHS Memory Clinic",
+      "public_source_url": "https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside",
+      "published_requirements_count": 5,
+      "public_ledger": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
+      "requirement_status": "PUBLIC_RESEARCH_ONLY",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "patient matching",
+        "department preferred fields",
+        "original referral documents",
+        "consent and retention",
+        "official delivery channel",
+        "receiving acknowledgement"
+      ]
+    },
+    {
+      "id": "US-MAYO-NEURO",
+      "country": "US",
+      "name": "Mayo Clinic Neurology Referrals",
+      "public_source_url": "https://www.mayoclinic.org/medical-professionals/neurology-neurosurgery/referrals",
+      "published_requirements_count": 4,
+      "public_ledger": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
+      "requirement_status": "PUBLIC_RESEARCH_ONLY",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "patient matching",
+        "department preferred fields",
+        "original referral documents",
+        "consent and retention",
+        "official delivery channel",
+        "receiving acknowledgement"
+      ]
+    }
+  ],
+  "delivery": {
+    "electronic_submission_ready": false,
+    "verified_receivers": 0,
+    "allowed": "PATIENT_CARRIED_PRINT_ONLY"
+  },
+  "template_policy": {
+    "selection": "TABLER_OFFICIAL_DASHBOARD_PLUS_APACHE_ECHARTS_OFFICIAL_GALLERY",
+    "tabler_url": "https://tabler.io/admin-template",
+    "tabler_license": "MIT (core) - ApexCharts bundle not used",
+    "echarts_gallery": "https://echarts.apache.org/examples/en/index.html",
+    "echarts_license": "Apache-2.0",
+    "template_reuse_required": true,
+    "from_scratch_infographic_forbidden": true,
+    "sensitive_data_policy": "Only synthetic data allowed in public template sandbox; real patient data require first-party authenticated clinical route"
+  }
+}

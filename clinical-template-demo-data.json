@@ -1,0 +1,906 @@
+{
+  "schema_version": "KIMSE_CLINICAL_HANDOFF_PAYLOAD_V2",
+  "demo_marker": "SYNTHETIC_ONLY_NOT_A_REAL_PATIENT",
+  "generated_at": "2026-10-10T03:00:00Z",
+  "report_context": {
+    "profile": "KR",
+    "view_horizon_days": 28,
+    "window_start": "2026-09-13",
+    "window_end": "2026-10-10",
+    "baseline_started_at": "2026-09-13T09:00:00+09:00",
+    "evidence_status": "synthetic_operational_example"
+  },
+  "subject": {
+    "care_subject_id": "SYNTHETIC_NO_REAL_PATIENT_ID",
+    "display_name": "합성 시연 사례"
+  },
+  "previsit_summary": {
+    "handoff_reason": "합성 예시: 생활·인지 과제 관찰값의 최근 변화 경과를 진료 전 확인",
+    "first_observed_change_at": "2026-10-01T00:00:00Z",
+    "latest_observed_change_at": "2026-10-10T00:00:00Z",
+    "affected_domains": [
+      "활동량",
+      "수면",
+      "이동",
+      "말하기",
+      "교류",
+      "인지과제"
+    ],
+    "function_status": "UNKNOWN",
+    "top_changes": [
+      {
+        "metric": "steps",
+        "relative_change": -0.3731
+      },
+      {
+        "metric": "sleep_minutes",
+        "relative_change": -0.1705
+      },
+      {
+        "metric": "location_radius_m",
+        "relative_change": -0.3095
+      },
+      {
+        "metric": "voice_pause_ratio",
+        "relative_change": 0.2778
+      },
+      {
+        "metric": "call_count",
+        "relative_change": -0.5
+      },
+      {
+        "metric": "task_response_ms",
+        "relative_change": 0.2339
+      }
+    ]
+  },
+  "clinical_domains": {
+    "cognition": {
+      "status": "available",
+      "guard": "의료기관 임상검사 점수 대체 금지",
+      "repeatable_task_sessions": [
+        {
+          "phase": "RECHECK",
+          "demo": true
+        }
+      ]
+    },
+    "function_independence": {
+      "self_status": "UNKNOWN",
+      "informant_status": "UNKNOWN",
+      "status": "not_collected"
+    },
+    "subjective_change": {
+      "self": "PRESENT",
+      "informant": "PRESENT",
+      "agreement": "AGREE",
+      "status": "user_report_synthetic"
+    },
+    "mood_behavior": {
+      "status": "not_collected"
+    },
+    "sensory_motor": {
+      "status": "not_collected"
+    }
+  },
+  "family_feedback": [
+    {
+      "assessment": "CONFIRMED",
+      "note": "합성 가족 관찰: 외출과 약속 활동이 줄었다고 보고",
+      "source": "synthetic_informant",
+      "feedback_at": "2026-10-03T09:00:00+09:00"
+    }
+  ],
+  "clinical_context": {
+    "status": "not_collected"
+  },
+  "risk_confounders": {
+    "status": "not_collected"
+  },
+  "professional_outcomes": [],
+  "external_clinical_records": [],
+  "clinical_coverage": [
+    {
+      "id": "onset_trajectory",
+      "status": "available"
+    },
+    {
+      "id": "cognition",
+      "status": "available"
+    },
+    {
+      "id": "function",
+      "status": "missing"
+    },
+    {
+      "id": "informant",
+      "status": "available"
+    },
+    {
+      "id": "risk_confounders",
+      "status": "missing"
+    },
+    {
+      "id": "professional",
+      "status": "missing"
+    }
+  ],
+  "monitoring": {
+    "baseline_started_at": "2026-09-13T09:00:00+09:00",
+    "baseline_days": 14,
+    "baseline_target_days": 14,
+    "level": "WATCH",
+    "metrics": [
+      {
+        "metric": "steps",
+        "clinical_label": "걸음수",
+        "domain": "활동량",
+        "source_mode": "native_step_counter_simulation",
+        "baseline": 6700,
+        "recent": 4200,
+        "relative_change": -0.3731,
+        "unit": "count",
+        "changed": true,
+        "series": [
+          {
+            "day": "2026-09-13",
+            "value": 6700,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-14",
+            "value": 6900,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-15",
+            "value": 6660.4,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-17",
+            "value": 6777.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-18",
+            "value": 6876.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-19",
+            "value": 6587.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-20",
+            "value": 6545.5,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-22",
+            "value": 6826.1,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-23",
+            "value": 6531.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-24",
+            "value": 6607.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-25",
+            "value": 6886.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-26",
+            "value": 6755.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-27",
+            "value": 6323.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-28",
+            "value": 6326.2,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-30",
+            "value": 5962.5,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-01",
+            "value": 5610.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-02",
+            "value": 5690.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-04",
+            "value": 5172.9,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-05",
+            "value": 4928.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-06",
+            "value": 5045.4,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-07",
+            "value": 4874.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-09",
+            "value": 4271.4,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-10",
+            "value": 4379.8,
+            "samples": 1
+          }
+        ],
+        "quality": {
+          "window_start": "2026-09-13",
+          "window_end": "2026-10-10",
+          "expected_calendar_days": 28,
+          "valid_days": 23,
+          "missing_calendar_days": 5,
+          "calendar_day_coverage": 0.8214
+        },
+        "interpretation_guard": "합성 데이터의 개인 기준선 변화. 치매 진단·확률·중증도 점수가 아닙니다."
+      },
+      {
+        "metric": "sleep_minutes",
+        "clinical_label": "수면시간(수동기록)",
+        "domain": "수면",
+        "source_mode": "manual_entry_simulation",
+        "baseline": 440,
+        "recent": 365,
+        "relative_change": -0.1705,
+        "unit": "minutes",
+        "changed": true,
+        "series": [
+          {
+            "day": "2026-09-13",
+            "value": 451.1,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-14",
+            "value": 446,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-15",
+            "value": 427.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-17",
+            "value": 453,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-18",
+            "value": 441,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-19",
+            "value": 426.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-20",
+            "value": 441.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-22",
+            "value": 435.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-23",
+            "value": 428,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-24",
+            "value": 446.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-25",
+            "value": 450.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-26",
+            "value": 431.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-27",
+            "value": 425.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-28",
+            "value": 439.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-30",
+            "value": 406.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-01",
+            "value": 408.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-02",
+            "value": 420.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-04",
+            "value": 384,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-05",
+            "value": 392.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-06",
+            "value": 399.5,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-07",
+            "value": 377.9,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-09",
+            "value": 376,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-10",
+            "value": 376.3,
+            "samples": 1
+          }
+        ],
+        "quality": {
+          "window_start": "2026-09-13",
+          "window_end": "2026-10-10",
+          "expected_calendar_days": 28,
+          "valid_days": 23,
+          "missing_calendar_days": 5,
+          "calendar_day_coverage": 0.8214
+        },
+        "interpretation_guard": "합성 데이터의 개인 기준선 변화. 치매 진단·확률·중증도 점수가 아닙니다."
+      },
+      {
+        "metric": "location_radius_m",
+        "clinical_label": "생활반경(앱 전경)",
+        "domain": "이동",
+        "source_mode": "foreground_location_simulation",
+        "baseline": 2100,
+        "recent": 1450,
+        "relative_change": -0.3095,
+        "unit": "metres",
+        "changed": true,
+        "series": [
+          {
+            "day": "2026-09-13",
+            "value": 2157.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-14",
+            "value": 2068.2,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-15",
+            "value": 2049,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-17",
+            "value": 2142.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-18",
+            "value": 2049.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-19",
+            "value": 2067.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-20",
+            "value": 2156.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-22",
+            "value": 2038.9,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-23",
+            "value": 2090.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-24",
+            "value": 2162.9,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-25",
+            "value": 2096.9,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-26",
+            "value": 2037.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-27",
+            "value": 2069,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-28",
+            "value": 2066.4,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-30",
+            "value": 1860.4,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-01",
+            "value": 1905.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-02",
+            "value": 1867.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-04",
+            "value": 1691.5,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-05",
+            "value": 1736.5,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-06",
+            "value": 1662,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-07",
+            "value": 1529.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-09",
+            "value": 1558.9,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-10",
+            "value": 1452.1,
+            "samples": 1
+          }
+        ],
+        "quality": {
+          "window_start": "2026-09-13",
+          "window_end": "2026-10-10",
+          "expected_calendar_days": 28,
+          "valid_days": 23,
+          "missing_calendar_days": 5,
+          "calendar_day_coverage": 0.8214
+        },
+        "interpretation_guard": "합성 데이터의 개인 기준선 변화. 치매 진단·확률·중증도 점수가 아닙니다."
+      },
+      {
+        "metric": "voice_pause_ratio",
+        "clinical_label": "발화 멈춤(능동과제)",
+        "domain": "말하기",
+        "source_mode": "active_speech_task_simulation",
+        "baseline": 0.18,
+        "recent": 0.23,
+        "relative_change": 0.2778,
+        "unit": "ratio",
+        "changed": true,
+        "series": [
+          {
+            "day": "2026-09-14",
+            "value": 0.175,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-15",
+            "value": 0.18,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-17",
+            "value": 0.179,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-18",
+            "value": 0.175,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-20",
+            "value": 0.185,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-23",
+            "value": 0.184,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-24",
+            "value": 0.183,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-26",
+            "value": 0.178,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-27",
+            "value": 0.189,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-30",
+            "value": 0.194,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-02",
+            "value": 0.201,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-05",
+            "value": 0.217,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-06",
+            "value": 0.213,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-09",
+            "value": 0.23,
+            "samples": 1
+          }
+        ],
+        "quality": {
+          "window_start": "2026-09-13",
+          "window_end": "2026-10-10",
+          "expected_calendar_days": 28,
+          "valid_days": 14,
+          "missing_calendar_days": 14,
+          "calendar_day_coverage": 0.5
+        },
+        "interpretation_guard": "합성 데이터의 개인 기준선 변화. 치매 진단·확률·중증도 점수가 아닙니다."
+      },
+      {
+        "metric": "call_count",
+        "clinical_label": "낌새 내 통화횟수",
+        "domain": "교류",
+        "source_mode": "kimse_call_only_simulation",
+        "baseline": 3,
+        "recent": 1.5,
+        "relative_change": -0.5,
+        "unit": "count",
+        "changed": true,
+        "series": [
+          {
+            "day": "2026-09-14",
+            "value": 2.9,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-15",
+            "value": 3.1,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-18",
+            "value": 3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-19",
+            "value": 3.1,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-20",
+            "value": 3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-22",
+            "value": 3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-23",
+            "value": 3.1,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-24",
+            "value": 3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-26",
+            "value": 3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-27",
+            "value": 3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-28",
+            "value": 2.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-30",
+            "value": 2.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-01",
+            "value": 2.5,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-02",
+            "value": 2.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-04",
+            "value": 2.2,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-05",
+            "value": 2,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-06",
+            "value": 1.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-09",
+            "value": 1.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-10",
+            "value": 1.4,
+            "samples": 1
+          }
+        ],
+        "quality": {
+          "window_start": "2026-09-13",
+          "window_end": "2026-10-10",
+          "expected_calendar_days": 28,
+          "valid_days": 19,
+          "missing_calendar_days": 9,
+          "calendar_day_coverage": 0.6786
+        },
+        "interpretation_guard": "합성 데이터의 개인 기준선 변화. 치매 진단·확률·중증도 점수가 아닙니다."
+      },
+      {
+        "metric": "task_response_ms",
+        "clinical_label": "반복과제 반응시간",
+        "domain": "인지과제",
+        "source_mode": "in_app_task_simulation",
+        "baseline": 1240,
+        "recent": 1530,
+        "relative_change": 0.2339,
+        "unit": "ms",
+        "changed": true,
+        "series": [
+          {
+            "day": "2026-09-13",
+            "value": 1204.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-14",
+            "value": 1254,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-15",
+            "value": 1272.9,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-17",
+            "value": 1211.2,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-18",
+            "value": 1266.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-19",
+            "value": 1263.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-20",
+            "value": 1209.1,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-22",
+            "value": 1274.4,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-23",
+            "value": 1250.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-24",
+            "value": 1203.5,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-25",
+            "value": 1236.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-26",
+            "value": 1277.2,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-27",
+            "value": 1256.8,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-28",
+            "value": 1245,
+            "samples": 1
+          },
+          {
+            "day": "2026-09-30",
+            "value": 1357.1,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-01",
+            "value": 1325.7,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-02",
+            "value": 1333.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-04",
+            "value": 1431.6,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-05",
+            "value": 1397.3,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-06",
+            "value": 1427,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-07",
+            "value": 1501,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-09",
+            "value": 1473.5,
+            "samples": 1
+          },
+          {
+            "day": "2026-10-10",
+            "value": 1523.5,
+            "samples": 1
+          }
+        ],
+        "quality": {
+          "window_start": "2026-09-13",
+          "window_end": "2026-10-10",
+          "expected_calendar_days": 28,
+          "valid_days": 23,
+          "missing_calendar_days": 5,
+          "calendar_day_coverage": 0.8214
+        },
+        "interpretation_guard": "합성 데이터의 개인 기준선 변화. 치매 진단·확률·중증도 점수가 아닙니다."
+      }
+    ]
+  },
+  "timeline": [
+    {
+      "kind": "SIGNAL_DEVIATION_ONSET",
+      "at": "2026-10-01T00:00:00Z",
+      "label": "합성 관찰값에서 개인 기준선 첫 이탈"
+    },
+    {
+      "kind": "INFORMANT_FEEDBACK",
+      "at": "2026-10-03T09:00:00Z",
+      "label": "합성 가족의 생활변화 보고"
+    }
+  ],
+  "disclaimer": "이 리포트는 전부 합성 자료이며 실제 환자·병원·임상 판정 정보가 아닙니다. KIMSE 개인 관찰 기록은 치매 진단, 전문검사·외래 의뢰서를 대체하지 않습니다."
+}
