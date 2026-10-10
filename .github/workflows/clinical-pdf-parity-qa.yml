@@ -1,0 +1,120 @@
+name: KIMSE Clinical A4 PDF Parity QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'clinical-template-lab.html'
+      - 'clinical-template-lab.js'
+      - 'clinical-template-lab.css'
+      - 'clinical-template-demo-data.json'
+      - 'clinical-profile-authorities.json'
+      - '.github/workflows/clinical-pdf-parity-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: clinical-pdf-parity
+  cancel-in-progress: true
+jobs:
+  print-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium, Korean fonts and PDF text/page tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends poppler-utils fonts-noto-cjk
+          npm install playwright@1.56.1 --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Test screen-to-print canonical equality, A4 summary and appendices
+        run: |
+          set -Eeuo pipefail
+          mkdir -p clinical-pdf-qa
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/kimse-clinical-static.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          sleep 2
+          cat > /tmp/kimse-check-print-parity.cjs <<'NODE'
+          const assert=require('node:assert/strict');
+          const {execFileSync}=require('node:child_process');
+          const {chromium}=require(process.cwd()+'/node_modules/playwright');
+          (async()=>{
+            const browser=await chromium.launch();
+            try{
+              const cases=[
+                {code:'KR-28',country:'KR',clinic:'',period:'28'},
+                {code:'CA-14',country:'CA',clinic:'CA-UHN-MEMORY-FORM',period:'14'},
+                {code:'JP-7',country:'JP',clinic:'JP-KYORIN-SUGINAMI-MEMORY',period:'7'}
+              ];
+              const baseline=[];
+              for(const c of cases){
+                const ctx=await browser.newContext({viewport:{width:1024,height:768},serviceWorkers:'block'});
+                const page=await ctx.newPage(),issues=[];
+                page.on('pageerror',e=>issues.push('pageerror '+e.message));
+                page.on('request',r=>{if(/api-kimse\.suaveforge\.com|\/api\/v1\//.test(r.url()))issues.push('private_api '+r.url())});
+                const response=await page.goto('http://127.0.0.1:8765/clinical-template-lab.html',{waitUntil:'domcontentloaded',timeout:45000});
+                assert.equal(response.status(),200);
+                await page.waitForFunction(()=>document.documentElement.dataset.clinicalPrintReady==='yes',{timeout:60000});
+                await page.locator('#country').selectOption(c.country);
+                if(c.clinic)await page.locator('#institution').selectOption(c.clinic);
+                await page.locator('#period').selectOption(c.period);
+                const text=await page.evaluate(()=>{
+                  const cells=id=>Array.from(document.querySelectorAll(id+' tr')).map(tr=>Array.from(tr.children).slice(0,6).map(x=>x.textContent.trim()));
+                  return {
+                    marker:document.documentElement.dataset.clinicalPrintReady,
+                    screen:cells('#rawMetricRows'),
+                    print:cells('#printSummaryRows'),
+                    reason:document.querySelector('#handoffReason').textContent.trim(),
+                    printReason:document.querySelector('#printHandoffReason').textContent.trim(),
+                    observed:document.querySelector('#firstObservedSummary').textContent.trim(),
+                    printObserved:document.querySelector('#printFirstObserved').textContent.trim(),
+                    top:document.querySelector('#topDomainSummary').textContent.trim(),
+                    printTop:document.querySelector('#printTopDomains').textContent.trim(),
+                    missing:document.querySelector('#missingSummary').textContent.trim(),
+                    printMissing:document.querySelector('#printMissing').textContent.trim(),
+                    institution:document.querySelector('#printInstitution').textContent.trim()
+                  };
+                });
+                assert.equal(text.marker,'yes');
+                assert.equal(text.screen.length,6);
+                assert.deepEqual(text.print,text.screen,'print summary must use same rendered DOM cells');
+                for(const [a,b] of [['reason','printReason'],['observed','printObserved'],['top','printTop'],['missing','printMissing']])assert.equal(text[a],text[b],a+' mismatch');
+                assert.match(text.institution,/승인된|승인/,'hospital approval boundary missing');
+                if(baseline.length)assert.deepEqual(text.screen.map(row=>row.slice(0,4)),baseline,'country/period must not rewrite canonical baseline/recent facts');
+                else baseline.push(...text.screen.map(row=>row.slice(0,4)));
+                await page.emulateMedia({media:'print'});
+                const filename='clinical-pdf-qa/kimse-clinical-'+c.code+'.pdf';
+                await page.pdf({path:filename,format:'A4',preferCSSPageSize:true,printBackground:true});
+                const info=execFileSync('pdfinfo',[filename],{encoding:'utf8'});
+                const count=Number(info.match(/^Pages:\s+(\d+)/m)?.[1]);
+                assert.equal(count,2,'A4 one-page summary plus one appendix required: '+c.code+' got '+count);
+                const pdfText=execFileSync('pdftotext',['-layout',filename,'-'],{encoding:'utf8'}).normalize('NFC');
+                const pages=pdfText.split('\f').map(s=>s.trim()).filter(Boolean);
+                assert.equal(pages.length,2,'two pages of extractable clinical text required');
+                assert.match(pages[0],/진료 전 요약/,'page1 clinical summary missing');
+                assert.match(pages[1],/부록/,'page2 provenance appendix missing');
+                assert.ok(pages[0].includes(text.observed),'first observed change lost in PDF '+c.code);
+                for(const row of text.screen){
+                  assert.ok(pages[0].includes(row[0]),'printed metric name lost: '+row[0]);
+                  const numeric=row[1].split(' ')[0];
+                  assert.ok(pages[0].includes(numeric),'PDF does not preserve displayed baseline '+numeric);
+                }
+                assert.match(pdfText,/미수집/,'missingness boundary lost');
+                assert.match(pdfText,/전자제출 불가/,'electronic submission must remain disabled');
+                execFileSync('pdftoppm',['-f','1','-l','2','-png','-r','100',filename,'clinical-pdf-qa/'+c.code],{stdio:'pipe'});
+                assert.deepEqual(issues,[],'no private API, runtime errors or real patient data');
+                console.log('KIMSE_CLINICAL_PDF_PARITY_OK='+c.code+' pages='+count+' rows='+text.print.length);
+                await ctx.close();
+              }
+            }finally{await browser.close()}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/kimse-check-print-parity.cjs
+      - name: Upload print PDFs and page previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-clinical-a4-canonical-parity
+          path: clinical-pdf-qa/*
+          if-no-files-found: ignore
