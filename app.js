@@ -1725,13 +1725,15 @@ function existingSleepParts(value){
   const m=/^(\\d{1,2})시간(?:\\s*(\\d{1,2})분)?$/.exec(String(value||'').trim());
   if(!m)return null;
   const hour=Number(m[1]),minute=Number(m[2]||0);
-  return hour>=0&&hour<=16&&minute>=0&&minute<60?{hour,minute}:null;
+  return hour>=0&&hour<=23&&minute>=0&&minute<60?{hour,minute}:null;
 }
 function sleepQuickMarkup(current){
   const parsed=existingSleepParts(current);
   const selectedHour=Number.isInteger(S.onboarding.sleepPickHour)?S.onboarding.sleepPickHour:parsed?.hour;
   const minutePhase=S.onboarding.sleepPickPhase==='minute'&&Number.isInteger(selectedHour);
-  const hours=Array.from({length:17},(_,i)=>i),minutes=Array.from({length:12},(_,i)=>i*5);
+  const commonHours=Array.from({length:9},(_,i)=>i+4),allHours=Array.from({length:24},(_,i)=>i);
+  const expanded=!!S.onboarding.sleepMore||(parsed&&!commonHours.includes(parsed.hour));
+  const hours=expanded?allHours:commonHours,minutes=Array.from({length:12},(_,i)=>i*5);
   const buttons=minutePhase?
     minutes.map(v=>'<button type="button" class="kimse-sleep-option" data-sleep-minute="'+v+'" aria-pressed="'+String(parsed?.hour===selectedHour&&parsed?.minute===v)+'">'+v+'분</button>').join(''):
     hours.map(v=>'<button type="button" class="kimse-sleep-option" data-sleep-hour="'+v+'" aria-pressed="'+String(parsed?.hour===v)+'">'+v+'시간</button>').join('');
@@ -1740,6 +1742,7 @@ function sleepQuickMarkup(current){
     '<p class="kimse-sleep-instruction">'+(minutePhase?selectedHour+'시간을 선택했어요. 분을 골라주세요.':'먼저 하루 수면시간의 시간을 골라주세요.')+'</p>'+
     '<div class="kimse-sleep-options '+(minutePhase?'kimse-sleep-minute-options':'kimse-sleep-hour-options')+'" role="group" aria-label="'+(minutePhase?'분 선택':'시간 선택')+'">'+
     buttons+'</div>'+
+    (!minutePhase&&!expanded?'<button type="button" class="kimse-sleep-more" data-sleep-more>다른 수면시간 보기</button>':'')+
     (minutePhase?'<button type="button" class="kimse-sleep-change-hour" data-sleep-change-hour>← 시간 다시 고르기</button>':'')+
     '</div>';
 }
@@ -1894,7 +1897,7 @@ page['cognitive-recheck']=()=>{
   if(s===2)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>약속이나 최근 일을 기억하는 게 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="events:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">지난번과 같은 질문이에요.</p>',{title:'사건·약속 기억',narrow:true});
   if(s===3)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>계산·청구서·돈 관리가 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="finances:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">평소와 비교해서 답해주세요.</p>',{title:'금전관리 변화',narrow:true});
   if(s===4)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>익숙한 곳으로 외출하거나 이동하기가 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="travel:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">평소와 비교해서 답해주세요.</p>',{title:'외출·이동 기능',narrow:true});
-  return wrap(top+'<div class="eyebrow mt-4">처음 본 단어 떠올리기</div><h1 class="page-title">처음 보여드린 세 단어를<br>기억나는 만큼 적어주세요</h1><p class="page-desc">순서는 상관없어요. 기억나는 것만 적어주세요.</p><div class="form-stack"><div class="field"><label for="recheck-recall-input">기억나는 단어</label><input id="recheck-recall-input" value="'+esc(x.recall||'')+'" placeholder="기억나는 단어를 적어주세요. 없으면 “없음”이라고 적어주세요"></div><button id="save-cognitive-recheck" class="btn-kimse btn-primary-k">기록하고 비교하기</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'지연회상 반복',narrow:true});
+  return wrap(top+'<div class="eyebrow mt-4">처음 본 단어 떠올리기</div><h1 class="page-title">처음 보여드린 세 단어를<br>기억나는 만큼 적어주세요</h1><p class="page-desc">순서는 상관없어요. 기억나는 것만 적어주세요.</p><div class="form-stack"><div class="field"><label for="recheck-recall-input">기억나는 단어</label><input id="recheck-recall-input" value="'+esc(x.recall||'')+'" placeholder="기억나는 단어"></div><button id="save-cognitive-recheck" class="btn-kimse btn-primary-k">기록하고 비교하기</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'지연회상 반복',narrow:true});
 };
 page['cognitive-recheck-result']=()=>{
   const r=S.cognitiveRecheck?.lastResult,c=r?.comparison;
@@ -2595,10 +2598,11 @@ document.addEventListener('click',e=>{
     }
   }
   if(PROFILE_WIZARD_STEPS[profileWizardStepIndex()].key==='sleepHours'){
+    if(e.target.closest('[data-sleep-more]')){S.onboarding.sleepMore=true;save();tone('tap');render();return}
     const hour=e.target.closest('[data-sleep-hour]');
     if(hour){
       const h=Number(hour.dataset.sleepHour);
-      if(Number.isInteger(h)&&h>=0&&h<=16){
+      if(Number.isInteger(h)&&h>=0&&h<=23){
         S.onboarding.sleepPickHour=h;S.onboarding.sleepPickPhase='minute';save();tone('tap');render();
       }
       return;
@@ -2606,9 +2610,9 @@ document.addEventListener('click',e=>{
     const minute=e.target.closest('[data-sleep-minute]');
     if(minute){
       const h=S.onboarding.sleepPickHour,m=Number(minute.dataset.sleepMinute);
-      if(Number.isInteger(h)&&h>=0&&h<=16&&Number.isInteger(m)&&m>=0&&m<60&&m%5===0){
+      if(Number.isInteger(h)&&h>=0&&h<=23&&Number.isInteger(m)&&m>=0&&m<60&&m%5===0){
         S.profile.sleepHours=h+'시간'+(m?' '+m+'분':'');
-        S.onboarding.sleepPickPhase='hour';delete S.onboarding.sleepPickHour;
+        S.onboarding.sleepPickPhase='hour';delete S.onboarding.sleepPickHour;S.onboarding.sleepMore=false;
         save();tone('tap');advanceProfileWizard();
       }
       return;

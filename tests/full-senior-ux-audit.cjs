@@ -64,11 +64,68 @@ report.push(result);
 console.log('KIMSE_UX_AUDIT '+screen+' '+display.width+' '+display.mode+' fields='+String(result.visibleFieldCount)+' selects='+String(result.selectCount)+' tiny='+String(result.smallTargets?.length)+' scroll='+String(result.scrolly)+' '+(result.error||''));
 await context.close();
 }
+
+async function verifySeniorJourneys(browser){
+  const c=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce'});
+  await c.addInitScript(()=>{
+    localStorage.setItem('kimse.p0.state',JSON.stringify({
+      version:14,account:{name:'사용성 점검',email:''},intent:'both',self:true,care:true,mode:'care',
+      onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+      consents:{service:true,privacy:true,health:true,caregiverShare:true},
+      remote:{accountId:'qa-account',activeCareSubjectId:'qa-subject',careSubjects:[{id:'qa-subject',displayName:'가족'}],token:''},
+      careOverview:{subjectId:'qa-subject',stage:{observation_pattern:'KIMSE_TASK_CHANGE_OBSERVED'},summary:{changes:[]},alerts:[{id:'qa-alert',summary:'최근 생활에서 평소와 다른 변화가 관찰됐습니다.'}]},
+      familyFeedback:[]
+    }));
+  });
+  try{
+    const p=await c.newPage();
+    await p.goto(base+'family-feedback',{waitUntil:'domcontentloaded'});
+    await p.locator('[data-feedback-stage="assessment"] .kimse-feedback-choice').first().waitFor({timeout:20000});
+    assert(await p.locator('[data-feedback-stage="assessment"]').isVisible(),'family assessment must be visible');
+    await p.locator('[data-feedback-value="CONFIRMED"]').click();
+    assert(await p.locator('[data-feedback-stage="action"]').isVisible(),'family action must advance on selection');
+    await p.locator('[data-feedback-back="assessment"]').click();
+    assert(await p.locator('[data-feedback-stage="assessment"]').isVisible(),'family previous answer editable');
+    await p.locator('[data-feedback-value="UNKNOWN"]').click();
+    await p.locator('[data-feedback-value="NONE"]').click();
+    assert(await p.locator('[data-feedback-stage="finish"]').isVisible(),'family finish must be visible');
+    assert.equal(await p.locator('#family-feedback-assessment').inputValue(),'UNKNOWN');
+    assert.equal(await p.locator('#family-feedback-action').inputValue(),'NONE');
+    await p.screenshot({path:'qa-artifacts/screens/family-feedback-selected-375.png',fullPage:true});
+    console.log('KIMSE_UX_JOURNEY_FAMILY=PASS assessment→action→back→action→finish');
+  }finally{await c.close()}
+  const s=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce'});
+  await s.addInitScript(()=>{
+    localStorage.setItem('kimse.p0.state',JSON.stringify({
+      version:14,account:{name:'사용성 점검',email:''},intent:'self',self:true,mode:'self',
+      consents:{service:true,privacy:true,health:true},
+      profile:{birthYear:'1956',sex:'female',education:'7to9',activity:'active',living:'alone',socialSupport:'both',socialActivity:'weekly',sleepHours:'7시간'},
+      onboarding:{profileDone:false,initialDone:false,consentDone:true,completed:false,profileStep:7}
+    }));
+  });
+  try{
+    const p=await s.newPage();
+    await p.goto(base+'onboarding-profile',{waitUntil:'domcontentloaded'});
+    await p.locator('[data-sleep-hour="7"]').waitFor({timeout:20000});
+    assert.equal(await p.locator('[data-sleep-hour]').count(),9,'only nine common hours initially');
+    await p.screenshot({path:'qa-artifacts/screens/sleep-hours-375.png',fullPage:true});
+    await p.locator('[data-sleep-hour="7"]').click();
+    assert.equal(await p.locator('[data-sleep-minute]').count(),12,'minute increments rendered');
+    await p.screenshot({path:'qa-artifacts/screens/sleep-minutes-375.png',fullPage:true});
+    await p.locator('[data-sleep-minute="30"]').click();
+    const state=await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'));
+    assert.equal(state.profile.sleepHours,'7시간 30분','existing storage schema preserved');
+    assert.equal(state.onboarding.profileStep,8,'minute selection advances directly');
+    console.log('KIMSE_UX_JOURNEY_SLEEP=PASS hours→minutes→saved→next');
+  }finally{await s.close()}
+}
+
 (async()=>{
 fs.mkdirSync('qa-artifacts/screens',{recursive:true});
 const browser=await chromium.launch({headless:true});
 try{
 for(const d of states)for(const screen of unique)await run(browser,screen,d);
+await verifySeniorJourneys(browser);
 const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));

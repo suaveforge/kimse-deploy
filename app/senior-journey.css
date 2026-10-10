@@ -513,3 +513,11 @@
 .high-contrast .screen-family-feedback .kimse-feedback-back{background:#fff;border:3px solid #111;color:#111}
 .large-text .screen-family-feedback .kimse-feedback-question{font-size:29px}
 @media(prefers-reduced-motion:reduce){.screen-family-feedback .kimse-feedback-stage{transition:none!important}}
+
+/* Reflow after direct screenshot inspection. Main receives programmatic focus; only interactive controls retain visible focus. */
+#main:focus,#main:focus-visible{outline:none!important;box-shadow:none!important}
+.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+.screen-onboarding-profile .kimse-sleep-more{display:flex;align-items:center;justify-content:center;width:100%;min-height:66px;border-radius:16px;border:1px solid #cfe0d6;background:#f0f6f1;color:#236349;font-size:18px;font-weight:750;padding:12px 16px}
+.screen-onboarding-profile .kimse-sleep-more:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-onboarding-profile .kimse-sleep-more{border:3px solid #111;background:#fff;color:#111}
+@media(max-width:360px){.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
