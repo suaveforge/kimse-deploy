@@ -68,3 +68,34 @@ jobs:
           path: evidence/test-results/*.png
           if-no-files-found: warn
           retention-days: 14
+
+  live-pages-release:
+    name: Live published R&D Atlas HTTP contract
+    needs: static-map-acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for independent GitHub Pages deployment
+        run: sleep 45
+      - name: Verify published HTML, JS, CSS and map records
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://kimse.suaveforge.com/evidence"
+          mkdir -p /tmp/kimse-atlas-live
+          for asset in rd.html rd-world-map.js rd-world-map.css rd-world-map-data.json; do
+            echo "Checking production $asset"
+            curl --fail --silent --show-error --location \
+              --retry 8 --retry-all-errors --retry-delay 15 \
+              --connect-timeout 15 --max-time 45 \
+              "$BASE/$asset?qa=$GITHUB_SHA" -o "/tmp/kimse-atlas-live/$asset"
+          done
+          expected="$(grep -oE 'v=2026[[:alnum:]-]+' evidence/rd.html | head -n 1)"
+          test -n "$expected"
+          grep -q "$expected" /tmp/kimse-atlas-live/rd.html
+          grep -q 'centerMapViewport' /tmp/kimse-atlas-live/rd-world-map.js
+          grep -q 'countries-50m.json' /tmp/kimse-atlas-live/rd-world-map.js
+          grep -q 'kimse-atlas-grid' /tmp/kimse-atlas-live/rd-world-map.css
+          node -e "const j=require('/tmp/kimse-atlas-live/rd-world-map-data.json');if(j.total!==92||j.iso31661Master.length!==249||j.institutions.length!==92)process.exit(1);console.log('LIVE Atlas JSON PASS')"
+          echo "LIVE HTTP + asset content checks PASS"
