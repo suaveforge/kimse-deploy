@@ -12,6 +12,9 @@
   const day=ms=>new Date(ms).toISOString().slice(0,10);
   const pct=n=>Number.isFinite(n)?(n>0?'+':'')+(n*100).toFixed(1)+'%':'자료 없음';
   const charts=[];
+  let selectedSubset=null;
+  const raw=(value,unit)=>value===undefined||value===null?'미수집':Number(value).toLocaleString('ko-KR',{maximumFractionDigits:2})+' '+unit;
+  const COVERAGE_LABELS={function:'일상기능',risk_confounders:'약물·질병 이력',professional:'전문검사',onset_trajectory:'변화 관찰일',cognition:'인지 관련 자료',informant:'보호자 정보'};
   const optionColor=['#206bc4','#4299e1','#2fb344','#f59f00','#ae3ec9','#d63939'];
   async function load(url){
     const response=await fetch(url,{cache:'no-store',credentials:'omit'});
@@ -104,9 +107,29 @@
     footer.append(source);root.append(footer);
   }
   function renderMeta(report,subset){
-    qs('firstDate').textContent=String(report.previsit_summary.first_observed_change_at||'미수집').slice(0,10);
+    selectedSubset=subset;
+    const firstObserved=String(report.previsit_summary.first_observed_change_at||'미수집').slice(0,10);
+    qs('firstDate').textContent=firstObserved;
+    qs('firstObservedSummary').textContent=firstObserved;
+    qs('handoffReason').textContent=report.previsit_summary.handoff_reason||'의뢰 사유 미수집';
+    const ranked=subset.metrics.filter(m=>m.changed&&Number.isFinite(m.relative_change))
+      .slice().sort((a,b)=>Math.abs(b.relative_change)-Math.abs(a.relative_change)).slice(0,3);
+    qs('topDomainSummary').textContent=ranked.length?ranked.map(m=>m.clinical_label+' '+pct(m.relative_change)).join(' · '):'변화 관찰 미수집';
+    const missing=(report.clinical_coverage||[]).filter(x=>x.status==='missing'||x.status==='not_collected');
+    qs('missingSummary').textContent=missing.length?missing.map(x=>COVERAGE_LABELS[x.id]||x.id).join(' · '):'확인된 결손 없음 (수집 범위 내)';
     qs('metricCount').textContent=subset.metrics.length+'개';
     qs('changesCount').textContent=subset.metrics.filter(m=>m.changed).length+'개';
+    const rows=qs('rawMetricRows');rows.replaceChildren();
+    subset.metrics.forEach((m,index)=>{
+      const tr=make('tr');
+      const first=make('th','fw-semibold',m.clinical_label);first.scope='row';tr.append(first);
+      for(const value of [raw(m.baseline,m.unit),raw(m.recent,m.unit),pct(m.relative_change),m.series.length+' / '+subset.days+'일',m.source_mode||'출처 미수집']){
+        tr.append(make('td','',value));
+      }
+      const cell=make('td');
+      const focus=make('button','btn btn-outline-primary btn-sm','추이 보기');focus.type='button';focus.dataset.clinicalFocus=String(index);
+      focus.setAttribute('aria-label',m.clinical_label+' 시계열 차트로 이동');cell.append(focus);tr.append(cell);rows.append(tr);
+    });
     const family=qs('informantContext');family.replaceChildren();
     const f=(report.family_feedback||[])[0];
     family.append(make('div','fw-semibold','가족 관찰 · 합성 사용자 보고'));
@@ -115,6 +138,18 @@
     professional.textContent=report.professional_outcomes?.length?
       '외부 전문평가 기록이 존재하지만 검증등급을 별도로 확인해야 합니다.':
       '전문검사/의료진 공식 평가 결과: 미수집 (정상 판정이 아님)';
+  }
+  function focusMetric(index){
+    const m=selectedSubset?.metrics?.[index];
+    const lineChart=charts.find(c=>c.getDom()===qs('trendChart'));
+    if(!m||!lineChart||!m.series.length){status('선택 영역의 기록일이 없어 시계열로 이동하지 않았습니다.');return}
+    const latest=m.series[m.series.length-1].day;
+    const dataIndex=Math.round((Date.parse(latest+'T00:00:00Z')-Date.parse(selectedSubset.earliest+'T00:00:00Z'))/86400000);
+    if(dataIndex<0||dataIndex>=selectedSubset.days)return;
+    lineChart.dispatchAction({type:'highlight',seriesIndex:index,dataIndex});
+    lineChart.dispatchAction({type:'showTip',seriesIndex:index,dataIndex});
+    status(m.clinical_label+' · 선택한 합성 원자료 '+latest+' · 진단 결과 아님');
+    qs('trendChart').scrollIntoView({behavior:'smooth',block:'center'});
   }
   function createChart(id,option){
     const el=qs(id);
@@ -138,7 +173,9 @@
             Number(((v-m.baseline)/Math.abs(m.baseline)*100).toFixed(2)):null
         })};
     });
-    return {backgroundColor:'transparent',animationDuration:650,tooltip:{trigger:'axis',axisPointer:{type:'cross'},valueFormatter:v=>v==null?'미수집':(v>0?'+':'')+Number(v).toFixed(1)+'%'},
+    return {backgroundColor:'transparent',animationDuration:650,
+      toolbox:{show:true,top:33,right:8,feature:{dataZoom:{yAxisIndex:'none',title:{zoom:'범위 확대',back:'확대 뒤로'}},restore:{title:'확대 원복'}}},
+      tooltip:{trigger:'axis',axisPointer:{type:'cross'},valueFormatter:v=>v==null?'미수집':(v>0?'+':'')+Number(v).toFixed(1)+'%'},
       legend:{type:'scroll',top:0},color:optionColor,grid:{top:68,left:55,right:18,bottom:62,containLabel:false},
       xAxis:{type:'category',boundaryGap:false,data:days,axisLabel:{fontSize:10,hideOverlap:true}},
       yAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#e9eef3'}}},
@@ -196,6 +233,7 @@
       renderCharts(subset);
     };
     qs('period').addEventListener('change',refresh);
+    qs('rawMetricRows').addEventListener('click',e=>{const button=e.target.closest('[data-clinical-focus]');if(button)focusMetric(Number(button.dataset.clinicalFocus))});
     refreshProfile();refresh();
     window.addEventListener('resize',()=>charts.forEach(c=>c.resize()),{passive:true});
     // Browser QA can read this marker; no network requests or user data.

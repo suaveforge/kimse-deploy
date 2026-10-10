@@ -43,6 +43,18 @@
         <div class="alert alert-warning" role="note">
           <strong>임상·보안 경계:</strong> 화면에 표시하는 값은 모두 합성값입니다. 표시된 의료기관은 공개 안내 조사 대상이며 KIMSE 리포트 수신을 승인하지 않았습니다. 이 검증실은 실제 환자 데이터를 불러오거나 전송하지 않습니다.
         </div>
+        <!-- Existing upstream Tabler alert + card patterns: clinical first-10-seconds orientation (synthetic only). -->
+        <section class="card mb-3" aria-labelledby="previsitSummaryHeading">
+          <div class="card-header"><h2 class="card-title" id="previsitSummaryHeading">진료 전 10초 요약</h2><span class="ms-auto badge bg-azure-lt">합성 자료 · 의료기관 미승인</span></div>
+          <div class="card-body">
+            <p id="handoffReason" class="fs-3 fw-semibold mb-2">의뢰 사유 불러오는 중</p>
+            <div class="d-flex flex-wrap gap-3 text-secondary small">
+              <span>첫 변화 <strong id="firstObservedSummary">—</strong> (질병 발병일 아님)</span>
+              <span>주요 변화 <strong id="topDomainSummary">—</strong></span>
+              <span>확인이 필요한 결손 <strong id="missingSummary">—</strong></span>
+            </div>
+          </div>
+        </section>
         <div class="row row-cards mb-3">
           <div class="col-12">
             <div class="card">
@@ -153,6 +165,17 @@
           </div>
         </div>
 
+        <!-- Tabler upstream responsive table, never an independently invented infographic. -->
+        <section class="card mt-3" aria-labelledby="rawObservationsHeading">
+          <div class="card-header"><h2 class="card-title" id="rawObservationsHeading">기준선 · 원자료 · 수집 품질</h2><span class="ms-auto badge bg-azure-lt">Tabler Table · 합성 자료</span></div>
+          <div class="card-body"><p class="small text-secondary mb-0">수집 출처별 관찰값과 유효 관찰일입니다. 미수집은 정상값이 아닙니다. 각 행의 ‘추이 보기’는 기성 ECharts 시계열로 이동합니다.</p></div>
+          <div class="table-responsive">
+            <table class="table table-vcenter table-striped card-table" aria-label="생활 신호별 개인 기준선, 최근값, 관찰일 및 합성 데이터 출처">
+              <thead><tr><th scope="col">관찰 영역</th><th scope="col">개인 기준선</th><th scope="col">최근 기록</th><th scope="col">기준선 대비</th><th scope="col">기록일 / 선택 기간</th><th scope="col">원자료 출처</th><th scope="col">시계열</th></tr></thead>
+              <tbody id="rawMetricRows"><tr><td colspan="7" class="text-secondary">합성 자료 불러오는 중</td></tr></tbody>
+            </table>
+          </div>
+        </section>
         <div class="row row-cards mt-3" aria-label="의료기관 공개 의뢰 요건의 원문 추적">
           <div class="col-12">
             <div class="card">

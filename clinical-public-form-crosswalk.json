@@ -1,22 +1,23 @@
 {
-  "schema_version": "2026-10-10.1",
+  "schema_version": "2026-10-10.2",
   "status": "PUBLIC_SOURCE_CROSSWALK_NOT_INSTITUTION_APPROVAL",
   "last_reviewed_on": "2026-10-10",
   "policy": {
     "verified_receivers": 0,
     "approved_report_profiles": 0,
     "approved_clinician_reviewer_feedback": 0,
-    "source_quality": "7 public guide sources mapped to 34 published items; UHN 3 page published physician referral form mapped to 11 topic groups. Group granularity differs; do not interpret as 45 independently approved mandatory fields.",
+    "source_quality": "Existing 8 published provider sources yield 45 mapped topic groups. Two additional AU/JP official clinics yield 17 groups. Total 10 sources/62 heterogeneous public research groups; no KIMSE provider approval. No implication that any group is an approved mandatory KIMSE submission field.",
     "representations": "Candidate supplement and missing-document checklist, never submission form",
     "missing": "Missing or unverified entries must not be promoted to normal/negative/provider-verified",
     "privacy": "Patient identifiers/referrer ID/medical originals never synthesized"
   },
   "source_data": {
     "existing_crosswalk": "docs/CLINICAL_PUBLIC_REQUIREMENTS_FIELD_CROSSWALK_20261009.json",
-    "uhm_official_form": "docs/CLINICAL_PROVIDER_FORM_CANADA_UHN_20261010.json"
+    "uhm_official_form": "docs/CLINICAL_PROVIDER_FORM_CANADA_UHN_20261010.json",
+    "au_jp_provider_clinic_research": "docs/CLINICAL_PROVIDER_FORMS_AU_JP_20261010.json"
   },
-  "entry_count": 8,
-  "published_research_groups": 45,
+  "entry_count": 10,
+  "published_research_groups": 62,
   "entries": [
     {
       "id": "KR-SNUH-OUTPATIENT",
@@ -571,6 +572,206 @@
           "limit": "Text summary cannot replace imaging CD or attendance of an informant",
           "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
           "source_page": 2
+        }
+      ]
+    },
+    {
+      "id": "AU-NSW-HORNSBY-MEMORY",
+      "country": "AU",
+      "source_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "source_type": "PROVIDER_OFFICIAL_MEMORY_CLINIC_REFERRAL_PAGE",
+      "approval_status": "PUBLIC_RESEARCH_ONLY_NO_KIMSE_APPROVAL",
+      "requirement_groups": [
+        {
+          "id": "AU-HKH-01",
+          "wording": "GP referral via HealthLink eReferral; submission is a clinician/provider workflow",
+          "related_paths": [],
+          "status": "APPROVED_CHANNEL_REQUIRED",
+          "limit": "KIMSE is not an authorized HealthLink referrer or recipient; does not transmit a referral",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-02",
+          "wording": "Provisional diagnosis, reason for referral and clinical findings or treatment to date",
+          "related_paths": [
+            "previsit_summary.handoff_reason"
+          ],
+          "status": "EXTERNAL_CLINICIAN_REFERRAL_REQUIRED",
+          "limit": "KIMSE observation narrative may supplement but cannot sign or fabricate provisional diagnosis",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-03",
+          "wording": "Patient and referring clinician identity, credentials, signature, and administrative details",
+          "related_paths": [],
+          "status": "EXTERNAL_PATIENT_ADMINISTRATIVE_IDENTIFIERS_REQUIRED",
+          "limit": "Official identities and provider numbers cannot be populated from synthetic data",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-04",
+          "wording": "Significant medical history, current medication list, drug allergies, and social information",
+          "related_paths": [
+            "risk_confounders",
+            "clinical_domains.function_independence"
+          ],
+          "status": "PARTIAL_USER_MEDICAL_CONTEXT",
+          "limit": "Data may be user-entered and unverified; medication reconciliation requires clinicians",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-05",
+          "wording": "GP pre-referral blood tests: full blood count, liver function, electrolytes, thyroid, B12, folate, calcium/phosphate, glucose",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_PROFESSIONAL_LAB_RESULTS_REQUIRED",
+          "limit": "Missing lab results must remain not collected, never normal",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-06",
+          "wording": "Non-contrast brain CT obtained within 12 months as listed in pre-referral workup",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_NEUROIMAGING_REQUIRED",
+          "limit": "KIMSE may only link an existing original report; cannot create a CT",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-07",
+          "wording": "MMSE score and date if previously completed",
+          "related_paths": [
+            "professional_outcomes"
+          ],
+          "status": "EXTERNAL_VALIDATED_COGNITIVE_TEST_IF_AVAILABLE",
+          "limit": "KIMSE repeat tasks are not an MMSE score",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-08",
+          "wording": "Memory changes identified by patient, family, or clinician; daily function context",
+          "related_paths": [
+            "clinical_domains.cognition",
+            "clinical_domains.function_independence",
+            "clinical_domains.subjective_change"
+          ],
+          "status": "SUPPLEMENTARY_NARRATIVE_CANDIDATE",
+          "limit": "Provenance must separate patient, family and clinician reports",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-09",
+          "wording": "Interpreter requirement and preferred language",
+          "related_paths": [],
+          "status": "UNIMPLEMENTED_PROFILE_FIELD",
+          "limit": "Preferred language is not derived from app UI locale; ask directly with consent",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "AU-HKH-10",
+          "wording": "Referral eligibility: clinic catchment, residence and inclusion/exclusion criteria",
+          "related_paths": [],
+          "status": "INSTITUTION_REVIEW_REQUIRED",
+          "limit": "Do not infer eligibility or promise triage acceptance",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        }
+      ]
+    },
+    {
+      "id": "JP-KYORIN-SUGINAMI-MEMORY",
+      "country": "JP",
+      "source_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "source_type": "PROVIDER_OFFICIAL_SPECIALTY_CLINIC_SERVICE_PAGE",
+      "approval_status": "PUBLIC_RESEARCH_ONLY_NO_KIMSE_APPROVAL",
+      "requirement_groups": [
+        {
+          "id": "JP-KYORIN-01",
+          "wording": "Telephone advance booking and patient intake questionnaire (問診票)",
+          "related_paths": [],
+          "status": "EXTERNAL_APPOINTMENT_WORKFLOW_REQUIRED",
+          "limit": "KIMSE does not book hospital intake, impersonate patient or replace official questionnaire",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "JP-KYORIN-02",
+          "wording": "Bring medication notebook (お薬手帳) or current medication details",
+          "related_paths": [
+            "risk_confounders.current_medications"
+          ],
+          "status": "EXTERNAL_MEDICATION_RECORD_NEEDED",
+          "limit": "Self-reported medicines are not a verified pharmacy medication notebook",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "JP-KYORIN-03",
+          "wording": "Bring prior hospital clinical data if available",
+          "related_paths": [
+            "external_clinical_records",
+            "professional_outcomes"
+          ],
+          "status": "EXTERNAL_ORIGINAL_DOCUMENT_REQUIRED",
+          "limit": "KIMSE may list existing records but cannot synthesize prior diagnostic reports",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "JP-KYORIN-04",
+          "wording": "Family member to accompany examination and provide collateral history",
+          "related_paths": [
+            "clinical_domains.subjective_change",
+            "family_feedback"
+          ],
+          "status": "INFORMANT_PARTICIPATION_REQUIRED",
+          "limit": "Family note cannot substitute authorized appointment companion or verified clinical interview",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "JP-KYORIN-05",
+          "wording": "Specialist clinical interview and MMSE or similar validated evaluation undertaken by staff",
+          "related_paths": [
+            "professional_outcomes"
+          ],
+          "status": "PROFESSIONAL_ASSESSMENT_ONLY",
+          "limit": "KIMSE's in-app repeated tasks are not MMSE and cannot be converted",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "JP-KYORIN-06",
+          "wording": "Blood, ECG, X-ray, CT/MRI and sometimes SPECT assessed at hospital",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "PROFESSIONAL_INVESTIGATIONS_ONLY",
+          "limit": "Do not mark tests as required of every patient; hospital decides which and when",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
+        },
+        {
+          "id": "JP-KYORIN-07",
+          "wording": "Bring a referring physician's letter with prior medical course and prescriptions if previously seen elsewhere, where possible",
+          "related_paths": [
+            "external_clinical_records"
+          ],
+          "status": "EXTERNAL_REFERRAL_DOCUMENT_REQUIRED",
+          "limit": "The official clinic asks for a referral letter when available; if unavailable, information about current medication can be brought. This is not a blanket mandatory referral-letter condition.",
+          "interpretation": "PUBLIC_PROVIDER_PAGE_RESEARCH_ONLY_NEVER_KIMSE_APPROVAL",
+          "source_page": null
         }
       ]
     }

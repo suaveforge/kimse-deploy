@@ -1,5 +1,5 @@
 {
-  "schema_version": "2026-10-10.1",
+  "schema_version": "2026-10-10.2",
   "status": "PUBLIC_EVIDENCE_CANDIDATES_NOT_PROVIDER_APPROVED",
   "scope": "Clinical handoff report profile display planning, not clinical diagnostic logic or authorized submission",
   "reviewed_at": "2026-10-10",
@@ -508,6 +508,48 @@
         "hospital format verification",
         "submission channel authorization",
         "real receiving receipt"
+      ]
+    },
+    {
+      "id": "AU-NSW-HORNSBY-MEMORY",
+      "country": "AU",
+      "name": "Hornsby Ku-ring-gai Hospital Memory Clinic (Northern Sydney Local Health District)",
+      "public_source_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "published_requirements_count": 10,
+      "public_ledger": "docs/CLINICAL_PROVIDER_FORMS_AU_JP_20261010.json",
+      "requirement_status": "OFFICIAL_HOSPITAL_MEMORY_REFERRAL_GUIDE_NOT_APPROVED",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "verified physician and department acceptance",
+        "source document revision and intake eligibility",
+        "patient identity and referrer verification",
+        "clinical and privacy review",
+        "authorized recipient channel",
+        "receiving acknowledgement"
+      ]
+    },
+    {
+      "id": "JP-KYORIN-SUGINAMI-MEMORY",
+      "country": "JP",
+      "name": "Kyorin University Suginami Hospital Memory Clinic",
+      "public_source_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "published_requirements_count": 7,
+      "public_ledger": "docs/CLINICAL_PROVIDER_FORMS_AU_JP_20261010.json",
+      "requirement_status": "OFFICIAL_SPECIALTY_MEMORY_CLINIC_GUIDE_NOT_APPROVED",
+      "clinical_reviewer_approved": false,
+      "kimse_electronic_receiver_approved": false,
+      "custom_field_order_approved": false,
+      "delivery_mode": "PATIENT_CARRIED_PRINT_ONLY",
+      "unknowns": [
+        "verified physician and department acceptance",
+        "source document revision and intake eligibility",
+        "patient identity and referrer verification",
+        "clinical and privacy review",
+        "authorized recipient channel",
+        "receiving acknowledgement"
       ]
     }
   ],
