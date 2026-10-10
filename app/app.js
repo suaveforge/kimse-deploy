@@ -2093,7 +2093,7 @@ page['family-call']=()=>{
   const caregivers=S.caregivers||[],schedules=S.callSchedules||[],sessions=S.callSessions||[];
   const sessionRows=sessions.length?sessions.slice(0,12).map(x=>`<button class="list-row menu-row" data-open-call="${esc(x.id)}"><span><strong>${esc(x.self_name||'사용자')} ↔ ${esc(x.caregiver_name||'보호자')}</strong><small>${fmtDate(x.scheduled_for)} · 녹음 ${esc(x.recording_status||'BLOCKED')}</small></span><span><strong>${esc(x.status)}</strong> ${I('chevron-right')}</span></button>`).join(''):'<div class="empty-state"><h3>통화 기록이 아직 없어요</h3><p>사용자와 보호자가 연결되면 실제 KIMSE 통화를 시작할 수 있습니다.</p></div>';
   const scheduleRows=schedules.length?schedules.map(x=>`<div class="list-row"><span><strong>${esc(x.caregiver_name||x.caregiver_email||'보호자')}</strong><small>${x.interval_days}일마다 · 다음 ${fmtDate(x.next_due_at)}</small></span><button class="btn-kimse btn-blue-k compact-btn" data-create-call="${esc(x.caregiver_account_id)}" data-call-schedule="${esc(x.id)}">통화 시작</button></div>`).join(''):'<div class="empty-state"><h3>아직 통화 일정이 없어요</h3></div>';
-  const setup=caregivers.length?`<h2 class="section-title">정기 일정 설정</h2><div class="form-stack"><div class="field"><label for="call-caregiver">보호자</label><select id="call-caregiver">${caregivers.map(x=>'<option value="'+esc(x.accountId)+'">'+esc(x.name)+' · '+esc(x.relation||'가족')+'</option>').join('')}</select></div><div class="field"><label for="call-interval">통화 주기</label><select id="call-interval"><option value="7">7일마다</option><option value="14" selected>14일마다</option><option value="30">30일마다</option></select></div><div class="field"><label for="call-first-due">첫 통화 예정 <small>비워두면 선택한 주기 뒤</small></label><input id="call-first-due" type="datetime-local"></div><button id="save-call-schedule" class="btn-kimse btn-primary-k">통화 일정 저장</button></div>`:'';
+  const setup=caregivers.length?`<h2 class="section-title">정기 일정 설정</h2><div class="form-stack"><div class="field"><label for="call-caregiver">보호자</label><select id="call-caregiver">${caregivers.map(x=>'<option value="'+esc(x.accountId)+'">'+esc(x.name)+' · '+esc(x.relation||'가족')+'</option>').join('')}</select></div><div class="field"><label for="call-interval">통화 주기</label><input id="call-interval" type="hidden" value="14"><div class="kimse-call-intervals" role="group" aria-label="정기 통화 주기"><button type="button" data-call-interval="7" aria-pressed="false">매주</button><button type="button" data-call-interval="14" aria-pressed="true">2주마다</button><button type="button" data-call-interval="30" aria-pressed="false">매월</button></div></div><div class="field"><label for="call-first-due">첫 통화 예정 <small>비워두면 선택한 주기 뒤</small></label><input id="call-first-due" type="datetime-local"></div><button id="save-call-schedule" class="btn-kimse btn-primary-k">통화 일정 저장</button></div>`:'';
   return wrap(`<div class="eyebrow">KIMSE 가족통화 · 실제 계정 연결</div><h1 class="page-title">가족 안부 통화를<br>실제 기록으로 남겨요</h1><p class="page-desc">양쪽이 녹음·AI 분석에 동의해야 통화를 연결합니다. 종료된 KIMSE 통화의 횟수와 시간은 실제 모니터링 신호로 저장됩니다.</p><h2 class="section-title">통화 기록 / 참여할 통화</h2><div class="list">${sessionRows}</div>${S.self?'<h2 class="section-title">내 정기 통화</h2><div class="list">'+scheduleRows+'</div>':''}${setup}<p class="screen-footnote">일반 전화·외부 메신저 내용을 읽지 않습니다. 이 화면에서 연결된 KIMSE 통화만 기록합니다.</p>`,{title:'정기 안부 통화',narrow:true});
 };
 page['call-room']=()=>{
@@ -2730,6 +2730,13 @@ document.addEventListener('click',async e=>{
     try{await inviteCaregiver(email,relation);feedback('보호자 초대를 저장했습니다. 상대방이 해당 이메일로 로그인하면 연결됩니다.','success');go('family')}
     catch{feedback('보호자 초대를 저장하지 못했습니다. 계정 연결 상태를 확인해주세요.','warning');e.target.disabled=false}
     return;
+  }
+  if(e.target.closest('[data-call-interval]')&&route()==='family-call'){
+    const btn=e.target.closest('[data-call-interval]'),value=btn.dataset.callInterval;
+    if(!['7','14','30'].includes(value))return;
+    const field=$('#call-interval');if(!field)return;field.value=value;
+    document.querySelectorAll('[data-call-interval]').forEach(el=>el.setAttribute('aria-pressed',String(el===btn)));
+    tone('tap');return;
   }
   if(e.target.id==='save-call-schedule'){
     const caregiver=$('#call-caregiver')?.value||'',interval=Number($('#call-interval')?.value||14),due=$('#call-first-due')?.value||'';
