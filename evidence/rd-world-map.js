@@ -47,7 +47,7 @@
           '<div class="kimse-atlas-institutions" id="kimse-atlas-institutions"><div class="kimse-atlas-empty">세계지도에서 국가를 선택하면 적합성 평가 대상과 근거가 표시됩니다.</div></div>' +
         '</aside>' +
       '</div>' +
-      '<div class="kimse-atlas-foot"><strong>상태 표시 기준</strong> · ‘검토 예정’과 ‘적합성 검토 중’은 낌새의 내부 후보 평가입니다. 자료요청 발송·접수 확인은 실제 기록 기준이며, 외부 기관의 승인·보증·제휴나 협의 착수를 뜻하지 않습니다. 도시 핀은 기관 건물의 정확한 위치가 아닌 도시 중심 참고좌표입니다. 지도 경계는 Natural Earth 110m 기반으로 일부 소국가·영역은 확대 지도에 나타나지 않을 수 있습니다.</div>' +
+      '<div class="kimse-atlas-foot"><strong>상태 표시 기준</strong> · ‘검토 예정’과 ‘적합성 검토 중’은 낌새의 내부 후보 평가입니다. 자료요청 발송·접수 확인은 실제 기록 기준이며, 외부 기관의 승인·보증·제휴나 협의 착수를 뜻하지 않습니다. ISO 3166-1 기준 249개 국가·지역이 검토대상이며, 현재 기관이 등록된 곳은 24개 국가·지역입니다. 도시 핀은 기관 건물의 정확한 위치가 아닌 도시 중심 참고좌표입니다. 지도 경계는 Natural Earth 110m 기반으로 일부 소국가·영역은 확대 지도에 나타나지 않을 수 있습니다.</div>' +
     '</div>';
   mount.insertBefore(root,mount.firstChild);
 
@@ -91,12 +91,14 @@
     var screening=state.data.institutions.filter(function(x){return x.stage==='CANDIDATE_FIT_PRELIMINARY'}).length;
     var sent=state.data.institutions.filter(isContact).length;
     document.getElementById('kimse-atlas-stats').innerHTML=[
-      ['조사 기관',total,'곳'],['탐색 국가·지역',countries,'곳'],['적합성 검토 중',screening,'곳'],['공식 자료요청 발송',sent,'곳']
+      ['등록 후보기관',total,'곳'],['기관 등록 국가·지역',countries,'곳'],['세계 검토대상',state.data.isoMasterCount||0,'개'],['적합성 검토 중',screening,'곳'],['공식 자료요청 발송',sent,'건']
     ].map(function(a){return '<div class="kimse-atlas-stat"><small>'+safe(a[0])+'</small><strong>'+a[1]+'<em>'+safe(a[2])+'</em></strong></div>'}).join('');
   }
   function nameFor(id) {
     var sample=state.data.institutions.find(function(x){return x.countryNumeric===id;});
     if(sample)return sample.countryName;
+    var iso=(state.data.iso31661Master||[]).find(function(x){return x.numeric===id});
+    if(iso && typeof Intl!=='undefined' && Intl.DisplayNames){try{return new Intl.DisplayNames(['ko'],{type:'region'}).of(iso.alpha2)||iso.alpha2}catch(e){/* browser fallback */}}
     var f=state.features.find(function(z){return fromNumeric(z.id)===id});
     return f && f.properties && f.properties.name ? f.properties.name : '선택한 국가';
   }
@@ -181,7 +183,7 @@
   }
   function resetZoom(){if(state.svg&&state.zoom)state.svg.transition().duration(350).call(state.zoom.transform,window.d3.zoomIdentity);}
   function renderPicker() {
-    var all=state.features.length?state.features.map(function(f){return {id:fromNumeric(f.id),name:f.properties.name||'기타',count:summary(fromNumeric(f.id)).all};}):[];
+    var all=(state.data.iso31661Master||[]).map(function(x){return {id:x.numeric,name:x.alpha2,count:summary(x.numeric).all};});
     var inMap=new Set(all.map(function(x){return x.id}));
     state.data.institutions.forEach(function(x){if(!inMap.has(x.countryNumeric)){inMap.add(x.countryNumeric);all.push({id:x.countryNumeric,name:x.countryName,count:summary(x.countryNumeric).all})}});
     all.sort(function(a,b){return b.count-a.count||a.name.localeCompare(b.name)});
@@ -223,7 +225,7 @@
   }
   function countryTextFallback(errorMessage) {
     svgEl.innerHTML='<text x="590" y="270" text-anchor="middle" font-size="23" fill="#ddeaff">지도 경계 데이터를 불러올 수 없습니다.</text><text x="590" y="315" text-anchor="middle" font-size="17" fill="#96b5d7">국가 선택 메뉴에서 기관별 자료를 계속 확인할 수 있습니다.</text>';
-    picker.innerHTML='<option value="">국가 선택</option>'+Array.from(new Set(state.data.institutions.map(function(x){return x.countryNumeric}))).map(function(id){return '<option value="'+safe(id)+'">'+safe(nameFor(id))+' · '+summary(id).all+'곳</option>'}).join('');
+    picker.innerHTML='<option value="">국가 선택</option>'+(state.data.iso31661Master||[]).map(function(x){return '<option value="'+safe(x.numeric)+'">'+safe(nameFor(x.numeric))+' · '+summary(x.numeric).all+'곳</option>'}).join('');
     setSelected('826',false);
     console.warn('KIMSE R&D Atlas geography fallback:',errorMessage);
   }
