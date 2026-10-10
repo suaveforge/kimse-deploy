@@ -2,7 +2,7 @@ name: KIMSE Licensed Clinical Template Browser QA
 on:
   push:
     branches: [main]
-    paths: ['clinical-template-lab.html','clinical-template-lab.js','clinical-profile-resolver.js','clinical-profile-authorities.json','.github/workflows/clinical-template-lab-qa.yml']
+    paths: ['clinical-template-lab.html','clinical-template-lab.js','clinical-template-lab.css','clinical-template-print.css','clinical-profile-resolver.js','clinical-profile-authorities.json','clinical-public-form-crosswalk.json','clinical-template-demo-data.json','.github/workflows/clinical-template-lab-qa.yml']
   workflow_dispatch:
 permissions:
   contents: read
