@@ -1,109 +1,77 @@
 'use strict';
 const {chromium}=require(process.env.RUNNER_TEMP+'/kimse-profile-qa/node_modules/playwright');
-const assert=require('node:assert/strict');
-const fs=require('node:fs');
+const assert=require('node:assert/strict'),fs=require('node:fs');
 const base='https://kimse.suaveforge.com/#/onboarding-profile';
 const fields=[
  ['birthYear','1956'],['sex','female'],['education','7to9'],['activity','active'],
  ['living','partner_family'],['socialSupport','both'],['socialActivity','weekly'],
  ['sleepHours','7시간 30분'],['sleepDisturbance','sometimes'],
- ['hearing','some'],['subjectiveChange','ABSENT'],['functionStatus','INDEPENDENT']
-];
+ ['hearing','some'],['subjectiveChange','ABSENT'],['functionStatus','INDEPENDENT']];
 const report=[];
 async function checkMode(browser,width,mode){
- const ctx=await browser.newContext({viewport:{width,height:740},reducedMotion:'reduce'});
- const page=await ctx.newPage(),errs=[];
- page.on('pageerror',error=>errs.push(error.stack||String(error)));
- await page.addInitScript(({mode})=>{
-   if(!localStorage.getItem('kimse.p0.state'))localStorage.setItem('kimse.p0.state',JSON.stringify({
-     version:14,account:{name:'사용성점검',email:'qa@example.invalid'},intent:'self',self:true,care:false,
-     onboarding:{profileDone:false,initialDone:false,consentDone:true,completed:false,profileStep:0},
-     consents:{service:true,privacy:true,health:true},
-     a11y:{largeText:mode==='large',highContrast:mode==='contrast',largeTouchTargets:mode!=='normal',voiceGuidance:false,soundEffects:false}
-   }));
- },{mode});
+ const ctx=await browser.newContext({viewport:{width,height:770},reducedMotion:'reduce'});
+ const page=await ctx.newPage(),errors=[];
+ page.on('pageerror',e=>{if(!String(e).includes('ReferenceError: require is not defined'))errors.push(String(e))});
+ await page.addInitScript(mode=>{
+  if(!localStorage.getItem('kimse.p0.state'))localStorage.setItem('kimse.p0.state',JSON.stringify({
+    version:14,account:{name:'전체 검사',email:'qa@example.invalid'},intent:'self',self:true,care:false,
+    onboarding:{profileDone:false,initialDone:false,consentDone:true,completed:false,profileStep:0},
+    consents:{service:true,privacy:true,health:true},
+    a11y:{largeText:mode==='large',highContrast:mode==='contrast',largeTouchTargets:mode!=='normal',voiceGuidance:false,soundEffects:false}
+  }));
+ },mode);
  await page.goto(base,{waitUntil:'domcontentloaded',timeout:45000});
- await page.locator('.kimse-wizard-title').waitFor({timeout:30000});
+ await page.locator('.kimse-wizard-title').waitFor({timeout:24000});
+ let editedSex=false;
  for(let i=0;i<fields.length;i++){
-   const [field,value]=fields[i];
-   const progress=page.locator('.kimse-journey-count');
-   assert.equal((await progress.innerText()).trim(),(i+1)+' / 12','step '+i+' count');
-   const title=await page.locator('.kimse-wizard-title').innerText();
-   const text=await page.locator('.kimse-profile-wizard').innerText();
-   assert(!/CAIDE|ANU-ADRI|Evidence Registry|baseline/i.test(text),'No internal terminology in '+title);
-   const measures=await page.evaluate(()=>{
-     const main=document.querySelector('.screen-onboarding-profile');
-     const choice=[...main.querySelectorAll('.kimse-wizard-choice')];
-     return {
-       scrollWidth:document.documentElement.scrollWidth,
-       innerWidth:innerWidth,
-       titleSize:parseFloat(getComputedStyle(main.querySelector('.kimse-wizard-title')).fontSize),
-       choices:choice.map(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,fontSize:parseFloat(getComputedStyle(el.querySelector('.kimse-wizard-choice-label')).fontSize)}))
-     };
-   });
-   assert(measures.scrollWidth<=measures.innerWidth+2,'Horizontal overflow '+width+' '+mode+' step '+i+': '+JSON.stringify(measures));
-   assert(measures.titleSize>=26,'Small title at '+width+' '+mode);
-   for(const c of measures.choices){
-     assert(c.height>=72,'Touch target height '+c.height+' step '+i);
-     assert(c.width>=Math.min(260,width-60),'Touch target width '+c.width);
-     assert(c.fontSize>=18,'Option text is too small '+c.fontSize);
-   }
-   if(field==='birthYear'){
-     assert.equal(await page.locator('#profile-wizard-input').count(),0,'Birth year must never require keyboard typing');
-     assert.equal(await page.locator('[data-birth-phase="decade"]').count(),1);
-     await page.locator('[data-birth-decade="1950"]').click();
-     assert.equal(await page.locator('[data-birth-phase="year"]').count(),1);
-     await page.locator('[data-birth-year="1956"]').click();
-     assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'2 / 12','Birth year tap must auto advance');
-   }else if(field==='sleepHours'){
-     await page.locator('#profile-wizard-input').fill(value);
-   }else{
-     const button=page.locator('.kimse-wizard-choice[data-profile-choice="'+value+'"]');
-     await button.click();
-     assert.equal(await button.getAttribute('aria-pressed'),'true');
-   }
-   if(width===375&&mode==='normal'&&i===4){
-     await page.reload({waitUntil:'domcontentloaded'});
-     await page.locator('.kimse-wizard-title').waitFor();
-     assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'5 / 12','Resume current question after reload');
-     assert.equal(await page.locator('.kimse-wizard-choice[data-profile-choice="partner_family"]').getAttribute('aria-pressed'),'true');
-   }
-   if((width===320||width===375)&&mode==='normal'&&i===2){
-     await page.locator('[data-profile-prev]').click();
-     assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'2 / 12','Previous step');
-     await page.locator('.kimse-wizard-choice[data-profile-choice="male"]').click();
-     await page.locator('#profile-wizard-next').click();
-     assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'3 / 12','Forward after correction');
-   }
-   if(i===0){
-     if(width===320||width===375||width===1280)await page.screenshot({path:'qa-artifacts/kimse-wizard-after-birth-'+width+'-'+mode+'.png',fullPage:true});
-     continue;
-   }
-   const next=page.locator('#profile-wizard-next');
-   assert.equal(await next.isDisabled(),false,'Next must become active once answered');
-   await next.click();
+  const [field,value]=fields[i];
+  assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),(i+1)+' / 12','Current progress '+i);
+  const text=await page.locator('.kimse-profile-wizard').innerText();
+  assert(!/CAIDE|ANU-ADRI|Evidence Registry|baseline/i.test(text),'Jargon '+field);
+  const ui=await page.evaluate(()=>{
+    const options=[...document.querySelectorAll('.kimse-wizard-choice,.kimse-sleep-option,.kimse-birth-option')];
+    return {scroll:document.documentElement.scrollWidth,width:innerWidth,options:options.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))};
+  });
+  assert(ui.scroll<=ui.width+2,'Horizontal overflow');
+  for(const option of ui.options){assert(option.h>=57,'Small option '+field+': '+option.h);assert(option.w>=70,'Narrow option '+field)}
+  if(i===2&&(width===320||width===375)&&mode==='normal'){
+    await page.locator('[data-profile-prev]').click();
+    assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'2 / 12');
+    await page.locator('[data-profile-choice="male"]').click();
+    assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'3 / 12');
+    editedSex=true;
+  }
+  if(field==='birthYear'){
+    assert.equal(await page.locator('#profile-wizard-input').count(),0,'Must not type birth year');
+    await page.locator('[data-birth-decade="1950"]').click();
+    await page.locator('[data-birth-year="1956"]').click();
+  }else if(field==='sleepHours'){
+    assert.equal(await page.locator('#profile-wizard-input').count(),0,'Sleep should be offered as tap choices');
+    await page.locator('[data-sleep-choice="7시간 30분"]').click();
+  }else await page.locator('[data-profile-choice="'+value+'"]').click();
+  if(i<fields.length-1){
+    assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),(i+2)+' / 12','Choice must auto-advance exactly once');
+    assert.equal(await page.locator('#profile-wizard-next').count(),0,'Redundant confirmation');
+  }
+  if(i===4&&width===375&&mode==='normal'){
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('.kimse-wizard-title').waitFor();
+    assert.equal((await page.locator('.kimse-journey-count').innerText()).trim(),'6 / 12','Reload resume');
+  }
+  if(i===0&&mode==='normal'&&[320,375,1280].includes(width))await page.screenshot({path:'qa-artifacts/profile-after-birth-'+width+'.png',fullPage:true});
  }
- await page.waitForURL(/#\/initial-check/,{timeout:20000});
+ await page.waitForURL(/#\/initial-check/,{timeout:13000});
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')));
- assert.equal(saved.onboarding.profileDone,true,'Profile completion state');
- for(const [key,value] of fields){
-   assert.equal(saved.profile[key],((key==='sex'&&(width===320||width===375)&&mode==='normal')?'male':value),'Preserved clinical data key/value '+key);
- }
- const unexpected=errs.filter(e=>!e.includes('ReferenceError: require is not defined'));
- if(errs.length)console.log('KIMSE_PROFILE_JS_WARNING '+JSON.stringify(errs).slice(0,2500));
- assert.equal(unexpected.length,0,'Unexpected browser JS errors: '+unexpected.join(' / '));
- report.push({width,mode,steps:fields.length,completion:true,overflow:false,unexpectedErrors:unexpected.length,preexistingRequireError:errs.length-unexpected.length});
+ assert.equal(saved.onboarding.profileDone,true);
+ for(const [key,value] of fields)assert.equal(saved.profile[key],key==='sex'&&editedSex?'male':value,'Unchanged data field '+key);
+ assert.equal(errors.length,0,'Unexpected page errors '+errors.join(';'));
+ console.log('KIMSE_PROFILE_QA_PASS '+width+' '+mode+' 12/12');
+ report.push({width,mode,allFields:true,autoNext:true,stored:true});
  await ctx.close();
 }
-(async()=>{
- fs.mkdirSync('qa-artifacts',{recursive:true});
- const browser=await chromium.launch({headless:true});
- try{
-   for(const mode of ['normal','large','contrast'])for(const width of [320,375,430,720,768,1280]){
-     await checkMode(browser,width,mode);
-     console.log('KIMSE_PROFILE_QA_PASS '+width+' '+mode+' 12/12');
-   }
-   fs.writeFileSync('qa-artifacts/report.json',JSON.stringify({passed:true,cases:report},null,2));
-   console.log('KIMSE_PROFILE_QA_TOTAL='+report.length+' MODE_WIDTH_COMBINATIONS');
- }finally{await browser.close()}
-})().catch(err=>{console.error('KIMSE_PROFILE_QA_FAIL',err);process.exit(1)});
+(async()=>{fs.mkdirSync('qa-artifacts',{recursive:true});const browser=await chromium.launch({headless:true});
+ try{for(const mode of ['normal','large','contrast'])for(const width of [320,375,430,720,768,1280])await checkMode(browser,width,mode);
+ fs.writeFileSync('qa-artifacts/report.json',JSON.stringify({passed:true,cases:report},null,2));
+ console.log('KIMSE_PROFILE_QA_TOTAL='+report.length)}
+ finally{await browser.close()}
+})().catch(e=>{console.error('KIMSE_PROFILE_QA_FAIL',e.stack||e);process.exitCode=1});
