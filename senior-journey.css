@@ -462,3 +462,14 @@
 .large-text .screen-health-detail .kimse-health-sleep-option{font-size:25px;min-height:88px}
 .high-contrast .screen-health-detail .kimse-health-sleep-option{border:3px solid #111;background:#fff;color:#111;box-shadow:none}
 @media(max-width:360px){.screen-health-detail .kimse-health-sleep-option{font-size:20px;min-height:76px;padding:12px 7px}}
+
+/* Senior-wide minimum touch targets in compact legacy controls. Preserve horizontal scrolling instead of shrinking labels. */
+.page .brain-domain-tabs button,.page .trend-domain-tabs button{
+  min-height:64px!important;min-width:72px!important;padding:13px 17px!important;
+  font-size:16px!important;line-height:1.4!important;letter-spacing:-.025em!important;white-space:nowrap;
+}
+.page .brain-domain-tabs,.page .trend-domain-tabs{gap:9px!important;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.page .brain-domain-tabs button,.page .trend-domain-tabs button{scroll-snap-align:start}
+.page .btn-kimse.compact-btn{min-height:64px!important;padding:14px 16px!important;font-size:16px!important;white-space:normal}
+.bottom-nav .nav-item{min-height:68px!important;font-size:14px!important}
+@media(max-width:360px){.page .brain-domain-tabs button,.page .trend-domain-tabs button{min-height:64px!important;font-size:15px!important;padding-inline:14px!important}}
