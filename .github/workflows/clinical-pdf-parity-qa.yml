@@ -77,11 +77,18 @@ jobs:
                     printTop:document.querySelector('#printTopDomains').textContent.trim(),
                     missing:document.querySelector('#missingSummary').textContent.trim(),
                     printMissing:document.querySelector('#printMissing').textContent.trim(),
+                    periodScope:document.querySelector('#periodInterpretation').textContent.trim(),
+                    pdfPeriodScope:document.querySelector('#printPeriodInterpretation').textContent.trim(),
+                    fields:document.querySelectorAll('#fieldList .list-group-item').length,
                     institution:document.querySelector('#printInstitution').textContent.trim()
                   };
                 });
                 assert.equal(text.marker,'yes');
                 assert.equal(text.screen.length,6);
+                assert.equal(text.fields,12,'all candidate fields must be present in every region');
+                assert.equal(text.periodScope,text.pdfPeriodScope,'exact same time interpretation must render on screen and in print');
+                assert.match(text.periodScope,new RegExp('최근 '+c.period+'일.*전체 28일.*재산출값이 아닙니다'));
+
                 assert.deepEqual(text.print,text.screen,'print summary must use same rendered DOM cells');
                 for(const [a,b] of [['reason','printReason'],['observed','printObserved'],['top','printTop'],['missing','printMissing']])assert.equal(text[a],text[b],a+' mismatch');
                 assert.match(text.institution,/승인된|승인/,'hospital approval boundary missing');

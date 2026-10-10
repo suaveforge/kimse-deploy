@@ -35,6 +35,9 @@ jobs:
               await page.waitForFunction(()=>document.documentElement.dataset.clinicalTemplateReady!==undefined,{timeout:65000});
               assert.equal(await page.evaluate(()=>document.documentElement.dataset.clinicalTemplateReady),'yes','chart assets inaccessible');
               assert.equal((await page.locator('#metricCount').innerText()).trim(),'6개');
+              assert.equal(await page.locator('#fieldList .list-group-item').count(),12,'all 12 clinical candidate fields must be accessible');
+              assert.match(await page.locator('#fieldCoverage').innerText(),/12 \/ 12개/,'all candidate fields must be disclosed');
+              assert.match(await page.locator('#periodInterpretation').innerText(),/최근 28일.*전체 28일.*재산출값이 아닙니다/,'28-day canonical representative scope must be explicit');
               assert.match(await page.locator('#demoVersion').innerText(),/공개조사 11기관 · 91개 연구 그룹 · 승인 0건/,'release label must be derived from the live official research registry');
               assert.match(await page.locator('#handoffReason').innerText(),/합성 예시/,'referral reason missing');
               assert.equal(await page.locator('#rawMetricRows tr').count(),6,'6 synthetic source-backed rows required');
@@ -86,7 +89,11 @@ jobs:
               assert.equal(await page.locator('#requirementsExplanation').getAttribute('data-routing-conflict'),'unresolved','Emory source transport conflict must remain visible');
               assert.match(await page.locator('#requirementsExplanation').innerText(),/환자자료 발송 금지/);
               assert.equal(await page.locator('#rawMetricRows').innerText(),immutableRows,'changing to Emory must not rewrite observed source facts');
+              assert.equal(await page.locator('#fieldList .list-group-item').count(),12,'JP professional and external fields must not be hidden');
               await page.locator('#period').selectOption('7');
+              assert.equal(await page.locator('#periodInterpretation').getAttribute('data-selected-period-days'),'7');
+              assert.match(await page.locator('#periodInterpretation').innerText(),/최근 7일.*전체 28일.*재산출값이 아닙니다/);
+              assert.equal(await page.locator('#printPeriodInterpretation').innerText(),await page.locator('#periodInterpretation').innerText(),'screen and printed time scope must agree');
               assert.equal(await page.locator('#rawMetricRows tr').count(),6);
               assert.match(await page.locator('#rawMetricRows').innerText(),/7일/);
               await page.locator('[data-clinical-focus="0"]').click();

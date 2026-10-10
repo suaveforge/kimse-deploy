@@ -94,7 +94,8 @@
     qs('profileNote').dataset.sourceNote=profile.profile_note;
     status(profile.profile_label+(profile.institution?' · '+profile.institution.name:'')+' · 공개 근거 기반 화면 후보, 의료진 승인 없음');
     const list=qs('fieldList');list.replaceChildren();
-    profile.sections.slice(0,10).forEach((f,i)=>{
+    qs('fieldCoverage').textContent=profile.sections.length+' / '+registry.fields.length+'개 후보 항목 표시 · 미승인 진료과 참고 순서';
+    profile.sections.forEach((f,i)=>{
       const item=make('div','list-group-item px-0 py-2');
       const head=make('div','d-flex justify-content-between align-items-start gap-2');
       head.append(make('span','fw-semibold',String(i+1).padStart(2,'0')+' · '+f.label));
@@ -173,6 +174,11 @@
     qs('missingSummary').textContent=missing.length?missing.map(x=>COVERAGE_LABELS[x.id]||x.id).join(' · '):'확인된 결손 없음 (수집 범위 내)';
     qs('metricCount').textContent=subset.metrics.length+'개';
     qs('changesCount').textContent=subset.metrics.filter(m=>m.changed).length+'개';
+    const originalDays=Number(report.report_context.view_horizon_days);
+    if(!Number.isInteger(originalDays)||originalDays<subset.days)throw Error('INVALID_SYNTHETIC_PERIOD_SCOPE');
+    qs('periodInterpretation').textContent='선택한 최근 '+subset.days+'일 ('+subset.earliest+' ~ '+subset.latest+')은 날짜별 추이와 수집·미수집 일수만 변경합니다. 첫 관찰 변화일·주요 변화·기준선·최근 대표값·변화율은 전체 '+originalDays+'일 원본 기준 고정값이며 선택 기간 재산출값이 아닙니다.';
+    qs('periodInterpretation').dataset.selectedPeriodDays=String(subset.days);
+    qs('periodInterpretation').dataset.originalHorizonDays=String(originalDays);
     const rows=qs('rawMetricRows');rows.replaceChildren();
     subset.metrics.forEach((m,index)=>{
       const tr=make('tr');
@@ -224,7 +230,8 @@
     copy('printMissing','missingSummary');
     copy('printFamily','informantContext');
     copy('printProfessional','professionalContext');
-    qs('printPeriod').textContent=subset.days+'일 · '+subset.earliest+' ~ '+subset.latest+' (기준선과 최근 대표값은 원본 28일 자료 기준)';
+    qs('printPeriod').textContent=subset.days+'일 · '+subset.earliest+' ~ '+subset.latest+' (대표값은 원본 '+Number(report.report_context.view_horizon_days)+'일 기준)';
+    copy('printPeriodInterpretation','periodInterpretation');
     const country=qs('country').value,institution=qs('institution').value;
     qs('printProfile').textContent=registry.regions.find(x=>x.code===country)?.label||'GLOBAL';
     const printRows=qs('printSummaryRows');printRows.replaceChildren();
