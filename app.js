@@ -248,13 +248,57 @@ const BRAIN_DOMAINS=[
   ['daily','일상기능','여러 뇌 네트워크의 통합 기능','🏠']
 ];
 const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,Number(n)||0));
-function baselineDay(){
-  if(!S.baseline.startedAt)return 0;
-  const t=new Date(S.baseline.startedAt).getTime();
-  if(!Number.isFinite(t))return 0;
-  return Math.min(14,Math.max(1,Math.floor((Date.now()-t)/86400000)+1));
+const BASELINE_DAY_MS=24*60*60*1000;
+const BASELINE_TOTAL_MS=14*BASELINE_DAY_MS;
+function baselineTimeProgress(now=Date.now()){
+  const start=S.baseline.startedAt?new Date(S.baseline.startedAt).getTime():NaN;
+  if(!Number.isFinite(start))return {day:0,completedDays:0,complete:false,percent:0,remainingMinutes:1440};
+  const elapsed=Math.max(0,now-start);
+  const complete=elapsed>=BASELINE_TOTAL_MS;
+  const completedDays=Math.min(14,Math.floor(elapsed/BASELINE_DAY_MS));
+  const day=Math.min(14,completedDays+1);
+  const within=complete?BASELINE_DAY_MS:elapsed%BASELINE_DAY_MS;
+  const percent=complete?100:Math.min(99.99,within/BASELINE_DAY_MS*100);
+  const remainingMinutes=complete?0:Math.ceil((BASELINE_DAY_MS-within)/60000);
+  return {day,completedDays,complete,percent,remainingMinutes};
 }
-const baselineComplete=()=>baselineDay()>=14;
+function baselineDay(){return baselineTimeProgress().day}
+const baselineComplete=()=>baselineTimeProgress().complete;
+function baselineClockRemaining(p){
+  if(p.complete)return '14일 확인 시간 완료';
+  return '다음 날까지 '+Math.floor(p.remainingMinutes/60)+'시간 '+String(p.remainingMinutes%60).padStart(2,'0')+'분';
+}
+function baselineMeterHtml(p){
+  const displayed=p.day||1;
+  const dayLabel=displayed+'일째';
+  const label=p.complete?'14일째 · 24시간 완료':dayLabel+' · 24시간 중 '+Math.round(p.percent)+'% 경과';
+  const segments=Array.from({length:14},(_,i)=>'<i class="'+(i<p.completedDays?'is-finished':i===displayed-1?'is-current':'')+'" aria-hidden="true"></i>').join('');
+  return '<div class="baseline-daily-meter" data-baseline-24h-meter data-day="'+displayed+'" data-complete="'+p.complete+'" role="img" aria-label="'+label+'">'+
+    '<svg class="baseline-daily-ring" viewBox="0 0 112 112" aria-hidden="true" focusable="false">'+
+      '<circle class="baseline-ring-track" cx="56" cy="56" r="45" pathLength="100"></circle>'+
+      '<circle class="baseline-ring-progress" data-baseline-ring-progress cx="56" cy="56" r="45" pathLength="100" style="stroke-dasharray:'+p.percent.toFixed(3)+' 100"></circle>'+
+    '</svg><span class="baseline-ring-center"><strong data-baseline-ring-day>'+dayLabel+'</strong><small>24시간</small></span></div>'+
+    '<div class="baseline-time-details"><span>오늘 24시간 <b data-baseline-ring-percent>'+Math.floor(p.percent)+'%</b></span>'+
+      '<small data-baseline-ring-remaining>'+baselineClockRemaining(p)+'</small></div>'+
+    '<div class="baseline-two-week" aria-label="14일 중 '+p.completedDays+'일의 24시간이 지났습니다">'+
+      '<div class="baseline-two-week-label"><span>2주간 시간 경과</span><strong data-baseline-total-days>'+p.completedDays+' / 14일 완료</strong></div>'+
+      '<div class="baseline-two-week-steps">'+segments+'</div>'+
+      '<small>초록 원은 시간 경과이며 생활 데이터 수집량이 아닙니다.</small></div>';
+}
+function refreshBaselineMeter(){
+  if(route()!=='home'||document.hidden)return;
+  const ring=document.querySelector('[data-baseline-24h-meter]');
+  if(!ring)return;
+  const p=baselineTimeProgress();
+  if(Number(ring.dataset.day)!==p.day||ring.dataset.complete!==String(p.complete)){render();return}
+  const arc=ring.querySelector('[data-baseline-ring-progress]');
+  if(arc)arc.style.strokeDasharray=p.percent.toFixed(3)+' 100';
+  ring.setAttribute('aria-label',p.complete?'14일째 · 24시간 완료':p.day+'일째 · 24시간 중 '+Math.round(p.percent)+'% 경과');
+  const percent=document.querySelector('[data-baseline-ring-percent]');
+  const remaining=document.querySelector('[data-baseline-ring-remaining]');
+  if(percent)percent.textContent=Math.floor(p.percent)+'%';
+  if(remaining)remaining.textContent=baselineClockRemaining(p);
+}
 function initialScores(){
   return S.initial.domains&&typeof S.initial.domains==='object'?S.initial.domains:null;
 }
@@ -1417,7 +1461,7 @@ function demoPrepareScenario(){
 async function demoWarpBaseline(day){
   const leaf=A.querySelector('.baseline-calendar-leaf');
   if(leaf){leaf.classList.add('is-turning-out');await demoWait(180)}
-  S.baseline.startedAt=new Date(Date.now()-Math.max(0,day-1)*86400000).toISOString();save();render();demoScrollTop();
+  S.baseline.startedAt=new Date(Date.now()-(day>=14?14:Math.max(0,day-1))*86400000).toISOString();save();render();demoScrollTop();
   await demoWait(70);
 }
 async function demoAnimateBaseline(alive,alreadyOnPage=false){
@@ -1528,7 +1572,7 @@ function demoSeedScenario(){
   S.initial={...D.initial,step:5,answers:{subtraction:'79',events:'no',finances:'no',travel:'no'},recall:'나무 기차 우산',voiceSamples:[],voiceSkipped:true,completedAt:new Date().toISOString(),domains:{memory:86,executive:84,language:87,spatial:85,daily:88}};
   S.consents={...D.consents,service:true,privacy:true,health:true,microphone:true,location:true,motion:true,usage:true,caregiverShare:true};
   S.brainFocus='memory';S.brainTrendDomain='overall';
-  S.baseline.startedAt=new Date(Date.now()-13*86400000).toISOString();
+  S.baseline.startedAt=new Date(Date.now()-14*86400000).toISOString();
   demoInjectHistoryAndChanges();save();
 }
 async function runRealAppTour(prepared=false){
@@ -1972,7 +2016,8 @@ page['research-engine']=()=>wrap(
 );
 
 function baselineEvent(day){
-  if(day>=14)return {tone:'complete',kicker:'14일째',title:'14일 확인 완료',text:'이제 새 기록이 지난 14일과 얼마나 다른지 비교합니다.'};
+  if(baselineComplete())return {tone:'complete',kicker:'14일 완료',title:'14일 확인 완료',text:'14일간의 시간을 모두 채웠습니다. 실제 수집된 기록을 확인해주세요.'};
+  if(day===14)return {tone:'second',kicker:'14일째',title:'마지막 24시간 확인 중',text:'오늘 24시간까지 마치면 14일 시간이 완료됩니다.'};
   if(day===7)return {tone:'week',kicker:'7일째',title:'첫 주 패턴 확인',text:'7일 동안 반복된 수면·활동·말하기·이동 흐름을 확인합니다.'};
   if(day>7)return {tone:'second',kicker:'2주차',title:'두 번째 주 확인 중',text:'첫 주와 이어지는 생활 리듬을 계속 확인하고 있습니다.'};
   return {tone:'daily',kicker:day+'일째',title:'오늘 생활패턴 확인',text:'오늘 기록이 쌓이고 있습니다.'};
@@ -2018,7 +2063,8 @@ page.baseline=()=>{
     {title:'생활 패턴 기록',narrow:true,overview:true}
   );
   const day=baselineDay(),event=baselineEvent(day),sample=monitoringTodaySnapshot();
-  const progress=Array.from({length:14},(_,i)=>'<span class="'+(i<day?'done':'')+(i===day-1?' current':'')+'"></span>').join('');
+  const completeDays=baselineTimeProgress().completedDays;
+  const progress=Array.from({length:14},(_,i)=>'<span class="'+(i<completeDays?'done':'')+(i===day-1?' current':'')+'"></span>').join('');
   return wrap(
     '<div class="eyebrow">AI 생활 패턴 기록</div>'+
     '<h1 class="page-title">2주간 생활 패턴을<br>기록합니다</h1>'+
@@ -2037,8 +2083,8 @@ page.baseline=()=>{
       '<div class="baseline-calendar-progress">'+progress+'</div>'+
     '</div>'+
     '<div class="baseline-milestone-card '+event.tone+'"><span>'+event.kicker+'</span><div><strong>'+event.title+'</strong><small>'+event.text+'</small></div></div>'+
-    '<div class="baseline-milestone-rail"><span class="'+(day>=1?'on':'')+'"><b>1일</b>시작</span><i></i><span class="'+(day>=7?'on':'')+'"><b>7일</b>첫 주 확인</span><i></i><span class="'+(day>=14?'on':'')+'"><b>14일</b>비교 시작</span></div>'+
-    (day>=14?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">최근 변화 보기</button></div>':'')+
+    '<div class="baseline-milestone-rail"><span class="'+(day>=1?'on':'')+'"><b>1일</b>시작</span><i></i><span class="'+(day>=7?'on':'')+'"><b>7일</b>첫 주 확인</span><i></i><span class="'+(baselineComplete()?'on':'')+'"><b>14일</b>시간 완료</span></div>'+
+    (baselineComplete()?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">최근 변화 보기</button></div>':'')+
     '<div class="hero-actions"><button class="btn-kimse btn-secondary-k btn-full" data-go="collection-status">오늘 수집 상태 확인</button></div>'+
     '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다. 앱을 닫은 동안의 위치·움직임은 현재 PWA에서 계속 측정할 수 없습니다.</p>',
     {title:'생활패턴 확인',narrow:true,overview:true}
@@ -2130,7 +2176,8 @@ page.account=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="pa
 page.switch=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">어떤 화면으로 이동할까요?</h1>${S.self?`<button class="role-card bg-blue" data-mode="self"><span class="avatar-lg">👵</span><span><h3>사용자 화면</h3><p>내 건강을 관리해요.</p></span>${I('chevron-right')}</button>`:''}${S.care?`<button class="role-card bg-pink" data-mode="care"><span class="avatar-lg">👩</span><span><h3>보호자 화면</h3><p>가족을 돌봐요.</p></span>${I('chevron-right')}</button>`:''}${!S.care?notice('보호자 역할이 아직 없어요.','내 계정에서 언제든 추가할 수 있어요.'):''}`,{title:'역할 전환',narrow:true})};
 page.home=()=>{if(!demo())return accountRequired();
   const day=baselineDay(),d=S.initial.completedAt?initialScores():null,avg=demoAutoRunning&&d?Math.round(Object.values(d).reduce((x,y)=>x+y,0)/5):null,m=avg===null?null:statusMeta(avg),stage=S.stage.summary,sm=observationStageMeta(stage),changes=S.monitoring.summary?.changes||[],ready=S.monitoring.summary?.status==='READY';
-  const journey=!S.onboarding.completed?`<div class="summary-card bg-blue"><div class="eyebrow">처음 설정이 아직 남아 있어요</div><h3>생활패턴 확인을 준비해주세요.</h3><p>초기 과제·음성 기준·데이터 동의를 마치면 14일 생활패턴 확인이 시작됩니다.</p><button class="btn-kimse btn-primary-k btn-full mt-3" data-go="${S.onboarding.profileDone?'initial-check':'onboarding-profile'}">설정 이어하기</button></div>`:`<div class="baseline-home-card"><div><span class="context-chip">${baselineComplete()?'14일 확인 완료':'생활패턴 확인 중'}</span><h3>${baselineComplete()?'이제 지난 14일과 비교할 수 있어요':'생활패턴을 확인하고 있어요'}</h3><p>${baselineComplete()?'최근 변화가 평소 범위를 벗어나는지 계속 관찰합니다.':`오늘은 ${day}/14일째예요. 동의한 신호를 계속 쌓고 있습니다.`}</p></div><div class="baseline-mini"><strong>${day||1}<small>/14</small></strong></div><button class="btn-kimse btn-secondary-k btn-full" data-go="baseline">14일 진행 보기</button></div>`;
+  const baselineClock=baselineTimeProgress();
+  const journey=!S.onboarding.completed?`<div class="summary-card bg-blue"><div class="eyebrow">처음 설정이 아직 남아 있어요</div><h3>생활패턴 확인을 준비해주세요.</h3><p>초기 과제·음성 기준·데이터 동의를 마치면 14일 생활패턴 확인이 시작됩니다.</p><button class="btn-kimse btn-primary-k btn-full mt-3" data-go="${S.onboarding.profileDone?'initial-check':'onboarding-profile'}">설정 이어하기</button></div>`:`<div class="baseline-home-card"><div class="baseline-home-copy"><span class="context-chip">${baselineClock.complete?'14일 시간 경과 완료':'생활패턴 확인 중'}</span><h3>${baselineClock.complete?'14일 시간 확인을 마쳤어요':'생활패턴을 확인하고 있어요'}</h3><p>${baselineClock.complete?'실제로 수집된 생활 데이터를 확인해 주세요.':'${baselineClock.day}일째 24시간을 채우는 중이에요.'}</p></div>${baselineMeterHtml(baselineClock)}<button class="btn-kimse btn-secondary-k btn-full" data-go="baseline">14일 진행 보기</button></div>`;
   const stageCard=S.onboarding.completed?`<button class="summary-card home-stage-summary" data-go="monitoring-status"><div class="eyebrow">낌새가 본 최근 변화</div><div class="d-flex justify-content-between gap-2"><h2>${esc(sm.label)}</h2><span class="context-chip">${esc(STAGE_SUFFICIENCY[stage?.data_sufficiency]||'확인 자료 수집 중')}</span></div><div class="list-row"><span><strong>왜 이렇게 보나요?</strong><small>${esc(stageWhyText(stage,changes))}</small></span></div><div class="list-row"><span><strong>지금 할 일</strong><small>${esc(stagePrimaryActionText(stage))}</small></span>${I('chevron-right')}</div></button>`:''; 
   return wrap(`<div class="d-flex justify-content-between"><div><span class="context-chip">오늘의 낌새</span><h1 class="page-title">안녕하세요<br>${esc(S.account.name)}님</h1></div><button class="icon-button" data-go="switch" aria-label="역할 전환">${I('switch-horizontal')}</button></div><h2 class="kimse-home-primary-heading">지금 확인할 내용</h2>${journey}${stageCard}<h2 class="kimse-home-primary-heading">자주 쓰는 기능</h2><div class="card-grid kimse-home-actions">${[['🧠','근거 기반 체크','assessment-start','bg-pink'],['🧩','인지 훈련','training','bg-purple'],['💊','복약 관리','medication','bg-amber'],['💚','건강 기록','health','bg-mint']].map(x=>`<a class="action-card ${x[3]}" href="#/${x[2]}"><span class="icon">${x[0]}</span><strong>${x[1]}</strong></a>`).join('')}</div><h2 class="section-title">가족과 함께</h2><a href="#/family" class="list-row"><span><strong>${S.caregivers.length?`연결된 보호자 ${S.caregivers.length}명`:'가족/보호자 연결하기'}</strong><small>가족/보호자 연결은 구독과 별개로 관리할 수 있어요.</small></span>${I('chevron-right')}</a><details class="kimse-home-secondary"><summary>병원 기록과 자세한 정보 보기</summary><div class="kimse-home-secondary-content">${clinicalRecordHomeCard()}${m?`<button class="brain-home-card" data-go="brain-map"><span class="brain-home-icon">🧠</span><span><small>현재 기능 상태 참고</small><strong>${m[0]}</strong><em>기억·주의·언어·공간·일상기능을 함께 봅니다.</em></span>${I('chevron-right')}</button>`:''}</div></details>`,{back:false,bottom:true,active:'home'});
 };
@@ -3116,7 +3163,8 @@ document.addEventListener('click',async e=>{if(e.target.id==='admin-login'){cons
 document.addEventListener('click',async e=>{if(e.target.id!=='partner-submit')return;const company=$('#partner-company').value.trim(),contact=$('#partner-name').value.trim(),email=$('#partner-email').value.trim(),message=$('#partner-message').value.trim();if(!company||!contact||!email||message.length<10||!$('#partner-consent').checked){feedback('회사명, 담당자, 이메일, 10자 이상의 제안 내용과 개인정보 동의를 확인해주세요.','warning');return}e.target.disabled=true;e.target.textContent='접수 중…';try{const r=await fetch(API+'/api/v1/partner-inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({inquiry_type:$('#partner-type').value,company_name:company,contact_name:contact,email,phone:$('#partner-phone').value.trim()||null,website_url:$('#partner-web').value.trim()||null,category:$('#partner-category').value,message})});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();S.partnerStatus={id:data.id,at:data.created_at,company};save();feedback('입점·제휴 문의가 정상 접수되었습니다.','success');A.innerHTML=wrap(`<h1 class="page-title">문의가 접수됐어요</h1>${notice('접수 완료',company+' 담당자님의 제안을 저장했습니다. 검토 후 입력한 이메일로 연락드릴 수 있습니다.')}<button class="btn-kimse btn-primary-k btn-full" data-go="market">케어관으로 돌아가기</button>`,{title:'문의 접수',narrow:true})}catch(err){feedback('접수에 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.','warning');e.target.disabled=false;e.target.textContent='문의 접수'}});
 
 window.addEventListener('hashchange',()=>{if(route()==='auth')authMode='login';render()});window.addEventListener('online',()=>{O.hidden=true;say('인터넷 연결이 복구되었습니다.');startPassiveCollectors();flushSignals();syncMonitoringPreferences();syncMonitoring()});window.addEventListener('offline',()=>{O.hidden=false;say('인터넷 연결이 끊겼습니다.')});O.hidden=navigator.onLine;
-document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)}else{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){recordAppActive();flushMotionActivity();stopLocationWatch();flushSignals(true)}else{appSessionStarted=Date.now();refreshBaselineMeter();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}}});
+setInterval(refreshBaselineMeter,60000);
 window.addEventListener('pagehide',()=>{recordAppActive();flushMotionActivity();queueNativeStepSnapshot(true);stopLocationWatch();flushSignals(true)});
 window.addEventListener('pageshow',()=>{appSessionStarted=Date.now();if(monitoringEnabled()){startPassiveCollectors();syncMonitoring()}});
 document.addEventListener('freeze',()=>{recordAppActive();flushMotionActivity();queueNativeStepSnapshot(true);stopLocationWatch();flushSignals(true)});
