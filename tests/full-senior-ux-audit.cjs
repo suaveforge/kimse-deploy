@@ -80,30 +80,32 @@ await context.close();
 }
 
 async function verifyBaseline24HourMeter(browser){
-  const ctx=await browser.newContext({viewport:{width:375,height:810},locale:'ko-KR',reducedMotion:'reduce',serviceWorkers:'block'});
-  const p=await ctx.newPage();
-  try{
-    await p.goto(base+'home',{waitUntil:'domcontentloaded'});
-    const samples=[
-      {hours:0.02,day:1,done:0,pct:0,complete:false,key:'day01-start'},
-      {hours:12,day:1,done:0,pct:50,complete:false,key:'day01-half'},
-      {hours:24.1,day:2,done:1,pct:0.4,complete:false,key:'day02-start'},
-      {hours:7*24+12,day:8,done:7,pct:50,complete:false,key:'day08-half'},
-      {hours:13*24+12,day:14,done:13,pct:50,complete:false,key:'day14-half'},
-      {hours:14*24+0.1,day:14,done:14,pct:100,complete:true,key:'day14-done'}
-    ];
-    for(const test of samples){
-      const start=new Date(Date.now()-test.hours*3600000).toISOString();
-      await p.evaluate(iso=>{
-        localStorage.setItem('kimse.p0.state',JSON.stringify({
-          version:14,account:{name:'기준선 QA',email:'qa@example.invalid'},intent:'self',self:true,care:false,mode:'self',
-          onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
-          consents:{service:true,privacy:true,health:true},
-          baseline:{startedAt:iso}
-        }));
-      },start);
+  const samples=[
+    {hours:0.02,day:1,done:0,pct:0,complete:false,key:'day01-start'},
+    {hours:12,day:1,done:0,pct:50,complete:false,key:'day01-half'},
+    {hours:24.1,day:2,done:1,pct:0.4,complete:false,key:'day02-start'},
+    {hours:7*24+12,day:8,done:7,pct:50,complete:false,key:'day08-half'},
+    {hours:13*24+12,day:14,done:13,pct:50,complete:false,key:'day14-half'},
+    {hours:14*24+0.1,day:14,done:14,pct:100,complete:true,key:'day14-done'}
+  ];
+  for(const test of samples){
+    const start=new Date(Date.now()-test.hours*3600000).toISOString();
+    const ctx=await browser.newContext({viewport:{width:375,height:810},locale:'ko-KR',reducedMotion:'reduce',serviceWorkers:'block'});
+    await ctx.addInitScript(iso=>{
+      localStorage.setItem('kimse.p0.state',JSON.stringify({
+        version:14,account:{name:'기준선 QA',email:'qa@example.invalid'},intent:'self',self:true,care:false,mode:'self',
+        onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+        consents:{service:true,privacy:true,health:true},
+        baseline:{startedAt:iso}
+      }));
+    },start);
+    try{
+      const p=await ctx.newPage();
       await p.goto(base+'home',{waitUntil:'domcontentloaded'});
-      await p.locator('[data-baseline-24h-meter]').waitFor({timeout:20000});
+      await p.locator('[data-baseline-24h-meter]').waitFor({timeout:20000}).catch(async err=>{
+        const diag=await p.evaluate(()=>({hash:location.hash,text:document.querySelector('#app')?.innerText?.slice(0,400),saved:JSON.parse(localStorage.getItem('kimse.p0.state')||'{}').baseline}));
+        throw new Error(test.key+' meter missing: '+JSON.stringify(diag)+' '+String(err));
+      });
       const measured=await p.evaluate(()=>{
         const ring=document.querySelector('[data-baseline-24h-meter]');
         const arc=ring?.querySelector('[data-baseline-ring-progress]');
@@ -120,16 +122,16 @@ async function verifyBaseline24HourMeter(browser){
       assert.equal(measured.done,test.done,test.key+' completed 24-hour days');
       assert.equal(measured.complete,test.complete,test.key+' completion only after 336 hours');
       assert(Math.abs(measured.pct-test.pct)<1.2,test.key+' ring stroke reflects elapsed hours '+JSON.stringify(measured));
-      assert(measured.label.includes(test.day+'일째')&&measured.label.includes('24시간'),test.key+' screen-reader hour/day label');
+      assert(measured.label.includes(test.day+'일째')&&measured.label.includes('24시간'),test.key+' hour/day label');
       assert(measured.finishedLabel.includes(test.done+' / 14일 완료'),test.key+' two-week labels');
-      assert(measured.within&&!measured.overflow,test.key+' ring remains on screen without horizontal overflow');
+      assert(measured.within&&!measured.overflow,test.key+' ring fits mobile');
       if(test.complete)assert(measured.cardText.includes('14일 시간 경과 완료'),test.key+' finished');
-      else assert(!measured.cardText.includes('14일 시간 경과 완료'),test.key+' must not show early completion');
+      else assert(!measured.cardText.includes('14일 시간 경과 완료'),test.key+' not complete early');
       if(['day01-half','day08-half','day14-half'].includes(test.key))await p.screenshot({path:'qa-artifacts/screens/baseline-24h-'+test.key+'-375.png',fullPage:false});
       console.log('KIMSE_BASELINE_24H_CHECK='+test.key+' day='+measured.day+' elapsed='+measured.done+'/14 ring='+measured.pct.toFixed(1)+'%');
-    }
-    console.log('KIMSE_BASELINE_24H_METER=PASS six boundaries, 14 full days, meter and day labeling');
-  }finally{await ctx.close()}
+    }finally{await ctx.close()}
+  }
+  console.log('KIMSE_BASELINE_24H_METER=PASS six boundaries, 14 full days, meter and day labeling');
 }
 
 async function verifySeniorJourneys(browser){
