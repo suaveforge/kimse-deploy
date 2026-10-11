@@ -356,6 +356,64 @@ async function verifyFamilyCallP2(browser){
   }finally{await ctx.close()}
 }
 
+
+async function verifyEvidenceVoiceRecording(){
+  const cb=await chromium.launch({headless:true,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
+  const cx=await cb.newContext({viewport:{width:375,height:810},locale:'ko-KR',permissions:['microphone'],serviceWorkers:'block'});
+  await cx.addInitScript(()=>{
+    localStorage.setItem('kimse.p0.state',JSON.stringify({
+      version:14,account:{name:'녹음 품질점검',email:'qa@example.invalid'},intent:'self',self:true,care:false,mode:'self',
+      onboarding:{profileDone:false,initialDone:false,consentDone:true,completed:false,profileStep:9},
+      consents:{service:true,privacy:true,health:true,microphone:true},profile:{hearing:''},
+      initial:{step:1,answers:{},voiceStep:0,voiceSamples:[],voiceSkipped:false,recall:''}
+    }));
+  });
+  try{
+    const p=await cx.newPage(),errors=[];
+    p.on('pageerror',e=>errors.push(String(e)));
+    const response=await p.request.get('https://kimse.suaveforge.com/evidence/evidence-model.json');
+    assert.equal(response.status(),200,'Evidence question registry should be live');
+    const m=await response.json();
+    assert.equal(m.onboardingQuestionRegistry.items.length,12,'onboarding questions registered in Evidence');
+    assert.equal(m.baselineTaskRegistry.tasks.length,7,'baseline tasks registered in Evidence');
+    const hearing=m.onboardingQuestionRegistry.items.find(x=>x.id==='hearing');
+    const calc=m.baselineTaskRegistry.tasks.find(x=>x.id==='serial_subtraction');
+    await p.goto(base+'onboarding-profile',{waitUntil:'domcontentloaded'});
+    await p.locator('[data-profile-choice]').first().waitFor({timeout:30000});
+    assert.equal((await p.locator('h1').first().innerText()).trim(),hearing.title,'profile question comes from Evidence');
+    assert.deepEqual((await p.locator('[data-profile-choice]').allInnerTexts()).map(x=>x.trim()),hearing.options.map(x=>x[1]),'profile answer choices match Evidence');
+    await p.goto(base+'initial-check',{waitUntil:'domcontentloaded'});
+    await p.locator('[data-initial-answer]').first().waitFor({timeout:30000});
+    assert.equal((await p.locator('.kimse-initial-title').innerText()).trim(),calc.title,'cognitive task comes from Evidence');
+    assert.deepEqual((await p.locator('[data-initial-answer]').allInnerTexts()).map(x=>x.trim()),calc.options.map(x=>x[1]),'task choices match Evidence');
+    console.log('KIMSE_EVIDENCE_QUESTIONS=PASS profile12 baseline7 hearing and serial-subtraction match source');
+    await p.goto(base+'voice-check',{waitUntil:'domcontentloaded'});
+    const record=p.locator('[data-voice-task="0"]');
+    await record.waitFor({timeout:30000});
+    await record.click();
+    await p.locator('#kimse-voice-clock').waitFor({timeout:12000});
+    await p.screenshot({path:'qa-artifacts/screens/voice-recording-active-375.png',fullPage:false});
+    console.log('KIMSE_VOICE_FAKE_MIC=STARTED');
+    await p.waitForTimeout(31800);
+    await p.locator('[data-voice-task="0"]').click();
+    await p.locator('.kimse-voice-state.is-complete').waitFor({timeout:60000});
+    await p.locator('#kimse-voice-playback[src]').waitFor({timeout:15000});
+    const saved=await p.evaluate(async()=>{
+      const state=JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'),sample=state.initial?.voiceSamples?.[0];
+      if(!sample?.id)return null;
+      const db=await new Promise((resolve,reject)=>{const req=indexedDB.open('kimse-private',1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});
+      try{
+        const blob=await new Promise((resolve,reject)=>{const tx=db.transaction('voiceSamples','readonly'),req=tx.objectStore('voiceSamples').get(sample.id);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});
+        return {duration:sample.durationSec,size:blob?.size||0,mime:blob?.type||'',playback:!!document.querySelector('#kimse-voice-playback')?.src};
+      }finally{db.close()}
+    });
+    assert(saved?.duration>=30&&saved.size>0&&saved.playback,'recorded audio must be persisted to IndexedDB and available for playback');
+    assert.deepEqual(errors,[],'voice route must not throw uncaught JS errors');
+    await p.screenshot({path:'qa-artifacts/screens/voice-recording-saved-375.png',fullPage:false});
+    console.log('KIMSE_VOICE_RECORDING=PASS duration='+saved.duration+'s bytes='+saved.size+' mime='+saved.mime+' replay=READY');
+  }finally{await cx.close();await cb.close()}
+}
+
 (async()=>{
 fs.mkdirSync('qa-artifacts/screens',{recursive:true});
 const browser=await chromium.launch({headless:true});
@@ -366,6 +424,7 @@ await verifyHealthScheduleJourneys(browser);
 await verifyMedicalMarketProgressive(browser);
 await verifyRemainingSeniorP2(browser);
 await verifyFamilyCallP2(browser);
+await verifyEvidenceVoiceRecording();
 const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));
