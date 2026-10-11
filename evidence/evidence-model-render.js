@@ -72,6 +72,7 @@ function render(m){
   if(signalHtml)root.insertAdjacentHTML('afterbegin',signalHtml);
   var factors=document.getElementById('factors');
   if(factors)factors.insertAdjacentHTML('beforebegin',html); else root.insertAdjacentHTML('beforeend',html);
+  if(location.hash==='#question-registry')requestAnimationFrame(function(){document.getElementById('question-registry')?.scrollIntoView({block:'start',behavior:'auto'})});
 }
 fetch('./evidence-model.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(render).catch(function(){
   var factors=document.getElementById('factors');
