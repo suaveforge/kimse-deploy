@@ -334,6 +334,8 @@ function trendSeriesSvg(key=S.brainTrendDomain){
 
 const MIN_VOICE_SECONDS=30;
 let voiceRecorder=null,voiceStartedAt=0,voiceChunks=[],voiceStream=null,voiceTask=-1,voiceSaving=false,voiceTimer=null,voicePlaybackUrl=null;
+let voiceLastError='';
+function voiceError(message,code){voiceLastError=message+(code?' ['+String(code).slice(0,64)+']':'');feedback(message,'warning');}
 function voiceElapsed(){return Math.max(0,Math.floor((Date.now()-voiceStartedAt)/1000))}
 function updateVoiceTimer(){
   const elapsed=voiceElapsed(),clock=document.querySelector('#kimse-voice-clock'),button=document.querySelector('[data-voice-task]');
@@ -468,13 +470,16 @@ async function analyzeVoiceBlob(blob){
 
 async function startVoiceRecording(index){
   if(voiceRecorder||voiceSaving)return;
+  voiceLastError='';
+  if(!window.isSecureContext){voiceError('안전한 HTTPS 연결에서만 마이크를 사용할 수 있어요.','INSECURE_CONTEXT');render();return}
   if(!navigator.mediaDevices?.getUserMedia||!('MediaRecorder'in window)){
     S.permissions.microphone='unsupported';save();
-    feedback('이 기기에서는 브라우저 음성 녹음을 사용할 수 없습니다.','warning');render();return;
+    voiceError('이 기기에서는 브라우저 음성 녹음을 사용할 수 없습니다.','NO_MEDIA_API');render();return;
   }
   let stream=null;
   try{
-    stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+    if(!stream.getAudioTracks().some(t=>t.readyState==='live'))throw new DOMException('No live audio track','NotReadableError');
     if(voiceRecorder||voiceSaving){stream.getTracks().forEach(t=>t.stop());return}
     const supported=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'].find(type=>window.MediaRecorder.isTypeSupported?.(type))||'';
     const recorder=supported?new MediaRecorder(stream,{mimeType:supported}):new MediaRecorder(stream),chunks=[];
@@ -488,14 +493,14 @@ async function startVoiceRecording(index){
     recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
     recorder.onerror=()=>{
       failed=true;
-      if(recorder.state!=='inactive'){try{recorder.stop()}catch{release();feedback('녹음 장치에 문제가 생겼어요. 다시 녹음해주세요.','warning');render()}}
+      if(recorder.state!=='inactive'){try{recorder.stop()}catch{release();voiceError('녹음 장치에 문제가 생겼어요. 다시 녹음해주세요.','RECORDER_ERROR');render()}}
     };
     recorder.onstop=async()=>{
       const durationSec=Math.floor((Date.now()-recordingStarted)/1000);
       const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
       release();
       if(failed||interrupted||durationSec<MIN_VOICE_SECONDS||!blob.size){
-        feedback(failed||interrupted?'녹음이 중단되었어요. 마이크를 확인하고 다시 녹음해주세요.':'녹음이 너무 짧거나 소리가 저장되지 않았어요. 30초 이상 다시 녹음해주세요.','warning');
+        voiceError(failed||interrupted?'녹음이 중단되었어요. 마이크를 확인하고 다시 녹음해주세요.':'녹음이 너무 짧거나 소리가 저장되지 않았어요. 30초 이상 다시 녹음해주세요.',failed?'RECORDER_ERROR':interrupted?'TRACK_ENDED':'EMPTY_OR_SHORT');
         render();return;
       }
       voiceSaving=true;render();
@@ -503,14 +508,14 @@ async function startVoiceRecording(index){
         const id='voice-'+Date.now();
         const stored=await persistVoiceBlob(id,blob);
         if(!stored){
-          feedback('기기에 녹음 파일을 저장하지 못했어요. 저장 공간이나 브라우저 설정을 확인하고 다시 시도해주세요.','warning');
+          voiceError('기기에 녹음 파일을 저장하지 못했어요. 저장 공간이나 브라우저 설정을 확인하고 다시 시도해주세요.','INDEXEDDB_WRITE_FAILED');
           return;
         }
         const features=await analyzeVoiceBlob(blob);
         S.initial.voiceSamples[index]={id,prompt:VOICE_PROMPTS[index],durationSec,size:blob.size,capturedAt:new Date().toISOString(),storedLocal:true,features};
-        save();feedback((index+1)+'번째 음성 샘플을 저장했습니다.','success');
+        voiceLastError='';save();feedback((index+1)+'번째 음성 샘플을 저장했습니다.','success');
       }catch{
-        feedback('녹음 결과를 처리하지 못했어요. 다시 시도해주세요.','warning');
+        voiceError('녹음 결과를 처리하지 못했어요. 다시 시도해주세요.','VOICE_PROCESSING_FAILED');
       }finally{voiceSaving=false;render()}
     };
     stream.getTracks().forEach(track=>track.addEventListener('ended',()=>{
@@ -518,6 +523,7 @@ async function startVoiceRecording(index){
     }));
     voiceStream=stream;voiceRecorder=recorder;voiceTask=index;
     recorder.start(1000);
+    if(recorder.state!=='recording')throw new Error('RECORDER_DID_NOT_START');
     recordingStarted=Date.now();voiceStartedAt=recordingStarted;voiceChunks=chunks;
     S.permissions.microphone='granted';save();render();
     updateVoiceTimer();voiceTimer=setInterval(updateVoiceTimer,1000);
@@ -527,7 +533,7 @@ async function startVoiceRecording(index){
     voiceStream=null;voiceRecorder=null;voiceTask=-1;
     const denied=['NotAllowedError','PermissionDeniedError','SecurityError'].includes(err?.name);
     S.permissions.microphone=denied?'denied':'unknown';save();
-    feedback(denied?'마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요.':err?.name==='NotFoundError'?'연결된 마이크를 찾지 못했어요. 마이크 연결을 확인해주세요.':err?.name==='NotReadableError'?'마이크가 다른 앱에서 사용 중일 수 있어요. 다른 앱을 닫고 다시 시도해주세요.':err?.name==='NotSupportedError'?'이 브라우저에서는 해당 음성 형식을 녹음할 수 없어요. 브라우저를 업데이트해주세요.':'녹음을 시작하지 못했어요 ('+String(err?.name||'원인 미확인')+'). 다시 시도해주세요.','warning');
+    voiceError(denied?'마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요.':err?.name==='NotFoundError'?'연결된 마이크를 찾지 못했어요. 마이크 연결을 확인해주세요.':err?.name==='NotReadableError'?'마이크가 다른 앱에서 사용 중일 수 있어요. 다른 앱을 닫고 다시 시도해주세요.':err?.name==='NotSupportedError'?'이 브라우저에서는 해당 음성 형식을 녹음할 수 없어요. 브라우저를 업데이트해주세요.':'녹음을 시작하지 못했어요 ('+String(err?.name||'원인 미확인')+'). 다시 시도해주세요.',err?.name||'START_FAILED');
     render();
   }
 }
@@ -1864,6 +1870,7 @@ page['voice-check']=()=>{
     '<div class="kimse-voice-prompt">'+intro+'<p>'+esc(VOICE_PROMPTS[step])+'</p><span class="kimse-voice-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>'+
     state+(active?'<div class="kimse-voice-countdown" id="kimse-voice-clock" role="timer" aria-label="녹음 경과시간">00:00 / 00:30</div>':'')+
     (S.permissions.microphone==='denied'?'<p class="kimse-flow-warning" role="alert">마이크 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.</p>':'')+
+    (voiceLastError?'<div class="kimse-flow-warning" role="alert"><strong>녹음 실패</strong><p>'+esc(voiceLastError)+'</p><small>브라우저 주소창의 마이크 권한과 기기 입력장치를 확인한 다음 다시 시도하세요.</small></div>':'')+
     '<div class="kimse-flow-actions">'+primary+other+'</div>'+
     '<div class="kimse-flow-secondary"><button type="button" class="kimse-flow-back" data-voice-back '+(recording?'disabled':'')+'>← 이전 단계</button>'+
       '<button type="button" class="kimse-flow-skip" id="skip-voice" '+(recording?'disabled':'')+'>음성 없이 계속</button></div>'+
