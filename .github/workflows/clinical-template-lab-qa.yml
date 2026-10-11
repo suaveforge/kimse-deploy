@@ -66,6 +66,10 @@ jobs:
               assert.ok(connectedZoom.distinctBarGroup,'bar chart has unlike x-axis and must remain independent');
               const immutableRows=await page.locator('#rawMetricRows').innerText();
               for(const id of ['trendChart','coverageChart','changeChart'])assert.equal(await page.locator('#'+id+' canvas').count(),1,name+':'+id);
+              assert.match(await page.locator('#chartTextAlternative').textContent(),/원자료.*표/,'chart text fallback must point to canonical source table');
+              for(const id of ['trendChart','coverageChart','changeChart']){
+                assert.equal(await page.locator('#'+id).getAttribute('aria-describedby'),'chartTextAlternative periodInterpretation','accessible chart source and period contract '+id);
+              }
               await page.locator('#country').selectOption('GB');
               await page.locator('#institution').selectOption('GB-DORSET-MAS');
               assert.match(await page.locator('#selectionStatus').innerText(),/의료진 승인 없음/);
