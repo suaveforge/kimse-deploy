@@ -1867,18 +1867,19 @@ page['voice-check']=()=>{
   const primary=sample&&!active?
     (step===2?'<button type="button" id="finish-voice" class="kimse-flow-primary" '+(done===3?'':'disabled')+'>나의 첫 기록 보기 <span aria-hidden="true">→</span></button>':
       '<button type="button" class="kimse-flow-primary" data-voice-next>다음 이야기로 <span aria-hidden="true">→</span></button>'):
-    '<button type="button" class="kimse-flow-primary '+(active?'is-danger':'')+'" data-voice-task="'+step+'" '+(recording&&!active?'disabled':'')+'>'+
-      (active?'녹음 마치기':voiceLastError?'다시 녹음 시작하기':'녹음 시작하기')+'</button>';
-  const other=sample&&!active?'<button type="button" class="kimse-flow-quiet" data-voice-task="'+step+'">다시 녹음할게요</button>':'';
+    (voiceLastError&&!active?'':'<button type="button" class="kimse-flow-primary '+(active?'is-danger':'')+'" data-voice-task="'+step+'" '+(recording&&!active?'disabled':'')+'>'+
+      (active?'녹음 마치기':'녹음 시작하기')+'</button>');
+  const other=sample&&!active&&!voiceLastError?'<button type="button" class="kimse-flow-quiet" data-voice-task="'+step+'">다시 녹음할게요</button>':'';
   return wrap('<section class="kimse-voice-journey kimse-journey" aria-label="첫 음성 기록">'+
     journeyTop('나의 목소리',step+1,3,'말하기 과제')+
     '<div class="kimse-journey-prompt"><div class="kimse-journey-overline">목소리로 남기는 나의 첫 기록</div>'+
       '<h1 class="kimse-flow-title">편하게 말씀해주세요</h1>'+
       '<p class="kimse-flow-hint">녹음을 시작한 다음 천천히 이야기하시면 돼요.</p></div>'+
+    (voiceLastError?'<div class="kimse-voice-recovery" role="alert"><strong>녹음이 되지 않았어요.</strong><p>'+esc(voiceLastError)+'</p><button type="button" class="kimse-voice-retry" data-voice-task="'+step+'">다시 녹음 시작하기</button><details><summary>마이크 문제 해결 방법 보기</summary><ol><li>주소창의 사이트 설정에서 마이크를 허용해주세요.</li><li>다른 통화·녹음 앱을 닫고 다시 시도해주세요.</li><li>어려우면 ‘음성 없이 계속’을 누를 수 있어요.</li></ol></details></div>':'')+
     '<div class="kimse-voice-prompt">'+intro+'<p>'+esc(VOICE_PROMPTS[step])+'</p><span class="kimse-voice-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>'+
     state+(active?'<div class="kimse-voice-countdown" id="kimse-voice-clock" role="timer" aria-label="녹음 경과시간">00:00 / 00:30</div><p class="kimse-voice-rec-help">30초가 지나면 같은 버튼을 눌러 저장할 수 있어요.</p>':'')+
-    (S.permissions.microphone==='denied'?'<p class="kimse-flow-warning" role="alert">마이크 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.</p>':'')+
-    (voiceLastError?'<div class="kimse-voice-recovery" role="alert"><strong>녹음을 시작하거나 저장하지 못했습니다.</strong><p>'+esc(voiceLastError)+'</p><ol><li>주소창의 사이트 설정에서 마이크를 허용해주세요.</li><li>다른 통화·녹음 앱을 닫고 다시 시도해주세요.</li><li>계속 안 되면 아래 ‘음성 없이 계속’을 누를 수 있어요.</li></ol></div>':'')+
+    (S.permissions.microphone==='denied'&&!voiceLastError?'<p class="kimse-flow-warning" role="alert">마이크 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.</p>':'')+
+    
     '<div class="kimse-flow-actions">'+primary+other+'</div>'+
     '<div class="kimse-flow-secondary"><button type="button" class="kimse-flow-back" data-voice-back '+(recording?'disabled':'')+'>← 이전 단계</button>'+
       '<button type="button" class="kimse-flow-skip" id="skip-voice" '+(recording?'disabled':'')+'>음성 없이 계속</button></div>'+
