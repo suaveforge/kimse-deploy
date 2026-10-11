@@ -102,7 +102,7 @@ async function verifyBaseline24HourMeter(browser){
           baseline:{startedAt:iso}
         }));
       },start);
-      await p.reload({waitUntil:'domcontentloaded'});
+      await p.goto(base+'home',{waitUntil:'domcontentloaded'});
       await p.locator('[data-baseline-24h-meter]').waitFor({timeout:20000});
       const measured=await p.evaluate(()=>{
         const ring=document.querySelector('[data-baseline-24h-meter]');
