@@ -118,6 +118,20 @@ jobs:
                   await page.locator('#institution').selectOption(inst.id);
                   const officialGroup=forms.entries.find(entry=>entry.id===inst.id);
                   assert.ok(officialGroup,inst.id+' no canonical published source');
+                  const groupClasses=await page.locator('#hospitalRequirements > [data-research-class]').evaluateAll(nodes=>nodes.map(x=>x.dataset.researchClass));
+                  assert.equal(groupClasses.length,officialGroup.requirement_groups.length,inst.id+' must classify every official research item');
+                  assert.ok(groupClasses.every(v=>['observation','needs_capture','external','context'].includes(v)),inst.id+' unknown evidence triage category');
+                  const triage=await page.locator('#researchTriageSummary').evaluate(x=>({
+                    observation:Number(x.dataset.observation),needs_capture:Number(x.dataset.needsCapture),
+                    external:Number(x.dataset.external),context:Number(x.dataset.context),total:Number(x.dataset.total)
+                  }));
+                  assert.equal(triage.total,officialGroup.requirement_groups.length,inst.id+' triage source count drift');
+                  assert.equal(triage.observation+triage.needs_capture+triage.external+triage.context,triage.total);
+                  assert.deepEqual([triage.observation,triage.needs_capture,triage.external,triage.context],
+                    ['observation','needs_capture','external','context'].map(c=>groupClasses.filter(x=>x===c).length));
+                  assert.ok(triage.external>0,inst.id+' external original or approval cannot disappear');
+                  assert.match(await page.locator('#researchTriageSummary').innerText(),/제출 요건 충족 판단 아님/);
+                  assert.equal(await page.locator('#printResearchTriage').textContent(),await page.locator('#researchTriageSummary').textContent(),'source triage PDF parity');
                   assert.equal(await page.locator('#hospitalRequirements [data-source-trace]').count(),officialGroup.requirement_groups.length,inst.id+' official source item links missing');
                   const actual=await page.locator('#hospitalRequirements [data-source-trace]').evaluateAll(links=>links.map(el=>({id:el.dataset.requirementId,trace:el.dataset.sourceTrace,href:el.getAttribute('href')})));
                   const expected=officialGroup.requirement_groups.map(item=>{
@@ -151,7 +165,7 @@ jobs:
                     assert.match(questions[2],/미수집 정보/);
                     assert.equal(await page.locator('#printClinicianQuestions').textContent(),questions.join(' / '),'consultation checklist PDF parity');
                     const providerText=await page.locator('#summaryProviderStatus').textContent();
-                    assert.match(providerText,new RegExp('공개 안내 '+officialGroup.requirement_groups.length+'개 조사'),'provider overview count must match official research registry');
+                    assert.match(providerText,new RegExp('공개 조사 '+officialGroup.requirement_groups.length+'개'),'provider overview count must match official research registry');
                     assert.equal(await page.locator('#printProviderStatus').textContent(),providerText,'selected provider status PDF parity');
                     assert.equal(await page.locator('#printSummaryRows tr').count(),6);
                     assert.equal(await page.locator('#clinicalPrintButton').isEnabled(),true);
