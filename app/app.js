@@ -278,7 +278,7 @@ function baselineMeterHtml(p){
       '<circle class="baseline-ring-track" cx="56" cy="56" r="45" pathLength="100"></circle>'+
       '<circle class="baseline-ring-progress" data-baseline-ring-progress cx="56" cy="56" r="45" pathLength="100" style="stroke-dasharray:'+p.percent.toFixed(3)+' 100"></circle>'+
     '</svg><span class="baseline-ring-center"><strong data-baseline-ring-day>'+dayLabel+'</strong><small>24시간</small></span></div>'+
-    '<div class="baseline-time-details"><span>오늘 24시간 <b data-baseline-ring-percent>'+Math.floor(p.percent)+'%</b></span>'+
+    '<div class="baseline-time-details"><span>이번 24시간 <b data-baseline-ring-percent>'+Math.floor(p.percent)+'%</b></span>'+
       '<small data-baseline-ring-remaining>'+baselineClockRemaining(p)+'</small></div>'+
     '<div class="baseline-two-week" aria-label="14일 중 '+p.completedDays+'일의 24시간이 지났습니다">'+
       '<div class="baseline-two-week-label"><span>2주간 시간 경과</span><strong data-baseline-total-days>'+p.completedDays+' / 14일 완료</strong></div>'+
