@@ -113,14 +113,22 @@ async function loadEvidenceModel(){
   PROFILE_WIZARD_STEPS.length=0;VOICE_PROMPTS.length=0;
   for(const k of Object.keys(INITIAL_TASK_OPTIONS))delete INITIAL_TASK_OPTIONS[k];
   if(p.length===12&&tasks.length>=7&&p.every(x=>x.id&&x.title&&(x.type||Array.isArray(x.options)))&&tasks.every(x=>x.id&&x.sourceUrl)){
-    PROFILE_WIZARD_STEPS.push(...p.map(x=>({key:x.id,title:x.title,hint:x.hint||'',type:x.type||'',options:x.options||null})));
+    PROFILE_WIZARD_STEPS.push(...p.map(x=>({key:x.id,title:x.title,hint:x.hint||'',type:x.type||'',options:x.options||null,evidence:x.evidence||'',source:x.source||'',sourceUrl:x.sourceUrl||'',wordingOrigin:x.wordingOrigin||'',validation:x.validation||''})));
     const byId=Object.fromEntries(tasks.map(x=>[x.id,x]));
     for(const [index,id] of [[1,'serial_subtraction'],[2,'functional_events'],[3,'functional_finance'],[4,'functional_travel']]){
-      const task=byId[id];if(task?.title&&Array.isArray(task.options)){INITIAL_TASK_OPTIONS[index]={key:task.answerKey,title:task.title,hint:task.hint||'',options:task.options}}
+      const task=byId[id];if(task?.title&&Array.isArray(task.options)){INITIAL_TASK_OPTIONS[index]={key:task.answerKey,title:task.title,hint:task.hint||'',options:task.options,evidence:task.evidence||'',source:task.source||'',sourceUrl:task.sourceUrl||'',wordingOrigin:task.wordingOrigin||'',validation:task.validation||''}}
     }
     VOICE_PROMPTS.push(...(byId.speech_spontaneous?.prompts||[]),...(byId.speech_semantic_fluency?.prompts||[]));
   }
   return !!EVIDENCE_MODEL;
+}
+function questionSourceDetails(item){
+  if(!item?.sourceUrl)return '';
+  return '<details class="kimse-question-source"><summary>이 질문의 근거 알아보기 (선택)</summary>'+
+    '<div class="kimse-question-source-body"><strong>공식 검사 문항이 아닌 낌새 자체 구성 질문입니다.</strong>'+
+    '<p>참고 연구: '+esc(item.evidence||item.source||'관련 연구')+'</p>'+
+    '<p>'+esc(item.validation||'이 질문 자체의 임상적 검증은 확인되지 않았습니다.')+'</p>'+
+    '<a href="'+esc(item.sourceUrl)+'" target="_blank" rel="noopener noreferrer">관련 연구 원문 보기 ↗</a></div></details>';
 }
 const assessmentScore=()=>Q.reduce((sum,q,i)=>{const o=q.options[S.answers[i]];return sum+(o?Number(o.points)||0:0)},0);
 const API='https://api-kimse.suaveforge.com';
@@ -1783,7 +1791,7 @@ page['onboarding-profile']=()=>{
    journeyTop('나를 알아가는 첫 단계',i+1,PROFILE_WIZARD_STEPS.length,'기본정보')+
    '<div class="kimse-journey-prompt"><h1 class="kimse-wizard-title">'+esc(title)+'</h1>'+
    (hint?'<p id="profile-wizard-hint" class="kimse-wizard-hint">'+esc(hint)+'</p>':'')+'</div>'+
-   '<form id="profile-form" novalidate>'+choices+
+   '<form id="profile-form" novalidate>'+choices+questionSourceDetails(step)+
    '<div class="kimse-wizard-actions kimse-journey-actions'+(birth?' kimse-birth-actions':autoChoice?' kimse-autonext-actions':'')+'">'+
      (birth?'':'<button type="button" class="kimse-wizard-previous" data-profile-prev '+(showPrev?'':'disabled')+'>이전</button>')+
      (birth||autoChoice?'':'<button type="submit" id="profile-wizard-next" class="btn-kimse btn-primary-k kimse-wizard-next" '+(valid?'':'disabled')+'>'+(last?'초기 과제로 계속':'다음')+'</button>')+
@@ -1830,7 +1838,7 @@ page['initial-check']=()=>{
       '</div>';
     return wrap(top+
       '<div class="kimse-journey-prompt"><h1 class="kimse-initial-title">'+esc(title)+'</h1>'+
-      '<p class="kimse-initial-hint">'+esc(hint)+'</p></div>'+options+
+      '<p class="kimse-initial-hint">'+esc(hint)+'</p></div>'+options+questionSourceDetails(step)+
 
       foot,{title:'처음 상태 확인',narrow:true});
   }
@@ -1860,7 +1868,7 @@ page['voice-check']=()=>{
     (step===2?'<button type="button" id="finish-voice" class="kimse-flow-primary" '+(done===3?'':'disabled')+'>나의 첫 기록 보기 <span aria-hidden="true">→</span></button>':
       '<button type="button" class="kimse-flow-primary" data-voice-next>다음 이야기로 <span aria-hidden="true">→</span></button>'):
     '<button type="button" class="kimse-flow-primary '+(active?'is-danger':'')+'" data-voice-task="'+step+'" '+(recording&&!active?'disabled':'')+'>'+
-      (active?'녹음 마치기':'녹음 시작하기')+'</button>';
+      (active?'녹음 마치기':voiceLastError?'다시 녹음 시작하기':'녹음 시작하기')+'</button>';
   const other=sample&&!active?'<button type="button" class="kimse-flow-quiet" data-voice-task="'+step+'">다시 녹음할게요</button>':'';
   return wrap('<section class="kimse-voice-journey kimse-journey" aria-label="첫 음성 기록">'+
     journeyTop('나의 목소리',step+1,3,'말하기 과제')+
@@ -1868,9 +1876,9 @@ page['voice-check']=()=>{
       '<h1 class="kimse-flow-title">편하게 말씀해주세요</h1>'+
       '<p class="kimse-flow-hint">녹음을 시작한 다음 천천히 이야기하시면 돼요.</p></div>'+
     '<div class="kimse-voice-prompt">'+intro+'<p>'+esc(VOICE_PROMPTS[step])+'</p><span class="kimse-voice-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>'+
-    state+(active?'<div class="kimse-voice-countdown" id="kimse-voice-clock" role="timer" aria-label="녹음 경과시간">00:00 / 00:30</div>':'')+
+    state+(active?'<div class="kimse-voice-countdown" id="kimse-voice-clock" role="timer" aria-label="녹음 경과시간">00:00 / 00:30</div><p class="kimse-voice-rec-help">30초가 지나면 같은 버튼을 눌러 저장할 수 있어요.</p>':'')+
     (S.permissions.microphone==='denied'?'<p class="kimse-flow-warning" role="alert">마이크 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.</p>':'')+
-    (voiceLastError?'<div class="kimse-flow-warning" role="alert"><strong>녹음 실패</strong><p>'+esc(voiceLastError)+'</p><small>브라우저 주소창의 마이크 권한과 기기 입력장치를 확인한 다음 다시 시도하세요.</small></div>':'')+
+    (voiceLastError?'<div class="kimse-voice-recovery" role="alert"><strong>녹음을 시작하거나 저장하지 못했습니다.</strong><p>'+esc(voiceLastError)+'</p><ol><li>주소창의 사이트 설정에서 마이크를 허용해주세요.</li><li>다른 통화·녹음 앱을 닫고 다시 시도해주세요.</li><li>계속 안 되면 아래 ‘음성 없이 계속’을 누를 수 있어요.</li></ol></div>':'')+
     '<div class="kimse-flow-actions">'+primary+other+'</div>'+
     '<div class="kimse-flow-secondary"><button type="button" class="kimse-flow-back" data-voice-back '+(recording?'disabled':'')+'>← 이전 단계</button>'+
       '<button type="button" class="kimse-flow-skip" id="skip-voice" '+(recording?'disabled':'')+'>음성 없이 계속</button></div>'+
