@@ -2195,8 +2195,7 @@ page['family-feedback']=()=>{
 };
 page['care-schedule']=()=>wrap(
   '<h1 class="page-title">가족 일정 관리</h1><p class="page-desc">어떤 일정인지 고르고 날짜와 시간을 선택해주세요.</p>'+
-  '<div class="list">'+S.schedule.map(x=>row('📅 '+x.title,x.date,'예정')).join('')+'</div>'+
-  '<h2 class="section-title">일정 추가</h2>'+
+  '<h2 class="section-title">새 일정 추가</h2>'+
   '<div class="form-stack kimse-care-schedule-form">'+
     '<div class="field"><label for="schedule-title">어떤 일정인가요?</label>'+
       '<div class="kimse-schedule-quick" role="group" aria-label="일정 종류 바로 선택">'+
@@ -2205,7 +2204,10 @@ page['care-schedule']=()=>wrap(
     '<div class="field"><label for="schedule-date">날짜 선택</label><input id="schedule-date" type="date" aria-label="가족 일정 날짜" required></div>'+
     '<div class="field"><label for="schedule-time">시간 선택</label><input id="schedule-time" type="time" aria-label="가족 일정 시간" required></div>'+
     '<button type="button" id="add-schedule" class="btn-kimse btn-primary-k btn-full">일정 추가</button>'+
-  '</div>',{title:'일정 관리',narrow:true});
+  '</div>'+
+  '<section class="kimse-schedule-existing" aria-label="등록된 일정">'+
+  '<h2 class="section-title">등록된 일정</h2>'+
+  '<div class="list">'+(S.schedule.length?S.schedule.map(x=>row('📅 '+x.title,x.date,'예정')).join(''):'<p class="page-desc">아직 등록된 일정이 없습니다.</p>')+'</div></section>',{title:'일정 관리',narrow:true});
 page.family=()=>{
   const connected=S.caregivers||[],pending=(S.caregiverInvites||[]).filter(x=>x.status==='PENDING'),schedule=S.callSchedules?.[0];
   return wrap(`<h1 class="page-title">가족 연결 관리</h1><div class="summary-card bg-blue"><h3>보호자 ${connected.length}명 연결</h3><p>초대받은 보호자가 자신의 AuthHub 계정으로 로그인하면 실제 보호자 계정으로 연결됩니다.</p></div><div class="list">${connected.map(x=>row(x.name,(x.relation||'가족')+(x.email?' · '+x.email:''),'연결됨')).join('')||'<div class="empty-state"><h3>연결된 보호자가 없어요</h3><p>이메일로 보호자를 초대할 수 있습니다.</p></div>'}</div>${pending.length?'<h2 class="section-title">초대 대기</h2><div class="list">'+pending.map(x=>row(x.email,x.relation||'가족','대기 중')).join('')+'</div>':''}<div class="hero-actions"><button class="btn-kimse btn-primary-k btn-full" data-go="family-add">+ 보호자 초대하기</button>${connected.length?'<button class="btn-kimse btn-secondary-k btn-full" data-go="family-call">정기 안부 통화 설정'+(schedule?' · '+schedule.interval_days+'일':'')+'</button>':''}</div>`,{title:'가족 연결 관리',narrow:true});
