@@ -978,7 +978,11 @@
           "최근 기억에 남는 일을 시간 순서대로 설명해주세요."
         ],
         "wordingOrigin": "KIMSE 자체 구성·변형",
-        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가",
+        "shortLabels": [
+          "최근 이야기",
+          "기억에 남는 일"
+        ]
       },
       {
         "id": "speech_semantic_fluency",
@@ -997,7 +1001,10 @@
           "생각나는 동물 이름을 가능한 많이 말씀해주세요."
         ],
         "wordingOrigin": "KIMSE 자체 구성·변형",
-        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가",
+        "shortLabels": [
+          "동물 이름 말하기"
+        ]
       }
     ]
   },
