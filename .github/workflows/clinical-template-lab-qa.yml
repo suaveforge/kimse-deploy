@@ -186,6 +186,19 @@ jobs:
                 assert.equal(await rejected.locator('#clinicalPrintButton').isEnabled(),false,'invalid source must never enable PDF');
                 await rejected.close();
                 console.log('KIMSE_TEMPLATE_BAD_FIXTURE_REJECTED=yes');
+                const reduced=await ctx.newPage();
+                await reduced.emulateMedia({reducedMotion:'reduce'});
+                await reduced.goto('https://kimse.suaveforge.com/clinical-template-lab.html',{waitUntil:'domcontentloaded',timeout:45000});
+                await reduced.waitForFunction(()=>document.documentElement.dataset.clinicalTemplateReady==='yes',{timeout:65000});
+                const motion=await reduced.evaluate(()=>{
+                  const get=id=>window.echarts.getInstanceByDom(document.getElementById(id)).getOption();
+                  return {line:get('trendChart').animationDuration,heat:get('coverageChart').animation,bars:get('changeChart').animation};
+                });
+                assert.equal(motion.line,0,'reduced motion must disable line chart transitions');
+                assert.equal(motion.heat,false,'reduced motion must disable heatmap transitions');
+                assert.equal(motion.bars,false,'reduced motion must disable bar chart transitions');
+                await reduced.close();
+                console.log('KIMSE_REDUCED_MOTION_ECHARTS_OK=yes');
               }
               await ctx.close();
               console.log('KIMSE_TEMPLATE_SCREEN_PASS='+name);
