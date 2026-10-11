@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "2026-10-06.1",
-  "updated": "2026-10-06",
+  "schemaVersion": "2026-10-11.1",
+  "updated": "2026-10-11",
   "governance": {
     "principle": "근거 페이지를 단일 기준으로 사용하며 앱은 이 레지스트리의 활성 모델을 읽어 계산합니다.",
     "activeModelChanges": "새 논문·가이드라인·규제 이슈는 먼저 changeReview에 후보로 표시하고, 근거 검토 전 활성 팩터·가중치를 자동 변경하지 않습니다.",
-    "questionRule": "앱에서 사용자에게 묻는 조사·과제 항목은 이 레지스트리에 근거 역할과 출처가 등록되어야 합니다. 검증도구 원문을 그대로 쓰지 않은 KIMSE 자체 문항은 임상 점수로 환산하지 않고 개인 baseline 또는 맥락 정보로만 사용합니다. 앱 코드와 레지스트리의 조사 컨트롤/과제 키 일치 여부를 CI에서 검사해 미등록 문항이 배포되지 않도록 합니다.",
+    "questionRule": "문항 원문·보기·코드·출처·한계는 Evidence 단일 레지스트리에서 관리하고 앱은 활성 레지스트리 항목을 직접 읽습니다. 임상 검사지 원문과 KIMSE 자체 문항을 반드시 구별합니다.",
     "customTaskRule": "KIMSE 자체 과제는 원 연구의 과제 패러다임·측정영역을 설계 근거로 사용할 수 있지만, 원 도구의 민감도·특이도·cutoff를 KIMSE 과제 성능으로 주장하지 않습니다."
   },
   "activeModel": {
@@ -491,7 +491,12 @@
         "source": "Kivipelto et al. 2006",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
         "use": "CAIDE 연령 구간 입력",
-        "appControlId": "profile-birth"
+        "appControlId": "profile-birth",
+        "type": "year",
+        "title": "태어나신 연도를 알려주세요",
+        "hint": "태어난 해를 숫자 4자리로 입력해주세요.",
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "sex",
@@ -502,7 +507,24 @@
         "source": "Kivipelto et al. 2006",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
         "use": "CAIDE 성별 입력",
-        "appControlId": "profile-sex"
+        "appControlId": "profile-sex",
+        "title": "성별을 알려주세요",
+        "options": [
+          [
+            "female",
+            "여성"
+          ],
+          [
+            "male",
+            "남성"
+          ],
+          [
+            "other",
+            "기타 / 응답하지 않음"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "education",
@@ -513,7 +535,25 @@
         "source": "Kivipelto et al. 2006",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/16914401/",
         "use": "CAIDE 교육기간 구간 입력",
-        "appControlId": "profile-education"
+        "appControlId": "profile-education",
+        "title": "학교에서 공부한 기간은 얼마나 되나요?",
+        "hint": "초등학교부터 정규 교육을 받은 기간을 합쳐주세요.",
+        "options": [
+          [
+            "lt7",
+            "0~6년"
+          ],
+          [
+            "7to9",
+            "7~9년"
+          ],
+          [
+            "gte10",
+            "10년 이상"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "activity",
@@ -524,7 +564,21 @@
         "source": "Kivipelto et al. 2006 / FINGER CAIDE operationalization",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8277089/",
         "use": "20–30분 이상, 숨참·땀을 동반하는 활동을 주 2회 이상이면 active",
-        "appControlId": "profile-activity"
+        "appControlId": "profile-activity",
+        "title": "평소 운동을 얼마나 하세요?",
+        "hint": "숨이 차고 땀이 날 정도의 운동을 기준으로 골라주세요.",
+        "options": [
+          [
+            "active",
+            "20~30분 이상, 주 2회 이상 해요"
+          ],
+          [
+            "inactive",
+            "주 2회 미만이거나 하지 않아요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "living",
@@ -535,7 +589,24 @@
         "source": "Anstey et al. 2014 validation",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
         "use": "사회관계 5개 영역 중 living arrangements. 단독 ANU-ADRI 점수로 환산하지 않음",
-        "appControlId": "profile-living"
+        "appControlId": "profile-living",
+        "title": "지금 누구와 살고 계세요?",
+        "options": [
+          [
+            "alone",
+            "혼자 살아요"
+          ],
+          [
+            "partner_family",
+            "배우자 또는 가족과 살아요"
+          ],
+          [
+            "other",
+            "기타"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "socialSupport",
@@ -546,7 +617,25 @@
         "source": "ANU-ADRI validation / HUNT operationalization",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
         "use": "사회망의 질 맥락. KIMSE 자체 축약문항이므로 원 점수로 환산하지 않음",
-        "appControlId": "profile-social-support"
+        "appControlId": "profile-social-support",
+        "title": "어려울 때 의지할 사람이 있나요?",
+        "hint": "도움이 필요할 때와 이야기를 나누고 싶을 때를 생각해주세요.",
+        "options": [
+          [
+            "both",
+            "도와줄 사람도, 이야기할 사람도 있어요"
+          ],
+          [
+            "one",
+            "둘 중 한쪽만 있어요"
+          ],
+          [
+            "none",
+            "둘 다 거의 없어요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "socialActivity",
@@ -557,7 +646,29 @@
         "source": "ANU-ADRI validation",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3900468/",
         "use": "사회적 참여 맥락. 단독 위험점수로 사용하지 않음",
-        "appControlId": "profile-social-activity"
+        "appControlId": "profile-social-activity",
+        "title": "모임이나 사회활동에 얼마나 참여하세요?",
+        "hint": "친목모임, 동호회, 종교·지역 활동 등을 생각해주세요.",
+        "options": [
+          [
+            "weekly",
+            "주 1회 이상"
+          ],
+          [
+            "monthly",
+            "월 1~3회"
+          ],
+          [
+            "rare",
+            "드물게"
+          ],
+          [
+            "never",
+            "거의 참여하지 않아요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "sleepHours",
@@ -568,7 +679,12 @@
         "source": "Matias et al. 2026 systematic review",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13324020/",
         "use": "개인 수면 baseline. LIBRA2 수면장애 점수로 자동 환산하지 않음",
-        "appControlId": "profile-sleep"
+        "appControlId": "profile-sleep",
+        "type": "sleep",
+        "title": "평소 하루에 몇 시간 주무세요?",
+        "hint": "낮잠을 제외한 평소 수면시간을 골라주세요.",
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "sleepDisturbance",
@@ -579,7 +695,25 @@
         "source": "LIBRA2 / dementia risk-index operationalization",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12501341/",
         "use": "잠들기 어려움·수면 유지 어려움·조기각성의 반복 빈도를 맥락으로 기록",
-        "appControlId": "profile-sleep-disturbance"
+        "appControlId": "profile-sleep-disturbance",
+        "title": "잠을 이루기 어려운 날이 얼마나 자주 있나요?",
+        "hint": "잠들기 어렵거나, 자주 깨거나, 너무 일찍 깨는 경우예요.",
+        "options": [
+          [
+            "rare",
+            "주 1회 이하"
+          ],
+          [
+            "sometimes",
+            "주 2~3회"
+          ],
+          [
+            "frequent",
+            "주 4회 이상"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "hearing",
@@ -590,7 +724,24 @@
         "source": "Livingston et al. 2024",
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/39096926/",
         "use": "청력저하 위험요인 맥락. 현재 KIMSE 축약 자가문항을 임상 청력검사로 간주하지 않음",
-        "appControlId": "profile-hearing"
+        "appControlId": "profile-hearing",
+        "title": "대화할 때 듣기 불편한가요?",
+        "options": [
+          [
+            "no",
+            "거의 불편하지 않아요"
+          ],
+          [
+            "some",
+            "가끔 불편해요"
+          ],
+          [
+            "yes",
+            "자주 불편해요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "subjectiveChange",
@@ -601,7 +752,24 @@
         "evidence": "SCD-I subjective cognitive decline framework",
         "source": "Jessen et al. / SCD-I framework; characterisation review",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7062546/",
-        "use": "예전의 정상 상태와 비교해 스스로 지속적인 인지 저하를 느끼는지 기록합니다. KIMSE가 SCD를 임상진단하는 항목이 아닙니다."
+        "use": "예전의 정상 상태와 비교해 스스로 지속적인 인지 저하를 느끼는지 기록합니다. KIMSE가 SCD를 임상진단하는 항목이 아닙니다.",
+        "title": "최근 기억하거나 생각하는 능력이 계속 나빠졌다고 느끼세요?",
+        "options": [
+          [
+            "PRESENT",
+            "그렇게 느껴요"
+          ],
+          [
+            "ABSENT",
+            "그렇지 않아요"
+          ],
+          [
+            "UNKNOWN",
+            "잘 모르겠어요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       },
       {
         "id": "functionStatus",
@@ -612,7 +780,37 @@
         "evidence": "NIA-AA MCI functional independence + Alzheimer’s Association 2024 clinical functional staging",
         "source": "Albert et al. 2011; Jack et al. 2024",
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3312027/",
-        "use": "복잡한 IADL과 기본 ADL의 독립/도움 필요 정도를 구분합니다. 2024 AD 임상 stage를 사용자에게 진단명으로 전용하지 않고 KIMSE 관찰 단계의 기능축으로만 사용합니다."
+        "use": "복잡한 IADL과 기본 ADL의 독립/도움 필요 정도를 구분합니다. 2024 AD 임상 stage를 사용자에게 진단명으로 전용하지 않고 KIMSE 관찰 단계의 기능축으로만 사용합니다.",
+        "title": "일상생활을 어느 정도 스스로 하시나요?",
+        "hint": "지금 생활과 가장 가까운 답을 골라주세요.",
+        "options": [
+          [
+            "INDEPENDENT",
+            "복잡한 일과 기본 생활 모두 혼자 할 수 있어요"
+          ],
+          [
+            "COMPLEX_DIFFICULTY",
+            "돈 관리·약속·외출에 실수가 늘었지만 혼자 할 수 있어요"
+          ],
+          [
+            "IADL_ASSISTANCE",
+            "돈 관리·쇼핑·약속·외출 등에 도움이 필요해요"
+          ],
+          [
+            "BADL_ASSISTANCE",
+            "옷 입기·씻기·식사에도 도움이 필요해요"
+          ],
+          [
+            "DEPENDENT",
+            "대부분의 기본 생활에 지속적인 도움이 필요해요"
+          ],
+          [
+            "UNKNOWN",
+            "잘 모르겠어요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성 · 원 검사지 문항 아님",
+        "validation": "문항 자체의 임상 타당도 미검증"
       }
     ]
   },
@@ -628,7 +826,18 @@
         "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/18474719/",
         "implementation": "KIMSE 자체 3단어 세트. 회상 개수만 원자료로 저장하며 MoCA 점수/cutoff로 환산하지 않음",
         "appControlId": "recall-input",
-        "storage": "initial.recall"
+        "storage": "initial.recall",
+        "title": "세 단어를 기억해주세요",
+        "hint": "한 번 천천히 읽어보세요. 마지막에 다시 물어볼게요.",
+        "recallTitle": "처음 보여드린 세 단어가 기억나세요?",
+        "recallHint": "생각나는 단어를 적어주세요. 순서는 상관없어요.",
+        "words": [
+          "나무",
+          "기차",
+          "우산"
+        ],
+        "wordingOrigin": "KIMSE 자체 구성·변형",
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
       },
       {
         "id": "serial_subtraction",
@@ -639,7 +848,29 @@
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8609704/",
         "implementation": "원 연구가 subtraction speech task를 사용한 과제 패러다임을 바탕으로 KIMSE 자체 문항 구성. 정답 여부·반응시간만 저장",
         "answerKey": "subtraction",
-        "storage": "initial.answers.subtraction"
+        "storage": "initial.answers.subtraction",
+        "title": "100에서 7을 세 번 빼면 마지막 숫자는 무엇인가요?",
+        "hint": "숫자를 하나 골라주세요.",
+        "options": [
+          [
+            "79",
+            "79"
+          ],
+          [
+            "81",
+            "81"
+          ],
+          [
+            "83",
+            "83"
+          ],
+          [
+            "77",
+            "77"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성·변형",
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
       },
       {
         "id": "functional_events",
@@ -650,7 +881,25 @@
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
         "implementation": "FAQ6에서 예후와 연관된 기능영역을 바탕으로 한 KIMSE 자체 자가관찰 문항. FAQ6 점수로 부르지 않음",
         "answerKey": "events",
-        "storage": "initial.answers.events"
+        "storage": "initial.answers.events",
+        "title": "최근 4주 동안 약속이나 최근 일을 기억하는 게 평소보다 어려웠나요?",
+        "hint": "가장 가까운 답을 골라주세요.",
+        "options": [
+          [
+            "no",
+            "평소와 비슷해요"
+          ],
+          [
+            "some",
+            "가끔 어려웠어요"
+          ],
+          [
+            "often",
+            "자주 어려웠어요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성·변형",
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
       },
       {
         "id": "functional_finance",
@@ -661,7 +910,25 @@
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
         "implementation": "KIMSE 자체 자가관찰 문항. 가능하면 향후 보호자 informant 응답으로 보강",
         "answerKey": "finances",
-        "storage": "initial.answers.finances"
+        "storage": "initial.answers.finances",
+        "title": "최근 4주 동안 계산·청구서·돈 관리가 평소보다 어려웠나요?",
+        "hint": "가장 가까운 답을 골라주세요.",
+        "options": [
+          [
+            "no",
+            "평소와 비슷해요"
+          ],
+          [
+            "some",
+            "가끔 어려웠어요"
+          ],
+          [
+            "often",
+            "자주 어려웠어요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성·변형",
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
       },
       {
         "id": "functional_travel",
@@ -672,7 +939,25 @@
         "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5321859/",
         "implementation": "KIMSE 자체 자가관찰 문항. 공간기억 검사 점수로 사용하지 않음",
         "answerKey": "travel",
-        "storage": "initial.answers.travel"
+        "storage": "initial.answers.travel",
+        "title": "최근 4주 동안 익숙한 곳으로 외출하거나 이동하는 게 평소보다 어려웠나요?",
+        "hint": "가장 가까운 답을 골라주세요.",
+        "options": [
+          [
+            "no",
+            "평소와 비슷해요"
+          ],
+          [
+            "some",
+            "가끔 어려웠어요"
+          ],
+          [
+            "often",
+            "자주 어려웠어요"
+          ]
+        ],
+        "wordingOrigin": "KIMSE 자체 구성·변형",
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
       },
       {
         "id": "speech_spontaneous",
@@ -686,7 +971,14 @@
           0,
           1
         ],
-        "storage": "initial.voiceSamples"
+        "storage": "initial.voiceSamples",
+        "title": "평소 이야기를 해주세요",
+        "prompts": [
+          "오늘 또는 최근 며칠 동안 있었던 일을 편하게 말씀해주세요.",
+          "최근 기억에 남는 일을 시간 순서대로 설명해주세요."
+        ],
+        "wordingOrigin": "KIMSE 자체 구성·변형",
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
       },
       {
         "id": "speech_semantic_fluency",
@@ -699,7 +991,13 @@
         "voicePromptIndexes": [
           2
         ],
-        "storage": "initial.voiceSamples"
+        "storage": "initial.voiceSamples",
+        "title": "동물 이름을 말씀해주세요",
+        "prompts": [
+          "생각나는 동물 이름을 가능한 많이 말씀해주세요."
+        ],
+        "wordingOrigin": "KIMSE 자체 구성·변형",
+        "validation": "공식 검사 점수/민감도/특이도 적용 불가"
       }
     ]
   },
