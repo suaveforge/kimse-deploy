@@ -108,6 +108,18 @@ async function loadEvidenceModel(){
     try{const cached=JSON.parse(localStorage.getItem(MODEL_CACHE)||'null');if(validModel(cached))EVIDENCE_MODEL=cached}catch{}
   }
   Q=(EVIDENCE_MODEL?.activeModel?.factors||[]).map(f=>({factorId:f.id,label:f.label,question:f.question,options:f.options||[],evidence:f.evidence}));
+  const p=EVIDENCE_MODEL?.onboardingQuestionRegistry?.items||[];
+  const tasks=EVIDENCE_MODEL?.baselineTaskRegistry?.tasks||[];
+  PROFILE_WIZARD_STEPS.length=0;VOICE_PROMPTS.length=0;
+  for(const k of Object.keys(INITIAL_TASK_OPTIONS))delete INITIAL_TASK_OPTIONS[k];
+  if(p.length===12&&tasks.length>=7&&p.every(x=>x.id&&x.title&&(x.type||Array.isArray(x.options)))&&tasks.every(x=>x.id&&x.sourceUrl)){
+    PROFILE_WIZARD_STEPS.push(...p.map(x=>({key:x.id,title:x.title,hint:x.hint||'',type:x.type||'',options:x.options||null})));
+    const byId=Object.fromEntries(tasks.map(x=>[x.id,x]));
+    for(const [index,id] of [[1,'serial_subtraction'],[2,'functional_events'],[3,'functional_finance'],[4,'functional_travel']]){
+      const task=byId[id];if(task?.title&&Array.isArray(task.options)){INITIAL_TASK_OPTIONS[index]={key:task.answerKey,title:task.title,hint:task.hint||'',options:task.options}}
+    }
+    VOICE_PROMPTS.push(...(byId.speech_spontaneous?.prompts||[]),...(byId.speech_semantic_fluency?.prompts||[]));
+  }
   return !!EVIDENCE_MODEL;
 }
 const assessmentScore=()=>Q.reduce((sum,q,i)=>{const o=q.options[S.answers[i]];return sum+(o?Number(o.points)||0:0)},0);
@@ -219,11 +231,7 @@ const fmtDate=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?String(v|
 const PARTNER_TYPE_LABEL={PRODUCT:'상품 입점',SERVICE:'서비스 제휴',AD:'광고/콘텐츠 제휴',COOPERATION:'공동사업/기관 협력'};
 const PARTNER_STATUS_LABEL={RECEIVED:'신규',REVIEWING:'검토중',CONTACTED:'회신완료',HOLD:'보류',CLOSED:'종료'};
 
-const VOICE_PROMPTS=[
-  '오늘 또는 최근 며칠 동안 있었던 일을 편하게 말씀해주세요.',
-  '최근 기억에 남는 일을 시간 순서대로 설명해주세요.',
-  '생각나는 동물 이름을 가능한 많이 말씀해주세요.'
-];
+const VOICE_PROMPTS=[];
 const BRAIN_DOMAINS=[
   ['memory','기억·학습','해마·내측측두엽','🧠'],
   ['executive','주의·실행','전전두엽 네트워크','🎯'],
@@ -325,7 +333,25 @@ function trendSeriesSvg(key=S.brainTrendDomain){
 }
 
 const MIN_VOICE_SECONDS=30;
-let voiceRecorder=null,voiceStartedAt=0,voiceChunks=[],voiceStream=null,voiceTask=-1,voiceSaving=false;
+let voiceRecorder=null,voiceStartedAt=0,voiceChunks=[],voiceStream=null,voiceTask=-1,voiceSaving=false,voiceTimer=null,voicePlaybackUrl=null;
+function voiceElapsed(){return Math.max(0,Math.floor((Date.now()-voiceStartedAt)/1000))}
+function updateVoiceTimer(){
+  const elapsed=voiceElapsed(),clock=document.querySelector('#kimse-voice-clock'),button=document.querySelector('[data-voice-task]');
+  if(clock)clock.textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0')+' / 00:30';
+  if(button&&voiceRecorder?.state==='recording')button.textContent=elapsed>=MIN_VOICE_SECONDS?'녹음 마치고 저장하기':'녹음 중 · '+(MIN_VOICE_SECONDS-elapsed)+'초 남음';
+}
+async function mountVoicePlayback(){
+  const audio=document.querySelector('#kimse-voice-playback'),sample=S.initial.voiceSamples[voiceJourneyStep()];
+  if(!audio||!sample?.id)return;
+  if(voicePlaybackUrl){URL.revokeObjectURL(voicePlaybackUrl);voicePlaybackUrl=null}
+  let db=null;try{
+    db=await openVoiceDb();if(!db)return;
+    const blob=await new Promise((resolve,reject)=>{const tx=db.transaction('voiceSamples','readonly'),q=tx.objectStore('voiceSamples').get(sample.id);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});
+    if(blob?.size&&document.getElementById('kimse-voice-playback')===audio){voicePlaybackUrl=URL.createObjectURL(blob);audio.src=voicePlaybackUrl}
+    else if(!blob?.size){const label=document.getElementById('kimse-voice-playback-error');if(label)label.textContent='이 기기에서 녹음 원본을 찾지 못했어요. 다시 녹음해주세요.'}
+  }catch{const label=document.getElementById('kimse-voice-playback-error');if(label)label.textContent='녹음 파일을 읽지 못했어요. 저장 공간과 브라우저 설정을 확인해주세요.'}
+  finally{try{db?.close()}catch{}}
+}
 function openVoiceDb(){
   return new Promise((resolve,reject)=>{
     if(!('indexedDB' in window)){resolve(null);return}
@@ -450,9 +476,11 @@ async function startVoiceRecording(index){
   try{
     stream=await navigator.mediaDevices.getUserMedia({audio:true});
     if(voiceRecorder||voiceSaving){stream.getTracks().forEach(t=>t.stop());return}
-    const recorder=new MediaRecorder(stream),chunks=[];
+    const supported=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'].find(type=>window.MediaRecorder.isTypeSupported?.(type))||'';
+    const recorder=supported?new MediaRecorder(stream,{mimeType:supported}):new MediaRecorder(stream),chunks=[];
     let failed=false,interrupted=false,recordingStarted=0;
     const release=()=>{
+      if(voiceTimer){clearInterval(voiceTimer);voiceTimer=null}
       stream.getTracks().forEach(t=>{try{t.stop()}catch{}});
       if(voiceStream===stream)voiceStream=null;
       if(voiceRecorder===recorder){voiceRecorder=null;voiceTask=-1}
@@ -489,16 +517,17 @@ async function startVoiceRecording(index){
       if(recorder.state==='recording'){interrupted=true;try{recorder.stop()}catch{release();render()}}
     }));
     voiceStream=stream;voiceRecorder=recorder;voiceTask=index;
-    recorder.start();
+    recorder.start(1000);
     recordingStarted=Date.now();voiceStartedAt=recordingStarted;voiceChunks=chunks;
     S.permissions.microphone='granted';save();render();
+    updateVoiceTimer();voiceTimer=setInterval(updateVoiceTimer,1000);
     feedback((index+1)+'번째 음성 녹음을 시작합니다.');
   }catch(err){
     stream?.getTracks().forEach(t=>t.stop());
     voiceStream=null;voiceRecorder=null;voiceTask=-1;
     const denied=['NotAllowedError','PermissionDeniedError','SecurityError'].includes(err?.name);
     S.permissions.microphone=denied?'denied':'unknown';save();
-    feedback(denied?'마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요.':err?.name==='NotFoundError'?'연결된 마이크를 찾지 못했어요. 마이크 연결을 확인해주세요.':'녹음을 시작하지 못했어요. 기기 상태를 확인하고 다시 시도해주세요.','warning');
+    feedback(denied?'마이크 권한이 필요합니다. 브라우저 설정에서 허용해주세요.':err?.name==='NotFoundError'?'연결된 마이크를 찾지 못했어요. 마이크 연결을 확인해주세요.':err?.name==='NotReadableError'?'마이크가 다른 앱에서 사용 중일 수 있어요. 다른 앱을 닫고 다시 시도해주세요.':err?.name==='NotSupportedError'?'이 브라우저에서는 해당 음성 형식을 녹음할 수 없어요. 브라우저를 업데이트해주세요.':'녹음을 시작하지 못했어요 ('+String(err?.name||'원인 미확인')+'). 다시 시도해주세요.','warning');
     render();
   }
 }
@@ -507,7 +536,8 @@ function stopVoiceRecording(){
   const elapsedMs=Date.now()-voiceStartedAt;
   if(elapsedMs<MIN_VOICE_SECONDS*1000){
     const left=Math.ceil((MIN_VOICE_SECONDS*1000-elapsedMs)/1000);
-    feedback('30초 이상 이야기해주세요. '+left+'초 더 녹음하면 마칠 수 있어요.','warning');
+    feedback('녹음 중입니다. '+left+'초 뒤에 종료·저장할 수 있어요.','warning');
+    updateVoiceTimer();
     return;
   }
   try{voiceRecorder.stop()}catch{
@@ -817,7 +847,7 @@ function cognitiveSessionId(prefix='cog'){
 }
 function recallCountFromText(value){
   const text=String(value||'').replace(/[,.]/g,' ').split(/\s+/).filter(Boolean);
-  return ['나무','기차','우산'].filter(w=>text.includes(w)).length;
+  return (EVIDENCE_MODEL?.baselineTaskRegistry?.tasks?.find(x=>x.id==='delayed_recall_3word')?.words||[]).filter(w=>text.includes(w)).length;
 }
 function resetCognitiveRecheck(){
   S.cognitiveRecheck=structuredClone(D.cognitiveRecheck);
@@ -1631,27 +1661,7 @@ page.auth=()=>{
 };
 
 // A single-question flow keeps the original clinical field keys and answer codes.
-const PROFILE_WIZARD_STEPS=[
-  {key:'birthYear',type:'year',title:'태어나신 연도를 알려주세요',hint:'태어난 해를 숫자 4자리로 입력해주세요.'},
-  {key:'sex',title:'성별을 알려주세요',options:[['female','여성'],['male','남성'],['other','기타 / 응답하지 않음']]},
-  {key:'education',title:'학교에서 공부한 기간은 얼마나 되나요?',hint:'초등학교부터 정규 교육을 받은 기간을 합쳐주세요.',options:[['lt7','0~6년'],['7to9','7~9년'],['gte10','10년 이상']]},
-  {key:'activity',title:'평소 운동을 얼마나 하세요?',hint:'숨이 차고 땀이 날 정도의 운동을 기준으로 골라주세요.',options:[['active','20~30분 이상, 주 2회 이상 해요'],['inactive','주 2회 미만이거나 하지 않아요']]},
-  {key:'living',title:'지금 누구와 살고 계세요?',options:[['alone','혼자 살아요'],['partner_family','배우자 또는 가족과 살아요'],['other','기타']]},
-  {key:'socialSupport',title:'어려울 때 의지할 사람이 있나요?',hint:'도움이 필요할 때와 이야기를 나누고 싶을 때를 생각해주세요.',options:[['both','도와줄 사람도, 이야기할 사람도 있어요'],['one','둘 중 한쪽만 있어요'],['none','둘 다 거의 없어요']]},
-  {key:'socialActivity',title:'모임이나 사회활동에 얼마나 참여하세요?',hint:'친목모임, 동호회, 종교·지역 활동 등을 생각해주세요.',options:[['weekly','주 1회 이상'],['monthly','월 1~3회'],['rare','드물게'],['never','거의 참여하지 않아요']]},
-  {key:'sleepHours',type:'sleep',title:'평소 하루에 몇 시간 주무세요?',hint:'낮잠을 제외한 평소 수면시간을 골라주세요.'},
-  {key:'sleepDisturbance',title:'잠을 이루기 어려운 날이 얼마나 자주 있나요?',hint:'잠들기 어렵거나, 자주 깨거나, 너무 일찍 깨는 경우예요.',options:[['rare','주 1회 이하'],['sometimes','주 2~3회'],['frequent','주 4회 이상']]},
-  {key:'hearing',title:'대화할 때 듣기 불편한가요?',options:[['no','거의 불편하지 않아요'],['some','가끔 불편해요'],['yes','자주 불편해요']]},
-  {key:'subjectiveChange',title:'최근 기억하거나 생각하는 능력이 계속 나빠졌다고 느끼세요?',options:[['PRESENT','그렇게 느껴요'],['ABSENT','그렇지 않아요'],['UNKNOWN','잘 모르겠어요']]},
-  {key:'functionStatus',title:'일상생활을 어느 정도 스스로 하시나요?',hint:'지금 생활과 가장 가까운 답을 골라주세요.',options:[
-    ['INDEPENDENT','복잡한 일과 기본 생활 모두 혼자 할 수 있어요'],
-    ['COMPLEX_DIFFICULTY','돈 관리·약속·외출에 실수가 늘었지만 혼자 할 수 있어요'],
-    ['IADL_ASSISTANCE','돈 관리·쇼핑·약속·외출 등에 도움이 필요해요'],
-    ['BADL_ASSISTANCE','옷 입기·씻기·식사에도 도움이 필요해요'],
-    ['DEPENDENT','대부분의 기본 생활에 지속적인 도움이 필요해요'],
-    ['UNKNOWN','잘 모르겠어요']
-  ]}
-];
+const PROFILE_WIZARD_STEPS=[];
 function profileWizardStepIndex(){
   return Math.min(PROFILE_WIZARD_STEPS.length-1,Math.max(0,Math.trunc(Number(S.onboarding.profileStep)||0)));
 }
@@ -1747,6 +1757,7 @@ function sleepQuickMarkup(current){
     '</div>';
 }
 page['onboarding-profile']=()=>{
+ if(PROFILE_WIZARD_STEPS.length!==12)return wrap('<h1 class="page-title">근거 질문을 불러오지 못했어요</h1><p class="page-desc">인터넷 연결을 확인하고 다시 열어주세요. 확인되지 않은 질문으로 평가하지 않습니다.</p>',{title:'기본정보',narrow:true});
  const i=profileWizardStepIndex(),step=PROFILE_WIZARD_STEPS[i],current=String(S.profile[step.key]??''),last=i===PROFILE_WIZARD_STEPS.length-1;
  const birth=i===0,phase=birth?birthYearPhase():null,decade=birth?birthYearDecade():null;
  const valid=profileWizardValueValid(step,current)&&(!birth||phase==='year'&&Math.floor(Number(current)/10)*10===decade);
@@ -1776,12 +1787,7 @@ page['onboarding-profile']=()=>{
 
 // One question per screen: preserved task words, codes and server submission data.
 let initialActiveTimedStep=-1;
-const INITIAL_TASK_OPTIONS={
-  1:{key:'subtraction',options:[['79','79'],['81','81'],['83','83'],['77','77']]},
-  2:{key:'events',options:[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']]},
-  3:{key:'finances',options:[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']]},
-  4:{key:'travel',options:[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']]}
-};
+const INITIAL_TASK_OPTIONS={};
 function initialCurrentStep(){return Math.min(5,Math.max(0,Number(S.initial.step)||0))}
 function initialStepBack(){
   const i=initialCurrentStep();
@@ -1791,6 +1797,8 @@ function initialStepBack(){
   save();render();
 }
 page['initial-check']=()=>{
+  if(!INITIAL_TASK_OPTIONS[1]||!INITIAL_TASK_OPTIONS[2]||!INITIAL_TASK_OPTIONS[3]||!INITIAL_TASK_OPTIONS[4])return wrap('<h1 class="page-title">질문 근거를 불러오지 못했어요</h1><p class="page-desc">Evidence 목록을 확인한 후 다시 진행해주세요.</p>',{title:'처음 상태 확인',narrow:true});
+  const recall=EVIDENCE_MODEL.baselineTaskRegistry.tasks.find(x=>x.id==='delayed_recall_3word');
   const i=initialCurrentStep(),step=INITIAL_TASK_OPTIONS[i];
   if(i>=1&&i<=4&&initialActiveTimedStep!==i){
     S.initial._stepStartedAt=Date.now();
@@ -1802,20 +1810,15 @@ page['initial-check']=()=>{
     (i>1?'<button type="button" class="kimse-initial-prev" data-initial-back aria-label="이전 질문으로 돌아가 수정하기">← 이전 질문</button>':'')+
     '</div></section>';
   if(i===0)return wrap(top+
-    '<div class="kimse-journey-prompt"><h1 class="kimse-initial-title">세 단어를 기억해주세요</h1>'+
-    '<p class="kimse-initial-hint">한 번 천천히 읽어보세요. 마지막에 다시 물어볼게요.</p></div>'+
-    '<div class="kimse-initial-memory" aria-label="기억할 세 단어"><strong>나무</strong><strong>기차</strong><strong>우산</strong></div>'+
+    '<div class="kimse-journey-prompt"><h1 class="kimse-initial-title">'+esc(recall.title)+'</h1>'+
+    '<p class="kimse-initial-hint">'+esc(recall.hint)+'</p></div>'+
+    '<div class="kimse-initial-memory" aria-label="기억할 세 단어">'+recall.words.map(w=>'<strong>'+esc(w)+'</strong>').join('')+'</div>'+
 
     '<button type="button" class="btn-kimse btn-primary-k kimse-initial-cta" data-initial-next>기억했어요</button>'+foot,
     {title:'처음 상태 확인',narrow:true});
-  const meta={
-    1:['100에서 7을 세 번 빼면 마지막 숫자는 무엇인가요?','숫자를 하나 골라주세요.'],
-    2:['최근 4주 동안 약속이나 최근 일을 기억하는 게 평소보다 어려웠나요?','가장 가까운 답을 골라주세요.'],
-    3:['최근 4주 동안 계산·청구서·돈 관리가 평소보다 어려웠나요?','가장 가까운 답을 골라주세요.'],
-    4:['최근 4주 동안 익숙한 곳으로 외출하거나 이동하는 게 평소보다 어려웠나요?','가장 가까운 답을 골라주세요.']
-  };
+
   if(i>=1&&i<=4){
-    const [title,hint]=meta[i],value=S.initial.answers?.[step.key]||'';
+    const title=step.title,hint=step.hint,value=S.initial.answers?.[step.key]||'';
     const options='<div class="kimse-initial-answer-list '+(i===1?'kimse-initial-number-list':'')+'" role="group" aria-label="'+esc(title)+'">'+
       step.options.map(([code,label])=>'<button type="button" class="kimse-initial-answer" data-initial-answer="'+step.key+':'+code+'" aria-pressed="'+(code===value?'true':'false')+'"><span>'+esc(label)+'</span><span class="kimse-initial-choice-mark" aria-hidden="true">'+(code===value?'✓':'')+'</span></button>').join('')+
       '</div>';
@@ -1826,8 +1829,8 @@ page['initial-check']=()=>{
       foot,{title:'처음 상태 확인',narrow:true});
   }
   return wrap(top+
-    '<div class="kimse-journey-prompt"><h1 class="kimse-initial-title">처음 보여드린 세 단어가 기억나세요?</h1>'+
-    '<p class="kimse-initial-hint">생각나는 단어를 적어주세요. 순서는 상관없어요.</p></div>'+
+    '<div class="kimse-journey-prompt"><h1 class="kimse-initial-title">'+esc(recall.recallTitle)+'</h1>'+
+    '<p class="kimse-initial-hint">'+esc(recall.recallHint)+'</p></div>'+
     '<div class="kimse-initial-recall-field"><label for="recall-input">기억나는 단어</label>'+
     '<textarea id="recall-input" rows="2" autocomplete="off" spellcheck="false" placeholder="여기에 입력해주세요" aria-describedby="kimse-initial-recall-help">'+esc(S.initial.recall||'')+'</textarea>'+
     '<p id="kimse-initial-recall-help">기억나지 않으면 ‘없음’이라고 적어도 됩니다.</p></div>'+
@@ -1837,12 +1840,13 @@ page['initial-check']=()=>{
 
 const voiceJourneyStep=()=>Math.min(2,Math.max(0,Math.trunc(Number(S.initial.voiceStep)||0)));
 page['voice-check']=()=>{
+  if(VOICE_PROMPTS.length!==3)return wrap('<h1 class="page-title">음성 과제의 근거 목록을 불러오지 못했어요</h1><p class="page-desc">잠시 뒤 다시 열어주세요.</p>',{title:'목소리 기록',narrow:true});
   const step=voiceJourneyStep(),done=S.initial.voiceSamples.filter(x=>Number(x?.durationSec)>=MIN_VOICE_SECONDS).length,sample=Number(S.initial.voiceSamples[step]?.durationSec)>=MIN_VOICE_SECONDS?S.initial.voiceSamples[step]:null;
   const active=!!voiceRecorder&&voiceTask===step,recording=!!voiceRecorder||voiceSaving;
   const taskName=['최근 이야기','기억에 남는 일','동물 이름 말하기'][step];
   const intro='<div class="kimse-voice-task-label">말하기 '+(step+1)+' · '+taskName+'</div>';
   const state=voiceSaving?'<div class="kimse-voice-state" role="status">녹음을 안전하게 저장하고 있어요.</div>':active?'<div class="kimse-voice-state is-recording" role="status"><span class="kimse-voice-pulse" aria-hidden="true"></span>녹음 중이에요. 편하게 말씀해주세요.</div>':
-    sample?'<div class="kimse-voice-state is-complete" role="status"><span aria-hidden="true">✓</span>녹음했어요 · '+sample.durationSec+'초 저장됨</div>':
+    sample?'<div class="kimse-voice-state is-complete" role="status"><span aria-hidden="true">✓</span>녹음했어요 · '+sample.durationSec+'초 저장됨</div><label for="kimse-voice-playback">녹음 확인</label><audio id="kimse-voice-playback" controls preload="metadata" style="width:100%;min-height:64px"></audio><p id="kimse-voice-playback-error" role="status"></p>':
     '<div class="kimse-voice-state">30초 이상 편하게 이야기해주세요.</div>';
   const primary=sample&&!active?
     (step===2?'<button type="button" id="finish-voice" class="kimse-flow-primary" '+(done===3?'':'disabled')+'>나의 첫 기록 보기 <span aria-hidden="true">→</span></button>':
@@ -1856,7 +1860,7 @@ page['voice-check']=()=>{
       '<h1 class="kimse-flow-title">편하게 말씀해주세요</h1>'+
       '<p class="kimse-flow-hint">녹음을 시작한 다음 천천히 이야기하시면 돼요.</p></div>'+
     '<div class="kimse-voice-prompt">'+intro+'<p>'+esc(VOICE_PROMPTS[step])+'</p><span class="kimse-voice-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>'+
-    state+
+    state+(active?'<div class="kimse-voice-countdown" id="kimse-voice-clock" role="timer" aria-label="녹음 경과시간">00:00 / 00:30</div>':'')+
     (S.permissions.microphone==='denied'?'<p class="kimse-flow-warning" role="alert">마이크 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.</p>':'')+
     '<div class="kimse-flow-actions">'+primary+other+'</div>'+
     '<div class="kimse-flow-secondary"><button type="button" class="kimse-flow-back" data-voice-back '+(recording?'disabled':'')+'>← 이전 단계</button>'+
@@ -1890,14 +1894,16 @@ page['initial-result']=()=>{
 };
 
 page['cognitive-recheck']=()=>{
+  if(!INITIAL_TASK_OPTIONS[1])return wrap('<h1 class="page-title">근거 질문을 불러오지 못했어요</h1>',{title:'반복 인지 체크',narrow:true});
+  const task=id=>EVIDENCE_MODEL.baselineTaskRegistry.tasks.find(x=>x.id===id);
   const x=S.cognitiveRecheck||D.cognitiveRecheck,s=Math.min(5,Math.max(0,Number(x.step)||0));
   const top='<div class="eyebrow">나의 첫 기록과 비교 · 다시 확인 '+(s+1)+'/6</div><div class="progress-k mt-2"><span style="width:'+((s+1)/6*100)+'%"></span></div>'+ (s>1?'<button type="button" class="kimse-answer-back" data-recheck-prev>← 이전 질문</button>':'');
-  if(s===0)return wrap(top+'<h1 class="page-title">세 단어를 다시 기억해주세요</h1><div class="memory-words"><strong>나무</strong><strong>기차</strong><strong>우산</strong></div><p class="page-desc">처음 했던 기억 과제를 다시 해볼게요. 천천히 읽어주세요.</p><button class="btn-kimse btn-primary-k btn-full" data-recheck-next>기억했어요</button>',{title:'반복 인지 체크',narrow:true});
-  if(s===1)return wrap(top+'<div class="eyebrow mt-4">연속 뺄셈 · 동일 과제 반복</div><h1 class="page-title">100에서 7을 세 번 빼면<br>마지막 숫자는 무엇인가요?</h1><div class="answer-grid">'+['79','81','83','77'].map(v=>'<button class="answer" data-recheck-answer="subtraction:'+v+'">'+v+'</button>').join('')+'</div><p class="screen-footnote">답변을 기록하고, 처음 했을 때와 비교해요.</p>',{title:'주의·실행 반복',narrow:true});
-  if(s===2)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>약속이나 최근 일을 기억하는 게 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="events:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">지난번과 같은 질문이에요.</p>',{title:'사건·약속 기억',narrow:true});
-  if(s===3)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>계산·청구서·돈 관리가 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="finances:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">평소와 비교해서 답해주세요.</p>',{title:'금전관리 변화',narrow:true});
-  if(s===4)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">최근 4주 동안<br>익숙한 곳으로 외출하거나 이동하기가 평소보다 어려웠나요?</h1><div class="answer-grid">'+[['no','평소와 비슷해요'],['some','가끔 어려웠어요'],['often','자주 어려웠어요']].map(v=>'<button class="answer" data-recheck-answer="travel:'+v[0]+'">'+v[1]+'</button>').join('')+'</div><p class="screen-footnote">평소와 비교해서 답해주세요.</p>',{title:'외출·이동 기능',narrow:true});
-  return wrap(top+'<div class="eyebrow mt-4">처음 본 단어 떠올리기</div><h1 class="page-title">처음 보여드린 세 단어를<br>기억나는 만큼 적어주세요</h1><p class="page-desc">순서는 상관없어요. 기억나는 것만 적어주세요.</p><div class="form-stack"><div class="field"><label for="recheck-recall-input">기억나는 단어</label><input id="recheck-recall-input" value="'+esc(x.recall||'')+'" placeholder="기억나는 단어"></div><button id="save-cognitive-recheck" class="btn-kimse btn-primary-k">기록하고 비교하기</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'지연회상 반복',narrow:true});
+  if(s===0)return wrap(top+'<h1 class="page-title">'+esc(task('delayed_recall_3word').title)+'</h1><div class="memory-words">'+task('delayed_recall_3word').words.map(w=>'<strong>'+esc(w)+'</strong>').join('')+'</div><p class="page-desc">처음 했던 기억 과제를 다시 해볼게요. 천천히 읽어주세요.</p><button class="btn-kimse btn-primary-k btn-full" data-recheck-next>기억했어요</button>',{title:'반복 인지 체크',narrow:true});
+  if(s===1)return wrap(top+'<div class="eyebrow mt-4">연속 뺄셈 · 동일 과제 반복</div><h1 class="page-title">'+esc(INITIAL_TASK_OPTIONS[1].title)+'</h1><div class="answer-grid">'+INITIAL_TASK_OPTIONS[1].options.map(([v,label])=>'<button class="answer" data-recheck-answer="subtraction:'+esc(v)+'">'+esc(label)+'</button>').join('')+'</div><p class="screen-footnote">답변을 기록하고, 처음 했을 때와 비교해요.</p>',{title:'주의·실행 반복',narrow:true});
+  if(s===2)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">'+esc(INITIAL_TASK_OPTIONS[2].title)+'</h1><div class="answer-grid">'+INITIAL_TASK_OPTIONS[2].options.map(([code,label])=>'<button class="answer" data-recheck-answer="events:'+esc(code)+'">'+esc(label)+'</button>').join('')+'</div><p class="screen-footnote">지난번과 같은 질문이에요.</p>',{title:'사건·약속 기억',narrow:true});
+  if(s===3)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">'+esc(INITIAL_TASK_OPTIONS[3].title)+'</h1><div class="answer-grid">'+INITIAL_TASK_OPTIONS[3].options.map(([code,label])=>'<button class="answer" data-recheck-answer="finances:'+esc(code)+'">'+esc(label)+'</button>').join('')+'</div><p class="screen-footnote">평소와 비교해서 답해주세요.</p>',{title:'금전관리 변화',narrow:true});
+  if(s===4)return wrap(top+'<div class="eyebrow mt-4">일상기능 맥락</div><h1 class="page-title">'+esc(INITIAL_TASK_OPTIONS[4].title)+'</h1><div class="answer-grid">'+INITIAL_TASK_OPTIONS[4].options.map(([code,label])=>'<button class="answer" data-recheck-answer="travel:'+esc(code)+'">'+esc(label)+'</button>').join('')+'</div><p class="screen-footnote">평소와 비교해서 답해주세요.</p>',{title:'외출·이동 기능',narrow:true});
+  return wrap(top+'<div class="eyebrow mt-4">처음 본 단어 떠올리기</div><h1 class="page-title">'+esc(task('delayed_recall_3word').recallTitle)+'</h1><p class="page-desc">순서는 상관없어요. 기억나는 것만 적어주세요.</p><div class="form-stack"><div class="field"><label for="recheck-recall-input">기억나는 단어</label><input id="recheck-recall-input" value="'+esc(x.recall||'')+'" placeholder="기억나는 단어"></div><button id="save-cognitive-recheck" class="btn-kimse btn-primary-k">기록하고 비교하기</button></div><p class="screen-footnote">현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.</p>',{title:'지연회상 반복',narrow:true});
 };
 page['cognitive-recheck-result']=()=>{
   const r=S.cognitiveRecheck?.lastResult,c=r?.comparison;
@@ -2634,7 +2640,7 @@ document.addEventListener('click',e=>{
   const main=document.getElementById('main');
   if(main){main.focus({preventScroll:true});main.scrollIntoView({block:'start',behavior:'auto'})}
 });
-function render(){applyA11y();let r=route();if(r==='start'&&S.account&&S.remote?.accountId&&S.remote?.token&&AUTH()?.session?.()?.refreshToken){go(authNextRoute());return}let f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();syncAppStatusIcon();if(r==='auth')setTimeout(mountAuthHubSocial,20);if(['family','family-call'].includes(r))setTimeout(()=>syncFamilyData(true),30);if(['family-call','call-room'].includes(r))setTimeout(()=>syncCallSessions(true),40);if(r==='call-room')setTimeout(startCallRoomPolling,80);if(['caregiver-home','family-feedback'].includes(r)&&S.remote.activeCareSubjectId){const age=Date.now()-new Date(S.careOverview.lastSyncAt||0).getTime();if(!Number.isFinite(age)||age>10000)setTimeout(()=>syncCareOverview(true),50)};setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;const voiceScreenKey=r==='initial-check'?r+':'+initialCurrentStep():r==='voice-check'?r+':'+voiceJourneyStep():r;if(voiceScreenKey!==lastSpokenRoute){lastSpokenRoute=voiceScreenKey;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
+function render(){applyA11y();let r=route();if(r==='start'&&S.account&&S.remote?.accountId&&S.remote?.token&&AUTH()?.session?.()?.refreshToken){go(authNextRoute());return}let f=page[r]||page.start;document.documentElement.classList.toggle('demo-capture-mode',r==='demo-capture');A.innerHTML=f();if(r==='voice-check')setTimeout(mountVoicePlayback,0);else if(voicePlaybackUrl){URL.revokeObjectURL(voicePlaybackUrl);voicePlaybackUrl=null}syncAppStatusIcon();if(r==='auth')setTimeout(mountAuthHubSocial,20);if(['family','family-call'].includes(r))setTimeout(()=>syncFamilyData(true),30);if(['family-call','call-room'].includes(r))setTimeout(()=>syncCallSessions(true),40);if(r==='call-room')setTimeout(startCallRoomPolling,80);if(['caregiver-home','family-feedback'].includes(r)&&S.remote.activeCareSubjectId){const age=Date.now()-new Date(S.careOverview.lastSyncAt||0).getTime();if(!Number.isFinite(age)||age>10000)setTimeout(()=>syncCareOverview(true),50)};setTimeout(()=>$('#main')?.focus({preventScroll:true}),0);if(r==='admin-partners'&&sessionStorage.getItem('kimse.admin.token'))setTimeout(loadAdminInquiries,20);document.title='낌새 · '+r;const voiceScreenKey=r==='initial-check'?r+':'+initialCurrentStep():r==='voice-check'?r+':'+voiceJourneyStep():r;if(voiceScreenKey!==lastSpokenRoute){lastSpokenRoute=voiceScreenKey;setTimeout(()=>{if(Date.now()-lastFeedbackAt<1200)return;const h=$('#main h1')?.innerText||$('.app-header strong')?.innerText||'낌새';if(S.a11y.voiceGuidance)say(h+' 화면입니다.')},160)}}
 document.addEventListener('click',e=>{
   if(route()!=='onboarding-profile')return;
   if(profileWizardStepIndex()===0){
@@ -2717,7 +2723,7 @@ document.addEventListener('click',e=>{
   }
 });
 
-document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');if(t.dataset.go==='cognitive-recheck'&&route()!=='cognitive-recheck')resetCognitiveRecheck();go(t.dataset.go)}if(t.hasAttribute('data-initial-next')&&route()==='initial-check'&&initialCurrentStep()===0){S.initial.step=1;initialActiveTimedStep=-1;save();feedback('다음 질문으로 이동합니다.');render()}if(t.dataset.initialAnswer&&route()==='initial-check'){const i=initialCurrentStep(),step=INITIAL_TASK_OPTIONS[i];const [k,v]=t.dataset.initialAnswer.split(':');if(step?.key===k&&step.options.some(([code])=>code===v)){const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes[i-1]=rt;S.initial.answers[k]=v;S.initial.step=Math.min(5,i+1);initialActiveTimedStep=-1;save();tone('tap');if(!demoAutoRunning&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){t.classList.add('is-confirming');t.setAttribute('aria-pressed','true');const mark=t.querySelector('.kimse-initial-choice-mark');if(mark)mark.textContent='✓';t.closest('.kimse-initial-answer-list')?.querySelectorAll('button').forEach(b=>b.disabled=true);setTimeout(()=>{if(route()==='initial-check')render()},180)}else render()}}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else startVoiceRecording(i)}if(t.hasAttribute('data-back')){tone('tap');if(route()==='voice-check'){if(!voiceRecorder){if(voiceJourneyStep()>0){S.initial.voiceStep=voiceJourneyStep()-1;save();render()}else{S.initial.step=5;save();go('initial-check')}}}else if(route()==='initial-check'){initialStepBack()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()===0&&birthYearPhase()==='year'){S.onboarding.birthPhase='decade';save();render()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();render()}else{history.length>1?history.back():go('start')}}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined&&route()==='assessment'){const selected=Number(t.dataset.answer);if(Number.isInteger(selected)&&selected>=0&&selected<Q[S.q]?.options.length){S.answers[S.q]=selected;save();tone('tap');if(S.q>=Q.length-1){go('result')}else{S.q++;save();render()}}}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;S.marketShowAll=false;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
+document.addEventListener('click',e=>{let t=e.target.closest('[data-go],[data-back],[data-role],[data-mode],[data-add-role],[data-share-monitoring],[data-answer],[data-med],[data-med-id],[data-mood],[data-training],[data-training-answer],[data-training-reset],[data-health],[data-market-cat],[data-market-item],[data-market-fav],[data-initial-next],[data-initial-answer],[data-brain-view],[data-brain-range],[data-brain-focus],[data-brain-domain],[data-voice-task]');if(!t)return;if(t.dataset.go){tone('tap');if(t.dataset.go==='cognitive-recheck'&&route()!=='cognitive-recheck')resetCognitiveRecheck();go(t.dataset.go)}if(t.hasAttribute('data-initial-next')&&route()==='initial-check'&&initialCurrentStep()===0){S.initial.step=1;initialActiveTimedStep=-1;save();feedback('다음 질문으로 이동합니다.');render()}if(t.dataset.initialAnswer&&route()==='initial-check'){const i=initialCurrentStep(),step=INITIAL_TASK_OPTIONS[i];const [k,v]=t.dataset.initialAnswer.split(':');if(step?.key===k&&step.options.some(([code])=>code===v)){const rt=Math.max(100,Date.now()-(Number(S.initial._stepStartedAt)||Date.now()));S.initial.responseTimes[i-1]=rt;S.initial.answers[k]=v;S.initial.step=Math.min(5,i+1);initialActiveTimedStep=-1;save();tone('tap');if(!demoAutoRunning&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){t.classList.add('is-confirming');t.setAttribute('aria-pressed','true');const mark=t.querySelector('.kimse-initial-choice-mark');if(mark)mark.textContent='✓';t.closest('.kimse-initial-answer-list')?.querySelectorAll('button').forEach(b=>b.disabled=true);setTimeout(()=>{if(route()==='initial-check')render()},180)}else render()}}if(t.dataset.brainView){S.brainView=t.dataset.brainView;save();render()}if(t.dataset.brainRange){S.brainRange=t.dataset.brainRange;save();render()}if(t.dataset.brainFocus){S.brainFocus=t.dataset.brainFocus;if(['memory','language'].includes(S.brainFocus))S.brainView='side';save();render()}if(t.dataset.brainDomain){S.brainTrendDomain=t.dataset.brainDomain;save();render()}if(t.dataset.voiceTask!==undefined){const i=Number(t.dataset.voiceTask);if(voiceRecorder&&voiceTask===i)stopVoiceRecording();else{t.disabled=true;t.textContent='마이크 연결 중…';startVoiceRecording(i)}}if(t.hasAttribute('data-back')){tone('tap');if(route()==='voice-check'){if(!voiceRecorder){if(voiceJourneyStep()>0){S.initial.voiceStep=voiceJourneyStep()-1;save();render()}else{S.initial.step=5;save();go('initial-check')}}}else if(route()==='initial-check'){initialStepBack()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()===0&&birthYearPhase()==='year'){S.onboarding.birthPhase='decade';save();render()}else if(route()==='onboarding-profile'&&profileWizardStepIndex()>0){S.onboarding.profileStep=profileWizardStepIndex()-1;save();render()}else{history.length>1?history.back():go('start')}}if(t.dataset.role){tone('tap');S.intent=t.dataset.role;S.self=['self','both'].includes(S.intent);S.care=['care','both'].includes(S.intent);save();go('auth')}if(t.dataset.mode){tone('tap');S.mode=t.dataset.mode;save();go(S.mode==='care'?'caregiver-home':'home')}if(t.dataset.addRole){tone('tap');S[t.dataset.addRole]=true;S.mode=t.dataset.addRole==='care'?'care':'self';save();go(S.mode==='care'?'caregiver-home':'home')}if(t.hasAttribute('data-share-monitoring')){tone('tap');requestFamilyReview().catch(()=>{})}if(t.dataset.answer!==undefined&&route()==='assessment'){const selected=Number(t.dataset.answer);if(Number.isInteger(selected)&&selected>=0&&selected<Q[S.q]?.options.length){S.answers[S.q]=selected;save();tone('tap');if(S.q>=Q.length-1){go('result')}else{S.q++;save();render()}}}if(t.hasAttribute('data-med')){S.med=!S.med;save();feedback(S.med?'복용 완료로 기록했습니다.':'복용 기록을 취소했습니다.',S.med?'success':'tap');render()}if(t.dataset.medId){const m=S.medicines.find(x=>x.id===t.dataset.medId);if(m){m.taken=!m.taken;save();syncClinicalContextSnapshot().catch(()=>{});feedback(m.name+(m.taken?' 복용 완료로 기록했습니다.':' 복용 기록을 취소했습니다.'),m.taken?'success':'tap');render()}}if(t.dataset.mood){S.mood=t.dataset.mood;save();syncClinicalContextSnapshot().catch(()=>{});feedback('오늘의 기분을 '+S.mood+'로 기록했습니다.','success');render()}if(t.dataset.training){tone('tap');S.selectedTraining=t.dataset.training;S.trainingResult=null;save();go('training-play')}if(t.dataset.trainingAnswer!==undefined){const x=TRAINING[S.selectedTraining]||TRAINING.memory;const correct=+t.dataset.trainingAnswer===x.correct;S.trainingResult={type:S.selectedTraining,correct};save();feedback(correct?'정답입니다. 잘했어요.':'괜찮아요. 해설을 확인해보세요.',correct?'success':'warning');render()}if(t.hasAttribute('data-training-reset')){S.trainingResult=null;save();feedback('훈련을 다시 시작합니다.');render()}if(t.dataset.health){tone('tap');S.selectedHealth=t.dataset.health;save();go('health-detail')}if(t.dataset.marketCat){S.marketCategory=t.dataset.marketCat;S.marketShowAll=false;save();feedback('케어관 카테고리를 변경했습니다.');render()}if(t.dataset.marketItem){tone('tap');S.marketItem=t.dataset.marketItem;save();go('market-detail')}if(t.dataset.marketFav){const id=t.dataset.marketFav,i=S.marketFavorites.indexOf(id);if(i>=0)S.marketFavorites.splice(i,1);else S.marketFavorites.push(id);save();feedback(i>=0?'관심 품목에서 해제했습니다.':'관심 품목에 저장했습니다.','success');render()}});
 document.addEventListener('click',e=>{if(route()==='market'&&e.target.closest('[data-market-show-all]')){S.marketShowAll=true;save();render()}});
 document.addEventListener('click',e=>{if(route()==='assessment'&&e.target.closest('[data-assessment-prev]')&&S.q>0){S.q--;save();tone('tap');render()}});
 document.addEventListener('click',async e=>{
