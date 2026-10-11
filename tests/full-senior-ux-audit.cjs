@@ -438,6 +438,8 @@ async function verifyEvidenceVoiceRecording(){
     await p.locator('[data-voice-task="0"]').click();
     await p.locator('.kimse-voice-recovery').waitFor({timeout:12000});
     assert((await p.locator('.kimse-voice-recovery').innerText()).includes('마이크 권한'),'denied microphone presents practical recovery instructions');
+    const retryAboveFold=await p.evaluate(()=>{window.scrollTo(0,0);const button=document.querySelector('.kimse-voice-retry'),prompt=document.querySelector('.kimse-voice-prompt');if(!button||!prompt)return null;const a=button.getBoundingClientRect(),b=prompt.getBoundingClientRect();return {top:a.top,bottom:a.bottom,taskTop:b.top,viewport:innerHeight}});
+    assert(retryAboveFold&&retryAboveFold.top>=0&&retryAboveFold.bottom<=retryAboveFold.viewport&&retryAboveFold.bottom<retryAboveFold.taskTop,'microphone retry must appear in the first screen above the task card');
     assert(await p.locator('#kimse-voice-playback').count()===1,'failed retry does not erase prior recording');
     await p.screenshot({path:'qa-artifacts/screens/voice-recording-error-375.png',fullPage:false});
     console.log('KIMSE_VOICE_PERMISSION_RECOVERY=PASS denied→instructions→previous-take-preserved');
