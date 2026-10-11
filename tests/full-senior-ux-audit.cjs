@@ -392,6 +392,10 @@ async function verifyEvidenceVoiceRecording(){
     const registryText=await p.locator('#question-registry').innerText();
     assert(registryText.includes(hearing.title)&&registryText.includes(calc.title),'Evidence visible page must show exact questions');
     assert(registryText.includes('임상 타당도 미검증'),'Evidence must disclose validation limits');
+    assert.equal(await p.locator('#question-registry .col-12.col-xl-6').count(),12,'twelve Evidence profile question cards use responsive layout');
+    assert.equal(await p.locator('#question-registry .table-responsive').count(),0,'question registry must not hide answers in horizontal-scroll table');
+    const qWidths=await p.locator('#question-registry .col-12.col-xl-6').evaluateAll(els=>els.map(el=>[el.clientWidth,el.scrollWidth]));
+    assert(qWidths.every(([w,scroll])=>scroll<=w+2),'question cards must not overflow on 375px mobile');
     await p.locator('#question-registry').screenshot({path:'qa-artifacts/screens/evidence-questions-375.png',timeout:20000});
     console.log('KIMSE_EVIDENCE_UI=PASS visible question+choices+sources+limitations');
     await p.goto(base+'voice-check',{waitUntil:'domcontentloaded'});
