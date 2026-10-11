@@ -251,7 +251,7 @@ function initialScores(){
   return S.initial.domains&&typeof S.initial.domains==='object'?S.initial.domains:null;
 }
 function initialRecallCount(){
-  const words=['나무','기차','우산'],r=String(S.initial.recall||'').replace(/\s/g,'');
+  const words=EVIDENCE_MODEL?.baselineTaskRegistry?.tasks?.find(x=>x.id==='delayed_recall_3word')?.words||[],r=String(S.initial.recall||'').replace(/\s/g,'');
   return words.filter(w=>r.includes(w)).length;
 }
 function statusMeta(score){
@@ -1843,7 +1843,9 @@ page['voice-check']=()=>{
   if(VOICE_PROMPTS.length!==3)return wrap('<h1 class="page-title">음성 과제의 근거 목록을 불러오지 못했어요</h1><p class="page-desc">잠시 뒤 다시 열어주세요.</p>',{title:'목소리 기록',narrow:true});
   const step=voiceJourneyStep(),done=S.initial.voiceSamples.filter(x=>Number(x?.durationSec)>=MIN_VOICE_SECONDS).length,sample=Number(S.initial.voiceSamples[step]?.durationSec)>=MIN_VOICE_SECONDS?S.initial.voiceSamples[step]:null;
   const active=!!voiceRecorder&&voiceTask===step,recording=!!voiceRecorder||voiceSaving;
-  const taskName=['최근 이야기','기억에 남는 일','동물 이름 말하기'][step];
+  const tasks=EVIDENCE_MODEL.baselineTaskRegistry.tasks;
+  const taskLabels=[...(tasks.find(x=>x.id==='speech_spontaneous')?.shortLabels||[]),...(tasks.find(x=>x.id==='speech_semantic_fluency')?.shortLabels||[])];
+  const taskName=taskLabels[step]||'말하기';
   const intro='<div class="kimse-voice-task-label">말하기 '+(step+1)+' · '+taskName+'</div>';
   const state=voiceSaving?'<div class="kimse-voice-state" role="status">녹음을 안전하게 저장하고 있어요.</div>':active?'<div class="kimse-voice-state is-recording" role="status"><span class="kimse-voice-pulse" aria-hidden="true"></span>녹음 중이에요. 편하게 말씀해주세요.</div>':
     sample?'<div class="kimse-voice-state is-complete" role="status"><span aria-hidden="true">✓</span>녹음했어요 · '+sample.durationSec+'초 저장됨</div><label for="kimse-voice-playback">녹음 확인</label><audio id="kimse-voice-playback" controls preload="metadata" style="width:100%;min-height:64px"></audio><p id="kimse-voice-playback-error" role="status"></p>':
