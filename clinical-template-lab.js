@@ -13,7 +13,7 @@
   const pct=n=>Number.isFinite(n)?(n>0?'+':'')+(n*100).toFixed(1)+'%':'자료 없음';
   const charts=[];
   let selectedSubset=null;
-  const raw=(value,unit)=>value===undefined||value===null?'미수집':Number(value).toLocaleString('ko-KR',{maximumFractionDigits:2})+' '+unit;
+  const raw=(value,unit)=>value===undefined||value===null?'미수집':Number.isFinite(value)?value.toLocaleString('ko-KR',{maximumFractionDigits:2})+' '+unit:'잘못된 수치';
   const COVERAGE_LABELS={function:'일상기능',risk_confounders:'약물·질병 이력',professional:'전문검사',onset_trajectory:'변화 관찰일',cognition:'인지 관련 자료',informant:'보호자 정보'};
   // Published Tabler text components receive user-readable explanations; canonical guard/source codes are retained in data-* attributes.
   const GUARD_TEXT={
@@ -64,6 +64,48 @@
     const response=await fetch(url,{cache:'no-store',credentials:'omit'});
     if(!response.ok)throw Error('FIXTURE_LOAD_'+response.status);
     return response.json();
+  }
+  // Fail closed before rendering or enabling PDF. This page accepts a single fixed
+  // synthetic fixture, never unverified patient records or inferred missing values.
+  function validateSyntheticFixture(report){
+    const invalid=code=>{throw Error('INVALID_SYNTHETIC_FIXTURE_'+code)};
+    if(report?.demo_marker!=='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT'||report?.subject?.care_subject_id!=='SYNTHETIC_NO_REAL_PATIENT_ID')invalid('IDENTITY');
+    const scope=report.report_context||{},horizon=scope.view_horizon_days;
+    const validDay=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&
+      Number.isFinite(Date.parse(value+'T00:00:00Z'))&&day(Date.parse(value+'T00:00:00Z'))===value;
+    if(horizon!==28||!validDay(scope.window_start)||!validDay(scope.window_end))invalid('PERIOD');
+    const start=Date.parse(scope.window_start+'T00:00:00Z'),end=Date.parse(scope.window_end+'T00:00:00Z');
+    if((end-start)/86400000+1!==horizon)invalid('WINDOW_DAYS');
+    const metrics=report.monitoring?.metrics,metricIds=Object.keys(SIGNAL_UNIT_TEXT);
+    if(!Array.isArray(metrics)||metrics.length!==metricIds.length)invalid('SIGNAL_COUNT');
+    const seenMetric=new Set();
+    for(const metric of metrics){
+      if(!metric||!metricIds.includes(metric.metric)||seenMetric.has(metric.metric))invalid('SIGNAL_ID');
+      seenMetric.add(metric.metric);
+      if(typeof metric.clinical_label!=='string'||!metric.clinical_label.trim()||
+         typeof metric.source_mode!=='string'||!metric.source_mode.endsWith('_simulation')||
+         typeof metric.unit!=='string'||!metric.unit.trim()||typeof metric.changed!=='boolean')invalid('PROVENANCE');
+      for(const key of ['baseline','recent','relative_change']){
+        if(metric[key]!=null&&!(typeof metric[key]==='number'&&Number.isFinite(metric[key])))invalid('NUMBER');
+      }
+      if(metric.changed&&metric.relative_change==null)invalid('MISSING_CHANGE');
+      if(!Array.isArray(metric.series))invalid('SERIES');
+      let previous='',seenDays=new Set();
+      for(const point of metric.series){
+        if(!point||!validDay(point.day)||point.day<scope.window_start||point.day>scope.window_end||
+           seenDays.has(point.day)||point.day<=previous)invalid('SERIES_DAY');
+        if(typeof point.value!=='number'||!Number.isFinite(point.value))invalid('SERIES_VALUE');
+        seenDays.add(point.day);previous=point.day;
+      }
+      const quality=metric.quality||{};
+      if(quality.window_start!==scope.window_start||quality.window_end!==scope.window_end||
+         quality.expected_calendar_days!==horizon||quality.valid_days!==metric.series.length||
+         quality.missing_calendar_days!==horizon-metric.series.length||
+         typeof quality.calendar_day_coverage!=='number'||
+         Math.abs(quality.calendar_day_coverage-metric.series.length/horizon)>.0001)invalid('COVERAGE');
+    }
+    if(!report.previsit_summary||!Array.isArray(report.professional_outcomes)||!Array.isArray(report.external_clinical_records))invalid('PROFESSIONAL_BOUNDARY');
+    return true;
   }
   function getSelectedReport(report,days){
     const ms=Date.parse(report.report_context.window_end+'T00:00:00Z');
@@ -359,12 +401,12 @@
   // Pattern: official Apache ECharts horizontal bar sample (category yAxis).
   function changeOption(subset){
     const metrics=subset.metrics;
-    return {backgroundColor:'transparent',color:['#206bc4'],tooltip:{trigger:'axis',axisPointer:{type:'shadow'},valueFormatter:v=>(v>0?'+':'')+Number(v).toFixed(1)+'%'},
+    return {backgroundColor:'transparent',color:['#206bc4'],tooltip:{trigger:'axis',axisPointer:{type:'shadow'},valueFormatter:v=>v==null?'미수집':(v>0?'+':'')+Number(v).toFixed(1)+'%'},
       grid:{left:148,right:72,top:15,bottom:25},
       xAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#e9eef3'}}},
       yAxis:{type:'category',inverse:true,data:metrics.map(m=>m.clinical_label),axisLabel:{width:126,overflow:'truncate',fontSize:11}},
       series:[{type:'bar',barMaxWidth:18,data:metrics.map((m,index)=>({
-        value:Math.round(m.relative_change*1000)/10,
+        value:Number.isFinite(m.relative_change)?Math.round(m.relative_change*1000)/10:null,
         itemStyle:{color:optionColor[index%optionColor.length]}
       })),label:{show:true,position:'right',formatter:p=>(p.value>0?'+':'')+p.value+'%'}}]};
   }
@@ -391,6 +433,8 @@
     if(crosswalk.status!=='PUBLIC_SOURCE_CROSSWALK_NOT_INSTITUTION_APPROVAL'||crosswalk.policy.verified_receivers!==0)throw Error('PUBLIC_FORM_CONTRACT_NOT_SAFE');
     if(report.demo_marker!=='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT')throw Error('REAL_PATIENT_DATA_FORBIDDEN_IN_PUBLIC_DEMO');
     if(report.subject?.care_subject_id!=='SYNTHETIC_NO_REAL_PATIENT_ID')throw Error('PATIENT_ID_FORBIDDEN');
+    validateSyntheticFixture(report);
+    if(!window.echarts)throw Error('CHART_COMPONENT_MISSING');
     const providerCount=registry.institutions.length;
     const researchGroups=crosswalk.entries.reduce((n,entry)=>n+entry.requirement_groups.length,0);
     if(crosswalk.entry_count!==providerCount||crosswalk.published_research_groups!==researchGroups)throw Error('PUBLISHED_REQUIREMENTS_COUNT_DRIFT');

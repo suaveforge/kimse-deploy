@@ -128,13 +128,14 @@
           </div></div></div>
         </div>
 
+        <p id="chartTextAlternative" class="visually-hidden">세 차트는 합성 생활 신호만 표시합니다. 시각적 차트 대신 아래 기준선·원자료·수집 품질 표에서 신호별 최근값, 원본 28일 기준선, 변화율, 선택 기간 수집일과 출처를 확인할 수 있습니다. 미수집일과 전문검사 미실시는 정상 판정이 아닙니다.</p>
         <div class="row row-cards">
           <div class="col-lg-8">
             <div class="card">
               <div class="card-header"><h2 class="card-title">개인 기준선 대비 종단 변화</h2><span class="ms-auto badge bg-blue-lt">범위 확대 · 추이 확인</span></div>
               <div class="card-body">
                 <p class="text-secondary small">서로 다른 단위를 혼합해 해석하지 않도록 각 신호를 해당 개인 기준선 대비 증감률(%)로 표시합니다. 결측일은 연결하지 않습니다.</p>
-                <div id="trendChart" class="clinical-chart" role="img" aria-label="일별 개인 기준선 대비 변화 그래프, 마우스 또는 터치로 상세정보 확인"></div>
+                <div id="trendChart" class="clinical-chart" role="img" aria-describedby="chartTextAlternative periodInterpretation" aria-label="일별 개인 기준선 대비 변화 그래프, 마우스 또는 터치로 상세정보 확인"></div>
               </div>
             </div>
           </div>
@@ -143,7 +144,7 @@
               <div class="card-header"><h2 class="card-title">자료가 기록된 날</h2><span class="ms-auto badge bg-azure-lt">기록일 · 미수집 표시</span></div>
               <div class="card-body">
                 <p class="text-secondary small">진한 칸은 기록된 날, 옅은 칸은 미수집일입니다. 미수집을 정상으로 간주하지 않습니다.</p>
-                <div id="coverageChart" class="clinical-chart" role="img" aria-label="신호별 수집 및 미수집일 히트맵"></div>
+                <div id="coverageChart" class="clinical-chart" role="img" aria-describedby="chartTextAlternative periodInterpretation" aria-label="신호별 수집 및 미수집일 히트맵"></div>
               </div>
             </div>
           </div>
@@ -152,7 +153,7 @@
               <div class="card-header"><h2 class="card-title">개인 기준선 ↔ 최근 수치</h2><span class="ms-auto badge bg-blue-lt">기준선 대비 변화폭</span></div>
               <div class="card-body">
                 <p class="text-secondary small">값은 기준선 대비 증감률이며 임상 위험점수나 인지 기능의 정상·비정상을 뜻하지 않습니다.</p>
-                <div id="changeChart" class="clinical-chart" role="img" aria-label="기준선 대비 영역별 변화율 막대 그래프"></div>
+                <div id="changeChart" class="clinical-chart" role="img" aria-describedby="chartTextAlternative periodInterpretation" aria-label="기준선 대비 영역별 변화율 막대 그래프"></div>
               </div>
             </div>
           </div>
