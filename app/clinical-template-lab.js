@@ -12,6 +12,8 @@
   const day=ms=>new Date(ms).toISOString().slice(0,10);
   const pct=n=>Number.isFinite(n)?(n>0?'+':'')+(n*100).toFixed(1)+'%':'자료 없음';
   const charts=[];
+  // Respect the device OS preference using native ECharts animation controls.
+  const reducedMotion=()=>Boolean(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   let selectedSubset=null;
   const raw=(value,unit)=>value===undefined||value===null?'미수집':Number.isFinite(value)?value.toLocaleString('ko-KR',{maximumFractionDigits:2})+' '+unit:'잘못된 수치';
   const COVERAGE_LABELS={function:'일상기능',risk_confounders:'약물·질병 이력',professional:'전문검사',onset_trajectory:'변화 관찰일',cognition:'인지 관련 자료',informant:'보호자 정보'};
@@ -375,7 +377,7 @@
             Number(((v-m.baseline)/Math.abs(m.baseline)*100).toFixed(2)):null
         })};
     });
-    return {backgroundColor:'transparent',animationDuration:650,
+    return {backgroundColor:'transparent',animationDuration:reducedMotion()?0:650,
       toolbox:{show:true,top:33,right:8,feature:{dataZoom:{yAxisIndex:'none',title:{zoom:'범위 확대',back:'확대 뒤로'}},restore:{title:'확대 원복'}}},
       tooltip:{trigger:'axis',confine:true,axisPointer:{type:'cross'},valueFormatter:v=>v==null?'미수집':(v>0?'+':'')+Number(v).toFixed(1)+'%'},
       legend:{type:'scroll',top:0},color:optionColor,grid:{top:68,left:55,right:18,bottom:62,containLabel:false},
@@ -390,7 +392,7 @@
     const names=subset.metrics.map(m=>m.clinical_label);
     const heat=[];
     subset.metrics.forEach((m,y)=>{const present=new Set(m.series.map(p=>p.day));days.forEach((d,x)=>heat.push([x,y,present.has(d)?1:0]))});
-    return {backgroundColor:'transparent',tooltip:{position:'top',confine:true,formatter:p=>names[p.data[1]]+'<br>'+days[p.data[0]]+' · '+(p.data[2]===1?'실제 합성 기록':'미수집')},
+    return {backgroundColor:'transparent',animation:!reducedMotion(),tooltip:{position:'top',confine:true,formatter:p=>names[p.data[1]]+'<br>'+days[p.data[0]]+' · '+(p.data[2]===1?'실제 합성 기록':'미수집')},
       grid:{top:20,bottom:42,left:118,right:12},
       xAxis:{type:'category',data:days,splitArea:{show:true},axisLabel:{interval:Math.max(1,Math.floor(subset.days/6)),formatter:v=>v.slice(5),rotate:35,fontSize:10}},
       yAxis:{type:'category',data:names,splitArea:{show:true},axisLabel:{width:104,overflow:'truncate',fontSize:10}},
@@ -401,7 +403,7 @@
   // Pattern: official Apache ECharts horizontal bar sample (category yAxis).
   function changeOption(subset){
     const metrics=subset.metrics;
-    return {backgroundColor:'transparent',color:['#206bc4'],tooltip:{trigger:'axis',axisPointer:{type:'shadow'},valueFormatter:v=>v==null?'미수집':(v>0?'+':'')+Number(v).toFixed(1)+'%'},
+    return {backgroundColor:'transparent',animation:!reducedMotion(),color:['#206bc4'],tooltip:{trigger:'axis',axisPointer:{type:'shadow'},valueFormatter:v=>v==null?'미수집':(v>0?'+':'')+Number(v).toFixed(1)+'%'},
       grid:{left:148,right:72,top:15,bottom:25},
       xAxis:{type:'value',axisLabel:{formatter:'{value}%'},splitLine:{lineStyle:{color:'#e9eef3'}}},
       yAxis:{type:'category',inverse:true,data:metrics.map(m=>m.clinical_label),axisLabel:{width:126,overflow:'truncate',fontSize:11}},
@@ -439,7 +441,7 @@
     const researchGroups=crosswalk.entries.reduce((n,entry)=>n+entry.requirement_groups.length,0);
     if(crosswalk.entry_count!==providerCount||crosswalk.published_research_groups!==researchGroups)throw Error('PUBLISHED_REQUIREMENTS_COUNT_DRIFT');
     if(registry.institutions.some(item=>item.clinical_reviewer_approved||item.kimse_electronic_receiver_approved))throw Error('CLINICAL_APPROVAL_STATE_CONFLICT');
-    qs('demoVersion').textContent='Updated 2026.10.11 · Clinical Template Lab 05 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
+    qs('demoVersion').textContent='Updated 2026.10.11 · Clinical Template Lab 06 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
 
     const {updateInstitutions}=listControls(registry);
     const refreshProfile=()=>{renderProfile(registry,report);renderHospitalRequirements(crosswalk,qs('country').value,qs('institution').value);if(selectedSubset)renderPrintable(report,selectedSubset,registry,crosswalk)};
