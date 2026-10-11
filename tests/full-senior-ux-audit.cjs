@@ -409,6 +409,9 @@ async function verifyEvidenceVoiceRecording(){
     await p.locator('[data-voice-task="0"]').click();
     await p.locator('.kimse-voice-state.is-complete').waitFor({timeout:60000});
     await p.locator('#kimse-voice-playback[src]').waitFor({timeout:15000});
+    await p.waitForFunction(()=>document.querySelector('#kimse-voice-playback')?.readyState>=1,{timeout:20000});
+    const voiceMedia=await p.locator('#kimse-voice-playback').evaluate(a=>({readyState:a.readyState,duration:a.duration,error:a.error?.message||''}));
+    assert(voiceMedia.readyState>=1&&!voiceMedia.error,'recorded audio must load into the browser playback engine');
     const saved=await p.evaluate(async()=>{
       const state=JSON.parse(localStorage.getItem('kimse.p0.state')||'{}'),sample=state.initial?.voiceSamples?.[0];
       if(!sample?.id)return null;
