@@ -179,6 +179,10 @@
     delete traceStatus.dataset.htmlSectionMapped;
     delete traceStatus.dataset.unlocated;
     const row=crosswalk.entries.find(item=>item.id===institutionId&&item.country===country);
+    qs('summaryProviderStatus').textContent=row?
+      '공개 안내 '+row.requirement_groups.length+'개 조사 · KIMSE 의료진·전자수신 승인 0건 · 기관별 의뢰서 및 검사 원본 별도 확인':
+      '의료기관 미선택 · 병원별 자료 요건 미확정 · 전자수신 승인 0건';
+
     const disclosure=qs('institutionEvidenceDisclosure'),disclosureSummary=qs('institutionEvidenceSummary');
     const evidenceKey=row?row.id:'';
     if(disclosure.dataset.institutionId!==evidenceKey){
@@ -284,6 +288,20 @@
       '외부 전문평가 기록이 존재하지만 검증등급을 별도로 확인해야 합니다.':
       '전문검사/의료진 공식 평가 결과: 미수집 (정상 판정이 아님)';
     qs('summaryProfessional').textContent=professional.textContent;
+    // These are questions and observed data coverage, not clinical findings.
+    const leastRecorded=subset.metrics.slice().sort((a,b)=>a.series.length-b.series.length).slice(0,2);
+    qs('summaryCoverage').textContent='선택 '+subset.days+'일 · 기록 적은 영역: '+
+      (leastRecorded.length?leastRecorded.map(m=>m.clinical_label+' '+m.series.length+'/'+subset.days+'일').join(' · '):'기록 미수집')+
+      ' · 미기록은 정상 판정이 아닙니다.';
+    qs('summaryCoverage').dataset.selectedPeriodDays=String(subset.days);
+    const questions=[
+      '첫 변화 관찰일 '+firstObserved+'과 실제 증상 시작 시점 확인',
+      f?'가족 보고 변화의 시기와 일상기능 영향 확인':'가족·보호자 진술 확보 여부 확인',
+      missing.length?'미수집 정보 ('+missing.map(x=>COVERAGE_LABELS[x.id]||x.id).join(' · ')+') 확인':'복약·질환 및 원검사 확인 여부 점검'
+    ];
+    const questionList=qs('summaryClinicianQuestions');questionList.replaceChildren();
+    questions.forEach(question=>questionList.append(make('li','',question)));
+
   }
   function focusMetric(index){
     const m=selectedSubset?.metrics?.[index];
@@ -313,6 +331,9 @@
     copy('printProfessional','professionalContext');
     qs('printPeriod').textContent=subset.days+'일 · '+subset.earliest+' ~ '+subset.latest+' (대표값은 원본 '+Number(report.report_context.view_horizon_days)+'일 기준)';
     copy('printPeriodInterpretation','periodInterpretation');
+    copy('printCoverage','summaryCoverage');
+    qs('printClinicianQuestions').textContent=Array.from(qs('summaryClinicianQuestions').children).map(x=>x.textContent).join(' / ');
+    copy('printProviderStatus','summaryProviderStatus');
     const country=qs('country').value,institution=qs('institution').value;
     qs('printProfile').textContent=registry.regions.find(x=>x.code===country)?.label||'GLOBAL';
     const printRows=qs('printSummaryRows');printRows.replaceChildren();
@@ -441,7 +462,7 @@
     const researchGroups=crosswalk.entries.reduce((n,entry)=>n+entry.requirement_groups.length,0);
     if(crosswalk.entry_count!==providerCount||crosswalk.published_research_groups!==researchGroups)throw Error('PUBLISHED_REQUIREMENTS_COUNT_DRIFT');
     if(registry.institutions.some(item=>item.clinical_reviewer_approved||item.kimse_electronic_receiver_approved))throw Error('CLINICAL_APPROVAL_STATE_CONFLICT');
-    qs('demoVersion').textContent='Updated 2026.10.11 · Clinical Template Lab 06 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
+    qs('demoVersion').textContent='Updated 2026.10.12 · Clinical Template Lab 07 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
 
     const {updateInstitutions}=listControls(registry);
     const refreshProfile=()=>{renderProfile(registry,report);renderHospitalRequirements(crosswalk,qs('country').value,qs('institution').value);if(selectedSubset)renderPrintable(report,selectedSubset,registry,crosswalk)};

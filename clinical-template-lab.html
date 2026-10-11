@@ -71,6 +71,20 @@
                 <p id="summaryProfessional" class="mb-0">전문평가 기록 확인 중</p>
               </div>
             </div>
+            <div class="row g-3 border-top pt-3 mt-3" aria-label="진료 전 30초 확인 항목">
+              <div class="col-lg-4">
+                <div class="subheader">기록일 · 결측 확인</div>
+                <p id="summaryCoverage" class="mb-0 small" role="status" aria-live="polite">선택 기간의 기록일 계산 중</p>
+              </div>
+              <div class="col-lg-5">
+                <div class="subheader">진료 중 확인할 질문 · 답은 별도 확인</div>
+                <ol id="summaryClinicianQuestions" class="mb-0 ps-3 small" aria-label="원본 합성 정보에 근거한 확인 질문"></ol>
+              </div>
+              <div class="col-lg-3">
+                <div class="subheader">선택 기관의 자료 준비 상태</div>
+                <p id="summaryProviderStatus" class="mb-0 small" role="status" aria-live="polite">기관 공개자료 확인 중</p>
+              </div>
+            </div>
           </div>
         </section>
         <div class="row row-cards mb-3">
@@ -219,7 +233,7 @@
           <strong>사용한 공개 컴포넌트 및 출처:</strong> <a href="https://tabler.io/admin-template" target="_blank" rel="noopener noreferrer">Tabler Dashboard (MIT)</a> /
           <a href="https://echarts.apache.org/examples/en/index.html" target="_blank" rel="noopener noreferrer">Apache ECharts 공식 완성형 차트 갤러리 (Apache-2.0)</a>.
           ApexCharts 상용/OEM 별도 라이선스 구성요소는 사용하지 않습니다. 이 페이지는 <strong>템플릿 적합성 검증용</strong>입니다.
-          <span class="ms-2" id="demoVersion">Updated 2026.10.11 · Clinical Template Lab 06 · 공개자료 확인 중</span>
+          <span class="ms-2" id="demoVersion">Updated 2026.10.12 · Clinical Template Lab 07 · 공개자료 확인 중</span>
         </div>
       </div>
     </div>
@@ -243,6 +257,10 @@
       <p class="small text-secondary mb-0 mt-2">관찰일은 발병일이 아닙니다. 변화폭은 치매 진단·중증도·발생확률 점수가 아닙니다.</p>
     </div></div>
     <div class="small text-secondary mb-2">표시 범위: <span id="printPeriod"></span> · 후보 근거: <span id="printProfile"></span></div><p class="small text-secondary mb-2" id="printPeriodInterpretation"></p>
+    <h2 class="h4 mt-2 mb-1">진료 전 30초 추가 확인</h2>
+    <p id="printCoverage" class="small mb-1"></p>
+    <p id="printClinicianQuestions" class="small mb-1"></p>
+    <p id="printProviderStatus" class="small text-secondary mb-2"></p>
     <h2 class="h4 mb-2">생활·인지 신호 관찰값</h2>
     <table class="table table-sm table-striped table-vcenter" aria-label="합성 환자 데이터 화면과 일치하는 기준선 표">
       <thead><tr><th scope="col">영역</th><th scope="col">28일 기준선</th><th scope="col">28일 대표 최근</th><th scope="col">28일 증감</th><th scope="col">선택 기간 수집일</th><th scope="col">출처</th></tr></thead>
