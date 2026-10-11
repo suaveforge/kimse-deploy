@@ -382,10 +382,15 @@ async function verifyEvidenceVoiceRecording(){
     await p.locator('[data-profile-choice]').first().waitFor({timeout:30000});
     assert.equal((await p.locator('h1').first().innerText()).trim(),hearing.title,'profile question comes from Evidence');
     assert.deepEqual((await p.locator('[data-profile-choice]').allInnerTexts()).map(x=>x.trim()),hearing.options.map(x=>x[1]),'profile answer choices match Evidence');
+    await p.locator('.kimse-question-source>summary').click();
+    assert.equal(await p.locator('.kimse-question-source-body a').getAttribute('href'),hearing.sourceUrl,'profile displays exact Evidence source link');
+    assert((await p.locator('.kimse-question-source-body').innerText()).includes('공식 검사 문항이 아닌'),'profile explicitly distinguishes KIMSE item from an official test');
     await p.goto(base+'initial-check',{waitUntil:'domcontentloaded'});
     await p.locator('[data-initial-answer]').first().waitFor({timeout:30000});
     assert.equal((await p.locator('.kimse-initial-title').innerText()).trim(),calc.title,'cognitive task comes from Evidence');
     assert.deepEqual((await p.locator('[data-initial-answer]').allInnerTexts()).map(x=>x.trim()),calc.options.map(x=>x[1]),'task choices match Evidence');
+    await p.locator('.kimse-question-source>summary').click();
+    assert.equal(await p.locator('.kimse-question-source-body a').getAttribute('href'),calc.sourceUrl,'initial task shows original research link');
     console.log('KIMSE_EVIDENCE_QUESTIONS=PASS profile12 baseline7 hearing and serial-subtraction match source');
     await p.goto('https://kimse.suaveforge.com/evidence/observation.html#question-registry',{waitUntil:'domcontentloaded'});
     await p.locator('#question-registry').waitFor({timeout:35000});
@@ -427,6 +432,15 @@ async function verifyEvidenceVoiceRecording(){
     assert.deepEqual(errors.filter(e=>!e.includes('require is not defined')),[],'voice route must not throw unexpected JavaScript errors');
     await p.screenshot({path:'qa-artifacts/screens/voice-recording-saved-375.png',fullPage:false});
     console.log('KIMSE_VOICE_RECORDING=PASS duration='+saved.duration+'s bytes='+saved.size+' mime='+saved.mime+' replay=READY');
+    await p.evaluate(()=>{
+      Object.defineProperty(navigator.mediaDevices,'getUserMedia',{configurable:true,value:async()=>{throw new DOMException('Permission denied','NotAllowedError')}});
+    });
+    await p.locator('[data-voice-task="0"]').click();
+    await p.locator('.kimse-voice-recovery').waitFor({timeout:12000});
+    assert((await p.locator('.kimse-voice-recovery').innerText()).includes('마이크 권한'),'denied microphone presents practical recovery instructions');
+    assert(await p.locator('#kimse-voice-playback').count()===1,'failed retry does not erase prior recording');
+    await p.screenshot({path:'qa-artifacts/screens/voice-recording-error-375.png',fullPage:false});
+    console.log('KIMSE_VOICE_PERMISSION_RECOVERY=PASS denied→instructions→previous-take-preserved');
   }finally{await cx.close();await cb.close()}
 }
 
