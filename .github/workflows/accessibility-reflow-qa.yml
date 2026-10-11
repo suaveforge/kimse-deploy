@@ -25,41 +25,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Wait for live accessibility assets
-        run: |
-          for i in $(seq 1 30); do
-            js_ok=0
-            css_ok=0
-            premium_ok=0
-            sw_ok=0
-            gov_ok=0
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.js?qa=${GITHUB_SHA}-${i}" | grep -Fq 'aria-label*="인지 기능 연관 지도"'; then
-              js_ok=1
-            fi
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.css?qa=${GITHUB_SHA}-${i}" | grep -Fq ':root{--kimse-primary:#12735e}' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/accessibility-enhancements.css?qa=${GITHUB_SHA}-${i}" | grep -Fq '.app-footer{color:var(--kimse-muted)}'; then
-              css_ok=1
-            fi
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.js?qa=${GITHUB_SHA}-${i}" | grep -Fq "const VERSION='39'" && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?qa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.5 · product-first universal readable floor'; then
-              premium_ok=1
-            fi
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?qa=${GITHUB_SHA}-${i}" | cmp -s service-worker.js -; then
-              sw_ok=1
-            fi
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?qa=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?qa=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions'; then
-              gov_ok=1
-            fi
-            if [ "$js_ok" = "1" ] && [ "$css_ok" = "1" ] && [ "$premium_ok" = "1" ] && [ "$sw_ok" = "1" ] && [ "$gov_ok" = "1" ]; then
-              echo "Live accessibility and premium UX assets are ready."
-              exit 0
-            fi
-            echo "Waiting for GitHub Pages propagation ($i/30)..."
-            sleep 5
-          done
-          echo "Live accessibility assets did not propagate in time."
-          exit 1
+      - name: Verify deployed assets match checkout
+        run: node tests/wait-live-assets.mjs accessibility
       - name: Install Playwright Chromium
         run: |
           npm install playwright --no-save --no-fund --no-audit
