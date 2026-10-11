@@ -167,6 +167,22 @@ jobs:
               await page.screenshot({path:'clinical-template-qa/'+name+'.png',fullPage:true});
               assert.ok(overflow.scrollWidth<=overflow.innerWidth+2,'horizontal clipping '+name);
 
+              if(name==='desktop'){
+                const rejected=await ctx.newPage();
+                await rejected.route('**/clinical-template-demo-data.json',async route=>{
+                  const original=await route.fetch();
+                  const corrupted=await original.json();
+                  corrupted.monitoring.metrics[0].recent='not-a-number';
+                  await route.fulfill({response:original,json:corrupted});
+                });
+                const badResponse=await rejected.goto('https://kimse.suaveforge.com/clinical-template-lab.html',{waitUntil:'domcontentloaded',timeout:45000});
+                assert.equal(badResponse.status(),200);
+                await rejected.waitForFunction(()=>document.documentElement.dataset.clinicalTemplateReady==='error',{timeout:65000});
+                assert.match(await rejected.locator('#selectionStatus').innerText(),/INVALID_SYNTHETIC_FIXTURE_NUMBER/,'invalid source data must fail closed');
+                assert.equal(await rejected.locator('#clinicalPrintButton').isEnabled(),false,'invalid source must never enable PDF');
+                await rejected.close();
+                console.log('KIMSE_TEMPLATE_BAD_FIXTURE_REJECTED=yes');
+              }
               await ctx.close();
               console.log('KIMSE_TEMPLATE_SCREEN_PASS='+name);
             }
