@@ -12,6 +12,7 @@
   const day=ms=>new Date(ms).toISOString().slice(0,10);
   const pct=n=>Number.isFinite(n)?(n>0?'+':'')+(n*100).toFixed(1)+'%':'자료 없음';
   const charts=[];
+  let clinicalFixture=null;
   // Respect the device OS preference using native ECharts animation controls.
   const reducedMotion=()=>Boolean(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   let selectedSubset=null;
@@ -170,6 +171,42 @@
   // Tabler's published list-group component, not a new infographic.
   // Grouping preserves the exact recorded public source descriptions; no "met"
   // flags, clinical score, provider verification or electronic routing is inferred.
+  // Public-source triage is NOT a hospital form completion or eligibility check.
+  const OBSERVATION_STATUSES=new Set(['CAPTURE_DEPENDENT','CANDIDATE_USER_REPORT_ONLY',
+    'PARTIAL_HISTORY_CONTEXT','PARTIAL_USER_MEDICAL_CONTEXT','PARTIAL_USER_MEDICATION_HISTORY',
+    'SUPPLEMENTARY_NARRATIVE_CANDIDATE','RELATED_OBSERVATION_ONLY']);
+  function hasRelatedRecord(report,path){
+    const covered=id=>report.clinical_coverage?.some(x=>x.id===id&&x.status==='available');
+    const d=report.clinical_domains||{};
+    if(path==='previsit_summary'||path==='previsit_summary.handoff_reason')return Boolean(report.previsit_summary?.handoff_reason);
+    if(path==='previsit_summary.first_observed_change_at')return Boolean(report.previsit_summary?.first_observed_change_at);
+    if(path==='family_feedback')return covered('informant')&&report.family_feedback?.some(x=>Boolean(x.note));
+    if(path==='clinical_domains'||path==='clinical_domains.cognition')return covered('cognition')&&d.cognition?.status==='available';
+    if(path==='clinical_domains.subjective_change')return d.subjective_change?.status==='user_report_synthetic';
+    if(path==='clinical_domains.function_independence')return covered('function')&&d.function_independence?.status==='available';
+    if(path==='clinical_domains.safety_support')return d.safety_support?.status==='available';
+    if(path==='clinical_context')return report.clinical_context?.status==='available';
+    if(path==='clinical_context_events')return Array.isArray(report.clinical_context_events)&&report.clinical_context_events.length>0;
+    if(path==='risk_confounders')return covered('risk_confounders')&&report.risk_confounders?.status==='available';
+    if(path==='risk_confounders.current_medications')return Array.isArray(report.risk_confounders?.current_medications)&&report.risk_confounders.current_medications.length>0;
+    return false;
+  }
+  function researchClass(item,report){
+    if(item.status==='PUBLIC_CONTEXT_ONLY')return 'context';
+    if(!OBSERVATION_STATUSES.has(item.status))return 'external';
+    return item.related_paths?.some(path=>hasRelatedRecord(report,path))?'observation':'needs_capture';
+  }
+  function researchCounts(row,report){
+    const counts={observation:0,needs_capture:0,external:0,context:0,total:0};
+    for(const item of row?.requirement_groups||[]){counts[researchClass(item,report)]++;counts.total++}
+    return counts;
+  }
+  function researchOverview(counts){
+    if(!counts.total)return '기관 미선택 · 공개 조사 항목 분류 없음 · 수신 승인 0건';
+    return '조사 '+counts.total+'개 · 앱 관찰자료 참고 '+counts.observation+'개 · 추가 문답·관찰 필요 '+
+      counts.needs_capture+'개 · 외부 서류·의료진·승인 확인 '+counts.external+
+      '개 · 기관 소개 '+counts.context+'개 · 제출 요건 충족 판단 아님 · 수신 승인 0건';
+  }
   function renderHospitalRequirements(crosswalk,country,institutionId){
     const root=qs('hospitalRequirements'),message=qs('requirementsExplanation');
     root.replaceChildren();
@@ -179,10 +216,15 @@
     delete traceStatus.dataset.htmlSectionMapped;
     delete traceStatus.dataset.unlocated;
     const row=crosswalk.entries.find(item=>item.id===institutionId&&item.country===country);
+    const counts=researchCounts(row,clinicalFixture);
     qs('summaryProviderStatus').textContent=row?
-      '공개 안내 '+row.requirement_groups.length+'개 조사 · KIMSE 의료진·전자수신 승인 0건 · 기관별 의뢰서 및 검사 원본 별도 확인':
+      '공개 조사 '+counts.total+'개 · 외부 확인 '+counts.external+'개 · 관찰·문답 보완 '+
+      counts.needs_capture+'개 · 기관 접수 승인 0건':
       '의료기관 미선택 · 병원별 자료 요건 미확정 · 전자수신 승인 0건';
-
+    const brief=qs('researchTriageSummary');
+    brief.textContent=researchOverview(counts);
+    for(const key of ['observation','needs_capture','external','context','total'])
+      brief.dataset[key==='needs_capture'?'needsCapture':key]=String(counts[key]);
     const disclosure=qs('institutionEvidenceDisclosure'),disclosureSummary=qs('institutionEvidenceSummary');
     const evidenceKey=row?row.id:'';
     if(disclosure.dataset.institutionId!==evidenceKey){
@@ -212,12 +254,20 @@
     traceStatus.dataset.htmlSectionMapped=String(htmlLocated);
     traceStatus.dataset.unlocated=String(unlocated);
     for(const [index,item] of row.requirement_groups.entries()){
-      const isExternal=/EXTERNAL|AUTHORIZED|APPROVED_CHANNEL|PARTNER_APPROVAL|NOT_YET_SUPPORTED|INSTITUTION_REVIEW|UNIMPLEMENTED|PROFESSIONAL|CLINICIAN/.test(item.status);
+      const kind=researchClass(item,clinicalFixture);
+      const badgeLabels={
+        observation:['관련 관찰자료 있음 · 요건 충족 아님','bg-azure-lt'],
+        needs_capture:['관련 관찰·문답 미수집','bg-yellow-lt'],
+        external:['외부 서류·의료진·기관 확인','bg-yellow-lt'],
+        context:['기관 진료 소개 · 제출 요건 아님','bg-secondary-lt']
+      };
+      const display=badgeLabels[kind];
       const box=make('div','list-group-item px-0 py-3');
       const top=make('div','d-flex flex-wrap justify-content-between align-items-start gap-2');
       top.append(make('div','fw-semibold',String(index+1).padStart(2,'0')+' · '+item.wording));
-      top.append(make('span','badge '+(isExternal?'bg-yellow-lt':'bg-azure-lt'),
-        isExternal?'외부 확인·자료 필요':'관련 정보 후보 · 승인 전'));
+      top.append(make('span','badge '+display[1],display[0]));
+      box.dataset.researchClass=kind;
+      box.dataset.requirementId=item.id;
       box.append(top);
       const officialSourceUrl=item.source_url||row.source_url;
       const exactPdfPage=Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(officialSourceUrl);
@@ -334,6 +384,7 @@
     copy('printCoverage','summaryCoverage');
     qs('printClinicianQuestions').textContent=Array.from(qs('summaryClinicianQuestions').children).map(x=>x.textContent).join(' / ');
     copy('printProviderStatus','summaryProviderStatus');
+    copy('printResearchTriage','researchTriageSummary');
     const country=qs('country').value,institution=qs('institution').value;
     qs('printProfile').textContent=registry.regions.find(x=>x.code===country)?.label||'GLOBAL';
     const printRows=qs('printSummaryRows');printRows.replaceChildren();
@@ -457,12 +508,13 @@
     if(report.demo_marker!=='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT')throw Error('REAL_PATIENT_DATA_FORBIDDEN_IN_PUBLIC_DEMO');
     if(report.subject?.care_subject_id!=='SYNTHETIC_NO_REAL_PATIENT_ID')throw Error('PATIENT_ID_FORBIDDEN');
     validateSyntheticFixture(report);
+    clinicalFixture=report;
     if(!window.echarts)throw Error('CHART_COMPONENT_MISSING');
     const providerCount=registry.institutions.length;
     const researchGroups=crosswalk.entries.reduce((n,entry)=>n+entry.requirement_groups.length,0);
     if(crosswalk.entry_count!==providerCount||crosswalk.published_research_groups!==researchGroups)throw Error('PUBLISHED_REQUIREMENTS_COUNT_DRIFT');
     if(registry.institutions.some(item=>item.clinical_reviewer_approved||item.kimse_electronic_receiver_approved))throw Error('CLINICAL_APPROVAL_STATE_CONFLICT');
-    qs('demoVersion').textContent='Updated 2026.10.12 · Clinical Template Lab 07 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
+    qs('demoVersion').textContent='Updated 2026.10.12 · Clinical Template Lab 08 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
 
     const {updateInstitutions}=listControls(registry);
     const refreshProfile=()=>{renderProfile(registry,report);renderHospitalRequirements(crosswalk,qs('country').value,qs('institution').value);if(selectedSubset)renderPrintable(report,selectedSubset,registry,crosswalk)};
