@@ -18,18 +18,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Wait for live GovTech P0 assets
-        run: |
-          for i in $(seq 1 40); do
-            if curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.js?govqa=${GITHUB_SHA}-${i}" | grep -Fq '치매상담콜센터' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/govtech-p0.css?govqa=${GITHUB_SHA}-${i}" | grep -Fq '.gov-public-actions' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/premium-ux.css?govqa=${GITHUB_SHA}-${i}" | grep -Fq 'Release 39.5 · product-first universal readable floor' && \
-               curl -fsSL --max-time 10 "https://kimse.suaveforge.com/service-worker.js?govqa=${GITHUB_SHA}-${i}" | cmp -s service-worker.js -; then
-              exit 0
-            fi
-            sleep 5
-          done
-          exit 1
+      - name: Verify deployed assets match checkout
+        run: node tests/wait-live-assets.mjs govtech
       - name: Install Playwright Chromium
         run: |
           npm install playwright --no-save --no-fund --no-audit
