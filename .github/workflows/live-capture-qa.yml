@@ -29,8 +29,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Allow Pages to settle
-        run: sleep 25
+      - name: Verify deployed assets match checkout
+        run: node tests/wait-live-assets.mjs capture
       - name: Install Playwright Chromium
         run: |
           npm install playwright --no-save --no-fund --no-audit
