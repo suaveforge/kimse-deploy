@@ -709,3 +709,22 @@
 .large-text .kimse-question-source-body,.large-text .screen-voice-check .kimse-voice-recovery{font-size:20px}
 .high-contrast .kimse-question-source,.high-contrast .screen-voice-check .kimse-voice-recovery{border:3px solid #111;background:#fff;color:#111}
 .high-contrast .kimse-question-source-body strong,.high-contrast .screen-voice-check .kimse-voice-rec-help{color:#111}
+
+
+/* Make recorder failures recoverable without scrolling past the prompt. */
+.screen-voice-check .kimse-voice-recovery{margin:10px 0 15px;padding:15px 17px}
+.screen-voice-check .kimse-voice-recovery p{font-size:17px;line-height:1.5}
+.screen-voice-check .kimse-voice-retry{
+  display:block;width:100%;min-height:70px;margin:12px 0 9px;border:2px solid #126b55;border-radius:16px;
+  background:#117965;color:#fff;font-size:20px;font-weight:820;padding:14px 16px;line-height:1.4
+}
+.screen-voice-check .kimse-voice-recovery>details>summary{
+  display:flex;align-items:center;min-height:64px;font-size:17px;line-height:1.4;cursor:pointer;
+  color:#642c23;font-weight:750;text-decoration:underline;text-underline-offset:3px
+}
+.screen-voice-check .kimse-voice-retry:focus-visible,.screen-voice-check .kimse-voice-recovery>details>summary:focus-visible{
+  outline:3px solid #1155cc;outline-offset:3px
+}
+.large-text .screen-voice-check .kimse-voice-retry{min-height:80px;font-size:23px}
+.high-contrast .screen-voice-check .kimse-voice-retry{border:3px solid #111;background:#111;color:#fff}
+.high-contrast .screen-voice-check .kimse-voice-recovery>details>summary{color:#111}
