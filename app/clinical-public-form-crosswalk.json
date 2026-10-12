@@ -781,11 +781,9 @@
         {
           "id": "UHN-03",
           "wording": "Family/caregiver contact for appointment",
-          "related_paths": [
-            "family_feedback"
-          ],
-          "status": "RELATED_OBSERVATION_ONLY",
-          "limit": "Informant observation is not an authorized appointment contact",
+          "related_paths": [],
+          "status": "EXTERNAL_PATIENT_ADMINISTRATIVE_IDENTIFIERS_REQUIRED",
+          "limit": "Family narrative is not a contact name, phone number or appointment-contact authorization; KIMSE synthetic dataset has no caregiver contact identifiers.",
           "interpretation": "PUBLISHED_PHYSICIAN_REFERRAL_FORM_NOT_KIMSE_AUTHORIZED",
           "source_page": 1
         },

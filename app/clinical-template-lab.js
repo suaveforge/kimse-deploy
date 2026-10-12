@@ -13,6 +13,7 @@
   const pct=n=>Number.isFinite(n)?(n>0?'+':'')+(n*100).toFixed(1)+'%':'자료 없음';
   const charts=[];
   let clinicalFixture=null;
+  let officialSourceAudit=null;
   // Respect the device OS preference using native ECharts animation controls.
   const reducedMotion=()=>Boolean(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   let selectedSubset=null;
@@ -249,7 +250,7 @@
     const located=row.requirement_groups.filter(item=>Number.isInteger(item.source_page)&&item.source_page>0&&/\.pdf(?:\?|$)/i.test(item.source_url||row.source_url)).length;
     const htmlLocated=row.requirement_groups.filter(item=>item.source_locator_type==='HTML_SECTION_HEADING'&&typeof item.source_heading==='string'&&item.source_heading.trim()&&item.source_page===null&&!/\.pdf(?:\?|$)/i.test(item.source_url||row.source_url)).length;
     const unlocated=row.requirement_groups.length-located-htmlLocated;
-    traceStatus.textContent='원문 위치: 공식 PDF 쪽수 '+located+'개 · 공식 HTML 절 제목 '+htmlLocated+'개 · 상세 위치 미매핑 '+unlocated+'개 (조사 '+row.requirement_groups.length+'개). 원문 위치 검증은 기관의 제출 승인과 다릅니다.';
+    traceStatus.textContent='공개문서 조사 위치: PDF 쪽수 '+located+'개 · HTML 절 제목 '+htmlLocated+'개 · 미기록 '+unlocated+'개 (조사 '+row.requirement_groups.length+'개). HTML 절명·발췌 줄번호는 직접 링크가 아니며, 문서 최신판·병원 접수 승인을 보증하지 않습니다.';
     traceStatus.dataset.pdfPageMapped=String(located);
     traceStatus.dataset.htmlSectionMapped=String(htmlLocated);
     traceStatus.dataset.unlocated=String(unlocated);
@@ -283,6 +284,14 @@
       trace.dataset.requirementId=item.id;
       if(htmlHeading)trace.dataset.sourceHeading=item.source_heading;
       box.append(trace);
+      const pointer=officialSourceAudit.entries[item.id];
+      if(!pointer||pointer.provider!==row.id||pointer.verified_url!==officialSourceUrl)throw Error('CL06_GROUP_SOURCE_DRIFT_'+item.id);
+      const context=make('div','small text-secondary mt-1',
+        '공개문서 대조 위치: '+(pointer.locator_type==='PDF_PAGE'?'PDF ':'HTML 절 ')+pointer.pointer+
+        ' · 2026-10-12 조사 자료, 원문 개정·필드별 병원 승인은 별도 확인');
+      context.dataset.auditPointer=pointer.pointer;
+      context.dataset.requirementId=item.id;
+      box.append(context);
       if(item.related_paths.length)box.append(make('div','small text-secondary mt-1','연관된 데이터 경로: '+item.related_paths.join(' · ')));
       else box.append(make('div','small text-secondary mt-1','KIMSE 직접 대응 경로 없음 · 외부 문서/기관 별도 확인 필요'));
       if(item.limit)box.append(make('div','small mt-1',item.limit));
@@ -503,8 +512,14 @@
   }
   async function initialize(){
     if(!window.KIMSE_CLINICAL_PROFILES)throw Error('PROFILE_RESOLVER_MISSING');
-    const [registry,report,crosswalk]=await Promise.all([load('./clinical-profile-authorities.json'),load('./clinical-template-demo-data.json'),load('./clinical-public-form-crosswalk.json')]);
+    const [registry,report,crosswalk,sourceAudit]=await Promise.all([load('./clinical-profile-authorities.json'),load('./clinical-template-demo-data.json'),load('./clinical-public-form-crosswalk.json'),load('./clinical-cl06-source-map.json')]);
     if(crosswalk.status!=='PUBLIC_SOURCE_CROSSWALK_NOT_INSTITUTION_APPROVAL'||crosswalk.policy.verified_receivers!==0)throw Error('PUBLIC_FORM_CONTRACT_NOT_SAFE');
+    if(sourceAudit.status!=='OFFICIAL_PUBLIC_RESEARCH_NOT_KIMSE_AUTHORIZED'||sourceAudit.verified_receivers!==0||sourceAudit.group_count!==91||Object.keys(sourceAudit.entries).length!==91)throw Error('CL06_AUDIT_SOURCE_UNSAFE');
+    for(const p of crosswalk.entries)for(const g of p.requirement_groups){
+      const a=sourceAudit.entries[g.id];
+      if(!a||a.provider!==p.id||a.verified_url!==(g.source_url||p.source_url)||a.page!==(g.source_page||null))throw Error('CL06_AUDIT_CROSSWALK_DRIFT_'+g.id);
+    }
+    officialSourceAudit=sourceAudit;
     if(report.demo_marker!=='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT')throw Error('REAL_PATIENT_DATA_FORBIDDEN_IN_PUBLIC_DEMO');
     if(report.subject?.care_subject_id!=='SYNTHETIC_NO_REAL_PATIENT_ID')throw Error('PATIENT_ID_FORBIDDEN');
     validateSyntheticFixture(report);
