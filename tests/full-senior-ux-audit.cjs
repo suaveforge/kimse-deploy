@@ -176,6 +176,7 @@ async function verifyCoreVisualHierarchy(browser){
     try{
       await p.goto(base+sample.route,{waitUntil:'domcontentloaded',timeout:45000});
       await p.locator('.screen-'+sample.route).waitFor({timeout:16000});
+      if(sample.route==='caregiver-home'&&!sample.alert)await p.locator('.gov-care-summary').waitFor({timeout:16000});
       const found=await p.evaluate(s=>{
         const rect=el=>{const r=el?.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right}:null};
         const nav=document.querySelector('.bottom-nav'),navStyle=nav&&getComputedStyle(nav),alpha=navStyle?.backgroundColor||'';
@@ -603,7 +604,7 @@ const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));
 fs.writeFileSync('qa-artifacts/summary.json',JSON.stringify(summary,null,2));
-console.log('KIMSE_UX_AUDIT_RELEASE=20261012-coreux-06');
+console.log('KIMSE_UX_AUDIT_RELEASE=20261012-coreux-07');
 console.log('KIMSE_UX_AUDIT_TOTAL routes='+unique.length+' observations='+report.length);
 console.log('KIMSE_UX_AUDIT_SMALL_ROUTES='+summary.byRoute.filter(x=>x.smallTargets?.length).length);
 const failedScreens=report.filter(x=>x.error||x.unexpectedJsErrors?.length);
