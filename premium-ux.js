@@ -202,6 +202,11 @@ function enhanceBrainMap(screen){
     }
   }
 }
+function enhanceResearchEngine(screen){
+  screen.querySelectorAll('.research-factor-row em').forEach(label=>{
+    if(label.textContent.trim()==='개인 baseline')label.textContent='나의 평소 기준';
+  });
+}
 function enhance(){
   const screen=document.querySelector('#main');
   if(!screen||screen.dataset.premiumUx===VERSION)return;
@@ -210,6 +215,7 @@ function enhance(){
   else if(screen.classList.contains('screen-accessibility'))ready=enhanceAccessibility(screen);
   else if(screen.classList.contains('screen-brain-trends'))enhanceTrends(screen);
   else if(screen.classList.contains('screen-brain-map'))enhanceBrainMap(screen);
+  else if(screen.classList.contains('screen-research-engine'))enhanceResearchEngine(screen);
   else return;
   if(ready)screen.dataset.premiumUx=VERSION;
 }
