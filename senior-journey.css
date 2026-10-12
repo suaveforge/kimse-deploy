@@ -893,3 +893,14 @@
   .screen-brain-map .brain-focus-summary>span{text-align:left}
   .screen-assessment-start .page-title{font-size:25px}
 }
+
+/* 200% zoom / 220px equivalent: preserve single-column controls without sideways scroll. */
+@media(max-width:260px){
+  .screen-brain-map .brain-domain-tabs{grid-template-columns:minmax(0,1fr)!important;gap:7px!important}
+  .screen-brain-map .brain-domain-tabs>button:nth-child(5):last-child{grid-column:auto}
+  .screen-brain-map .brain-domain-tabs>button{min-width:0!important;max-width:100%;overflow-wrap:anywhere}
+  .screen-brain-map .brain-view-switch{display:grid;grid-template-columns:minmax(0,1fr);gap:7px}
+  .screen-brain-map .brain-view-switch button{min-width:0!important;max-width:100%}
+  .screen-brain-map .brain-focus-summary{padding:12px;min-width:0;overflow-wrap:anywhere}
+  .screen-brain-map .page-title{font-size:22px;overflow-wrap:anywhere}
+}
