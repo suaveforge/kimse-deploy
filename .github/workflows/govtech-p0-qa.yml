@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/govtech-p0-qa.yml'
+      - 'tests/wait-live-assets.mjs'
       - 'index.html'
       - 'service-worker.js'
       - 'premium-ux.css'
