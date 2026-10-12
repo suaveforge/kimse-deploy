@@ -826,3 +826,27 @@
 .large-text .screen-health .kimse-health-mood-options .answer{font-size:17px}
 .high-contrast .screen-health .kimse-health-mood{border-color:#444;background:#fff}
 .high-contrast .bottom-nav{background:#fff!important;border-top:2px solid #333}
+
+/* Caregiver home: first actionable status, then concise evidence summary. */
+.screen-caregiver-home .kimse-caregiver-primary{width:100%;margin:16px 0 18px;text-align:left;min-height:98px}
+.screen-caregiver-home .kimse-caregiver-idle{padding:17px 19px;margin:16px 0 18px;border:1px solid #c9e2d9;background:#eef8f3;border-radius:20px}
+.screen-caregiver-home .kimse-caregiver-idle strong{display:block;color:#104a39;font-size:19px;font-weight:850}
+.screen-caregiver-home .kimse-caregiver-idle p{margin:5px 0 0;font-size:16px;line-height:1.45;color:#416458}
+.screen-caregiver-home .kimse-caregiver-overview{padding:19px 18px;margin:0 0 22px;background:#fff;border:1px solid #dbe4e7;border-radius:22px;min-width:0}
+.screen-caregiver-home .kimse-caregiver-stage-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.screen-caregiver-home .kimse-caregiver-stage-heading h2{font-size:18px;font-weight:850;margin:0;color:#244f46}
+.screen-caregiver-home .kimse-caregiver-overview>h3{font-size:22px;line-height:1.35;margin:14px 0 8px;color:#102d3b;word-break:keep-all}
+.screen-caregiver-home .kimse-caregiver-overview>p{font-size:16px;line-height:1.55;color:#526a73;margin:0 0 12px}
+.screen-caregiver-home .kimse-caregiver-details{margin:0;border-top:1px solid #e3e8e8;padding-top:12px}
+.screen-caregiver-home .kimse-caregiver-details>summary{cursor:pointer;color:#11654e;font-size:16px;font-weight:800;min-height:48px;display:list-item;align-content:center}
+.screen-caregiver-home .kimse-caregiver-detail-content{display:grid;gap:10px;padding:8px 0}
+.screen-caregiver-home .kimse-caregiver-detail-content>div{border:1px solid #e1eae7;border-radius:15px;padding:12px 14px;background:#f8fbfa}
+.screen-caregiver-home .kimse-caregiver-detail-content strong{font-size:16px;color:#263d44}
+.screen-caregiver-home .kimse-caregiver-detail-content p{font-size:15px;line-height:1.5;margin:4px 0 0}
+.screen-caregiver-home .kimse-caregiver-quick{margin-bottom:24px}
+.screen-caregiver-home .kimse-caregiver-quick .card-grid{margin-top:12px}
+@media(max-width:360px){.screen-caregiver-home .kimse-caregiver-overview{padding:16px 14px}}
+.large-text .screen-caregiver-home .kimse-caregiver-stage-heading h2{font-size:20px}
+.large-text .screen-caregiver-home .kimse-caregiver-overview>p,
+.large-text .screen-caregiver-home .kimse-caregiver-idle p{font-size:19px}
+.high-contrast .screen-caregiver-home .kimse-caregiver-idle{background:#fff;border:2px solid #444}
