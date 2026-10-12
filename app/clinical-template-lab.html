@@ -13,6 +13,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
   <script defer src="./clinical-profile-resolver.js"></script>
   <script defer src="./clinical-template-lab.js"></script>
+  <script defer src="./clinical-60-second.js"></script>
 </head>
 <body>
 <div class="page">
@@ -199,6 +200,17 @@
           </div>
         </div>
 
+        <section class="card mt-3" aria-labelledby="clinical60sHeading">
+          <div class="card-header"><h2 class="card-title" id="clinical60sHeading">진료 전 60초 · 시간축과 자료 출처</h2><span class="ms-auto badge bg-azure-lt">합성 원자료 · 진단 아님</span></div>
+          <div class="card-body">
+            <p class="small text-secondary">같은 날짜에 둘 이상 신호가 기록된 날을 표시합니다. 동시 기록은 동시 악화·인과관계·치매 판정이 아닙니다.</p>
+            <p id="clinical60sOverlap" class="fw-semibold small" role="status" aria-live="polite">기록 동시성 계산 중</p>
+            <p id="clinical60sProfessional" class="small text-secondary">전문검사 원본 상태 확인 중</p>
+            <h3 class="h4 mt-3">선택 기간에 기록된 실제 사건</h3>
+            <div id="clinical60sTimeline" class="list-group list-group-flush" role="list" aria-label="합성 관찰 및 가족보고 사건 타임라인"></div>
+            <a class="btn btn-outline-primary btn-sm mt-3" href="#rawObservationsHeading">신호별 원자료·결측·측정방식 보기</a>
+          </div>
+        </section>
         <!-- Tabler upstream responsive table, never an independently invented infographic. -->
         <section class="card mt-3" aria-labelledby="rawObservationsHeading">
           <div class="card-header"><h2 class="card-title" id="rawObservationsHeading">기준선 · 원자료 · 수집 품질</h2><span class="ms-auto badge bg-azure-lt">합성 원자료 · 출처</span></div>
@@ -234,7 +246,7 @@
           <strong>사용한 공개 컴포넌트 및 출처:</strong> <a href="https://tabler.io/admin-template" target="_blank" rel="noopener noreferrer">Tabler Dashboard (MIT)</a> /
           <a href="https://echarts.apache.org/examples/en/index.html" target="_blank" rel="noopener noreferrer">Apache ECharts 공식 완성형 차트 갤러리 (Apache-2.0)</a>.
           ApexCharts 상용/OEM 별도 라이선스 구성요소는 사용하지 않습니다. 이 페이지는 <strong>템플릿 적합성 검증용</strong>입니다.
-          <span class="ms-2" id="demoVersion">Updated 2026.10.12 · Clinical Template Lab 08 · 공개자료 확인 중</span>
+          <span class="ms-2" id="demoVersion">Updated 2026.10.12 · Clinical Template Lab 09 · 공개자료 확인 중</span>
         </div>
       </div>
     </div>
@@ -277,6 +289,10 @@
     <div class="text-secondary small">KIMSE · SYNTHETIC CLINICAL REVIEW</div>
     <h1 class="h2 mt-1 mb-2">부록 · 출처·결측·원문 안내</h1>
     <p class="small text-secondary">별도 임상 판정 없이 동일한 합성 Canonical Dataset에서 파생된 수집 품질과 자료 경계입니다.</p>
+    <h2 class="h4 mt-2">진료 전 60초 · 시간축 및 동시 기록</h2>
+    <p id="print60sOverlap" class="small mb-1"></p>
+    <p id="print60sTimeline" class="small mb-1"></p>
+    <p id="print60sProfessional" class="small text-secondary mb-2"></p>
     <h2 class="h4 mt-3">원자료 수집 품질 및 출처</h2>
     <table class="table table-sm table-striped">
       <thead><tr><th scope="col">관찰 영역</th><th scope="col">측정 방식(합성)</th><th scope="col">기록일</th><th scope="col">미기록일</th><th scope="col">선택 기간</th></tr></thead>
