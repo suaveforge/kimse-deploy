@@ -170,7 +170,7 @@ function enhanceTrends(screen){
 function enhanceBrainMap(screen){
   const title=screen.querySelector('.page-title'),tabs=screen.querySelector('.brain-domain-tabs'),visual=screen.querySelector('.brain-visual-wrap'),summary=screen.querySelector('.brain-focus-summary'),views=screen.querySelector('.brain-view-switch'),actions=screen.querySelector('.hero-actions');
   if(!title||!tabs||!visual||!summary)return;
-  if(!screen.querySelector('.brain-page-desc'))title.after(make('p','page-desc brain-page-desc','기록된 생활·인지 변화를 기능 단위로 이해하기 쉽게 연결합니다.'));
+  if(!screen.querySelector('.brain-page-desc')&&!screen.querySelector('.page-desc'))title.after(make('p','page-desc brain-page-desc','기록된 생활·인지 변화를 기능 단위로 이해하기 쉽게 연결합니다.'));
   const icons={memory:'brain',executive:'target-arrow',language:'message-circle',spatial:'compass',daily:'home-heart'};
   tabs.querySelectorAll('button[data-brain-focus]').forEach(btn=>{
     const key=btn.dataset.brainFocus,label=clean(btn.textContent).replace(/^[^\p{L}\p{N}]+/u,'');
@@ -184,9 +184,10 @@ function enhanceBrainMap(screen){
   stage.innerHTML='<div class="brain-stage-kicker"><span>선택 기능</span><strong>'+selectedLabel+'</strong><em class="brain-stage-status">'+status+'</em></div>';
   visual.before(stage);stage.append(visual,summary);
   const oldStrong=summary.querySelector('strong'),oldSmall=summary.querySelector('small'),oldStatus=summary.querySelector(':scope > span');
-  const region=clean(oldSmall?.textContent).replace(/와 관련된 변화를 살펴봅니다\.?$/,'');
+  const region=clean(oldSmall?.textContent).split('와 관련된')[0].trim()||'관찰 영역';
+  const final=region.charCodeAt(region.length-1);const withParticle=final>=0xac00&&final<=0xd7a3&&((final-0xac00)%28)!==0?'과':'와';
   if(oldStrong&&oldSmall&&oldStatus){
-    summary.innerHTML='<div><small>'+region+'</small><strong>'+clean(oldStrong.textContent)+' 관련 변화</strong></div><span>'+clean(oldStatus.textContent)+'</span><p>'+region+'와 연결된 기록을 함께 살펴봅니다.</p>';
+    summary.innerHTML='<div><small>선택 기능과 관련된 영역</small><strong>'+region+'</strong></div><p>이 그림은 생활·인지 변화를 이해하기 위한 참고 지도입니다. 개인 진단 점수나 뇌영상 검사 결과가 아닙니다.</p>';
   }
   if(views){
     views.querySelectorAll('button').forEach(btn=>{btn.textContent=btn.dataset.brainView==='side'?'옆면 보기':'윗면 보기'});
