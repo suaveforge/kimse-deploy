@@ -19,7 +19,7 @@ permissions:
 jobs:
   clinical-handoff-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Check JavaScript syntax
@@ -36,6 +36,32 @@ jobs:
           const fs=require('fs'),path=require('path');
           const BASE='https://kimse.suaveforge.com/';
           const out=path.resolve('clinical-handoff-qa');
+          const crypto=require('crypto');
+          const sha256=data=>crypto.createHash('sha256').update(data).digest('hex');
+          // Pages deploy and QA start independently. Never verify stale live assets.
+          const expectedAssets=['app.js','clinical-submission.js'].map(name=>({
+            name,sha:sha256(fs.readFileSync(name))
+          }));
+          const waitForVerifiedPages=async()=>{
+            for(let attempt=0;attempt<60;attempt++){
+              const found=await Promise.all(expectedAssets.map(async asset=>{
+                try{
+                  const response=await fetch(BASE+asset.name+'?clinicalQaSha='+asset.sha.slice(0,16)+'&attempt='+attempt,
+                    {cache:'no-store',signal:AbortSignal.timeout(12000)});
+                  return response.ok&&sha256(Buffer.from(await response.arrayBuffer()))===asset.sha;
+                }catch{return false;}
+              }));
+              if(found.every(Boolean)){
+                console.log('KIMSE_CL11_DEPLOY_SOURCE_SHA_VERIFIED=yes',
+                  expectedAssets.map(x=>x.name+':'+x.sha).join(' '));
+                return;
+              }
+              if(attempt%6===0)console.log('KIMSE_CL11_AWAITING_PAGES_SHA attempt='+attempt,
+                'match='+JSON.stringify(found));
+              await new Promise(resolve=>setTimeout(resolve,5000));
+            }
+            throw Error('CL11_PAGES_DEPLOY_NOT_LIVE_EXACT_CHECKOUT_SHA');
+          };
           const check=(v,n,d='')=>{if(!v)throw Error(n+': '+d);console.log('PASS',n,d)};
           const metric=(metric,label,domain,base,recent,rawSource='test-source')=>({
             metric,clinical_label:label,domain,baseline:base,recent,relative_change:(recent-base)/Math.abs(base||1),changed:true,
@@ -94,6 +120,7 @@ jobs:
           };
           const state={version:13,account:{name:'QA',email:'qa@example.com'},intent:'self',self:true,care:false,mode:'self',caregivers:[],onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},consents:{service:false,privacy:false,health:false,microphone:false,location:false,motion:false,usage:false,notifications:false,caregiverShare:false},remote:{accountId:'',subjectId:'',selfSubjectId:'',careSubjects:[],activeCareSubjectId:'',token:''},monitoring:{pending:[],summary:null,alerts:[],lastObserved:{},daily:{}},clinicalReport:report,professionalOutcomes:report.professional_outcomes,a11y:{largeText:false,highContrast:false,voiceGuidance:false,soundEffects:false,captions:true,largeTouchTargets:true,colorIcons:true,screenReader:true,reduceMotion:false}};
           (async()=>{
+            await waitForVerifiedPages();
             const browser=await chromium.launch({headless:true});
             const ctx=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:1});
             await ctx.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),state);
