@@ -203,6 +203,8 @@ function enhanceBrainMap(screen){
   }
 }
 function enhanceResearchEngine(screen){
+  const title=screen.querySelector('.page-title');
+  if(title)title.innerHTML='새 근거와 내 기록을<br>함께 살펴봅니다';
   screen.querySelectorAll('.research-factor-row em').forEach(label=>{
     if(label.textContent.trim()==='개인 baseline')label.textContent='나의 평소 기준';
   });
