@@ -850,3 +850,46 @@
 .large-text .screen-caregiver-home .kimse-caregiver-overview>p,
 .large-text .screen-caregiver-home .kimse-caregiver-idle p{font-size:19px}
 .high-contrast .screen-caregiver-home .kimse-caregiver-idle{background:#fff;border:2px solid #444}
+
+/* KIMSE UX clarity pass 2026-10-12: senior-readable hierarchy without changing scoring. */
+.screen-assessment-start .page-title{font-size:clamp(26px,6.5vw,32px);line-height:1.27;letter-spacing:-.035em;word-break:keep-all;margin:5px 0 14px}
+.screen-assessment-start .page-desc{font-size:17px;line-height:1.58;color:#3b5d53;margin-bottom:16px;word-break:keep-all}
+.screen-assessment-start .context-chip{display:block;width:100%;margin:0 0 15px;padding:12px 14px;font-size:14px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;background:#eaf6f0;color:#285c4e;border-radius:14px}
+.screen-assessment-start .list-row{align-items:flex-start;padding:15px 16px;gap:9px;min-width:0}
+.screen-assessment-start .list-row strong{font-size:17px;line-height:1.45}
+.screen-assessment-start .list-row small{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.screen-assessment-start .notice{font-size:16px;line-height:1.55;padding:17px}
+.screen-assessment-start #begin{margin-top:8px}
+.screen-brain-map .page-title{font-size:clamp(25px,6.3vw,30px);line-height:1.28;word-break:keep-all}
+.screen-brain-map .page-desc{font-size:16px;line-height:1.55;color:#416259;word-break:keep-all;margin-bottom:14px}
+.screen-brain-map .brain-domain-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important;overflow:visible!important;scroll-snap-type:none!important;margin:12px 0 16px!important}
+.screen-brain-map .brain-domain-tabs>button{min-width:0!important;white-space:normal!important;min-height:64px!important;line-height:1.35!important;display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 9px!important;font-size:16px!important;border-radius:15px}
+.screen-brain-map .brain-domain-tabs>button span{font-size:20px;margin:0}
+.screen-brain-map .brain-domain-tabs>button:nth-child(5):last-child{grid-column:1/-1}
+.screen-brain-map .brain-focus-summary{margin:14px 0 12px;padding:16px;border-radius:16px;grid-template-columns:minmax(0,1fr) auto;gap:9px;background:#eef7f2;border:1px solid #d4e9de}
+.screen-brain-map .brain-focus-summary strong{font-size:19px;line-height:1.4;color:#173e33;word-break:keep-all}
+.screen-brain-map .brain-focus-summary>span{font-size:14px;line-height:1.35;color:#37584d;text-align:right}
+.screen-brain-map .brain-focus-summary small{font-size:15px;line-height:1.6;color:#3d5d52;word-break:keep-all}
+.screen-brain-map .brain-view-switch{gap:9px;margin-top:14px}
+.screen-brain-map .brain-view-switch button{font-size:16px!important;min-width:95px;border:1px solid #d1e0d8}
+.screen-brain-map .screen-footnote{font-size:14px;line-height:1.6;color:#546e62;word-break:keep-all}
+.screen-settings .page-title{margin-bottom:12px}
+.screen-settings .page-desc{font-size:16px;line-height:1.55}
+.screen-settings .kimse-settings-section{margin:22px 0 0}
+.screen-settings .kimse-settings-section h2{font-size:18px;line-height:1.4;font-weight:850;color:#174e3b;margin:0 0 10px;padding:0 3px}
+.screen-settings .kimse-settings-section .list{gap:8px}
+.screen-settings .kimse-settings-section .list-row{min-height:66px;padding:14px 16px;font-size:16px;line-height:1.45;word-break:keep-all}
+.screen-settings .kimse-settings-section .list-row:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.screen-home .baseline-two-week>small{font-size:14px;line-height:1.5;color:#3f6658}
+.screen-home .baseline-ring-center small{font-size:13px}
+.large-text .screen-brain-map .brain-domain-tabs>button{font-size:19px!important}
+.large-text .screen-brain-map .brain-focus-summary small,.large-text .screen-brain-map .screen-footnote{font-size:18px}
+.large-text .screen-assessment-start .context-chip{font-size:17px}
+.high-contrast .screen-brain-map .brain-focus-summary,.high-contrast .screen-assessment-start .context-chip{background:#fff;color:#111;border:2px solid #222}
+.high-contrast .screen-settings .kimse-settings-section h2{color:#000}
+@media(max-width:360px){
+  .screen-brain-map .brain-domain-tabs>button{font-size:15px!important;padding:10px 7px!important}
+  .screen-brain-map .brain-focus-summary{grid-template-columns:minmax(0,1fr);gap:5px}
+  .screen-brain-map .brain-focus-summary>span{text-align:left}
+  .screen-assessment-start .page-title{font-size:25px}
+}
