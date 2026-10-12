@@ -904,3 +904,41 @@
   .screen-brain-map .brain-focus-summary{padding:12px;min-width:0;overflow-wrap:anywhere}
   .screen-brain-map .page-title{font-size:22px;overflow-wrap:anywhere}
 }
+
+/* Brain map integration: prevent premium enhancement from squeezing senior copy. */
+.screen-assessment-start .list-row{white-space:nowrap}
+.screen-assessment-start .list-row>span{white-space:normal;min-width:0;flex:1 1 auto}
+.screen-brain-map .brain-map-stage{min-width:0;padding:16px 15px 18px}
+.screen-brain-map .brain-stage-kicker{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:7px!important;align-items:start}
+.screen-brain-map .brain-stage-kicker>span{grid-column:1;min-width:0}
+.screen-brain-map .brain-stage-kicker>strong{grid-column:1;display:block;min-width:0;max-width:100%;font-size:19px;line-height:1.4;overflow-wrap:anywhere}
+.screen-brain-map .brain-stage-kicker .brain-stage-status{grid-column:1;justify-self:start;max-width:100%;font-size:14px;white-space:normal;line-height:1.35}
+.screen-brain-map .brain-focus-summary{display:grid!important;grid-template-columns:minmax(0,1fr)!important;align-items:start!important;gap:8px!important;padding:17px 15px!important;margin-top:12px!important;min-width:0}
+.screen-brain-map .brain-focus-summary>div{min-width:0;grid-column:1;overflow-wrap:anywhere}
+.screen-brain-map .brain-focus-summary div small{font-size:15px!important;line-height:1.5!important}
+.screen-brain-map .brain-focus-summary div strong{font-size:19px!important;line-height:1.45!important;word-break:keep-all}
+.screen-brain-map .brain-focus-summary>span{grid-column:1;justify-self:start;padding:5px 10px;font-size:15px!important;line-height:1.4}
+.screen-brain-map .brain-focus-summary p{grid-column:1!important;font-size:16px!important;line-height:1.6!important;margin:0!important;color:#355b50!important;word-break:keep-all;overflow-wrap:anywhere}
+.screen-brain-map .brain-visual{display:block;width:100%!important;max-width:100%;height:auto!important;max-height:none!important;aspect-ratio:360/250}
+.screen-brain-map .brain-map-controls{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}
+.screen-brain-map .brain-map-controls .brain-view-switch{width:100%;min-width:0}
+.large-text .screen-brain-map .brain-focus-summary p{font-size:18px!important}
+.high-contrast .screen-brain-map .brain-focus-summary{background:#fff!important;border:2px solid #333!important}
+.high-contrast .screen-brain-map .brain-focus-summary p{color:#111!important}
+@media(max-width:360px){
+ .screen-brain-map .brain-map-stage{padding:13px 12px 16px}
+ .screen-brain-map .brain-focus-summary{padding:14px 12px!important}
+ .screen-brain-map .brain-focus-summary div strong{font-size:18px!important}
+}
+
+/* 2026-10-12: Keep clinical reference labels readable at senior text scale. */
+.screen-assessment-start .list-row{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 12px;white-space:normal}
+.screen-assessment-start .list-row>span{flex:1 1 175px;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.screen-assessment-start .list-row>strong,.screen-assessment-start .list-row>small{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.screen-assessment-start .context-chip{display:inline-flex;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+@media(max-width:360px){
+  .screen-assessment-start .list-row{flex-direction:column;align-items:stretch;gap:6px}
+  .screen-assessment-start .list-row>span{flex-basis:auto;width:100%}
+}
+.large-text .screen-assessment-start .list-row{line-height:1.6}
+.high-contrast .screen-assessment-start .list-row{color:#111}
