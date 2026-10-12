@@ -6,6 +6,8 @@ on:
       - 'tests/full-senior-ux-audit.cjs'
       - 'app.js'
       - 'app/app.js'
+      - 'senior-journey.css'
+      - 'app/senior-journey.css'
       - 'index.html'
       - 'app/index.html'
       - '.github/workflows/full-senior-ux-audit.yml'
