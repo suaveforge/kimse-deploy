@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         row.textContent=e.at.slice(0,10)+' · '+(e.kind==='INFORMANT_FEEDBACK'?'가족 보고':'앱 관찰')+' · '+(e.label||'내용 미수집');
         list.append(row);
       }
-      if(!events.length){const x=document.createElement('div');x.className='list-group-item small';x.textContent='선택 기간 별도 사건 미기록 (사건 부재 뜻 아님)';list.append(x)}
+      if(!events.length){const x=document.createElement('div');x.className='list-group-item small';x.setAttribute('role','listitem');x.textContent='선택 기간 별도 사건 미기록 (사건 부재 뜻 아님)';list.append(x)}
       list.dataset.eventCount=String(events.length);
       byId('print60sOverlap').textContent=sum.textContent;
       byId('print60sProfessional').textContent=pro.textContent;
