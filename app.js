@@ -387,7 +387,7 @@ function trendSeriesSvg(key=S.brainTrendDomain){
 const MIN_VOICE_SECONDS=30;
 let voiceRecorder=null,voiceStartedAt=0,voiceChunks=[],voiceStream=null,voiceTask=-1,voiceSaving=false,voiceTimer=null,voicePlaybackUrl=null;
 let voiceLastError='';
-function voiceError(message,code){voiceLastError=message+(code?' ['+String(code).slice(0,64)+']':'');feedback(message,'warning');}
+function voiceError(message,code){voiceLastError=message;if(code)console.warn('KIMSE_VOICE_ERROR',String(code).slice(0,64));feedback(message,'warning');}
 function voiceElapsed(){return Math.max(0,Math.floor((Date.now()-voiceStartedAt)/1000))}
 function updateVoiceTimer(){
   const elapsed=voiceElapsed(),clock=document.querySelector('#kimse-voice-clock'),button=document.querySelector('[data-voice-task]');
