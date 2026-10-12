@@ -790,3 +790,39 @@
 .high-contrast .screen-home .baseline-ring-progress{stroke:#02573f}
 .high-contrast .screen-home .baseline-two-week-steps>i.is-finished{background:#024e39}
 @media(prefers-reduced-motion:reduce){.screen-home .baseline-ring-progress{transition:none}}
+
+/* KIMSE health-first layout v2: daily recording before occasional clinical tasks. */
+.bottom-nav{background:#fff!important;backdrop-filter:none!important;box-shadow:0 -6px 24px rgba(12,43,52,.08)}
+.page:has(+ .bottom-nav){padding-bottom:calc(118px + env(safe-area-inset-bottom))}
+.screen-health .page-desc{margin-bottom:20px}
+.screen-health .kimse-health-section-title{font-size:21px;font-weight:850;line-height:1.3;color:#143e34;margin:0 0 13px}
+.screen-health .kimse-health-daily,
+.screen-health .kimse-health-mood,
+.screen-health .kimse-health-clinical{min-width:0;margin:0 0 25px}
+.screen-health .kimse-health-main-list{gap:10px}
+.screen-health .kimse-health-main-list>.list-row{width:100%;min-height:78px;text-align:left;gap:12px;padding:14px 16px}
+.screen-health .kimse-health-main-list>.list-row>span:first-child{min-width:0;flex:1}
+.screen-health .kimse-health-main-list>.list-row strong{font-size:18px}
+.screen-health .kimse-health-main-list>.list-row small{font-size:14px;line-height:1.4}
+.screen-health .kimse-health-value{display:inline-flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0;flex:0 1 auto;color:#135742}
+.screen-health .kimse-health-value strong{font-size:18px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.screen-health .kimse-health-mood{padding:19px 16px 17px;border:1px solid #dbe6e2;border-radius:22px;background:#f6faf8}
+.screen-health .kimse-health-mood-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.screen-health .kimse-health-mood-options .answer{min-width:0;min-height:96px;padding:12px 5px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:16px;font-weight:800;line-height:1.35;word-break:keep-all}
+.screen-health .kimse-health-mood-options .emoji{display:block;font-size:32px;line-height:1.1}
+.screen-health .kimse-health-clinical{padding-top:4px}
+.screen-health .kimse-health-clinical .list-row{min-height:78px;text-align:left}
+.screen-health .kimse-health-live{border-radius:17px;padding:13px 16px;margin-bottom:12px;background:#ecf8f2;border:1px solid #cce9dc;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.screen-health .kimse-health-live>span{font-size:15px;font-weight:750;color:#225442}
+.screen-health .kimse-health-live>strong{font-size:24px;font-weight:900;color:#116747}
+.screen-health .kimse-health-live>small{font-size:13px;color:#477362}
+@media(max-width:360px){
+ .screen-health .kimse-health-value strong{font-size:16px}
+ .screen-health .kimse-health-main-list>.list-row{padding-inline:12px}
+ .screen-health .kimse-health-mood-options .answer{font-size:15px}
+}
+.large-text .screen-health .kimse-health-main-list>.list-row{flex-wrap:wrap}
+.large-text .screen-health .kimse-health-value{margin-left:auto}
+.large-text .screen-health .kimse-health-mood-options .answer{font-size:17px}
+.high-contrast .screen-health .kimse-health-mood{border-color:#444;background:#fff}
+.high-contrast .bottom-nav{background:#fff!important;border-top:2px solid #333}
