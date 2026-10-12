@@ -166,7 +166,7 @@ async function verifyCoreVisualHierarchy(browser){
       localStorage.setItem('kimse.p0.state',JSON.stringify({
         version:14,account:{name:'실사용 점검',email:'qa@example.invalid'},intent:'both',self:true,care:true,mode:s.route==='caregiver-home'?'care':'self',
         onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
-        consents:{service:true,privacy:true,health:true,caregiverShare:false},
+        consents:{service:true,privacy:true,health:true,caregiverShare:!!s.alert},
         baseline:{startedAt:new Date(Date.now()-3*86400000).toISOString()},
         careOverview:{subjectId:'',summary:{status:'COLLECTING',changes:[]},stage:null,alerts:s.alert?[{id:'qa-alert',summary:'가족의 확인이 필요합니다.'}]:[]},
         a11y:{largeText:s.mode==='large',highContrast:s.mode==='contrast',largeTouchTargets:true}
@@ -604,7 +604,7 @@ const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));
 fs.writeFileSync('qa-artifacts/summary.json',JSON.stringify(summary,null,2));
-console.log('KIMSE_UX_AUDIT_RELEASE=20261012-coreux-07');
+console.log('KIMSE_UX_AUDIT_RELEASE=20261012-coreux-08');
 console.log('KIMSE_UX_AUDIT_TOTAL routes='+unique.length+' observations='+report.length);
 console.log('KIMSE_UX_AUDIT_SMALL_ROUTES='+summary.byRoute.filter(x=>x.smallTargets?.length).length);
 const failedScreens=report.filter(x=>x.error||x.unexpectedJsErrors?.length);
