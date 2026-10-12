@@ -89,16 +89,18 @@ async function verifyBaseline24HourMeter(browser){
     {hours:14*24+0.1,day:14,done:14,pct:100,complete:true,key:'day14-done'}
   ];
   for(const test of samples){
+    for(const display of (test.key==='day08-half' ? [{width:375,mode:'normal'},{width:320,mode:'normal'},{width:320,mode:'large'},{width:375,mode:'contrast'}] : [{width:375,mode:'normal'},{width:320,mode:'normal'}])){
     const start=new Date(Date.now()-test.hours*3600000).toISOString();
-    const ctx=await browser.newContext({viewport:{width:375,height:810},locale:'ko-KR',reducedMotion:'reduce',serviceWorkers:'block'});
-    await ctx.addInitScript(iso=>{
+    const ctx=await browser.newContext({viewport:{width:display.width,height:810},locale:'ko-KR',reducedMotion:'reduce',serviceWorkers:'block'});
+    await ctx.addInitScript(({iso,mode})=>{
       localStorage.setItem('kimse.p0.state',JSON.stringify({
         version:14,account:{name:'기준선 QA',email:'qa@example.invalid'},intent:'self',self:true,care:false,mode:'self',
         onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
         consents:{service:true,privacy:true,health:true},
-        baseline:{startedAt:iso}
+        baseline:{startedAt:iso},
+        a11y:{largeText:mode==='large',highContrast:mode==='contrast',largeTouchTargets:true,voiceGuidance:false,soundEffects:false}
       }));
-    },start);
+    },{iso:start,mode:display.mode});
     try{
       const p=await ctx.newPage();
       await p.goto(base+'home',{waitUntil:'domcontentloaded'});
@@ -111,10 +113,14 @@ async function verifyBaseline24HourMeter(browser){
         const arc=ring?.querySelector('[data-baseline-ring-progress]');
         const finished=document.querySelectorAll('.baseline-two-week-steps .is-finished').length;
         const b=ring.getBoundingClientRect();
+        const dayText=ring.querySelector('[data-baseline-ring-day]')?.getBoundingClientRect();
+        const card=ring.closest('.baseline-home-card')?.getBoundingClientRect();
         return {day:Number(ring.dataset.day),done:finished,complete:ring.dataset.complete==='true',
           pct:parseFloat(arc?.style.strokeDasharray||''),label:ring.getAttribute('aria-label'),
           remaining:document.querySelector('[data-baseline-ring-remaining]')?.textContent||'',
           finishedLabel:document.querySelector('[data-baseline-total-days]')?.textContent||'',
+          centered:dayText&&Math.abs((dayText.left+dayText.right-b.left-b.right)/2)<3,
+          cardCenterOffset:card?Math.abs((card.left+card.right-b.left-b.right)/2):Infinity,
           within:b.left>=-2&&b.right<=innerWidth+2,cardText:document.querySelector('.baseline-home-card')?.innerText||'',
           overflow:document.documentElement.scrollWidth>innerWidth+2};
       });
@@ -126,14 +132,21 @@ async function verifyBaseline24HourMeter(browser){
       assert(!measured.cardText.includes('${baselineClock.day}'),test.key+' home copy must interpolate actual day');
       assert(measured.cardText.includes(test.day+'일째 24시간을 채우는 중이에요.')||test.complete,test.key+' visible rolling-day explanation');
       assert(measured.finishedLabel.includes(test.done+' / 14일 완료'),test.key+' two-week labels');
-      assert(measured.within&&!measured.overflow,test.key+' ring fits mobile');
+      assert(measured.within&&!measured.overflow,test.key+' ring fits '+display.width+'px');
+      assert(measured.centered,test.key+' day label centered in ring at '+display.width+'px');
+      if(display.mode==='large')assert(measured.cardCenterOffset<3,'large-text ring centered in card');
       if(test.complete)assert(measured.cardText.includes('14일 시간 경과 완료'),test.key+' finished');
       else assert(!measured.cardText.includes('14일 시간 경과 완료'),test.key+' not complete early');
-      if(['day01-half','day08-half','day14-half'].includes(test.key))await p.screenshot({path:'qa-artifacts/screens/baseline-24h-'+test.key+'-375.png',fullPage:false});
-      console.log('KIMSE_BASELINE_24H_CHECK='+test.key+' day='+measured.day+' elapsed='+measured.done+'/14 ring='+measured.pct.toFixed(1)+'%');
+      if(['day01-half','day08-half','day14-half'].includes(test.key)||display.mode!=='normal')await p.screenshot({path:'qa-artifacts/screens/baseline-24h-'+test.key+'-'+display.width+'-'+display.mode+'.png',fullPage:false});
+      if(test.key==='day08-half'&&display.mode==='normal'){
+        const preview=await p.locator('.baseline-home-card').screenshot({path:'qa-artifacts/screens/baseline-24h-card-'+display.width+'.png'});
+        console.log('KIMSE_BASELINE_VISUAL_'+display.width+'='+preview.toString('base64'));
+      }
+      console.log('KIMSE_BASELINE_24H_CHECK='+test.key+' width='+display.width+' mode='+display.mode+' day='+measured.day+' elapsed='+measured.done+'/14 ring='+measured.pct.toFixed(1)+'%');
     }finally{await ctx.close()}
+    }
   }
-  console.log('KIMSE_BASELINE_24H_METER=PASS six boundaries, 14 full days, meter and day labeling');
+  console.log('KIMSE_BASELINE_24H_METER=PASS six boundaries at 320/375px plus large text and high contrast');
 }
 
 async function verifySeniorJourneys(browser){
@@ -519,7 +532,7 @@ const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));
 fs.writeFileSync('qa-artifacts/summary.json',JSON.stringify(summary,null,2));
-console.log('KIMSE_UX_AUDIT_RELEASE=20261010-uxaudit-03');
+console.log('KIMSE_UX_AUDIT_RELEASE=20261012-uxaudit-04');
 console.log('KIMSE_UX_AUDIT_TOTAL routes='+unique.length+' observations='+report.length);
 console.log('KIMSE_UX_AUDIT_SMALL_ROUTES='+summary.byRoute.filter(x=>x.smallTargets?.length).length);
 const failedScreens=report.filter(x=>x.error||x.unexpectedJsErrors?.length);
