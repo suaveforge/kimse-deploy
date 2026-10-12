@@ -121,7 +121,7 @@ jobs:
                   const details=document.querySelector('details.clinical-delivery-notes');
                   return details&&details.querySelectorAll('ol>li').length===count;
                 },target.requirement_groups.length,{timeout:12000});
-                const details=await p.locator('details.clinical-delivery-notes').innerText();
+                const details=await p.locator('details.clinical-delivery-notes').textContent();
                 check(details.includes(target.requirement_groups[0].wording),'original-wording-'+target.id);
                 check(await p.locator('#clinical-electronic-submit').isDisabled(),'unapproved-receiver-blocked-'+target.id);
                 if(target.id==='US-EMORY-COGNITIVE-NEUROLOGY')
