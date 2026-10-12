@@ -178,7 +178,7 @@ async function verifyCoreVisualHierarchy(browser){
       await p.locator('.screen-'+sample.route).waitFor({timeout:16000});
       const found=await p.evaluate(s=>{
         const rect=el=>{const r=el?.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right}:null};
-        const nav=document.querySelector('.bottom-nav'),navStyle=nav&&getComputedStyle(nav),alpha=navStyle?.backgroundColor?.match(/rgba?\\([^)]*\\)/)?.[0]||'';
+        const nav=document.querySelector('.bottom-nav'),navStyle=nav&&getComputedStyle(nav),alpha=navStyle?.backgroundColor||'';
         const daily=rect(document.querySelector('.kimse-health-daily'));
         const mood=rect(document.querySelector('.kimse-health-mood'));
         const clinical=rect(document.querySelector('.kimse-health-clinical'));
@@ -201,7 +201,7 @@ async function verifyCoreVisualHierarchy(browser){
         assert(found.dayChoices>=3&&found.moodChoices===3&&found.clinicalChoices===2,'all existing health actions remain reachable');
         if(sample.mode==='normal'&&sample.width===375){
           await p.locator('[data-health="sleep"]').click();
-          await p.waitForURL(/#\\/health-detail/,{timeout:12000});
+          await p.waitForURL(url=>url.hash==='#/health-detail',{timeout:12000});
           await p.goto(base+'health',{waitUntil:'domcontentloaded'});
           await p.locator('[data-mood="좋아요"]').click();
           assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}').mood),'좋아요','mood selection persists');
