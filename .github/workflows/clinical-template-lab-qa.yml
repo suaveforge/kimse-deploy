@@ -111,6 +111,25 @@ jobs:
                 assert.equal(Object.keys(auditMap.entries).length,91);
                 assert.equal(auditMap.verified_receivers,0);
                 assert.equal(research.institutions.length,11);
+                assert.equal(research.sources.length,9,'published 2026 Japan source metadata must coexist with historical 2017');
+                assert.equal(research.regions.length,7);
+                const clinicalRawBefore=await page.locator('#rawMetricRows tr').evaluateAll(rows=>rows.map(r=>Array.from(r.children).slice(0,4).map(c=>c.textContent.trim())));
+                for(const regional of research.regions){
+                  await page.locator('#country').selectOption(regional.code);
+                  const clinicalRawAfter=await page.locator('#rawMetricRows tr').evaluateAll(rows=>rows.map(r=>Array.from(r.children).slice(0,4).map(c=>c.textContent.trim())));
+                  assert.deepEqual(clinicalRawAfter,clinicalRawBefore,regional.code+' profile must not rewrite canonical observations');
+                  assert.ok(await page.locator('#sourceList [data-source-status]').count()>0,regional.code+' evidence review state not displayed');
+                }
+                await page.locator('#country').selectOption('JP');
+                assert.equal(await page.locator('#sourceList [data-source-status]').count(),2,'Japan 2026 metadata and historical 2017 must both be separately visible');
+                assert.equal(await page.locator('#sourceList [data-source-status="OFFICIALLY_PUBLISHED_2026_METADATA_ONLY_CONTENT_NOT_REVIEWED"]').count(),1,'published metadata cannot imply a reviewed clinical rule');
+                assert.match(await page.locator('#profileNote').innerText(),/2026년.*유료·미검토/);
+                assert.match(await page.locator('#sourceList').innerText(),/서지 확인 · 본문 권고 미검증/);
+                await page.locator('#country').selectOption('GB');
+                assert.equal(await page.locator('#sourceList [data-source-status="OFFICIAL_LIVE_GUIDANCE_REVIEWED_2025_10_NO_UPDATE"]').count(),1);
+                await page.locator('#country').selectOption('AU');
+                assert.match(await page.locator('#profileNote').innerText(),/초안 공청회.*최종판 여부/);
+
                 assert.equal(forms.entries.length,11);
                 assert.equal(forms.entries.reduce((sum,e)=>sum+e.requirement_groups.length,0),91);
                 assert.ok(research.institutions.every(i=>!i.clinical_reviewer_approved&&!i.kimse_electronic_receiver_approved));
