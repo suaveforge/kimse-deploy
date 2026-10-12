@@ -149,6 +149,76 @@ async function verifyBaseline24HourMeter(browser){
   console.log('KIMSE_BASELINE_24H_METER=PASS six boundaries at 320/375px plus large text and high contrast');
 }
 
+async function verifyCoreVisualHierarchy(browser){
+  const samples=[
+    {route:'health',width:320,mode:'normal',alert:false},
+    {route:'health',width:375,mode:'normal',alert:false},
+    {route:'health',width:320,mode:'large',alert:false},
+    {route:'health',width:375,mode:'contrast',alert:false},
+    {route:'caregiver-home',width:320,mode:'normal',alert:false},
+    {route:'caregiver-home',width:375,mode:'normal',alert:false},
+    {route:'caregiver-home',width:320,mode:'large',alert:false},
+    {route:'caregiver-home',width:375,mode:'contrast',alert:true}
+  ];
+  for(const sample of samples){
+    const ctx=await browser.newContext({viewport:{width:sample.width,height:810},reducedMotion:'reduce',serviceWorkers:'block'});
+    await ctx.addInitScript(s=>{
+      localStorage.setItem('kimse.p0.state',JSON.stringify({
+        version:14,account:{name:'실사용 점검',email:'qa@example.invalid'},intent:'both',self:true,care:true,mode:s.route==='caregiver-home'?'care':'self',
+        onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
+        consents:{service:true,privacy:true,health:true,caregiverShare:false},
+        baseline:{startedAt:new Date(Date.now()-3*86400000).toISOString()},
+        careOverview:{subjectId:'',summary:{status:'COLLECTING',changes:[]},stage:null,alerts:s.alert?[{id:'qa-alert',summary:'가족의 확인이 필요합니다.'}]:[]},
+        a11y:{largeText:s.mode==='large',highContrast:s.mode==='contrast',largeTouchTargets:true}
+      }));
+    },sample);
+    const p=await ctx.newPage();
+    try{
+      await p.goto(base+sample.route,{waitUntil:'domcontentloaded',timeout:45000});
+      await p.locator('.screen-'+sample.route).waitFor({timeout:16000});
+      const found=await p.evaluate(s=>{
+        const rect=el=>{const r=el?.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right}:null};
+        const nav=document.querySelector('.bottom-nav'),navStyle=nav&&getComputedStyle(nav),alpha=navStyle?.backgroundColor?.match(/rgba?\\([^)]*\\)/)?.[0]||'';
+        const daily=rect(document.querySelector('.kimse-health-daily'));
+        const mood=rect(document.querySelector('.kimse-health-mood'));
+        const clinical=rect(document.querySelector('.kimse-health-clinical'));
+        const action=rect(document.querySelector('.kimse-caregiver-primary,.kimse-caregiver-idle'));
+        const overview=rect(document.querySelector('.kimse-caregiver-overview'));
+        const quick=rect(document.querySelector('.kimse-caregiver-quick'));
+        const navRect=rect(nav);
+        return {daily,mood,clinical,action,overview,quick,navRect,alpha,
+          viewport:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth+2,
+          dayChoices:document.querySelectorAll('.kimse-health-main-list [data-health]').length,
+          moodChoices:document.querySelectorAll('.kimse-health-mood-options [data-mood]').length,
+          clinicalChoices:document.querySelectorAll('.kimse-health-clinical [data-go]').length,
+          feedbackButtons:document.querySelectorAll('.kimse-caregiver-primary[data-go="family-feedback"]').length};
+      },sample);
+      assert(!found.overflow,sample.route+' '+sample.width+'px must not overflow '+JSON.stringify(found));
+      assert(found.navRect&&found.alpha.includes('255, 255, 255')&&!found.alpha.includes('0.97'),sample.route+' navigation must have an opaque white surface '+found.alpha);
+      if(sample.route==='health'){
+        assert(found.daily&&found.mood&&found.clinical,'health sections exist');
+        assert(found.daily.top<found.navRect.top&&found.daily.bottom<found.mood.top&&found.mood.bottom<found.clinical.top,'daily recording must precede mood and clinical records');
+        assert(found.dayChoices>=3&&found.moodChoices===3&&found.clinicalChoices===2,'all existing health actions remain reachable');
+        if(sample.mode==='normal'&&sample.width===375){
+          await p.locator('[data-health="sleep"]').click();
+          await p.waitForURL(/#\\/health-detail/,{timeout:12000});
+          await p.goto(base+'health',{waitUntil:'domcontentloaded'});
+          await p.locator('[data-mood="좋아요"]').click();
+          assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('kimse.p0.state')||'{}').mood),'좋아요','mood selection persists');
+        }
+      }else{
+        assert(found.action&&found.overview&&found.quick,'caregiver summary sections exist');
+        assert(found.action.top<found.overview.top&&found.overview.top<found.quick.top,'caregiver action precedes evidence and tools');
+        assert(found.action.top<found.navRect.top,'caregiver next action within initial viewport');
+        assert.equal(found.feedbackButtons,sample.alert?1:0,'feedback only when there is a pending alert');
+      }
+      await p.screenshot({path:'qa-artifacts/screens/core-ux-'+sample.route+'-'+sample.width+'-'+sample.mode+(sample.alert?'-alert':'')+'.png',fullPage:false,animations:'disabled'});
+      console.log('KIMSE_CORE_UX_VISUAL_PASS '+sample.route+' '+sample.width+'px '+sample.mode+(sample.alert?' alert':''));
+    }finally{await ctx.close()}
+  }
+  console.log('KIMSE_CORE_UX_HIERARCHY=PASS 8 mobile senior scenarios, daily-first, caregiver-first, opaque navigation');
+}
+
 async function verifySeniorJourneys(browser){
   const c=await browser.newContext({viewport:{width:375,height:810},reducedMotion:'reduce'});
   await c.addInitScript(()=>{
@@ -522,6 +592,7 @@ const browser=await chromium.launch({headless:true});
 try{
 for(const d of states)for(const screen of unique)await run(browser,screen,d);
 await verifyBaseline24HourMeter(browser);
+await verifyCoreVisualHierarchy(browser);
 await verifySeniorJourneys(browser);
 await verifyHealthScheduleJourneys(browser);
 await verifyMedicalMarketProgressive(browser);
@@ -532,7 +603,7 @@ const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));
 fs.writeFileSync('qa-artifacts/summary.json',JSON.stringify(summary,null,2));
-console.log('KIMSE_UX_AUDIT_RELEASE=20261012-uxaudit-04');
+console.log('KIMSE_UX_AUDIT_RELEASE=20261012-coreux-05');
 console.log('KIMSE_UX_AUDIT_TOTAL routes='+unique.length+' observations='+report.length);
 console.log('KIMSE_UX_AUDIT_SMALL_ROUTES='+summary.byRoute.filter(x=>x.smallTargets?.length).length);
 const failedScreens=report.filter(x=>x.error||x.unexpectedJsErrors?.length);
