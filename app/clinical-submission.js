@@ -246,5 +246,76 @@
       ])
     });
   };
-  root.KIMSE_CLINICAL_SUBMISSION=Object.freeze({genericProfile,countryLabels,researchTargets,getTargets,getSelection,setSelection,evaluate,getRequirementsState,loadResearchRequirements,getResearchRequirements});
+
+  // CL11: Research-only readiness crosswalk for *each* official public group.
+  // This only distinguishes candidate KIMSE reference data from missing material
+  // and externally sourced documents. It NEVER marks a hospital requirement met.
+  const CLINICAL_GROUP_STATE=Object.freeze({
+    NO_DIRECT_APP_MAPPING:'앱의 직접 대응 필드 없음 · 외부 확인',
+    RELATED_CONTEXT_NOT_COLLECTED:'앱의 관련 기록 미수집·미확인',
+    APP_CONTEXT_REFERENCE_ONLY:'앱에 관련 참고 기록 있음 · 공식 자료 대체 불가'
+  });
+  const coverageForPath=Object.freeze({
+    'clinical_domains.function_independence':'function',
+    'clinical_domains.cognition':'cognition',
+    'family_feedback':'informant',
+    'professional_outcomes':'professional',
+    'professional_outcomes.validated_assessments':'professional',
+    'external_clinical_records':'professional',
+    'risk_confounders':'risk_confounders',
+    'risk_confounders.current_medications':'risk_confounders'
+  });
+  const hasActualValue=value=>{
+    if(value===null||value===undefined||value==='')return false;
+    if(typeof value==='number')return Number.isFinite(value); // 0 is a measured value.
+    if(typeof value==='string')return !!value.trim();
+    if(Array.isArray(value))return value.some(hasActualValue);
+    if(typeof value==='object')return Object.values(value).some(hasActualValue);
+    return typeof value==='boolean'; // false is a real observation, not "missing".
+  };
+  const pathHasRecord=(report,path)=>{
+    if(!report||typeof report!=='object'||typeof path!=='string')return false;
+    const allowed=/^(report_context|subject|previsit_summary|clinical_domains|risk_confounders|clinical_context|clinical_context_events|external_clinical_records|professional_outcomes|family_feedback|monitoring|alerts|timeline|cooccurrence|clinical_coverage)(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*$/;
+    if(!allowed.test(path))return false;
+    const coverageId=coverageForPath[path];
+    if(coverageId){
+      const status=(Array.isArray(report.clinical_coverage)?report.clinical_coverage:[]).find(x=>x?.id===coverageId)?.status;
+      if(status!=='available')return false;
+    }
+    const node=path.split('.').reduce((value,key)=>value&&typeof value==='object'?value[key]:undefined,report);
+    return hasActualValue(node);
+  };
+  const assessResearchRequirements=(report,institutionId)=>{
+    const research=getResearchRequirements(institutionId);
+    if(!research)return null;
+    const target=researchTargets.find(x=>x.id===institutionId);
+    const groups=research.requirementGroups.map(group=>{
+      const referencePaths=group.relatedPaths.filter(path=>pathHasRecord(report,path));
+      const uncollectedPaths=group.relatedPaths.filter(path=>!pathHasRecord(report,path));
+      const state=group.relatedPaths.length===0?'NO_DIRECT_APP_MAPPING':
+        referencePaths.length?'APP_CONTEXT_REFERENCE_ONLY':'RELATED_CONTEXT_NOT_COLLECTED';
+      return Object.freeze({
+        id:group.id,wording:group.wording,limit:group.limit,sourceStatus:group.status,
+        relatedPaths:group.relatedPaths,referencePaths:Object.freeze(referencePaths),
+        uncollectedPaths:Object.freeze(uncollectedPaths),state,
+        display:CLINICAL_GROUP_STATE[state],
+        hospitalApproved:false,formRequirementVerified:false,deliveryAuthorized:false,
+        requiresExternalConfirmation:true
+      });
+    });
+    const counts=Object.freeze({
+      researchGroups:groups.length,
+      appReferenceOnly:groups.filter(x=>x.state==='APP_CONTEXT_REFERENCE_ONLY').length,
+      relatedUncollected:groups.filter(x=>x.state==='RELATED_CONTEXT_NOT_COLLECTED').length,
+      noDirectMapping:groups.filter(x=>x.state==='NO_DIRECT_APP_MAPPING').length
+    });
+    return Object.freeze({
+      institutionId,sourceStatus:'PUBLIC_RESEARCH_ONLY',
+      routeConflict:!!target?.routeConflict,
+      institutionApproved:false,allRequirementsMet:false,submissionReady:false,
+      counts,groups:Object.freeze(groups)
+    });
+  };
+
+  root.KIMSE_CLINICAL_SUBMISSION=Object.freeze({genericProfile,countryLabels,researchTargets,getTargets,getSelection,setSelection,evaluate,getRequirementsState,loadResearchRequirements,getResearchRequirements,assessResearchRequirements});
 })(typeof window!=='undefined'?window:globalThis);
