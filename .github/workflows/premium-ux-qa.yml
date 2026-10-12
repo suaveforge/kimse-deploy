@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/premium-ux-qa.yml'
+      - 'tests/wait-live-assets.mjs'
       - 'index.html'
       - 'service-worker.js'
       - 'app.js'
