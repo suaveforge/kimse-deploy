@@ -39,7 +39,11 @@
         availability:report?presence(value):'demo_not_loaded',value:value===undefined?null:value};
     });
     const sourceIds=new Set(region.evidence);
-    const sources=registry.sources.filter(s=>sourceIds.has(s.id)).map(s=>({id:s.id,issuer:s.issuer,url:s.url,role:s.role,source_status:s.source_status,scope:s.authority_scope}));
+    if(sourceIds.size!==region.evidence.length)throw Error('DUPLICATE_PROFILE_AUTHORITY_SOURCE');
+    // Preserve region-level source priority: newly published editions must not be
+    // buried below historical guidelines merely because of registry insertion order.
+    const sources=region.evidence.map(id=>registry.sources.find(s=>s.id===id)).filter(Boolean)
+      .map(s=>({id:s.id,issuer:s.issuer,url:s.url,role:s.role,source_status:s.source_status,scope:s.authority_scope}));
     if(sources.length!==sourceIds.size)throw Error('PROFILE_MISSING_AUTHORITY_SOURCE');
     return {
       profile_id:region.code, profile_label:region.label, profile_status:'CANDIDATE_NEEDS_CLINICIAN_VALIDATION',
