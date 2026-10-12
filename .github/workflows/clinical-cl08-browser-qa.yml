@@ -1,0 +1,64 @@
+name: KIMSE CL08 Eight-Case Live Browser QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/clinical-cl08-scenarios.mjs'
+      - '.github/workflows/clinical-cl08-browser-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  eight-scenarios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium test runtime
+        run: |
+          npm install playwright@1.56.1 --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Validate real published UI for eight synthetic reports
+        run: |
+          cat > ./cl08-browser.cjs <<'NODE'
+          const {chromium}=require('playwright'),assert=require('node:assert/strict');
+          (async()=>{
+            const {clinical08Cases}=await import('./tests/clinical-cl08-scenarios.mjs');
+            const report=await (await fetch('https://kimse.suaveforge.com/clinical-template-demo-data.json')).json();
+            const cases=clinical08Cases(report);
+            assert.equal(cases.length,8);
+            const browser=await chromium.launch({headless:true});
+            const failures=[];
+            for(const {id,report:scenario} of cases){
+              const context=await browser.newContext({viewport:{width:1024,height:768},serviceWorkers:'block'});
+              const page=await context.newPage();
+              page.on('pageerror',err=>failures.push(id+': '+err.message));
+              await page.route('**/clinical-template-demo-data.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(scenario)}));
+              await page.goto('https://kimse.suaveforge.com/clinical-template-lab.html',{waitUntil:'domcontentloaded',timeout:45000});
+              await page.waitForFunction(()=>document.documentElement.dataset.clinicalTemplateReady!==undefined,{timeout:45000});
+              assert.equal(await page.evaluate(()=>document.documentElement.dataset.clinicalTemplateReady),'yes',id+' render fail');
+              await page.waitForFunction(()=>document.documentElement.dataset.clinical60Ready!==undefined,{timeout:12000});
+              assert.equal(await page.evaluate(()=>document.documentElement.dataset.clinical60Ready),'yes',id+' 60-second fail');
+              for(const days of ['7','14','28']){
+                await page.locator('#period').selectOption(days);
+                assert.equal(await page.locator('#clinical60sOverlap').getAttribute('data-selected-period-days'),days,id+' 60s period');
+                const observed=Number(await page.locator('#clinical60sOverlap').getAttribute('data-observed-days'));
+                assert.ok(observed>=0&&observed<=Number(days),id+' impossible recorded days');
+                assert.equal(await page.locator('#print60sOverlap').textContent(),await page.locator('#clinical60sOverlap').textContent(),id+' print mismatch');
+                assert.equal(await page.locator('#rawMetricRows tr').count(),6,id+' signal count');
+                assert.equal(await page.locator('#clinicalPrintButton').isEnabled(),true,id+' print readiness');
+              }
+              if(id==='C05_all_signals_uncollected'){
+                assert.equal(Number(await page.locator('#clinical60sOverlap').getAttribute('data-observed-days')),0);
+                assert.match(await page.locator('#rawMetricRows').innerText(),/미수집/);
+              }
+              if(id==='C06_no_informant')assert.match(await page.locator('#summaryFamily').innerText(),/미수집|없음|미확인/);
+              await context.close();
+              console.log('CL08_BROWSER_CASE_PASS='+id);
+            }
+            await browser.close();
+            assert.deepEqual(failures,[]);
+            console.log('CL08_LIVE_BROWSER_EIGHT_SCENARIOS_X_THREE_PERIODS_PASS=yes');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node cl08-browser.cjs
