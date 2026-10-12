@@ -1019,3 +1019,41 @@
 .high-contrast .screen-research-engine .research-source{
   background:#fff;border:2px solid #333
 }
+
+/* 2026-10-12 senior polish round 2: comfortable 320px source cards.
+   Never strand a Korean suffix or squeeze citations beside a stat tile. */
+.screen-evidence-proof .page-desc{
+  word-break:keep-all;overflow-wrap:break-word;line-height:1.52!important
+}
+@media(max-width:360px){
+  .screen-evidence-proof .page-desc{font-size:17px!important}
+  .screen-evidence-proof .evidence-story-card{
+    display:grid;grid-template-columns:minmax(0,1fr);gap:11px;padding:15px
+  }
+  .screen-evidence-proof .evidence-story-stat{
+    flex-direction:row;flex-wrap:wrap;align-items:baseline;
+    justify-content:flex-start;gap:6px 10px;
+    min-height:0;width:max-content;max-width:100%;padding:10px 14px
+  }
+  .screen-evidence-proof .evidence-story-stat strong{font-size:25px}
+  .screen-evidence-proof .evidence-story-stat span{margin-top:0}
+  .screen-evidence-proof .evidence-story-card>div:last-child>strong{
+    font-size:19px;line-height:1.34;word-break:keep-all
+  }
+  .screen-evidence-proof .evidence-story-conclusion{
+    grid-template-columns:29px minmax(0,1fr);gap:9px;padding:13px
+  }
+  .screen-evidence-proof .evidence-story-conclusion strong{
+    font-size:16px;line-height:1.5;word-break:keep-all
+  }
+}
+@media(min-width:361px) and (max-width:420px){
+  .large-text .screen-evidence-proof .evidence-story-card{
+    grid-template-columns:minmax(0,1fr);gap:10px
+  }
+  .large-text .screen-evidence-proof .evidence-story-stat{
+    flex-direction:row;align-items:baseline;gap:8px;
+    min-height:0;width:max-content;max-width:100%
+  }
+  .large-text .screen-evidence-proof .evidence-story-stat span{margin-top:0}
+}
