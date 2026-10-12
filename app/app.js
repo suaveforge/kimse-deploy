@@ -2591,10 +2591,17 @@ function clinicalDeliveryPreflight(report){
       if(route()==='clinical-handoff')render();
     });
   }
-  const publicGroups=target?gate?.getResearchRequirements?.(target.id)?.requirementGroups:null;
+  const researchReadiness=target?gate?.assessResearchRequirements?.(report,target.id):null;
+  const publicGroups=researchReadiness?.groups;
+  const researchCounts=researchReadiness?.counts;
+  const researchSummary=researchCounts
+    ?'<p role="status" class="clinical-delivery-disclaimer"><strong>선택 기관의 조사 항목 '+researchCounts.researchGroups+'개 준비 상태</strong> · 앱 참고 기록 있음 '+researchCounts.appReferenceOnly+' · 관련 기록 미수집 '+researchCounts.relatedUncollected+' · 앱 직접 대응 없음 '+researchCounts.noDirectMapping+'<br>이 분류는 자료 준비 도움말이며 병원 요구사항 충족률이나 제출 승인이 아닙니다. 외부 의료진·서류·수신권한 확인은 별도로 필요합니다.</p>':'';
   const publicRequirements=publicGroups
-    ?'<details class="clinical-delivery-notes"><summary>이 기관의 공식 공개자료 조사 '+publicGroups.length+'개 항목 자세히 보기 · 병원 승인 제출양식 아님</summary><ol>'
-      +publicGroups.map(item=>'<li><strong>'+esc(item.wording)+'</strong><div>'+esc(item.limit)+'</div></li>').join('')
+    ?researchSummary+'<details class="clinical-delivery-notes"><summary>이 기관의 공식 공개자료 조사 '+publicGroups.length+'개 항목 자세히 보기 · 병원 승인 제출양식 아님</summary><ol>'
+      +publicGroups.map(item=>'<li><strong>'+esc(item.wording)+'</strong><div>'+esc(item.display)+'</div><div>'+esc(item.limit)+'</div>'
+        +(item.referencePaths.length?'<small>낌새 관련 참고 필드: '+esc(item.referencePaths.join(', '))+' (공식 서류 대체 아님)</small>':'')
+        +(item.uncollectedPaths.length?'<small>미수집·확인 필요 필드: '+esc(item.uncollectedPaths.join(', '))+'</small>':'')
+        +'</li>').join('')
       +'</ol></details>'
     :target?'<p class="clinical-delivery-disclaimer">'+(gate?.getRequirementsState?.()==='UNAVAILABLE'
       ?'공개 원문 교차자료를 읽지 못했습니다. 자료 조회가 안 되어도 병원 전자제출은 차단됩니다.'
