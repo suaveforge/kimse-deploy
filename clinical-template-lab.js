@@ -41,17 +41,18 @@
     US:'알츠하이머협회 공개 권고사항을 참고했으며 미국 보험·병원 승인 서식이 아닙니다.',
     CA:'우려 증상에 대한 평가 지침을 참고한 후보이며 무증상자 일괄 선별검사와 다릅니다.',
     AU:'2016년 역사적 호주 일반진료 지침을 참고합니다. 2026년 개정 최종판 여부는 별도로 확인해야 합니다.',
-    JP:'2017년 일본 종합 치매지침을 참고합니다. 전문분야 추가 지침과 병원별 승인 요건은 별개입니다.'
+    JP:'2026년 일본신경학회 감수 지침 발행은 확인됐으나 전문 권고 본문은 유료·미검토입니다. 2017년판은 역사적 자료이며 병원 접수요건은 미승인입니다.'
   };
   const SOURCE_SCOPE_TEXT={
     'GLOBAL-HL7-IPS-2026':'국제 환자 요약 교환구조 참고자료이며 치매 전용 의뢰양식이 아닙니다.',
     'KR-KDA-2021':'국내 치매 진단·평가 지침 참고자료이며 개별 병원 접수양식이 아닙니다.',
     'KR-HL7K-CORE-2':'국내 FHIR 교환규격 참고자료이며 병원 전자수신을 보증하지 않습니다.',
-    'GB-NICE-NG97':'병력·인지·행동·일상기능과 가역원인 평가 지침이며 KIMSE의 전자접수 승인과 무관합니다.',
+    'GB-NICE-NG97':'NICE NG97은 2025년 10월 재검토 후 권고를 유지했습니다. 의료기관의 KIMSE 전자접수 승인은 아닙니다.',
     'US-AA-DETECD-2025':'본인·보호자 이력, 기능·안전·검사 평가 지침이며 낌새의 임상적 유효성 승인이 아닙니다.',
     'CA-CCCDTD5-2020':'증상 우려에 대한 의료평가와 타당화된 검사 권고를 참고하며 일괄 선별검사 지침이 아닙니다.',
-    'AU-RACGP-2016':'호주의 과거 일반진료 지침입니다. 후속 지침 개정 상태를 재확인해야 합니다.',
-    'JP-JSN-2017':'일본의 과거 종합 치매지침으로, 최신 전문 보충지침이나 병원 승인서식과 다릅니다.'
+    'AU-RACGP-2016':'2016년 호주 역사적 일반진료 지침입니다. 2026년 개정 초안 공청회는 종료됐으나 최종 채택판은 확인되지 않았습니다.',
+    'JP-JSN-2017':'2017년 일본 종합 지침은 2026년 개정판 발행으로 역사적 참고자료입니다. 최신 권고로 사용하지 않습니다.',
+    'JP-JSN-2026':'일본신경학회 감수 2026년판 발행(2026년 5월)은 출판사·국립국회도서관 서지로 확인했습니다. 전문 권고 내용은 검증하지 않았으며 이 출판정보만으로 임상 필드·병원 서식을 생성하지 않습니다.'
   };
   const SOURCE_MODE_TEXT={
     native_step_counter_simulation:'가상 걸음수 센서',
@@ -157,7 +158,9 @@
       const link=make('a','fw-semibold',s.issuer+' · '+s.id);link.href=s.url;link.target='_blank';link.rel='noopener noreferrer';
       const scope=make('div','text-secondary small mt-1',SOURCE_SCOPE_TEXT[s.id]||'원문 자료의 적용 범위를 개별 확인해야 합니다.');
       scope.dataset.sourceScope=s.scope;
-      box.append(link,scope);
+      const sourceState=make('div','small fw-semibold mt-1',s.role==='DEMENTIA_CLINICAL_GUIDELINE_METADATA_ONLY'?'서지 확인 · 본문 권고 미검증':'공개자료 참고 · 개별 병원 승인 아님');
+      sourceState.dataset.sourceStatus=s.source_status;
+      box.append(link,scope,sourceState);
       sourceList.append(box);
     });
     if(profile.institution){

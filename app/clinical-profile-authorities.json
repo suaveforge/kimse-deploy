@@ -2,7 +2,7 @@
   "schema_version": "2026-10-10.2",
   "status": "PUBLIC_EVIDENCE_CANDIDATES_NOT_PROVIDER_APPROVED",
   "scope": "Clinical handoff report profile display planning, not clinical diagnostic logic or authorized submission",
-  "reviewed_at": "2026-10-10",
+  "reviewed_at": "2026-10-12",
   "guarantees": [
     "One immutable Clinical Dataset across views",
     "No missing-to-normal coercion",
@@ -17,7 +17,7 @@
       "jurisdiction": "GLOBAL",
       "issuer": "HL7 International",
       "title": "International Patient Summary Implementation Guide 2.0.1",
-      "url": "https://hl7.org/fhir/uv/ips/2.0.1/en/Structure-of-the-International-Patient-Summary.html",
+      "url": "https://hl7.org/fhir/uv/ips/en/index.html",
       "year": 2026,
       "role": "INTEROPERABILITY_ONLY",
       "authority_scope": "Required IPS sections for cross-border summaries, NOT a dementia referral form or universal physician preference",
@@ -28,7 +28,7 @@
       "jurisdiction": "KR",
       "issuer": "Korean Dementia Association",
       "title": "Clinical Practice Guideline for Dementia (Diagnosis and Evaluation): 2021 Revised Edition",
-      "url": "https://pc.dnd.or.kr/search.php?code=0196DND&id=10.12779%2Fdnd.2022.21.1.42&vmode=FT&where=aview",
+      "url": "https://www.dementia.or.kr/bbs/?code=guideline",
       "year": 2022,
       "role": "DEMENTIA_CLINICAL_GUIDELINE",
       "authority_scope": "Korean national specialty clinical content guidance, not an individual hospital intake form",
@@ -54,7 +54,7 @@
       "year": 2018,
       "role": "DEMENTIA_CLINICAL_GUIDELINE",
       "authority_scope": "History from patient and informant, cognitive/behavioral/functional impact, tests and reversible causes; does not authorize a digital KIMSE submission",
-      "source_status": "OFFICIAL_LIVE_GUIDANCE"
+      "source_status": "OFFICIAL_LIVE_GUIDANCE_REVIEWED_2025_10_NO_UPDATE"
     },
     {
       "id": "US-AA-DETECD-2025",
@@ -76,7 +76,7 @@
       "year": 2020,
       "role": "DEMENTIA_CLINICAL_GUIDELINE",
       "authority_scope": "Informant essential, validated instruments for concern-triggered assessment; routine asymptomatic mass screening not recommended",
-      "source_status": "PUBLISHED_PRIMARY_GUIDELINE_NEEDS_CURRENTNESS_REVIEW"
+      "source_status": "PUBLISHED_2020_CURRENTNESS_REVIEW_PENDING"
     },
     {
       "id": "AU-RACGP-2016",
@@ -86,8 +86,8 @@
       "url": "https://www.racgp.org.au/afp/2016/december/clinical-practice-guidelines-and-principles-of-car",
       "year": 2016,
       "role": "DEMENTIA_CLINICAL_GUIDELINE",
-      "authority_scope": "History, informant, cognitive test, medication and reversible causes; historical GP guidance needs currency review",
-      "source_status": "OFFICIAL_HISTORICAL_NEEDS_CURRENTNESS_REVIEW"
+      "authority_scope": "History, informant, cognitive test, medication and reversible causes; historical GP guidance needs currency review; 2026 NHMRC/Monash consultation May–July 2026 confirmed, final adopted guidelines not verified; historical text not authoritative for future updates.",
+      "source_status": "OFFICIAL_HISTORICAL_2016_2026_DRAFT_CONSULTATION_ENDED_FINAL_UNVERIFIED"
     },
     {
       "id": "JP-JSN-2017",
@@ -97,8 +97,19 @@
       "url": "https://www.neurology-jp.org/guidelinem/dementia/index.html",
       "year": 2017,
       "role": "DEMENTIA_CLINICAL_GUIDELINE",
-      "authority_scope": "Japanese historical clinical guidance, not a verified current hospital requirement",
-      "source_status": "OFFICIAL_HISTORICAL_NOT_CURRENTLY_VERIFIED"
+      "authority_scope": "Historical 2017 Japanese dementia clinical guideline; 2026 revised edition was published May 2026. Do not describe 2017 as current. 2026 paid full-text recommendations have not been audited.",
+      "source_status": "OFFICIAL_HISTORICAL_SUPERSEDED_BY_2026_PUBLICATION"
+    },
+    {
+      "id": "JP-JSN-2026",
+      "jurisdiction": "JP",
+      "issuer": "Japanese Society of Neurology (supervising society); Igaku-Shoin (publisher)",
+      "title": "認知症疾患診療ガイドライン2026 (2026 revision of dementia clinical practice guideline)",
+      "url": "https://webview.isho.jp/book/detail/abs/10.11477/9784260665537",
+      "year": 2026,
+      "role": "DEMENTIA_CLINICAL_GUIDELINE_METADATA_ONLY",
+      "authority_scope": "Publisher metadata confirms May 2026 publication, ISBN 9784260065535, electronic edition June 2026. Full text requires licensed access; KIMSE has not verified its clinical recommendations or hospital acceptance. Do not derive new scores, cutoffs, clinical claims or referrer requirements from metadata.",
+      "source_status": "OFFICIALLY_PUBLISHED_2026_METADATA_ONLY_CONTENT_NOT_REVIEWED"
     }
   ],
   "fields": [
@@ -324,6 +335,7 @@
       "code": "JP",
       "label": "일본 인지저하 평가 후보",
       "evidence": [
+        "JP-JSN-2026",
         "JP-JSN-2017"
       ],
       "presentation_order": [
@@ -336,7 +348,7 @@
         "coverage_provenance",
         "longitudinal_signals"
       ],
-      "notes": "2017 society guideline is historical; current Japanese hospital-specific format NOT verified.",
+      "notes": "2026 revised Japanese Society of Neurology dementia guideline published May 2026 (publisher metadata verified); full text/field-level recommendations not reviewed. 2017 edition is historical, not current governing evidence; hospital-specific intake/receipt not verified.",
       "clinical_approval": "NOT_REVIEWED"
     }
   ],
