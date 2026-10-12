@@ -123,6 +123,19 @@ jobs:
                 },target.requirement_groups.length,{timeout:12000});
                 const details=await p.locator('details.clinical-delivery-notes').textContent();
                 check(details.includes(target.requirement_groups[0].wording),'original-wording-'+target.id);
+                const expectedWithoutDirect=target.requirement_groups.filter(g=>g.related_paths.length===0).length;
+                await p.waitForFunction(expected=>{
+                  const section=document.querySelector('.clinical-delivery-preflight');
+                  return !!section&&section.innerText.includes('선택 기관의 조사 항목 '+expected+'개 준비 상태');
+                },target.requirement_groups.length,{timeout:12000});
+                const readinessText=await p.locator('.clinical-delivery-preflight').innerText();
+                check(readinessText.includes('앱 직접 대응 없음 '+expectedWithoutDirect),
+                  'no-direct-clinical-field-gaps-'+target.id);
+                check(readinessText.includes('병원 요구사항 충족률이나 제출 승인이 아닙니다'),
+                  'public-research-is-not-approved-form-'+target.id);
+                check(readinessText.includes('관련 기록 미수집'),
+                  'actual-missingness-visible-'+target.id);
+
                 check(await p.locator('#clinical-electronic-submit').isDisabled(),'unapproved-receiver-blocked-'+target.id);
                 if(target.id==='US-EMORY-COGNITIVE-NEUROLOGY')
                   check((await p.locator('.clinical-delivery-preflight').innerText()).includes('접수경로 상충'),
