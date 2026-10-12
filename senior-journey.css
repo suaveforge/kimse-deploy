@@ -779,6 +779,12 @@
 }
 .large-text .screen-home .baseline-home-card{grid-template-columns:minmax(0,1fr) 112px}
 .large-text .screen-home .baseline-home-copy h3{font-size:23px}
+/* Keep enlarged text and the 24h ring legible on narrow phones. */
+@media(max-width:400px){
+  .large-text .screen-home .baseline-home-card{grid-template-columns:minmax(0,1fr)}
+  .large-text .screen-home .baseline-home-copy{grid-column:1;grid-row:1}
+  .large-text .screen-home .baseline-daily-meter{grid-column:1;grid-row:2;justify-self:center}
+}
 .large-text .screen-home .baseline-time-details>small{font-size:17px}
 .high-contrast .screen-home .baseline-ring-track{stroke:#ccc}
 .high-contrast .screen-home .baseline-ring-progress{stroke:#02573f}
