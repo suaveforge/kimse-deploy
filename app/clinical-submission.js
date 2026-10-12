@@ -128,6 +128,57 @@
     }
   ].map(x=>Object.freeze({...x,sourceStatus:'PUBLIC_RESEARCH_ONLY',kimseIntegration:'NOT_CONNECTED',hospitalApproved:false,clinicalReviewed:false,verifiedReceivingDepartment:false,verifiedClinician:false,approvedTransport:false}))); 
   let selection={country:'KR',institutionId:'',department:'',clinician:''};
+  let officialRequirements=null, requirementsPromise=null, requirementsState='NOT_LOADED';
+  const getRequirementsState=()=>requirementsState;
+  const getResearchRequirements=id=>{
+    const code=safeText(id??selection.institutionId,80);
+    if(!officialRequirements||!researchTargets.some(t=>t.id===code))return null;
+    return officialRequirements.get(code)||null;
+  };
+  const loadResearchRequirements=()=>{
+    if(requirementsState==='PUBLIC_RESEARCH_LOADED')return Promise.resolve(true);
+    if(requirementsPromise)return requirementsPromise;
+    if(typeof fetch!=='function'){
+      requirementsState='UNAVAILABLE';
+      return Promise.resolve(false);
+    }
+    requirementsState='LOADING';
+    requirementsPromise=fetch('./clinical-public-form-crosswalk.json',{credentials:'omit',cache:'no-store'})
+      .then(response=>{
+        if(!response.ok)throw Error('OFFICIAL_RESEARCH_UNAVAILABLE');
+        return response.json();
+      }).then(data=>{
+        if(data.status!=='PUBLIC_SOURCE_CROSSWALK_NOT_INSTITUTION_APPROVAL' ||
+           data.entry_count!==11||data.published_research_groups!==91||!Array.isArray(data.entries) ||
+           data.entries.length!==researchTargets.length)throw Error('INVALID_UNAPPROVED_RESEARCH_LEDGER');
+        const next=new Map();
+        for(const target of researchTargets){
+          const entry=data.entries.find(e=>e?.id===target.id);
+          if(!entry||entry.country!==target.country||entry.source_url!==target.url||
+             entry.approval_status==='APPROVED'||!Array.isArray(entry.requirement_groups)||
+             entry.requirement_groups.length!==target.publishedResearchGroups)throw Error('RESEARCH_LEDGER_DRIFT');
+          const requirements=entry.requirement_groups.map(g=>{
+            if(!g?.id||!g.wording||!g.limit||!g.status||
+               !Array.isArray(g.related_paths)||g.interpretation==='INSTITUTION_APPROVED')
+              throw Error('INVALID_RESEARCH_REQUIREMENT');
+            return Object.freeze({id:safeText(g.id,90),wording:safeText(g.wording,500),
+              limit:safeText(g.limit,500),status:safeText(g.status,110),
+              relatedPaths:Object.freeze(g.related_paths.map(x=>safeText(x,130)))});
+          });
+          next.set(target.id,Object.freeze({sourceStatus:'PUBLIC_RESEARCH_ONLY',
+            institutionId:target.id,requirementGroups:Object.freeze(requirements)}));
+        }
+        officialRequirements=next;
+        requirementsState='PUBLIC_RESEARCH_LOADED';
+        return true;
+      }).catch(()=>{
+        officialRequirements=null;
+        requirementsState='UNAVAILABLE';
+        return false;
+      });
+    return requirementsPromise;
+  };
+
   const safeText=(v,max=100)=>String(v??'').trim().slice(0,max);
   const getTargets=country=>researchTargets.filter(x=>x.country===country);
   const getSelection=()=>Object.freeze({...selection});
@@ -195,5 +246,5 @@
       ])
     });
   };
-  root.KIMSE_CLINICAL_SUBMISSION=Object.freeze({genericProfile,countryLabels,researchTargets,getTargets,getSelection,setSelection,evaluate});
+  root.KIMSE_CLINICAL_SUBMISSION=Object.freeze({genericProfile,countryLabels,researchTargets,getTargets,getSelection,setSelection,evaluate,getRequirementsState,loadResearchRequirements,getResearchRequirements});
 })(typeof window!=='undefined'?window:globalThis);
