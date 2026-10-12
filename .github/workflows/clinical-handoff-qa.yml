@@ -103,6 +103,35 @@ jobs:
             await p.waitForSelector('.screen-clinical-handoff',{timeout:15000});
             await p.waitForSelector('.clinical-explorer',{timeout:15000});
             check(await p.locator('#clinical-target-country').count()===1,'recipient-country-selector-present');
+            // CL11 original objective: the user can select all six researched countries,
+            // all eleven institution IDs, and inspect all 91 source groups in the actual
+            // patient page. None is a verified electronic receiver.
+            const publicCrosswalk=JSON.parse(fs.readFileSync('clinical-public-form-crosswalk.json','utf8'));
+            check(publicCrosswalk.entries.length===11,'eleven-public-research-providers');
+            check(publicCrosswalk.entries.reduce((n,e)=>n+e.requirement_groups.length,0)===91,'ninety-one-official-research-groups');
+            for(const country of ['KR','GB','US','CA','AU','JP']){
+              await p.locator('#clinical-target-country').selectOption(country);
+              const targets=publicCrosswalk.entries.filter(e=>e.country===country);
+              const values=await p.locator('#clinical-target-institution option').evaluateAll(nodes=>
+                nodes.map(n=>n.value).filter(Boolean));
+              check(values.length===targets.length,'provider-options-for-'+country);
+              for(const target of targets){
+                await p.locator('#clinical-target-institution').selectOption(target.id);
+                await p.waitForFunction(count=>{
+                  const details=document.querySelector('details.clinical-delivery-notes');
+                  return details&&details.querySelectorAll('ol>li').length===count;
+                },target.requirement_groups.length,{timeout:12000});
+                const details=await p.locator('details.clinical-delivery-notes').innerText();
+                check(details.includes(target.requirement_groups[0].wording),'original-wording-'+target.id);
+                check(await p.locator('#clinical-electronic-submit').isDisabled(),'unapproved-receiver-blocked-'+target.id);
+                if(target.id==='US-EMORY-COGNITIVE-NEUROLOGY')
+                  check((await p.locator('.clinical-delivery-preflight').innerText()).includes('접수경로 상충'),
+                    'Emory-conflicting-referral-route-is-not-authorized');
+              }
+            }
+            await p.locator('#clinical-target-country').selectOption('KR');
+            check(await p.locator('#clinical-target-institution').inputValue()==='','research-target-reset-before-main-test');
+
             check(await p.locator('#clinical-electronic-submit').isDisabled(),'no-approved-hospital-cannot-send');
             await p.locator('#clinical-target-country').selectOption('GB');
             await p.locator('#clinical-target-institution').selectOption('GB-DORSET-MAS');
