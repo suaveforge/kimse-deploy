@@ -146,7 +146,7 @@
       const item=make('div','list-group-item px-0 py-2');
       const head=make('div','d-flex justify-content-between align-items-start gap-2');
       head.append(make('span','fw-semibold',String(i+1).padStart(2,'0')+' · '+f.label));
-      const badge=make('span','badge '+(f.availability==='available'?'bg-blue-lt':'bg-secondary-lt'),f.availability==='available'?'합성값 있음':'미수집');
+      const badge=make('span','badge text-dark '+(f.availability==='available'?'bg-blue-lt':'bg-secondary-lt'),f.availability==='available'?'합성값 있음':'미수집');
       head.append(badge);
       const note=make('div','small text-secondary mt-1',GUARD_TEXT[f.guard]||'확인된 자료의 수집·검증 상태를 구분해 살펴봅니다.');
       note.dataset.guardCode=f.guard;
@@ -269,7 +269,7 @@
       const box=make('div','list-group-item px-0 py-3');
       const top=make('div','d-flex flex-wrap justify-content-between align-items-start gap-2');
       top.append(make('div','fw-semibold',String(index+1).padStart(2,'0')+' · '+item.wording));
-      top.append(make('span','badge '+display[1],display[0]));
+      top.append(make('span','badge text-dark '+display[1],display[0]));
       box.dataset.researchClass=kind;
       box.dataset.requirementId=item.id;
       box.append(top);
@@ -532,7 +532,7 @@
     const researchGroups=crosswalk.entries.reduce((n,entry)=>n+entry.requirement_groups.length,0);
     if(crosswalk.entry_count!==providerCount||crosswalk.published_research_groups!==researchGroups)throw Error('PUBLISHED_REQUIREMENTS_COUNT_DRIFT');
     if(registry.institutions.some(item=>item.clinical_reviewer_approved||item.kimse_electronic_receiver_approved))throw Error('CLINICAL_APPROVAL_STATE_CONFLICT');
-    qs('demoVersion').textContent='Updated 2026.10.12 · Clinical Template Lab 09 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
+    qs('demoVersion').textContent='Updated 2026.10.12 · Clinical Template Lab 10 · 공개조사 '+providerCount+'기관 · '+researchGroups+'개 연구 그룹 · 승인 0건';
 
     const {updateInstitutions}=listControls(registry);
     const refreshProfile=()=>{renderProfile(registry,report);renderHospitalRequirements(crosswalk,qs('country').value,qs('institution').value);if(selectedSubset)renderPrintable(report,selectedSubset,registry,crosswalk)};
