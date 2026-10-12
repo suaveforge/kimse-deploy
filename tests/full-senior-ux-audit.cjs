@@ -71,6 +71,28 @@ try{
     requiresAccess:/계정 확인|로그인이 필요|불러오는 중|먼저 연결/.test(text.slice(0,180)),
     textExcerpt:text.slice(0,400)};
  }));
+
+ if(screen==='assessment-start'){
+   await page.locator('#begin').waitFor({timeout:15000});
+   assert((await page.locator('.screen-assessment-start .page-title').innerText()).includes('인지건강 위험요인'),'Risk-check purpose must lead in Korean');
+   assert((await page.locator('.screen-assessment-start .context-chip').innerText()).includes('CAIDE'),'Keep original research model visible');
+   assert.equal(await page.locator('#begin').innerText(),'7가지 항목 확인하기','Risk-check primary action must explain what follows');
+ }
+ if(screen==='settings'){
+   assert.equal(await page.locator('.kimse-settings-section').count(),4,'Settings must have four labeled groups');
+   const links=await page.locator('.kimse-settings-section a.list-row').count();
+   assert(links>=13,'Settings must preserve every original link, observed '+links);
+ }
+ if(screen==='brain-map'){
+   assert.equal(await page.locator('.brain-domain-tabs button').count(),5,'Five observation areas must remain available');
+   const grid=await page.locator('.brain-domain-tabs').evaluate(el=>{
+     const items=[...el.querySelectorAll('button')];return {w:innerWidth,buttons:items.map(x=>{const b=x.getBoundingClientRect();return {left:b.left,right:b.right,width:b.width,display:getComputedStyle(x).display}})}
+   });
+   assert(grid.buttons.every(x=>x.left>=-1&&x.right<=grid.w+1&&x.width>=100),'Every brain domain control must be visible without hidden horizontal scroll at '+display.width+'px: '+JSON.stringify(grid));
+ }
+ if(['assessment-start','brain-map','settings'].includes(screen)&&(display.width===320||display.mode!=='normal')){
+   await page.screenshot({path:'qa-artifacts/screens/clarity-'+slug(screen)+'-'+display.width+'-'+display.mode+'.png',fullPage:true,animations:'disabled'});
+ }
  if(display.mode==='normal'&&display.width===375)await page.screenshot({path:'qa-artifacts/screens/'+slug(screen)+'-375.png',fullPage:true});
 }catch(e){result.error=String(e).slice(0,500)}
 result.unexpectedJsErrors=errors;
