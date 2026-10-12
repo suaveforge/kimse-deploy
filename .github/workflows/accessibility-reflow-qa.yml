@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/accessibility-reflow-qa.yml'
+      - 'tests/wait-live-assets.mjs'
       - 'app.js'
       - 'app.css'
       - 'accessibility-enhancements.css'
