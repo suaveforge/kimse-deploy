@@ -11,18 +11,122 @@
     allowedDelivery:'PRINT_OR_PATIENT_CARRIED_PDF',
     evidenceAnchors:Object.freeze([4,23,24,25,26,27,36])
   });
-  const countryLabels=Object.freeze({KR:'대한민국',GB:'영국',US:'미국'});
-  // These institutions are sourced from published professional-referral pages.
-  // NONE has approved KIMSE electronic submission or a clinician-specific profile.
+  const countryLabels=Object.freeze({KR:'대한민국',GB:'영국',US:'미국',CA:'캐나다',AU:'호주',JP:'일본'});
+  // Deterministic projection of clinical-profile-authorities.json / clinical-public-form-crosswalk.json.
+  // tools/smoke-clinical-submission.mjs asserts all 11 identities/91 groups match their canonical registry.
+  // The actual requirements and clinician-specific approvals remain external/unknown.
   const researchTargets=Object.freeze([
-    {id:'KR-SNUH-OUTPATIENT',country:'KR',name:'서울대학교병원 · 심층진찰·외래 안내 (일반)',specialty:'일반 진료의뢰 절차',url:'https://www.snuh.org/content/Q005001003.do'},
-    {id:'KR-AMC-NEURO-MEMORY',country:'KR',name:'서울아산병원 · 신경과 기억장애·치매클리닉',specialty:'신경과 · 기억장애·치매',url:'https://amcmg.amc.seoul.kr/asan/staff/base/staffBaseInfoDetail.do?drEmpId=d011eCtGRkxaS0dVSmY2TnJ4d1NKQT09&searchHpCd=D030'},
-    {id:'GB-DORSET-MAS',country:'GB',name:'Dorset HealthCare · Memory Assessment Service',specialty:'Memory Assessment',url:'https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals'},
-    {id:'GB-CNTW-MAMS',country:'GB',name:'Cumbria, Northumberland, Tyne and Wear · MAMS',specialty:'Memory Assessment',url:'https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet'},
-    {id:'GB-LEEDS-MAS',country:'GB',name:'Leeds and York Partnership · Memory Assessment',specialty:'Memory Assessment',url:'https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/'},
-    {id:'GB-NORTHUMBRIA',country:'GB',name:'Northumbria Healthcare · North Tyneside Memory Clinic',specialty:'Memory Clinic',url:'https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside'},
-    {id:'US-MAYO-NEURO',country:'US',name:'Mayo Clinic · Neurology Referrals',specialty:'Neurology',url:'https://www.mayoclinic.org/medical-professionals/neurology-neurosurgery/referrals'}
-  ].map(x=>Object.freeze({...x,sourceStatus:'PUBLIC_RESEARCH_ONLY',kimseIntegration:'NOT_CONNECTED',hospitalApproved:false,clinicalReviewed:false})));
+    {
+      "id": "KR-SNUH-OUTPATIENT",
+      "country": "KR",
+      "name": "서울대학교병원",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.snuh.org/content/Q005001003.do",
+      "publishedResearchGroups": 4,
+      "officialResearchStatus": "PUBLIC_RESEARCH_ONLY",
+      "routeConflict": false
+    },
+    {
+      "id": "KR-AMC-NEURO-MEMORY",
+      "country": "KR",
+      "name": "서울아산병원",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://amcmg.amc.seoul.kr/asan/staff/base/staffBaseInfoDetail.do?drEmpId=d011eCtGRkxaS0dVSmY2TnJ4d1NKQT09&searchHpCd=D030",
+      "publishedResearchGroups": 2,
+      "officialResearchStatus": "PUBLIC_RESEARCH_ONLY",
+      "routeConflict": false
+    },
+    {
+      "id": "GB-DORSET-MAS",
+      "country": "GB",
+      "name": "Dorset HealthCare NHS Memory Assessment",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "publishedResearchGroups": 19,
+      "officialResearchStatus": "PUBLIC_RESEARCH_ONLY",
+      "routeConflict": false
+    },
+    {
+      "id": "GB-CNTW-MAMS",
+      "country": "GB",
+      "name": "CNTW NHS MAMS",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "publishedResearchGroups": 8,
+      "officialResearchStatus": "PUBLIC_RESEARCH_ONLY",
+      "routeConflict": false
+    },
+    {
+      "id": "GB-LEEDS-MAS",
+      "country": "GB",
+      "name": "Leeds and York NHS Memory Assessment",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "publishedResearchGroups": 6,
+      "officialResearchStatus": "PUBLIC_RESEARCH_ONLY",
+      "routeConflict": false
+    },
+    {
+      "id": "GB-NORTHUMBRIA",
+      "country": "GB",
+      "name": "Northumbria NHS Memory Clinic",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside",
+      "publishedResearchGroups": 5,
+      "officialResearchStatus": "PUBLIC_RESEARCH_ONLY",
+      "routeConflict": false
+    },
+    {
+      "id": "US-MAYO-NEURO",
+      "country": "US",
+      "name": "Mayo Clinic Neurology Referrals",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.mayoclinic.org/medical-professionals/neurology-neurosurgery/referrals",
+      "publishedResearchGroups": 4,
+      "officialResearchStatus": "PUBLIC_RESEARCH_ONLY",
+      "routeConflict": false
+    },
+    {
+      "id": "CA-UHN-MEMORY-FORM",
+      "country": "CA",
+      "name": "University Health Network · Toronto Western Memory Clinic",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "publishedResearchGroups": 11,
+      "officialResearchStatus": "PUBLIC_REFERRAL_FORM_NO_KIMSE_APPROVAL",
+      "routeConflict": false
+    },
+    {
+      "id": "AU-NSW-HORNSBY-MEMORY",
+      "country": "AU",
+      "name": "Hornsby Ku-ring-gai Hospital Memory Clinic (Northern Sydney Local Health District)",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "publishedResearchGroups": 10,
+      "officialResearchStatus": "OFFICIAL_HOSPITAL_MEMORY_REFERRAL_GUIDE_NOT_APPROVED",
+      "routeConflict": false
+    },
+    {
+      "id": "JP-KYORIN-SUGINAMI-MEMORY",
+      "country": "JP",
+      "name": "Kyorin University Suginami Hospital Memory Clinic",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "publishedResearchGroups": 7,
+      "officialResearchStatus": "OFFICIAL_SPECIALTY_MEMORY_CLINIC_GUIDE_NOT_APPROVED",
+      "routeConflict": false
+    },
+    {
+      "id": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "country": "US",
+      "name": "Emory Healthcare Cognitive Neurology Clinic",
+      "specialty": "공개 진료·의뢰 자료 조사 (진료과 미승인)",
+      "url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "publishedResearchGroups": 15,
+      "officialResearchStatus": "OFFICIAL_PUBLIC_REFERRAL_UNRESOLVED_ROUTE_CONFLICT_NOT_KIMSE_APPROVED",
+      "routeConflict": true
+    }
+  ].map(x=>Object.freeze({...x,sourceStatus:'PUBLIC_RESEARCH_ONLY',kimseIntegration:'NOT_CONNECTED',hospitalApproved:false,clinicalReviewed:false,verifiedReceivingDepartment:false,verifiedClinician:false,approvedTransport:false}))); 
   let selection={country:'KR',institutionId:'',department:'',clinician:''};
   const safeText=(v,max=100)=>String(v??'').trim().slice(0,max);
   const getTargets=country=>researchTargets.filter(x=>x.country===country);
