@@ -2584,6 +2584,22 @@ function clinicalDeliveryPreflight(report){
   const institutions=option('','기관 선택 안 함 · 병원 직접 제출 미연동',!selection.institutionId)
     +targets.map(x=>option(x.id,x.name+' (공개 요건 조사)',x.id===selection.institutionId)).join('');
   const target=status?.selectedResearchTarget;
+  // The canonical hospital research crosswalk is loaded read-only from the same origin.
+  // It is never treated as an approved receiving contract; real submission stays disabled.
+  if(target&&gate?.getRequirementsState?.()==='NOT_LOADED'){
+    gate.loadResearchRequirements?.().then(()=>{
+      if(route()==='clinical-handoff')render();
+    });
+  }
+  const publicGroups=target?gate?.getResearchRequirements?.(target.id)?.requirementGroups:null;
+  const publicRequirements=publicGroups
+    ?'<details class="clinical-delivery-notes"><summary>이 기관의 공식 공개자료 조사 '+publicGroups.length+'개 항목 자세히 보기 · 병원 승인 제출양식 아님</summary><ol>'
+      +publicGroups.map(item=>'<li><strong>'+esc(item.wording)+'</strong><div>'+esc(item.limit)+'</div></li>').join('')
+      +'</ol></details>'
+    :target?'<p class="clinical-delivery-disclaimer">'+(gate?.getRequirementsState?.()==='UNAVAILABLE'
+      ?'공개 원문 교차자료를 읽지 못했습니다. 자료 조회가 안 되어도 병원 전자제출은 차단됩니다.'
+      :'선택한 기관의 공식 공개 항목과 낌새 임상정보 매핑을 조회하고 있습니다.')+'</p>':'';
+
   return '<section class="clinical-delivery-preflight" aria-labelledby="clinical-delivery-title">'
     +'<div class="clinical-delivery-top"><div><span class="clinical-delivery-kicker">SUBMISSION READINESS</span><h2 id="clinical-delivery-title">병원 제출 준비 상태</h2></div><strong class="clinical-delivery-badge">실제 병원 전자제출 미연동</strong></div>'
     +'<div class="clinical-target-controls" aria-label="진료 대상기관 조사 및 선택">'
@@ -2594,6 +2610,7 @@ function clinicalDeliveryPreflight(report){
     +'</div>'
     +(target?'<p class="clinical-delivery-disclaimer">선택 기관의 <a href="'+esc(target.url)+'" target="_blank" rel="noopener noreferrer">공식 의뢰 안내</a>는 공개 조사자료입니다. <strong>조사 그룹 '+Number(target.publishedResearchGroups||0)+'개는 승인된 필수 제출항목이 아닙니다.</strong> 병원·진료과·의료진별 제출요건과 KIMSE 수신권한은 미확인입니다.</p>'+(target.routeConflict?'<p class="clinical-delivery-disclaimer" role="alert"><strong>접수경로 상충:</strong> 이 기관의 공개자료에 서로 다른 제출경로가 있어 병원 공식 확인 전 제출이 차단됩니다.</p>':''):'<p class="clinical-delivery-disclaimer">이 목록은 실제 연동기관 목록이 아닙니다. 검증된 병원 수신기관은 현재 없습니다.</p>')
     +'<p class="clinical-delivery-disclaimer">공개자료 조사 범위: 6개국·11개 기관·91개 조사 그룹. 앱의 선택 목록은 병원 임상·서식·수신 승인을 의미하지 않습니다.</p>'
+    +publicRequirements
     +'<div class="clinical-delivery-grid"><div><span>현재 보고서</span><strong>'+(ready?'인쇄·PDF 준비됨':'출력 전 확인 필요')+'</strong><small>한국어 일반 진료용 · 환자가 직접 전달하는 형식</small></div><div><span>병원별 연결</span><strong>'+(target?'공개 의뢰 요건만 확인':'검증된 수신 기관 없음')+'</strong><small>기관별 필수항목·의료진 선호·전송 권한 미승인</small></div><div><span>병원 수신 확인</span><strong>접수 이력 없음</strong><small>전송 성공과 기관 수신·의료진 확인은 서로 다릅니다.</small></div></div>'
     +(blockers.length?'<div class="clinical-delivery-notes" role="status"><b>출력 전 확인</b><ul>'+list(blockers)+'</ul></div>':'')
     +(warnings.length?'<div class="clinical-delivery-notes"><b>자료 확인 권장</b><ul>'+list(warnings)+'</ul></div>':'')
