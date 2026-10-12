@@ -2,7 +2,7 @@ name: KIMSE Licensed Clinical Template Browser QA
 on:
   push:
     branches: [main]
-    paths: ['clinical-template-lab.html','clinical-template-lab.js','clinical-template-lab.css','clinical-template-print.css','clinical-profile-resolver.js','clinical-profile-authorities.json','clinical-public-form-crosswalk.json','clinical-template-demo-data.json','.github/workflows/clinical-template-lab-qa.yml']
+    paths: ['clinical-template-lab.html','clinical-template-lab.js','clinical-template-lab.css','clinical-template-print.css','clinical-profile-resolver.js','clinical-profile-authorities.json','clinical-public-form-crosswalk.json','clinical-cl06-source-map.json','clinical-template-demo-data.json','.github/workflows/clinical-template-lab-qa.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -107,6 +107,9 @@ jobs:
               if(name==='desktop'){
                 const research=JSON.parse(require('node:fs').readFileSync('clinical-profile-authorities.json','utf8'));
                 const forms=JSON.parse(require('node:fs').readFileSync('clinical-public-form-crosswalk.json','utf8'));
+                const auditMap=JSON.parse(require('node:fs').readFileSync('clinical-cl06-source-map.json','utf8'));
+                assert.equal(Object.keys(auditMap.entries).length,91);
+                assert.equal(auditMap.verified_receivers,0);
                 assert.equal(research.institutions.length,11);
                 assert.equal(forms.entries.length,11);
                 assert.equal(forms.entries.reduce((sum,e)=>sum+e.requirement_groups.length,0),91);
@@ -118,6 +121,9 @@ jobs:
                   await page.locator('#institution').selectOption(inst.id);
                   const officialGroup=forms.entries.find(entry=>entry.id===inst.id);
                   assert.ok(officialGroup,inst.id+' no canonical published source');
+                  const pointers=await page.locator('#hospitalRequirements [data-audit-pointer]').evaluateAll(nodes=>nodes.map(x=>({id:x.dataset.requirementId,pointer:x.dataset.auditPointer})));
+                  const exactPointers=officialGroup.requirement_groups.map(x=>({id:x.id,pointer:auditMap.entries[x.id].pointer}));
+                  assert.deepEqual(pointers,exactPointers,inst.id+' per-field official source proof must match research source map');
                   const groupClasses=await page.locator('#hospitalRequirements > [data-research-class]').evaluateAll(nodes=>nodes.map(x=>x.dataset.researchClass));
                   assert.equal(groupClasses.length,officialGroup.requirement_groups.length,inst.id+' must classify every official research item');
                   assert.ok(groupClasses.every(v=>['observation','needs_capture','external','context'].includes(v)),inst.id+' unknown evidence triage category');
