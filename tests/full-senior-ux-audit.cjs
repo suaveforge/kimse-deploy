@@ -182,7 +182,7 @@ async function verifyCoreVisualHierarchy(browser){
         const daily=rect(document.querySelector('.kimse-health-daily'));
         const mood=rect(document.querySelector('.kimse-health-mood'));
         const clinical=rect(document.querySelector('.kimse-health-clinical'));
-        const action=rect(document.querySelector('.kimse-caregiver-primary,.kimse-caregiver-idle'));
+        const action=rect(document.querySelector('.kimse-caregiver-primary,.kimse-caregiver-idle,.gov-care-summary'));
         const overview=rect(document.querySelector('.kimse-caregiver-overview'));
         const quick=rect(document.querySelector('.kimse-caregiver-quick'));
         const navRect=rect(nav);
@@ -603,7 +603,7 @@ const summary={routes:unique.length,observations:report.length,
  byRoute:unique.map(name=>{const subset=report.filter(x=>x.route===name),a=subset.find(x=>x.width===375&&x.mode==='normal')||subset[0];return {route:name,fields:a.visibleFieldCount,selects:a.selectCount,checkboxes:a.checkboxCount,buttons:a.buttonCount,scrollH:a.scrolly,jargon:a.jargon,wordLeak:a.wordLeak,smallTargets:a.smallTargets,headline:a.h1,uiErrors:a.unexpectedJsErrors,error:a.error,acrossViews:subset.map(x=>({w:x.width,mode:x.mode,h:x.scrolly,overflow:x.scrollx>x.viewW+2,buttons:x.buttonCount,fields:x.visibleFieldCount,small:x.smallTargets?.length||0}))}})};
 fs.writeFileSync('qa-artifacts/full-ux-audit.json',JSON.stringify({summary,report},null,2));
 fs.writeFileSync('qa-artifacts/summary.json',JSON.stringify(summary,null,2));
-console.log('KIMSE_UX_AUDIT_RELEASE=20261012-coreux-05');
+console.log('KIMSE_UX_AUDIT_RELEASE=20261012-coreux-06');
 console.log('KIMSE_UX_AUDIT_TOTAL routes='+unique.length+' observations='+report.length);
 console.log('KIMSE_UX_AUDIT_SMALL_ROUTES='+summary.byRoute.filter(x=>x.smallTargets?.length).length);
 const failedScreens=report.filter(x=>x.error||x.unexpectedJsErrors?.length);
