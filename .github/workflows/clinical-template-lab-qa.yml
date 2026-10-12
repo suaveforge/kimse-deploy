@@ -123,6 +123,7 @@ jobs:
                 await page.locator('#country').selectOption('JP');
                 assert.equal(await page.locator('#sourceList [data-source-status]').count(),2,'Japan 2026 metadata and historical 2017 must both be separately visible');
                 assert.equal(await page.locator('#sourceList [data-source-status="OFFICIALLY_PUBLISHED_2026_METADATA_ONLY_CONTENT_NOT_REVIEWED"]').count(),1,'published metadata cannot imply a reviewed clinical rule');
+                assert.match(await page.locator('#sourceList a').first().innerText(),/JP-JSN-2026/,'latest publication metadata shown before superseded historical edition');
                 assert.match(await page.locator('#profileNote').innerText(),/2026년.*유료·미검토/);
                 assert.match(await page.locator('#sourceList').innerText(),/서지 확인 · 본문 권고 미검증/);
                 await page.locator('#country').selectOption('GB');
