@@ -112,7 +112,7 @@ async function verifyBaseline24HourMeter(browser){
         const finished=document.querySelectorAll('.baseline-two-week-steps .is-finished').length;
         const b=ring.getBoundingClientRect();
         return {day:Number(ring.dataset.day),done:finished,complete:ring.dataset.complete==='true',
-          pct:Number((arc?.style.strokeDasharray||'').split(' ')[0]),label:ring.getAttribute('aria-label'),
+          pct:parseFloat(arc?.style.strokeDasharray||''),label:ring.getAttribute('aria-label'),
           remaining:document.querySelector('[data-baseline-ring-remaining]')?.textContent||'',
           finishedLabel:document.querySelector('[data-baseline-total-days]')?.textContent||'',
           within:b.left>=-2&&b.right<=innerWidth+2,cardText:document.querySelector('.baseline-home-card')?.innerText||'',
@@ -123,6 +123,8 @@ async function verifyBaseline24HourMeter(browser){
       assert.equal(measured.complete,test.complete,test.key+' completion only after 336 hours');
       assert(Math.abs(measured.pct-test.pct)<1.2,test.key+' ring stroke reflects elapsed hours '+JSON.stringify(measured));
       assert(measured.label.includes(test.day+'일째')&&measured.label.includes('24시간'),test.key+' hour/day label');
+      assert(!measured.cardText.includes('${baselineClock.day}'),test.key+' home copy must interpolate actual day');
+      assert(measured.cardText.includes(test.day+'일째 24시간을 채우는 중이에요.')||test.complete,test.key+' visible rolling-day explanation');
       assert(measured.finishedLabel.includes(test.done+' / 14일 완료'),test.key+' two-week labels');
       assert(measured.within&&!measured.overflow,test.key+' ring fits mobile');
       if(test.complete)assert(measured.cardText.includes('14일 시간 경과 완료'),test.key+' finished');
