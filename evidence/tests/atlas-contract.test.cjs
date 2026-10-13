@@ -68,7 +68,7 @@ assert.equal(data.institutions.filter(x=>x.stage==='AUTOMATED_ACK_ONLY').length,
 assert.equal(data.institutions.filter(x=>x.stage==='INFORMATION_REQUEST_SENT').length,data.contacts.outreachSent-data.contacts.formalFOIRegistered-data.contacts.automatedAckOnly-data.contacts.researchMethodsReply,'sent and waiting derived from actual transport evidence');
 assert.equal(data.institutions.filter(x=>x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED').length,1,'methodology-only reply');
 assert.equal(data.institutions.filter(x=>x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED').length,4,'approved and still not submitted');
-assert.equal(data.institutions.filter(x=>x.progress.contactStatus==='IDENTIFIED_NOT_CONTACTED').length,61,'uncontacted total');
+assert.equal(data.institutions.filter(x=>x.progress.contactStatus==='IDENTIFIED_NOT_CONTACTED').length,data.contacts.uncontacted,'uncontacted total matches current transport ledger');
 assert.equal(data.institutions.filter(x=>x.progress.formalFOIRef).length,data.contacts.formalFOIRegistered,'verifiable formal references match live acknowledgement ledger');
 const routeReady=data.institutions.filter(x=>x.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT');
 assert.equal(routeReady.length,data.routeReview20261013.verifiedFirstEnquiryUnsent,'official first-enquiry P0 routing count must match evidence-backed review');
