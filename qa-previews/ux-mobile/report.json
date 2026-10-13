@@ -12,7 +12,8 @@
         "💊",
         "💚"
       ],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "collection-status-320-normal",
@@ -49,6 +50,7 @@
       "actionsBottom": 564.734375,
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "details": false
     },
     {
@@ -59,7 +61,8 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
-      "note": "비교할 생활기록을 모으고 있습니다."
+      "pending": "자료 수집 중평소와 비교할 생활기록이 아직 충분하지 않습니다.현재 확인생활기록 비교 준비 중",
+      "decorativeJourney": false
     },
     {
       "key": "baseline-320-normal",
@@ -69,6 +72,7 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "baseline": "14일 관찰 · 2일째"
     },
     {
@@ -78,7 +82,8 @@
       "h": 720,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "training-320-normal",
@@ -87,7 +92,8 @@
       "h": 720,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "medication-320-normal",
@@ -96,7 +102,8 @@
       "h": 720,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "settings-320-normal",
@@ -105,7 +112,8 @@
       "h": 720,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "report-320-normal",
@@ -114,7 +122,8 @@
       "h": 720,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "home-375-normal",
@@ -128,7 +137,8 @@
         "💊",
         "💚"
       ],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "collection-status-375-normal",
@@ -165,6 +175,7 @@
       "actionsBottom": 527.59375,
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "details": false
     },
     {
@@ -175,7 +186,8 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
-      "note": "비교할 생활기록을 모으고 있습니다."
+      "pending": "자료 수집 중평소와 비교할 생활기록이 아직 충분하지 않습니다.현재 확인생활기록 비교 준비 중",
+      "decorativeJourney": false
     },
     {
       "key": "baseline-375-normal",
@@ -185,6 +197,7 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "baseline": "14일 관찰 · 2일째"
     },
     {
@@ -194,7 +207,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "training-375-normal",
@@ -203,7 +217,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "medication-375-normal",
@@ -212,7 +227,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "settings-375-normal",
@@ -221,7 +237,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "report-375-normal",
@@ -230,7 +247,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "home-430-normal",
@@ -244,7 +262,8 @@
         "💊",
         "💚"
       ],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "collection-status-430-normal",
@@ -281,6 +300,7 @@
       "actionsBottom": 528.375,
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "details": false
     },
     {
@@ -291,7 +311,8 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
-      "note": "비교할 생활기록을 모으고 있습니다."
+      "pending": "자료 수집 중평소와 비교할 생활기록이 아직 충분하지 않습니다.현재 확인생활기록 비교 준비 중",
+      "decorativeJourney": false
     },
     {
       "key": "baseline-430-normal",
@@ -301,6 +322,7 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "baseline": "14일 관찰 · 2일째"
     },
     {
@@ -310,7 +332,8 @@
       "h": 860,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "training-430-normal",
@@ -319,7 +342,8 @@
       "h": 860,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "medication-430-normal",
@@ -328,7 +352,8 @@
       "h": 860,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "settings-430-normal",
@@ -337,7 +362,8 @@
       "h": 860,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "report-430-normal",
@@ -346,7 +372,8 @@
       "h": 860,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "home-1440-normal",
@@ -360,7 +387,8 @@
         "💊",
         "💚"
       ],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "collection-status-1440-normal",
@@ -397,6 +425,7 @@
       "actionsBottom": 554.796875,
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "details": false
     },
     {
@@ -407,7 +436,8 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
-      "note": "비교할 생활기록을 모으고 있습니다."
+      "pending": "자료 수집 중평소와 비교할 생활기록이 아직 충분하지 않습니다.현재 확인생활기록 비교 준비 중",
+      "decorativeJourney": false
     },
     {
       "key": "baseline-1440-normal",
@@ -417,6 +447,7 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "baseline": "14일 관찰 · 2일째"
     },
     {
@@ -426,7 +457,8 @@
       "h": 900,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "training-1440-normal",
@@ -435,7 +467,8 @@
       "h": 900,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "medication-1440-normal",
@@ -444,7 +477,8 @@
       "h": 900,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "settings-1440-normal",
@@ -453,7 +487,8 @@
       "h": 900,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "report-1440-normal",
@@ -462,7 +497,8 @@
       "h": 900,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "home-375-large",
@@ -476,7 +512,8 @@
         "💊",
         "💚"
       ],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "collection-status-375-large",
@@ -513,6 +550,7 @@
       "actionsBottom": 541.078125,
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "details": false
     },
     {
@@ -523,7 +561,8 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
-      "note": "비교할 생활기록을 모으고 있습니다."
+      "pending": "자료 수집 중평소와 비교할 생활기록이 아직 충분하지 않습니다.현재 확인생활기록 비교 준비 중",
+      "decorativeJourney": false
     },
     {
       "key": "baseline-375-large",
@@ -533,6 +572,7 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "baseline": "14일 관찰 · 2일째"
     },
     {
@@ -542,7 +582,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "training-375-large",
@@ -551,7 +592,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "medication-375-large",
@@ -560,7 +602,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "settings-375-large",
@@ -569,7 +612,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "report-375-large",
@@ -578,7 +622,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "home-375-contrast",
@@ -592,7 +637,8 @@
         "💊",
         "💚"
       ],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "collection-status-375-contrast",
@@ -629,6 +675,7 @@
       "actionsBottom": 528.140625,
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "details": false
     },
     {
@@ -639,7 +686,8 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
-      "note": "비교할 생활기록을 모으고 있습니다."
+      "pending": "자료 수집 중평소와 비교할 생활기록이 아직 충분하지 않습니다.현재 확인생활기록 비교 준비 중",
+      "decorativeJourney": false
     },
     {
       "key": "baseline-375-contrast",
@@ -649,6 +697,7 @@
       "tiles": [],
       "icons": [],
       "nav": 0,
+      "decorativeJourney": false,
       "baseline": "14일 관찰 · 2일째"
     },
     {
@@ -658,7 +707,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "training-375-contrast",
@@ -667,7 +717,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 5
+      "nav": 5,
+      "decorativeJourney": false
     },
     {
       "key": "medication-375-contrast",
@@ -676,7 +727,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "settings-375-contrast",
@@ -685,7 +737,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "key": "report-375-contrast",
@@ -694,7 +747,8 @@
       "h": 812,
       "tiles": [],
       "icons": [],
-      "nav": 0
+      "nav": 0,
+      "decorativeJourney": false
     },
     {
       "smoke": "demo-capture",
@@ -806,7 +860,7 @@
       "doc": 360,
       "w": 375,
       "screen": "page narrow overview-page screen-monitoring-status senior-screen",
-      "headline": "평소의 생활패턴을알아가는 중이에요"
+      "headline": "자료 수집 중"
     },
     {
       "smoke": "collection-status",
