@@ -1252,3 +1252,22 @@ body:has(.screen-home) .bottom-nav-inner{max-width:920px}
 .large-text .screen-collection-status .kimse-collection-tile>small{font-size:15px}
 .high-contrast .screen-collection-status .kimse-collection-tile,.high-contrast .screen-collection-status .kimse-collection-more{background:#fff;color:#000;border:2px solid #111}
 .high-contrast .screen-collection-status .kimse-collection-tile>small{color:#111}
+
+/* Genuine pending-observation state: no invented stable label, no decorative journey. */
+.screen-monitoring-status .kimse-monitoring-insufficient{margin:6px 0 15px;padding:18px 17px;border:1px solid #dae7e1;border-radius:20px;background:#eff8f2;color:#173e33}
+.screen-monitoring-status .kimse-monitoring-insufficient h1{font-size:clamp(25px,6vw,31px);line-height:1.22;margin:0 0 7px;color:#173e33}
+.screen-monitoring-status .kimse-monitoring-insufficient>p{font-size:16px;line-height:1.44;margin:0 0 13px;color:#3a6655}
+.screen-monitoring-status .kimse-monitoring-current{padding:11px 13px;background:#fff;border-radius:12px;display:flex;flex-direction:column;gap:4px}
+.screen-monitoring-status .kimse-monitoring-current>span{font-size:14px;color:#396459;font-weight:750}
+.screen-monitoring-status .kimse-monitoring-current>strong{font-size:20px;line-height:1.35;font-weight:850;word-break:keep-all}
+.screen-monitoring-status .kimse-monitoring-collect{min-height:53px;font-size:17px}
+.screen-monitoring-status .kimse-monitoring-insufficient-more{margin-top:14px;padding:0 13px 13px;border:1px solid #d7e5dd;border-radius:14px;background:#fff}
+.screen-monitoring-status .kimse-monitoring-insufficient-more>summary{min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:820;cursor:pointer}
+.screen-monitoring-status .kimse-monitoring-insufficient-more p{font-size:15px;line-height:1.5;margin:12px 0}
+.screen-monitoring-status .kimse-monitoring-insufficient-more>a{min-height:43px;display:flex;align-items:center;border-top:1px solid #e6efe9;color:#14634b;font-size:16px;font-weight:780}
+@media(max-width:440px){
+ .screen-monitoring-status.page:has(.kimse-monitoring-insufficient){padding:14px 14px 22px}
+ .screen-monitoring-status .kimse-monitoring-insufficient{padding:15px}
+}
+.large-text .screen-monitoring-status .kimse-monitoring-current>strong{font-size:24px}
+.high-contrast .screen-monitoring-status .kimse-monitoring-insufficient,.high-contrast .screen-monitoring-status .kimse-monitoring-current{background:#fff;color:#000;border:2px solid #111}
