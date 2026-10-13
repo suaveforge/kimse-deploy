@@ -2047,7 +2047,7 @@ function monitoringTodaySnapshot(){
     movement:d.movementDistanceM>0?formatMonitoringValue('movement_distance_m',d.movementDistanceM):'수집 대기'
   };
 }
-function collectionStateRows(){
+function collectionStateItems(){
   const d=ensureMonitoringDay(),locOn=S.consents.location,motionOn=S.consents.motion,usageOn=S.consents.usage;
   const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?(d.locationInitialized?'수집 중':'위치 신호 대기'):'권한 확인 전';
   const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?(d.motionInitialized?'수집 중':'센서 신호 대기'):'권한 확인 전';
@@ -2058,13 +2058,16 @@ function collectionStateRows(){
   const motionValue=d.motionInitialized?(d.motionActiveMs>=60000?Math.round(d.motionActiveMs/60000)+'분':'1분 미만'):'미수집';
   const usageValue=!usageOn?'미수집':usageSeen?(d.appActiveMs>=60000?Math.round(d.appActiveMs/60000)+'분':'1분 미만'):'수집 시작 전';
   return [
-    row('📍 위치·이동',locState,'<strong>'+movementValue+'</strong>'),
-    row('🧭 생활반경',locState,'<strong>'+radiusValue+'</strong>'),
-    row('🚪 외출 신호',locState,'<strong>'+outingValue+'</strong>'),
-    row('🚶 움직임·활동',motionState,'<strong>'+motionValue+'</strong>'),
-    row('📱 낌새 사용',usageOn?'수집 중':'동의 안 함','<strong>'+usageValue+'</strong>'),
-    row('🎙️ 음성 샘플',S.consents.microphone?'사용자 실행 시 수집':'동의 안 함','<strong>'+(voiceCount?voiceCount+'개':'미수집')+'</strong>')
-  ].join('');
+    {icon:'📍',label:'위치·이동',state:locState,value:movementValue},
+    {icon:'🧭',label:'생활반경',state:locState,value:radiusValue},
+    {icon:'🚪',label:'외출 신호',state:locState,value:outingValue},
+    {icon:'🚶',label:'움직임·활동',state:motionState,value:motionValue},
+    {icon:'📱',label:'낌새 사용',state:usageOn?'수집 중':'동의 안 함',value:usageValue},
+    {icon:'🎙️',label:'음성 샘플',state:S.consents.microphone?'사용자 실행 시 수집':'동의 안 함',value:voiceCount?voiceCount+'개':'미수집'}
+  ];
+}
+function collectionStateRows(){
+  return collectionStateItems().map(x=>row(x.icon+' '+x.label,esc(x.state),'<strong>'+esc(x.value)+'</strong>')).join('');
 }
 page.baseline=()=>{
   if(!S.baseline.startedAt)return wrap(
@@ -2078,9 +2081,9 @@ page.baseline=()=>{
   const completeDays=baselineTimeProgress().completedDays;
   const progress=Array.from({length:14},(_,i)=>'<span class="'+(i<completeDays?'done':'')+(i===day-1?' current':'')+'"></span>').join('');
   return wrap(
-    '<div class="eyebrow">AI 생활 패턴 기록</div>'+
-    '<h1 class="page-title">2주간 생활 패턴을<br>기록합니다</h1>'+
-    '<p class="page-desc">실제로 수집되거나 직접 기록한 수면·활동·말하기·이동만 쌓아 이후 변화를 비교합니다.</p>'+
+    '<div class="eyebrow">생활패턴 관찰</div>'+
+    '<h1 class="page-title">14일 관찰 · '+day+'일째</h1>'+
+    '<p class="page-desc">시간 경과와 실제 수집량은 다릅니다.</p>'+
     '<div class="baseline-calendar-page" aria-label="14일 중 '+day+'일째">'+
       '<div class="baseline-calendar-icon" aria-hidden="true">'+
         '<span class="calendar-ring left"></span><span class="calendar-ring right"></span>'+
@@ -2094,8 +2097,9 @@ page.baseline=()=>{
       '</div>'+
       '<div class="baseline-calendar-progress">'+progress+'</div>'+
     '</div>'+
+    '<details class="kimse-baseline-more"><summary>관찰 단계 자세히</summary>'+
     '<div class="baseline-milestone-card '+event.tone+'"><span>'+event.kicker+'</span><div><strong>'+event.title+'</strong><small>'+event.text+'</small></div></div>'+
-    '<div class="baseline-milestone-rail"><span class="'+(day>=1?'on':'')+'"><b>1일</b>시작</span><i></i><span class="'+(day>=7?'on':'')+'"><b>7일</b>첫 주 확인</span><i></i><span class="'+(baselineComplete()?'on':'')+'"><b>14일</b>시간 완료</span></div>'+
+    '<div class="baseline-milestone-rail"><span class="'+(day>=1?'on':'')+'"><b>1일</b>시작</span><i></i><span class="'+(day>=7?'on':'')+'"><b>7일</b>첫 주 확인</span><i></i><span class="'+(baselineComplete()?'on':'')+'"><b>14일</b>시간 완료</span></div></details>'+
     (baselineComplete()?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">최근 변화 보기</button></div>':'')+
     '<div class="hero-actions"><button class="btn-kimse btn-secondary-k btn-full" data-go="collection-status">오늘 수집 상태 확인</button></div>'+
     '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다. 현재 웹앱은 화면을 닫으면 위치와 움직임을 계속 측정하지 못합니다.</p>',
@@ -2121,6 +2125,25 @@ page['brain-map']=()=>{
 
 page['monitoring-status']=()=>{
   const careMode=S.mode==='care'&&!!S.careOverview.subjectId,s=careMode?S.careOverview.summary:S.monitoring.summary,changes=s&&Array.isArray(s.changes)?s.changes:[],ready=s?.status==='READY',status=monitoringUiStatus(s,changes),stage=careMode?S.careOverview.stage:S.stage.summary,sm=observationStageMeta(stage);
+  if(!ready){
+    const stateTitle=stage?.observation_pattern?sm.label:'생활기록 비교 준비 중';
+    return wrap(
+      '<section class="kimse-monitoring-insufficient" aria-label="현재 기록 상태">'+
+        '<h1 class="page-title">자료 수집 중</h1>'+
+        '<p>평소와 비교할 생활기록이 아직 충분하지 않습니다.</p>'+
+        '<div class="kimse-monitoring-current"><span>현재 확인</span><strong>'+esc(stateTitle)+'</strong></div>'+
+      '</section>'+
+      '<a class="btn-kimse btn-primary-k kimse-monitoring-collect" href="#/collection-status">오늘 수집 상태 확인 '+I('chevron-right')+'</a>'+
+      '<details class="kimse-monitoring-insufficient-more"><summary>기록 근거·상담 안내 자세히</summary>'+
+        '<p>'+esc(stageWhyText(stage,changes))+'</p>'+
+        (stage?.professional_anchor?'<p>등록된 전문평가: '+esc(professionalResultLabel(stage.professional_anchor.result_category))+'</p>':'')+
+        '<a href="#/baseline">14일 관찰 현황 보기</a>'+
+        '<a href="'+evidenceUrl()+'" target="_blank" rel="noopener">근거 자료 확인</a>'+
+        '<a href="tel:18999988">치매상담콜센터 1899-9988</a>'+
+      '</details>',
+      {title:'최근 변화',narrow:true,overview:true}
+    );
+  }
   const changeHtml=changes.length?changes.slice(0,6).map(x=>{
     const pct=x.relative_change==null?0:Math.round(Number(x.relative_change)*100),up=pct>0,down=pct<0,dir=up?'up':down?'down':'flat',sign=up?'+':down?'−':'',arrow=up?'arrow-up':down?'arrow-down':'minus';
     return '<div class="result-change direction-'+dir+'"><span class="result-change-label">'+I(SIGNAL_ICONS[x.metric]||'activity')+'<strong>'+esc(SIGNAL_LABELS[x.metric]||x.metric)+'</strong><em>'+esc(SIGNAL_EVIDENCE_AREA[x.metric]||'관찰 신호')+'</em></span><b>'+I(arrow)+' '+sign+Math.abs(pct)+'%</b><small><span>14일 기준 '+esc(formatMonitoringValue(x.metric,x.baseline))+'</span><em>→ 최근 '+esc(formatMonitoringValue(x.metric,x.recent))+(x.recent_days?' · '+x.recent_days+'일 관찰':'')+'</em></small></div>';
@@ -2133,7 +2156,7 @@ page['monitoring-status']=()=>{
     '<p class="page-desc">'+(ready?'평소의 나와 최근 기록을 비교해, 달라진 점과 다음 행동을 순서대로 보여드립니다.':'14일 기준선이 만들어지는 동안에는 변화 알림을 서두르지 않습니다.')+'</p>'+
     '<section class="summary-card observation-stage-card"><div class="eyebrow">1 · 지금 보이는 변화</div><div class="d-flex justify-content-between gap-2"><h2>'+esc(sm.label)+'</h2><span class="context-chip">'+esc(STAGE_SUFFICIENCY[stage?.data_sufficiency]||'확인 자료 수집 중')+'</span></div><p>'+esc(sm.desc)+'</p><div class="list-row"><span><strong>왜 이렇게 보나요?</strong><small>'+esc(stageWhyText(stage,changes))+'</small></span></div><div class="list-row"><span><strong>지금 할 일</strong><small>'+esc(stagePrimaryActionText(stage))+'</small></span></div>'+(stage?.professional_anchor?'<div class="notice"><strong>병원·전문평가 결과는 별도로 보관합니다.</strong>'+esc(professionalResultLabel(stage.professional_anchor.result_category))+' · '+esc(professionalProvenanceLabel(stage.professional_anchor.provenance))+'</div>':'')+'</section>'+
     (ready?'<section class="monitoring-level-card level-'+status.key+'"><div class="monitoring-level-line"><span class="monitoring-level-icon">'+I(status.icon)+'</span><strong>주의해서 볼 정도 · '+status.label+'</strong></div><h2>'+status.action+'</h2></section>':'')+
-    (changeHtml?'<h2 class="section-title">생활기록에서는 무엇이 달라졌나요?</h2><div class="result-change-grid">'+changeHtml+'</div>':'<div class="monitoring-stable-note"><strong>생활기록에서는 현재 큰 변화가 확인되지 않았습니다.</strong></div>')+
+    (changeHtml?'<h2 class="section-title">생활기록에서는 무엇이 달라졌나요?</h2><div class="result-change-grid">'+changeHtml+'</div>':'<div class="monitoring-stable-note"><strong>'+(ready?'표시할 생활기록 변화 항목이 없습니다.':'비교할 생활기록을 모으고 있습니다.')+'</strong></div>')+
     (missing?'<section class="summary-card"><h3>더 확인하면 좋은 정보</h3><ul>'+missing+'</ul></section>':'')+
     (ready&&!captureHook?'<div class="monitoring-actions">'+(careMode?(pendingCareAlert(S.careOverview)?'<button class="status-action primary single" data-go="family-feedback">'+I('message-check')+'<span>직접 보셨을 때도 달랐는지 답하기</span></button>':'<button class="status-action primary single" data-go="caregiver-home">'+I('users')+'<span>보호자 홈</span></button>'):stageActionButtons(stage))+'</div>':'')+
     '<button class="monitoring-detail-link" data-go="collection-status">실제 수집 상태 보기 '+I('chevron-right')+'</button>'+
@@ -2144,25 +2167,28 @@ page['monitoring-status']=()=>{
   );
 };
 page['collection-status']=()=>{
-  const d=ensureMonitoringDay(),pending=S.monitoring.pending.length,last=S.monitoring.lastFlushAt?fmtDate(S.monitoring.lastFlushAt):'아직 없음';
+  const items=collectionStateItems(),pending=S.monitoring.pending.length,last=S.monitoring.lastFlushAt?fmtDate(S.monitoring.lastFlushAt):'아직 없음';
   const coverage=S.monitoring.coverage,sourceLabels={MANUAL_ENTRY:'직접 입력',FOREGROUND_SENSOR:'앱 실행 중 센서',FOREGROUND_APP:'앱 실행',NATIVE_SENSOR:'네이티브 센서',IN_APP_CALL:'낌새 통화',OTHER_OR_UNVERIFIED:'기타·출처 확인 필요'};
   const coverageRows=Array.isArray(coverage?.metrics)?coverage.metrics.map(metric=>{
     const modes=[...new Set((metric.sources||[]).map(s=>sourceLabels[s.collection_mode]||'출처 확인 필요'))].join(' · ');
     return '<div class="list-row"><span><strong>'+esc(SIGNAL_LABELS[metric.metric]||metric.metric)+'</strong><small>'+metric.observed_days+'일 기록 / '+metric.eligible_days+'일 관찰 가능 · '+esc(modes)+'</small></span></div>';
   }).join(''):'';
-  const coverageHtml='<section class="summary-card"><h3>최근 28일 · 서버 기록</h3>'+
+  const coverageHtml='<section class="kimse-collection-history"><h2>최근 28일 · 서버 기록</h2>'+
     (coverage?.status==='OBSERVED'?'<p>관찰 시작 이후 '+coverage.eligible_days+'일 중 '+coverage.observed_days+'일에 신호 기록이 있습니다.</p>'+(coverageRows?'<div class="list">'+coverageRows+'</div>':'<p>아직 서버에 기록된 신호가 없습니다.</p>'):
       coverage?.status==='NOT_STARTED'?'<p>서버의 생활관찰이 아직 시작되지 않았습니다.</p>':'<p>동기화를 누르면 서버에 실제 저장된 기록일을 확인할 수 있습니다.</p>')+
-    '<p class="screen-footnote">신호가 기록된 날짜만 셉니다. 기록률은 하루 종일 자동으로 측정했다는 뜻이나 치매 진단 정확도가 아닙니다.</p></section>';
+    '<p class="screen-footnote">기록일은 하루 종일 자동 측정했다는 뜻이 아니며, 진단 정확도와 무관합니다.</p></section>';
   return wrap(
-    '<div class="eyebrow">오늘 · 실제 수집 상태</div>'+
-    '<h1 class="page-title">지금 들어오는 생활 신호를<br>직접 확인할 수 있어요</h1>'+
-    '<p class="page-desc">현재 웹앱이 실제로 받은 값만 표시합니다. 화면을 닫으면 위치와 움직임을 계속 기록하지 못합니다.</p>'+
-    '<div class="list">'+collectionStateRows()+'</div>'+
-    coverageHtml+
-    '<div class="summary-card"><h3>서버 동기화</h3><p>전송 대기 '+pending+'건 · 마지막 전송 '+esc(last)+'</p>'+(S.monitoring.lastSyncError?'<p>'+esc(S.monitoring.lastSyncError)+'</p>':'')+'</div>'+
-    '<div class="hero-actions"><button id="sync-monitoring" class="btn-kimse btn-primary-k btn-full">지금 동기화</button><button class="btn-kimse btn-secondary-k btn-full" data-go="consent">수집 동의·권한 확인</button></div>'+
-    '<p class="screen-footnote">현재 웹앱에서는 실제로 수집된 이동거리·생활반경·활동시간만 서버 비교에 사용합니다. 일일 걸음수는 휴대전화 전용 앱에서 건강 데이터가 연동된 경우에 사용합니다.</p>',
+    '<div class="kimse-collection-heading"><h1 class="page-title">오늘 수집 상태</h1><p>실제로 확인된 값과 권한 상태를 구분합니다.</p></div>'+
+    '<section class="kimse-collection-grid" aria-label="생활 신호 6가지">'+items.map(x=>
+      '<div class="kimse-collection-tile"><div class="kimse-collection-label"><span aria-hidden="true">'+x.icon+'</span><strong>'+esc(x.label)+'</strong></div>'+
+      '<b>'+esc(x.value)+'</b><small>'+esc(x.state)+'</small></div>'
+    ).join('')+'</section>'+
+    '<div class="kimse-collection-actions"><button id="sync-monitoring" class="btn-kimse btn-primary-k">지금 동기화</button><a class="btn-kimse btn-secondary-k" href="#/consent">권한 확인</a></div>'+
+    '<details class="kimse-collection-more"><summary>서버 기록·수집 안내 자세히</summary>'+
+      coverageHtml+
+      '<section class="kimse-collection-history"><h2>서버 동기화</h2><p>전송 대기 '+pending+'건 · 마지막 전송 '+esc(last)+'</p>'+(S.monitoring.lastSyncError?'<p>'+esc(S.monitoring.lastSyncError)+'</p>':'')+'</section>'+
+      '<p>웹앱을 닫으면 위치·움직임을 계속 기록하지 못합니다. 걸음 수는 전용 앱에서 건강 데이터가 연동된 경우에만 서버 비교에 사용합니다.</p>'+
+    '</details>',
     {title:'수집 상태',narrow:true}
   );
 };
