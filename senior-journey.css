@@ -1203,3 +1203,71 @@ body:has(.screen-home) .bottom-nav-inner{max-width:920px}
 }
 .high-contrast .screen-home .kh2-status,.high-contrast .screen-home .kh2-progress,.high-contrast .screen-home .kh2-action,.high-contrast .screen-home .kh2-family{background:#fff;color:#000;border:2px solid #111;box-shadow:none}
 .high-contrast .screen-home .kh2-status-content>small,.high-contrast .screen-home .kh2-status-content>span,.high-contrast .screen-home .kh2-progress-note{color:#111}
+
+/* KIMSE compact status / observation / daily actions - 2026.10.13 */
+.screen-collection-status.page{padding-top:14px;max-width:560px}
+.screen-collection-status .kimse-collection-heading{margin:0 0 13px}
+.screen-collection-status .kimse-collection-heading .page-title{font-size:clamp(23px,5.5vw,29px);line-height:1.2;margin:0 0 3px;color:#173f34}
+.screen-collection-status .kimse-collection-heading>p{font-size:15px;line-height:1.4;color:#4b665d;margin:0}
+.screen-collection-status .kimse-collection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.screen-collection-status .kimse-collection-tile{min-width:0;min-height:95px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;padding:10px 12px;border:1px solid #dae7e1;background:#fff;border-radius:15px;color:#1c4036}
+.screen-collection-status .kimse-collection-label{display:flex;align-items:center;gap:5px;min-width:0;width:100%}
+.screen-collection-status .kimse-collection-label>span{font-size:21px;line-height:1.15;flex:none}
+.screen-collection-status .kimse-collection-label>strong{font-size:15px;line-height:1.3;white-space:normal;word-break:keep-all}
+.screen-collection-status .kimse-collection-tile>b{font-size:19px;line-height:1.25;font-weight:850;white-space:normal;overflow-wrap:anywhere}
+.screen-collection-status .kimse-collection-tile>small{font-size:13px;line-height:1.28;color:#47645c}
+.screen-collection-status .kimse-collection-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.screen-collection-status .kimse-collection-actions .btn-kimse{min-height:51px;padding:10px 7px;font-size:16px}
+.screen-collection-status .kimse-collection-more{margin-top:12px;background:#fff;border:1px solid #dae7e1;border-radius:14px;padding:0 13px 13px;color:#24493c}
+.screen-collection-status .kimse-collection-more>summary{font-weight:800;font-size:15px;line-height:1.35;cursor:pointer;min-height:47px;display:flex;align-items:center}
+.screen-collection-status .kimse-collection-history{padding-top:11px;border-top:1px solid #e6eee9;margin:0 0 13px}
+.screen-collection-status .kimse-collection-history h2{font-size:18px;line-height:1.35;margin:0 0 6px;color:#1e493c}
+.screen-collection-status .kimse-collection-history p,.screen-collection-status .kimse-collection-more>p{font-size:15px;line-height:1.48}
+.screen-collection-status .kimse-collection-history .list-row{min-height:58px;padding:10px 12px}
+.screen-baseline .kimse-baseline-more{margin:12px 0;padding:0 13px;border:1px solid #dae7e1;border-radius:14px;background:#fff}
+.screen-baseline .kimse-baseline-more>summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:800}
+@media(max-width:440px){
+ .screen-collection-status.page{padding:11px 12px 20px}
+ .screen-collection-status .kimse-collection-heading{margin-bottom:10px}
+ .screen-collection-status .kimse-collection-grid{gap:8px}
+ .screen-collection-status .kimse-collection-tile{min-height:91px;padding:9px 10px}
+ .screen-baseline.page{padding-top:13px}
+ .screen-baseline .page-title{font-size:26px;line-height:1.2}
+ .screen-baseline .page-desc{margin-bottom:12px;font-size:15px}
+ .screen-baseline .baseline-calendar-page{margin-top:8px;margin-bottom:10px}
+ .screen-baseline .baseline-calendar-icon{height:78px;width:90px;margin:8px auto 7px;transform:scale(.8);transform-origin:50% 50%}
+ .screen-baseline .baseline-day-signals{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0 11px 12px}
+ .screen-baseline .baseline-calendar-progress{padding-bottom:10px}
+ .screen-baseline .hero-actions{margin-top:13px}
+ /* High-priority task screens: preserve 18px labels and touch targets while removing vertical overhead. */
+ .screen-training.page,.screen-medication.page,.screen-health.page,.screen-report.page,.screen-settings.page{padding-top:14px}
+ .screen-training .page-title,.screen-medication .page-title,.screen-health .page-title,.screen-report .page-title,.screen-settings .page-title{font-size:26px;margin:0 0 6px;line-height:1.26}
+ .screen-training .page-desc,.screen-medication .page-desc,.screen-health .page-desc,.screen-report .page-desc,.screen-settings .page-desc{font-size:16px;line-height:1.42;margin-bottom:13px}
+ .screen-training .list,.screen-medication .list,.screen-health .list,.screen-settings .list{gap:8px}
+ .screen-training .list-row,.screen-medication .list-row,.screen-health .list-row,.screen-settings .list-row{min-height:62px;padding:11px 13px;border-radius:14px}
+ .screen-training .list-row strong,.screen-medication .list-row strong,.screen-health .list-row strong,.screen-settings .list-row{font-size:17px}
+}
+.large-text .screen-collection-status .kimse-collection-label>strong{font-size:18px}
+.large-text .screen-collection-status .kimse-collection-tile>b{font-size:22px}
+.large-text .screen-collection-status .kimse-collection-tile>small{font-size:15px}
+.high-contrast .screen-collection-status .kimse-collection-tile,.high-contrast .screen-collection-status .kimse-collection-more{background:#fff;color:#000;border:2px solid #111}
+.high-contrast .screen-collection-status .kimse-collection-tile>small{color:#111}
+
+/* Genuine pending-observation state: no invented stable label, no decorative journey. */
+.screen-monitoring-status .kimse-monitoring-insufficient{margin:6px 0 15px;padding:18px 17px;border:1px solid #dae7e1;border-radius:20px;background:#eff8f2;color:#173e33}
+.screen-monitoring-status .kimse-monitoring-insufficient h1{font-size:clamp(25px,6vw,31px);line-height:1.22;margin:0 0 7px;color:#173e33}
+.screen-monitoring-status .kimse-monitoring-insufficient>p{font-size:16px;line-height:1.44;margin:0 0 13px;color:#3a6655}
+.screen-monitoring-status .kimse-monitoring-current{padding:11px 13px;background:#fff;border-radius:12px;display:flex;flex-direction:column;gap:4px}
+.screen-monitoring-status .kimse-monitoring-current>span{font-size:14px;color:#396459;font-weight:750}
+.screen-monitoring-status .kimse-monitoring-current>strong{font-size:20px;line-height:1.35;font-weight:850;word-break:keep-all}
+.screen-monitoring-status .kimse-monitoring-collect{min-height:53px;font-size:17px}
+.screen-monitoring-status .kimse-monitoring-insufficient-more{margin-top:14px;padding:0 13px 13px;border:1px solid #d7e5dd;border-radius:14px;background:#fff}
+.screen-monitoring-status .kimse-monitoring-insufficient-more>summary{min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:820;cursor:pointer}
+.screen-monitoring-status .kimse-monitoring-insufficient-more p{font-size:15px;line-height:1.5;margin:12px 0}
+.screen-monitoring-status .kimse-monitoring-insufficient-more>a{min-height:43px;display:flex;align-items:center;border-top:1px solid #e6efe9;color:#14634b;font-size:16px;font-weight:780}
+@media(max-width:440px){
+ .screen-monitoring-status.page:has(.kimse-monitoring-insufficient){padding:14px 14px 22px}
+ .screen-monitoring-status .kimse-monitoring-insufficient{padding:15px}
+}
+.large-text .screen-monitoring-status .kimse-monitoring-current>strong{font-size:24px}
+.high-contrast .screen-monitoring-status .kimse-monitoring-insufficient,.high-contrast .screen-monitoring-status .kimse-monitoring-current{background:#fff;color:#000;border:2px solid #111}
