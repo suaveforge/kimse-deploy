@@ -1,0 +1,52 @@
+name: KIMSE All Routes Vertical UX Audit
+on:
+  push:
+    branches: [ux-vertical-audit-20261013]
+    paths:
+      - 'app.js'
+      - 'app/app.js'
+      - 'senior-journey.css'
+      - 'app/senior-journey.css'
+      - 'tests/vertical-audit.cjs'
+      - '.github/workflows/full-app-mobile-qa.yml'
+permissions:
+  contents: write
+jobs:
+  mobile-ux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/kh-preview" playwright@1.55.0 --no-audit --no-fund
+          "$RUNNER_TEMP/kh-preview/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Test actual application screens
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/kh-mobile-preview.log 2>&1 &
+          sleep 2
+          node tests/vertical-audit.cjs
+      - name: Save screenshots artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-vertical-audit
+          path: qa-artifacts/ux-vertical/
+          if-no-files-found: ignore
+      - name: Publish branch-only screenshots
+        if: success()
+        run: |
+          mkdir -p qa-previews/ux-vertical
+          cp qa-artifacts/ux-vertical/collection-status-320-normal.png qa-previews/ux-vertical/320-collection.png
+          cp qa-artifacts/ux-vertical/collection-status-375-normal.png qa-previews/ux-vertical/375-collection.png
+          cp qa-artifacts/ux-vertical/collection-status-1440-normal.png qa-previews/ux-vertical/1440-collection.png
+          cp qa-artifacts/ux-vertical/monitoring-status-375-normal.png qa-previews/ux-vertical/375-monitoring.png
+          cp qa-artifacts/ux-vertical/baseline-375-normal.png qa-previews/ux-vertical/375-baseline.png
+          cp qa-artifacts/ux-vertical/report.json qa-previews/ux-vertical/report.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qa-previews/ux-vertical
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(qa): save actual all-page Chromium layout results"
+            git push origin HEAD:ux-vertical-audit-20261013
+          fi
