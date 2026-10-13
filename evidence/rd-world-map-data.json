@@ -1500,8 +1500,8 @@
       "countryEnglish": "South Korea",
       "sector": "제약·산업",
       "authority": "산업 영향력",
-      "stage": "CANDIDATE_REVIEW_SCHEDULED",
-      "stageLabel": "접촉 전 검토",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": null,
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": null,
@@ -1511,9 +1511,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 10,
-        "stageCode": "CANDIDATE_REVIEW_SCHEDULED",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -1524,10 +1524,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_NEUROPHET_GENERAL_INQUIRY_EMAIL",
+        "contactRouteURL": "https://www.neurophet.com/en",
+        "sendApproved": false
       }
     },
     {
@@ -1625,8 +1629,8 @@
       "countryEnglish": "Australia",
       "sector": "제약·산업",
       "authority": "산업 영향력",
-      "stage": "CANDIDATE_REVIEW_SCHEDULED",
-      "stageLabel": "접촉 전 검토",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": null,
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": "Melbourne",
@@ -1639,9 +1643,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 10,
-        "stageCode": "CANDIDATE_REVIEW_SCHEDULED",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -1652,10 +1656,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_COGSTATE_GENERAL_INQUIRY_FORM",
+        "contactRouteURL": "https://www.cogstate.com/contact-us/",
+        "sendApproved": false
       }
     },
     {
@@ -2208,8 +2216,8 @@
       "countryEnglish": "Japan",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.amed.go.jp/en/news/release_20191031.html",
       "sourceScope": null,
       "city": "Tokyo",
@@ -2222,9 +2230,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -2235,10 +2243,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_UNIVERSITY_HOSPITAL_JTRC_STUDY_ENQUIRY_EMAIL",
+        "contactRouteURL": "https://www.ut-crescent.jp/patients/chiken_jisshi/chiken_boshu/kenkou/",
+        "sendApproved": false
       }
     },
     {
@@ -2846,8 +2858,8 @@
       "countryEnglish": "Japan",
       "sector": "연구·데이터",
       "authority": "기술·연구 전문성",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.ncgg.go.jp/research/lab/cgss/department/ep/",
       "sourceScope": "Operates NILS-LSA longitudinal epidemiology and dementia biobank with ethics/data access governance; not a purchaser of KIMSE data.",
       "city": "Obu",
@@ -2860,9 +2872,9 @@
       "authorityTierDescription": "전문 연구·데이터",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -2873,10 +2885,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_NCGG_DEMENTIA_CLINICAL_RESEARCH_NETWORK_OFFICE",
+        "contactRouteURL": "https://www.ncgg.go.jp/hospital/ictr/crnd/home/",
+        "sendApproved": false
       }
     },
     {
@@ -2973,8 +2989,8 @@
       "countryEnglish": "South Korea",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.snu.ac.kr/snunow/press?bbsidx=163993&md=v",
       "sourceScope": "SNU's Jan 2026 release says standardized common dementia dataset and samples from 1,765 people across 29 hospitals, for research distribution; no KIMSE agreement.",
       "city": "Seoul",
@@ -2987,9 +3003,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3000,10 +3016,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_KDRC_RESEARCH_QNA_WRITING_ENTRY",
+        "contactRouteURL": "https://kdrc.re.kr/qna/list.aspx",
+        "sendApproved": false
       }
     },
     {
@@ -3057,8 +3077,8 @@
       "countryEnglish": "Germany",
       "sector": "연구·데이터",
       "authority": "기술·연구 전문성",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://ki-elements.de/projects-studies/",
       "sourceScope": "Lists PROSPECT-AD with DZNE and ReTain with J&J among digital speech cognition assessment research; no KIMSE relation.",
       "city": null,
@@ -3068,9 +3088,9 @@
       "authorityTierDescription": "전문 연구·데이터",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3081,10 +3101,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_SPEECH_BIOMARKER_CONTACT_FORM_AND_COMPANY_GENERAL_EMAIL",
+        "contactRouteURL": "https://ki-elements.de/contact/",
+        "sendApproved": false
       }
     },
     {
@@ -3096,8 +3120,8 @@
       "countryEnglish": "Netherlands",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://amsterdamumc.org/en/research/support/amsterdam-cohort-hub/cohorts-amsterdam-cohort-hub/amsterdam-dementia-cohort-adc",
       "sourceScope": "Official ADC describes almost 7,000 consenting clinical patients, comprehensive assessment and annual follow-up; does not evidence willingness to buy Korean smartphone data.",
       "city": "Amsterdam",
@@ -3110,9 +3134,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3123,10 +3147,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_AMSTERDAM_ALZHEIMER_CENTER_PROJECT_OFFICE",
+        "contactRouteURL": "https://www.amsterdamumc.org/en/research/knowledge-centers/alzheimer-center",
+        "sendApproved": false
       }
     },
     {
@@ -3264,8 +3292,8 @@
       "countryEnglish": "Sweden",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://biofinder.se/biofinder_cohorts/",
       "sourceScope": "Swedish BioFINDER prospectively observes cognitively healthy, SCD/MCI and dementia cohorts; repeated cognitive/clinical assessments and biomarkers. Research cohort, not KIMSE buyer.",
       "city": "Lund",
@@ -3278,9 +3306,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3291,10 +3319,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_STUDY_SCIENTIFIC_METHODS_CONTACT",
+        "contactRouteURL": "https://biofinder.se/archive/contact/",
+        "sendApproved": false
       }
     },
     {
@@ -3306,8 +3338,8 @@
       "countryEnglish": "Spain",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.barcelonabeta.org/es/investigacion/principales-estudios-de-investigacion/alfa10",
       "sourceScope": "ALFA10 extends ALFA longitudinal preclinical Alzheimer research and describes digital and remote cognitive/other change monitoring. No external Korean dataset purchase indicated.",
       "city": "Barcelona",
@@ -3320,9 +3352,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3333,10 +3365,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_ALFA_SCIENTIFIC_COLLAB_AND_GENERAL_ENQUIRY_FORM",
+        "contactRouteURL": "https://www.barcelonabeta.org/en/contact",
+        "sendApproved": false
       }
     },
     {
@@ -3482,8 +3518,8 @@
       "countryEnglish": "Italy",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.interceptorproject.com/en/",
       "sourceScope": "Italian Ministry of Health and AIFA funded INTERCEPTOR for MCI-to-Alzheimer progression biomarkers; older project, current activity not confirmed.",
       "city": "Rome",
@@ -3496,9 +3532,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3509,10 +3545,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_INTERCEPTOR_PROJECT_GENERAL_CONTACT",
+        "contactRouteURL": "https://www.interceptorproject.com/en/contatti/",
+        "sendApproved": false
       }
     },
     {
@@ -3612,8 +3652,8 @@
       "countryEnglish": "Denmark",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.rigshospitalet.dk/english/research-and-innovation/units-and-groups/pages/danish-dementia-research-centre-.aspx",
       "sourceScope": "Copenhagen Memory Clinic affiliated DDRC reports 1,500–2,000 referrals per year, clinical research and an AD clinical trials unit, not proven data purchasing.",
       "city": "Copenhagen",
@@ -3626,9 +3666,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3639,10 +3679,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_DANISH_DEMENTIA_RESEARCH_CENTRE_CHAIR_CONTACT",
+        "contactRouteURL": "https://www.rigshospitalet.dk/english/research-and-innovation/units-and-groups/pages/danish-dementia-research-centre-.aspx",
+        "sendApproved": false
       }
     },
     {
@@ -3654,8 +3698,8 @@
       "countryEnglish": "Norway",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.ntnu.edu/employees/havard.skjellegrind",
       "sourceScope": "NTNU HUNT4 70+ examines dementia and aging with gait/physical and cognitive assessments, biomarker follow-up; study lead profile confirms subsequent planned HUNT5.",
       "city": "Trondheim",
@@ -3668,9 +3712,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3681,10 +3725,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_NTNU_HUNT4_70_PLUS_PROJECT_LEAD_EMAIL",
+        "contactRouteURL": "https://www.ntnu.edu/employees/havard.skjellegrind",
+        "sendApproved": false
       }
     },
     {
@@ -3696,8 +3744,8 @@
       "countryEnglish": "Brazil",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://elsi.cpqrr.fiocruz.br/en/home-english/what-is/",
       "sourceScope": "ELSI-Brazil is national aging survey with 2015–16, 2019–21 and 2023–24 waves. Official portal warns cross-sectional wave files cannot be simply joined for longitudinal analysis.",
       "city": "Belo Horizonte",
@@ -3710,9 +3758,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3723,10 +3771,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_ELSI_BRAZIL_GENERAL_RESEARCH_ENQUIRY_FORM",
+        "contactRouteURL": "https://elsi.cpqrr.fiocruz.br/contato/",
+        "sendApproved": false
       }
     },
     {
@@ -4871,12 +4923,12 @@
     {
       "code": "CANDIDATE_REVIEW_SCHEDULED",
       "label": "접촉 전 검토",
-      "count": 15
+      "count": 13
     },
     {
       "code": "CANDIDATE_FIT_PRELIMINARY",
       "label": "적합성 검토 중",
-      "count": 25
+      "count": 14
     },
     {
       "code": "AUTOMATED_ACK_ONLY",
@@ -4886,7 +4938,7 @@
     {
       "code": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
       "label": "공식 문의경로 확인 · 미발송",
-      "count": 17
+      "count": 30
     },
     {
       "code": "RESEARCH_METHODS_RESPONSE_RECEIVED",
@@ -4910,9 +4962,13 @@
     }
   ],
   "routeReview20261013": {
-    "verifiedFirstEnquiryUnsent": 17,
+    "verifiedFirstEnquiryUnsent": 30,
+    "previouslyVerified": 17,
+    "additionalVerified": 13,
+    "newOutreachSends": 0,
     "remainingUncontacted": 61,
-    "source": "private docs/RND_FIRST_ENQUIRY_17_REVIEW_PACKET_20261013.json",
-    "actualAdditionalSent": 0
+    "source": "private docs/RND_FIRST_ENQUIRY_17_REVIEW_PACKET_20261013.json and docs/RND_FIRST_ENQUIRY_25_ROUTE_REVIEW_PACKET_20261013.json",
+    "actualAdditionalSent": 0,
+    "sourceOfTruth": "Current institution-level evidence, no public partner or purchasing claims"
   }
 }
