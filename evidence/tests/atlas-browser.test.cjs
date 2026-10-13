@@ -45,11 +45,11 @@ async function run(){
       assert.equal(await page.locator('.kimse-progress-number').count(),3,'three numeric phase filters');
       assert.equal(await page.locator('#kimse-progress-rows .kimse-progress-bignum').count(),92,'numeric phase beside each institution');
       await page.selectOption('#kimse-progress-phase','1');
-      assert.equal(await page.locator('#kimse-progress-rows tr').count(),30,'stage one institution count');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),atlasData.institutions.filter(x=>x.progress.phase===1).length,'phase-one institutions match delivery data');
       await page.selectOption('#kimse-progress-phase','2');
       assert.equal(await page.locator('#kimse-progress-rows tr').count(),1,'stage two institution count');
       await page.selectOption('#kimse-progress-phase','0');
-      assert.equal(await page.locator('#kimse-progress-rows tr').count(),61,'stage zero institution count');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),atlasData.institutions.filter(x=>x.progress.phase===0).length,'phase-zero uncontacted institutions match delivery data');
       await page.selectOption('#kimse-progress-phase','');
       assert.match(await page.locator('#kimse-progress-total').innerText(),/92 \/ 92/,'institution table total');
       await page.selectOption('#kimse-progress-stage','FIRST_CONTACT_ROUTE_VERIFIED_UNSENT');
