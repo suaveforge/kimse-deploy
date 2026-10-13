@@ -632,7 +632,8 @@
       .slice(0,6).map(g=>Object.freeze({
         id:g.id,wording:g.wording,limit:g.limit,state:g.state,
         display:g.display,referencePaths:g.referencePaths,uncollectedPaths:g.uncollectedPaths,
-        sourceStatus:g.sourceStatus,
+        sourceStatus:g.sourceStatus,sourceUrl:g.sourceUrl,sourcePage:g.sourcePage,
+        sourceHeading:g.sourceHeading,preparationKind:g.preparationKind,preparationLabel:g.preparationLabel,
         action:'EXTERNAL_SOURCE_OR_PATIENT_CONFIRMATION'
       }));
     return Object.freeze({
