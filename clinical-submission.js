@@ -177,6 +177,8 @@
       }).catch(()=>{
         officialRequirements=null;
         requirementsState='UNAVAILABLE';
+        // An outage must be recoverable by an explicit retry; do not cache failure.
+        requirementsPromise=null;
         return false;
       });
     return requirementsPromise;
@@ -264,7 +266,7 @@
     'family_feedback':'informant',
     'professional_outcomes':'professional',
     'professional_outcomes.validated_assessments':'professional',
-    'external_clinical_records':'professional',
+    'external_clinical_records':'external_clinical_records',
     'risk_confounders':'risk_confounders',
     'risk_confounders.current_medications':'risk_confounders'
   });
@@ -554,13 +556,47 @@
     ]
   }
 });
-  const buildCountryPriority=(report,country)=>{
+  // User-entered specialty tunes reading order only. Every field and authority is
+  // still drawn from the same published-country registry; no hospital specialty,
+  // personal clinician preference or mandatory examination is inferred.
+  const specialtyOrder=Object.freeze({
+    NEUROLOGY:['cognitive_history','onset_trajectory','informant_history','function_independence','mood_neuropsychiatric'],
+    GERIATRICS:['function_independence','informant_history','onset_trajectory','cognitive_history','mood_neuropsychiatric'],
+    PSYCHIATRY:['mood_neuropsychiatric','informant_history','function_independence','cognitive_history','onset_trajectory'],
+    PRIMARY_CARE:['onset_trajectory','function_independence','informant_history','cognitive_history','mood_neuropsychiatric']
+  });
+  const classifySpecialty=name=>{
+    const raw=String(name||'').toLowerCase().trim();
+    if(!raw)return 'UNSPECIFIED';
+    if(/신경과|neurolog|神経内科|脳神経/.test(raw))return 'NEUROLOGY';
+    if(/노인의학|노인병|geriatri|老年科/.test(raw))return 'GERIATRICS';
+    if(/정신건강|정신과|psychiatr|精神科/.test(raw))return 'PSYCHIATRY';
+    if(/가정의학|내과|family medic|primary care|general practic|総合診療|内科/.test(raw))return 'PRIMARY_CARE';
+    return 'UNSPECIFIED';
+  };
+  const buildCountryPriority=(report,country,department)=>{
     const profile=countryPublicClinicalPriority[country];
     if(!profile)return null;
+    const specialtyFocus=classifySpecialty(department);
+    const order=specialtyOrder[specialtyFocus]||[];
+    const ranked=profile.priorities.slice();
+    if(order.length){
+      // The visit reason remains first so even specialty-focused print reads
+      // patient-first; reorder only already-cited clinical evidence fields.
+      const head=ranked.filter(x=>x.id==='consultation_reason');
+      const rest=ranked.filter(x=>x.id!=='consultation_reason');
+      rest.sort((a,b)=>{
+        const ia=order.indexOf(a.id),ib=order.indexOf(b.id);
+        return (ia<0?999:ia)-(ib<0?999:ib);
+      });
+      ranked.splice(0,ranked.length,...head,...rest);
+    }
     return Object.freeze({
-      profileName:profile.profileName,country,providerApproved:false,clinicianApproved:false,
+      profileName:profile.profileName,country,specialtyFocus,
+      orderingBasis:specialtyFocus==='UNSPECIFIED'?'COUNTRY_PUBLIC_GUIDELINE_ONLY':'USER_ENTERED_SPECIALTY_EDITORIAL_PRIORITY',
+      providerApproved:false,clinicianApproved:false,
       officialTranslationVerified:false,
-      priorities:Object.freeze(profile.priorities.map(row=>Object.freeze({
+      priorities:Object.freeze(ranked.map(row=>Object.freeze({
         ...row,recorded:pathHasRecord(report,row.path)
       }))),
       guidelineSources:Object.freeze(profile.sources.map(row=>Object.freeze({...row}))),
@@ -651,7 +687,7 @@
       noDirectMappingCount:assessment?.counts.noDirectMapping||0,
       briefItems:Object.freeze(selected),
       researchItems:Object.freeze(researchItems),preparationCounts,
-      countryClinicalPriority:buildCountryPriority(report,choice.country),
+      countryClinicalPriority:buildCountryPriority(report,choice.country,choice.department),
       missingMoreCount:Math.max(0,groups.filter(g=>g.state!=='APP_CONTEXT_REFERENCE_ONLY').length-selected.length),
       caution:'이 문서는 환자 지참용 한국어 진료 준비 자료입니다. 병원 승인 서식이나 필수 제출자료 목록이 아니며, 미수집은 정상 소견이 아닙니다.',
       electronicSubmissionReady:false,hospitalReceipt:null
