@@ -1082,6 +1082,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .clinical-visit-list span{display:block;color:#425761;overflow-wrap:anywhere}
 .clinical-visit-brief .clinical-visit-caution,.clinical-visit-conflict{font-weight:750;color:#7a341f}
 .clinical-visit-source a{overflow-wrap:anywhere;color:#175f83}
+.clinical-visit-appendix{border-top:1px solid #d7e0e6;margin-top:10px;padding-top:8px;min-width:0}
+.clinical-visit-appendix h3{margin:2px 0 6px;font-size:13px;line-height:1.35;color:var(--kimse-navy)}
+.clinical-visit-trace a{color:#175f83;overflow-wrap:anywhere;text-decoration:underline}
+.clinical-visit-appendix li{padding:3px 0;break-inside:avoid;page-break-inside:avoid}
+@media print{.clinical-visit-appendix{break-inside:auto}.clinical-visit-appendix h3{font-size:9pt;break-after:avoid}.clinical-visit-appendix li{font-size:8pt}}
 @media print{
   .clinical-visit-brief{padding:7px 9px;break-inside:auto}
   .clinical-visit-brief h2{font-size:10pt}

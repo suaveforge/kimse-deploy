@@ -163,7 +163,10 @@
               throw Error('INVALID_RESEARCH_REQUIREMENT');
             return Object.freeze({id:safeText(g.id,90),wording:safeText(g.wording,500),
               limit:safeText(g.limit,500),status:safeText(g.status,110),
-              relatedPaths:Object.freeze(g.related_paths.map(x=>safeText(x,130)))});
+              relatedPaths:Object.freeze(g.related_paths.map(x=>safeText(x,130))),
+              sourceUrl:safeText(g.source_url||entry.source_url,700),
+              sourcePage:Number.isInteger(g.source_page)&&g.source_page>0?g.source_page:null,
+              sourceHeading:safeText(g.source_heading,200)});
           });
           next.set(target.id,Object.freeze({sourceStatus:'PUBLIC_RESEARCH_ONLY',
             institutionId:target.id,requirementGroups:Object.freeze(requirements)}));
@@ -285,6 +288,20 @@
     const node=path.split('.').reduce((value,key)=>value&&typeof value==='object'?value[key]:undefined,report);
     return hasActualValue(node);
   };
+  // Classification is based only on the published crosswalk's source status.
+  // It is a patient preparation aid, never a hospital-approved checklist.
+  const preparationKind=status=>{
+    if(/APPROVED_CHANNEL|PARTNER_APPROVAL|INSTITUTION_REVIEW|AUTHORIZED_REFERRER|ROUTE_CONFLICT|EXTERNAL_APPOINTMENT|EXTERNAL_PATIENT_ADMINISTRATIVE|EXTERNAL_CLINICIAN_REFERRAL/.test(status))return 'PROVIDER_PROCESS';
+    if(/EXTERNAL|PROFESSIONAL|CLINICIAN_ASSESSMENT|VALIDATED/.test(status))return 'EXTERNAL_CLINICAL_MATERIAL';
+    if(/CAPTURE_DEPENDENT|NOT_YET_SUPPORTED|UNIMPLEMENTED|CANDIDATE_USER_REPORT|PARTIAL|INFORMANT_PARTICIPATION/.test(status))return 'PATIENT_OR_FAMILY_CONFIRMATION';
+    return 'OBSERVATION_REFERENCE';
+  };
+  const preparationLabels=Object.freeze({
+    PROVIDER_PROCESS:'의료기관·의뢰 절차 확인',
+    EXTERNAL_CLINICAL_MATERIAL:'외부 검사·원본 기록 준비',
+    PATIENT_OR_FAMILY_CONFIRMATION:'본인·가족 추가 확인',
+    OBSERVATION_REFERENCE:'낌새 관찰·진료 참고'
+  });
   const assessResearchRequirements=(report,institutionId)=>{
     const research=getResearchRequirements(institutionId);
     if(!research)return null;
@@ -296,6 +313,9 @@
         referencePaths.length?'APP_CONTEXT_REFERENCE_ONLY':'RELATED_CONTEXT_NOT_COLLECTED';
       return Object.freeze({
         id:group.id,wording:group.wording,limit:group.limit,sourceStatus:group.status,
+         sourceUrl:group.sourceUrl,sourcePage:group.sourcePage,sourceHeading:group.sourceHeading,
+         preparationKind:preparationKind(group.status),
+         preparationLabel:preparationLabels[preparationKind(group.status)],
         relatedPaths:group.relatedPaths,referencePaths:Object.freeze(referencePaths),
         uncollectedPaths:Object.freeze(uncollectedPaths),state,
         display:CLINICAL_GROUP_STATE[state],
@@ -332,6 +352,15 @@
       const externalSource=/EXTERNAL|DOCUMENT|PROFESSIONAL|PROVIDER|REFERRAL|TEST/.test(group.sourceStatus);
       return (externalSource?0:1)+(needsRecord?0:external?1:2);
     };
+    const researchItems=groups.map(g=>Object.freeze({
+      id:g.id,wording:g.wording,limit:g.limit,state:g.state,display:g.display,
+      sourceStatus:g.sourceStatus,sourceUrl:g.sourceUrl,sourcePage:g.sourcePage,
+      sourceHeading:g.sourceHeading,preparationKind:g.preparationKind,
+      preparationLabel:g.preparationLabel,referencePaths:g.referencePaths,
+      uncollectedPaths:g.uncollectedPaths
+    }));
+    const preparationCounts=Object.freeze(Object.fromEntries(
+      Object.keys(preparationLabels).map(kind=>[kind,researchItems.filter(item=>item.preparationKind===kind).length])));
     const selected=groups
       .filter(g=>g.state!=='APP_CONTEXT_REFERENCE_ONLY')
       .slice().sort((a,b)=>rank(a)-rank(b))
@@ -355,6 +384,7 @@
       uncollectedCount:assessment?.counts.relatedUncollected||0,
       noDirectMappingCount:assessment?.counts.noDirectMapping||0,
       briefItems:Object.freeze(selected),
+      researchItems:Object.freeze(researchItems),preparationCounts,
       missingMoreCount:Math.max(0,groups.filter(g=>g.state!=='APP_CONTEXT_REFERENCE_ONLY').length-selected.length),
       caution:'이 문서는 환자 지참용 한국어 진료 준비 자료입니다. 병원 승인 서식이나 필수 제출자료 목록이 아니며, 미수집은 정상 소견이 아닙니다.',
       electronicSubmissionReady:false,hospitalReceipt:null
