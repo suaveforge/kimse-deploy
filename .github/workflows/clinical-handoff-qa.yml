@@ -250,6 +250,11 @@ jobs:
             await dp.waitForFunction(()=>document.querySelector('.clinical-visit-brief')?.textContent.includes('Dorset'),null,{timeout:12000});
             check((await dp.locator('.clinical-report-stamp').innerText()).includes('영국'),'uk-print-target-not-mislabeled-as-korean');
             check((await dp.locator('.clinical-visit-brief').innerText()).includes('Dorset'),'uk-public-source-inside-print-page');
+            const printedOrigins=await dp.locator('.clinical-print-source-records').innerText();
+            check(printedOrigins.includes('가족·보호자 관찰')&&printedOrigins.includes('외부 검사·의료기록')&&printedOrigins.includes('전문 의료진 평가'),
+              'hospital-print-keeps-family-and-professional-source-separate');
+            check(await dp.locator('.clinical-visit-list .clinical-visit-trace a[href^="https://"]').count()>=1,
+              'priority-hospital-advice-links-original-public-source');
             await dp.emulateMedia({media:'print'});
             const hospitalPdf=await dp.pdf({format:'A4',printBackground:true,margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
             const hospitalPageCount=(await PDFDocument.load(hospitalPdf)).getPageCount();
