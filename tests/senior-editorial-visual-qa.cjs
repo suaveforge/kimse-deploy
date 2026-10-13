@@ -52,7 +52,7 @@ const seed=(route,mode)=>({
      }
      if(route==='brain-map'){
       assert.equal(m.originalDescriptions,1,'brain map repeats original introduction');
-      assert(m.summaryText.includes('개인 진단 점수나 뇌영상 검사 결과가 아닙니다'),'map must retain medical limits');
+      assert(m.summaryText.includes('뇌영상 검사나 개인의 치매 진단 결과가 아닙니다'),'map must retain the actual medical limitation shown to users');
      }
      assert.equal(runtimeErrors.filter(x=>!x.includes('require is not defined')).length,0,'JavaScript errors: '+runtimeErrors.join(' | '));
      const name=route+'-'+profile.w+'-'+profile.mode;
