@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261013-clinical-observed-gaps-06';
+const CACHE = 'kimse-pwa-20261013-clinical-crosswalk-arrays-07';
 const CORE = [
   './',
   './index.html',
