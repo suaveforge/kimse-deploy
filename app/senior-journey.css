@@ -1187,3 +1187,11 @@ body:has(.screen-home) .bottom-nav-inner{max-width:1060px}
 }
 .high-contrast .screen-home .kh-home-grid>section,.high-contrast .screen-home .kh-home-action,.high-contrast .screen-home .kh-home-family-link{background:#fff;color:#111;border:2px solid #111}
 .high-contrast .screen-home .kh-home-badge.is-waiting,.high-contrast .screen-home .kh-home-badge.is-ready{background:#fff;color:#111;border:2px solid #111}
+
+/* Home preview refinement after actual Chromium screenshot inspection. */
+@media(min-width:801px){
+ body:has(.screen-home) .bottom-nav{position:static;inset:auto;width:calc(100% - 36px);max-width:1060px;margin:4px auto 20px;border-radius:18px;transform:none}
+}
+@media(max-width:800px){
+ .screen-home .kh-home-observation{order:-1}
+}
