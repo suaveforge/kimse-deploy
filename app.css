@@ -1090,6 +1090,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .clinical-national-priority li{font-size:11px;line-height:1.35;display:list-item;break-inside:avoid}
 .clinical-national-priority li span{display:inline}
 .clinical-national-priority li strong{font-weight:650;margin-left:7px;color:#425761}
+.clinical-national-priority .clinical-draft-term{display:inline-block;margin-left:7px;font-size:10px;font-weight:500;line-height:1.45;color:#526778;white-space:normal;overflow-wrap:anywhere}
+.clinical-national-priority .clinical-translation-caution{font-size:10px;font-weight:650;line-height:1.45;color:#744e31;margin:4px 0 6px}
+@media print{.clinical-national-priority .clinical-draft-term{font-size:7.5pt;break-inside:avoid}.clinical-national-priority .clinical-translation-caution{font-size:7.5pt}}
 .clinical-national-sources a{color:#175f83;overflow-wrap:anywhere;text-decoration:underline}
 @media print{.clinical-national-priority{break-inside:auto}.clinical-national-priority h3{font-size:9pt}.clinical-national-priority li{font-size:8pt}}
 .clinical-visit-appendix{border-top:1px solid #d7e0e6;margin-top:10px;padding-top:8px;min-width:0}
