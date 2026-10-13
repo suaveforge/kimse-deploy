@@ -2192,8 +2192,8 @@ page.home=()=>{if(!demo())return accountRequired();
   const ready=summary?.status==='READY',sufficient=ready&&!['LOW','INSUFFICIENT'].includes(stage?.data_sufficiency);
   const felt=Array.isArray(stage?.basis)&&stage.basis.some(x=>x?.axis==='subjective'&&x?.state==='PRESENT');
   const meta=observationStageMeta(stage);
-  const stateTitle=sufficient?(meta.short||meta.label):(felt?'느낀 변화가 있어요':'자료를 모으는 중이에요');
-  const stateDetail=sufficient?stageWhyText(stage,changes):(felt?'본인·가족이 느낀 변화가 기록됐어요.':'평소와 비교할 생활기록이 아직 부족해요.');
+  const stateTitle=sufficient?(meta.short||meta.label):(felt?'느낀 변화 기록':'자료 수집 중');
+  const stateDetail=sufficient?stageWhyText(stage,changes):(felt?'본인·가족이 느낀 변화가 기록됐어요.':'비교할 생활기록이 아직 부족해요.');
   const statusRoute=sufficient?'monitoring-status':'collection-status';
   const days=Math.min(14,clock.completedDays);
   const progressPercent=clock.complete?100:Math.max(0,Math.min(100,(clock.completedDays+clock.percent/100)/14*100));
@@ -2210,7 +2210,7 @@ page.home=()=>{if(!demo())return accountRequired();
     '<a class="kh2-progress" href="#/baseline" aria-label="14일 관찰 '+clock.day+'일째, 자세한 시간 경과 확인">'+
       '<span class="kh2-progress-head"><span>'+I('calendar')+' <strong>14일 관찰</strong></span><b>'+(clock.complete?'14일 완료':clock.day+'일째')+' <small>/ 14일</small></b></span>'+
       '<span class="kh2-track" role="progressbar" aria-valuemin="0" aria-valuemax="14" aria-valuenow="'+Math.min(14,clock.completedDays+clock.percent/100).toFixed(2)+'" aria-label="14일 관찰 시간 경과"><i style="width:'+progressPercent.toFixed(2)+'%"></i></span>'+
-      '<span class="kh2-progress-note">관찰 시간 경과 · 실제 데이터 수집량과 다릅니다'+I('chevron-right')+'</span></a>':'';
+      '<span class="kh2-progress-note">시간 경과 · 데이터 수집률 아님'+I('chevron-right')+'</span></a>':'';
   const entries=[
     ['🧠','근거 기반 체크','assessment-start','bg-pink'],
     ['🧩','인지 훈련','training','bg-purple'],
