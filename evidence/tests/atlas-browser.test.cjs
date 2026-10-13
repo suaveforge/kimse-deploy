@@ -8,7 +8,8 @@ const base='http://127.0.0.1:8765/evidence/rd.html';
 const root=path.resolve(__dirname,'../..');
 const mod=f=>path.join(root,'node_modules',f);
 const out=path.join(root,'evidence','test-results');
-const verifiedRouteCount=JSON.parse(fs.readFileSync(path.join(root,'evidence','rd-world-map-data.json'),'utf8')).routeReview20261013.verifiedFirstEnquiryUnsent;
+const atlasData=JSON.parse(fs.readFileSync(path.join(root,'evidence','rd-world-map-data.json'),'utf8'));
+const verifiedRouteCount=atlasData.routeReview20261013.verifiedFirstEnquiryUnsent;
 fs.mkdirSync(out,{recursive:true});
 
 async function run(){
@@ -56,7 +57,7 @@ async function run(){
       assert.equal(await page.locator('#kimse-progress-rows a[href^="https://"]').count(),verifiedRouteCount,'all confirmed initial-enquiry channels link official institutions');
       assert.match(await page.locator('#kimse-progress-rows').innerText(),/0단계/,'route verified institutions remain P0');
       await page.selectOption('#kimse-progress-stage','FORMAL_FOI_REGISTERED');
-      assert.equal(await page.locator('#kimse-progress-rows tr').count(),15,'fifteen formal FOI registrations');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),atlasData.contacts.formalFOIRegistered,'formal FOI registrations match official receipt evidence');
       await page.selectOption('#kimse-progress-stage','FOI_FORM_APPROVED_NOT_SUBMITTED');
       assert.equal(await page.locator('#kimse-progress-rows tr').count(),4,'approved but unsubmitted forms');
       assert.equal(await page.locator('#kimse-progress-rows a[href^="https://"]').count(),4,'all unsubmitted forms link official portals');
