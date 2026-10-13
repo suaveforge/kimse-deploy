@@ -54,11 +54,13 @@ const audited=async(page,route,variant)=>{
      if(x.errors.length)fatal.push({tag,issue:'JavaScript runtime errors',errors:x.errors.slice(0,2)});
      if(sc.mode==='normal'&&route==='medical-records'&&(x.firstAction?.bottom??9999)>sc.height)
        fatal.push({tag,issue:'Primary medical record entry button below first screen',bottom:x.firstAction?.bottom});
+     if(sc.mode==='normal'&&route==='caregiver-home'&&(x.firstAction?.bottom??9999)>Math.min(x.navTop||sc.height,sc.height))
+       fatal.push({tag,issue:'Caregiver primary tool behind bottom navigation',bottom:x.firstAction?.bottom,navTop:x.navTop});
      if(sc.mode==='normal'&&route==='voice-check'&&(x.firstAction?.bottom??9999)>sc.height)
        fatal.push({tag,issue:'Voice recording button below first screen',bottom:x.firstAction?.bottom});
      if(route==='consultation-report'){
        const noData=await page.evaluate(()=>document.querySelector('#main')?.innerText||'');
-       if(noData.includes('현재 큰 변화가 확인되지 않았습니다.')||noData.includes('14/14일'))
+       if(noData.includes('현재 큰 변화가 확인되지 않았습니다.')||noData.includes('14/14일')||noData.includes('null/14일')||noData.includes('최근 3일'))
          fatal.push({tag,issue:'Unsupported clinical comparison presented as observed evidence'});
      }
      await page.screenshot({path:out+'/'+tag+'.png',fullPage:false,animations:'disabled'});
