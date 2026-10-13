@@ -51,7 +51,7 @@ const variants=[
    assert.equal(m.actions.length,4);
    assert(m.status&&!m.status.includes('정상'),'do not infer a normal state without data');
    assert.equal(errors.filter(x=>!x.includes('require is not defined')).length,0,'JavaScript errors: '+errors.join(' | '));
-   if(v.w===375&&v.mode==='normal')assert(m.lastTileBottom<=m.navTop+2,'four actions must fit above bottom nav at 375 × 812: '+JSON.stringify(m));
+   if(v.w<=375&&v.mode==='normal')assert(m.lastTileBottom<=m.navTop+2,'four original actions must fit above bottom nav at '+v.w+'px: '+JSON.stringify(m));
    console.log('HOME_COMPACT_PASS '+key+' '+JSON.stringify({lastTileBottom:m.lastTileBottom,navTop:m.navTop,docWidth:m.docWidth}));
    await page.close();
   }
