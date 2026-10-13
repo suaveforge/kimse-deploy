@@ -82,6 +82,7 @@
     if(name==='AUTOMATED_ACK_ONLY')return 'status-ack';
     if(name==='INFORMATION_REQUEST_SENT')return 'status-request';
     if(name==='FOI_FORM_APPROVED_NOT_SUBMITTED')return 'status-pending-form';
+    if(name==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT')return 'status-screen';
     return name==='CANDIDATE_FIT_PRELIMINARY'?'status-screen':'status-review';
   }
   function fromNumeric(id) { return String(id == null?'':id).padStart(3,'0'); }
@@ -144,12 +145,12 @@
     body.innerHTML=filtered.map(function(x){
       var p=x.progress||{},ref=p.formalFOIRef?'<div class="kimse-progress-reference">접수번호 '+safe(p.formalFOIRef)+'</div>':'';
       var deadline=p.formalResponseDeadline?'<div class="kimse-progress-deadline">답변 예정 '+safe(p.formalResponseDeadline)+'</div>':'';
-      var evidence=p.formalFOIRef?'공식 FOI 접수번호 확인':x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'?'기관 연구방법 회신':x.stage==='AUTOMATED_ACK_ONLY'?'자동 확인메일 · 정식 접수 미확정':x.stage==='INFORMATION_REQUEST_SENT'?'회사메일 전송 · 답변 대기':x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED'?'사용자 승인 · 실제 제출 전':'공식 담당·연구 근거 검토';
+      var evidence=p.formalFOIRef?'공식 FOI 접수번호 확인':x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'?'기관 연구방법 회신':x.stage==='AUTOMATED_ACK_ONLY'?'자동 확인메일 · 정식 접수 미확정':x.stage==='INFORMATION_REQUEST_SENT'?'회사메일 전송 · 답변 대기':x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED'?'사용자 승인 · 실제 제출 전':x.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT'?'공식 문의경로 확인 · 아직 1차 연락 전':'공식 담당·연구 근거 검토';
       var phase=p.phase===2?'2단계 · 자료 검토':p.phase===1?'1단계 · 자료요청':'0단계 · 접촉 준비';
       return '<tr><td><div class="kimse-progress-name-and-phase"><span class="kimse-progress-bignum phase-'+Number(p.phase||0)+'">'+Number(p.phase||0)+'단계</span><strong>'+safe(x.name)+'</strong></div><small>'+safe(x.countryName)+' · '+safe(x.sector)+'</small></td>'+
         '<td><span class="kimse-atlas-chip '+stageClass(x)+'">'+safe(x.stageLabel)+'</span><small>'+safe(phase)+'</small></td>'+
         '<td>'+safe(evidence)+ref+deadline+'</td>'+
-        '<td>'+safe(p.nextAction||'근거 확인 후 진행')+(p.approvedWebFormNotSubmitted && /^https:\/\//.test(p.formURL||'')?'<div class="kimse-progress-form-link"><a href="'+safe(p.formURL)+'" target="_blank" rel="noopener noreferrer">공식 FOI 양식 열기 ↗</a></div>':'')+'</td>'+
+        '<td>'+safe(p.nextAction||'근거 확인 후 진행')+(p.approvedWebFormNotSubmitted && /^https:\/\//.test(p.formURL||'')?'<div class="kimse-progress-form-link"><a href="'+safe(p.formURL)+'" target="_blank" rel="noopener noreferrer">공식 FOI 양식 열기 ↗</a></div>':'')+(p.routeVerified && /^https:\/\//.test(p.contactRouteURL||'')?'<div class="kimse-progress-form-link"><a href="'+safe(p.contactRouteURL)+'" target="_blank" rel="noopener noreferrer">기관 공식 문의경로 ↗</a></div>':'')+'</td>'+
         '<td><span class="kimse-progress-unverified">협력 미확정</span><small>구매·계약 증거 0</small></td></tr>';
     }).join('');
   }
@@ -301,7 +302,7 @@
   }
   async function start() {
     try {
-      var r=await fetch('./rd-world-map-data.json?v=20261013-institution-stage1',{cache:'no-store'});
+      var r=await fetch('./rd-world-map-data.json?v=20261013-first-enquiry-routes2',{cache:'no-store'});
       if(!r.ok)throw new Error('기관 자료 HTTP '+r.status);
       state.data=await r.json();
       if(!state.data||!Array.isArray(state.data.institutions)||state.data.institutions.length!==state.data.total)throw new Error('기관 원장 자료 무결성 오류');
