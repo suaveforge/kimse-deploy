@@ -1,0 +1,1065 @@
+{
+  "results": [
+    {
+      "key": "home-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [],
+      "icons": [
+        "🧠",
+        "🧩",
+        "💊",
+        "💚"
+      ],
+      "nav": 5
+    },
+    {
+      "key": "collection-status-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [
+        {
+          "label": "위치·이동",
+          "value": "미수집"
+        },
+        {
+          "label": "생활반경",
+          "value": "미수집"
+        },
+        {
+          "label": "외출 신호",
+          "value": "미수집"
+        },
+        {
+          "label": "움직임·활동",
+          "value": "1분 미만"
+        },
+        {
+          "label": "낌새 사용",
+          "value": "1분 미만"
+        },
+        {
+          "label": "음성 샘플",
+          "value": "미수집"
+        }
+      ],
+      "lastTile": 483.734375,
+      "actionsBottom": 564.734375,
+      "icons": [],
+      "nav": 0,
+      "details": false
+    },
+    {
+      "key": "monitoring-status-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "note": "비교할 생활기록을 모으고 있습니다."
+    },
+    {
+      "key": "baseline-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "baseline": "14일 관찰 · 2일째"
+    },
+    {
+      "key": "health-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "training-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "medication-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "settings-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "report-320-normal",
+      "doc": 305,
+      "w": 320,
+      "h": 720,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "home-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [
+        "🧠",
+        "🧩",
+        "💊",
+        "💚"
+      ],
+      "nav": 5
+    },
+    {
+      "key": "collection-status-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [
+        {
+          "label": "위치·이동",
+          "value": "미수집"
+        },
+        {
+          "label": "생활반경",
+          "value": "미수집"
+        },
+        {
+          "label": "외출 신호",
+          "value": "미수집"
+        },
+        {
+          "label": "움직임·활동",
+          "value": "1분 미만"
+        },
+        {
+          "label": "낌새 사용",
+          "value": "1분 미만"
+        },
+        {
+          "label": "음성 샘플",
+          "value": "미수집"
+        }
+      ],
+      "lastTile": 446.59375,
+      "actionsBottom": 527.59375,
+      "icons": [],
+      "nav": 0,
+      "details": false
+    },
+    {
+      "key": "monitoring-status-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "note": "비교할 생활기록을 모으고 있습니다."
+    },
+    {
+      "key": "baseline-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "baseline": "14일 관찰 · 2일째"
+    },
+    {
+      "key": "health-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "training-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "medication-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "settings-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "report-375-normal",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "home-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [],
+      "icons": [
+        "🧠",
+        "🧩",
+        "💊",
+        "💚"
+      ],
+      "nav": 5
+    },
+    {
+      "key": "collection-status-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [
+        {
+          "label": "위치·이동",
+          "value": "미수집"
+        },
+        {
+          "label": "생활반경",
+          "value": "미수집"
+        },
+        {
+          "label": "외출 신호",
+          "value": "미수집"
+        },
+        {
+          "label": "움직임·활동",
+          "value": "1분 미만"
+        },
+        {
+          "label": "낌새 사용",
+          "value": "1분 미만"
+        },
+        {
+          "label": "음성 샘플",
+          "value": "미수집"
+        }
+      ],
+      "lastTile": 447.375,
+      "actionsBottom": 528.375,
+      "icons": [],
+      "nav": 0,
+      "details": false
+    },
+    {
+      "key": "monitoring-status-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "note": "비교할 생활기록을 모으고 있습니다."
+    },
+    {
+      "key": "baseline-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "baseline": "14일 관찰 · 2일째"
+    },
+    {
+      "key": "health-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "training-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "medication-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "settings-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "report-430-normal",
+      "doc": 415,
+      "w": 430,
+      "h": 860,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "home-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [],
+      "icons": [
+        "🧠",
+        "🧩",
+        "💊",
+        "💚"
+      ],
+      "nav": 5
+    },
+    {
+      "key": "collection-status-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [
+        {
+          "label": "위치·이동",
+          "value": "미수집"
+        },
+        {
+          "label": "생활반경",
+          "value": "미수집"
+        },
+        {
+          "label": "외출 신호",
+          "value": "미수집"
+        },
+        {
+          "label": "움직임·활동",
+          "value": "1분 미만"
+        },
+        {
+          "label": "낌새 사용",
+          "value": "1분 미만"
+        },
+        {
+          "label": "음성 샘플",
+          "value": "미수집"
+        }
+      ],
+      "lastTile": 473.796875,
+      "actionsBottom": 554.796875,
+      "icons": [],
+      "nav": 0,
+      "details": false
+    },
+    {
+      "key": "monitoring-status-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "note": "비교할 생활기록을 모으고 있습니다."
+    },
+    {
+      "key": "baseline-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "baseline": "14일 관찰 · 2일째"
+    },
+    {
+      "key": "health-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "training-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "medication-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "settings-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "report-1440-normal",
+      "doc": 1425,
+      "w": 1440,
+      "h": 900,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "home-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [
+        "🧠",
+        "🧩",
+        "💊",
+        "💚"
+      ],
+      "nav": 5
+    },
+    {
+      "key": "collection-status-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [
+        {
+          "label": "위치·이동",
+          "value": "미수집"
+        },
+        {
+          "label": "생활반경",
+          "value": "미수집"
+        },
+        {
+          "label": "외출 신호",
+          "value": "미수집"
+        },
+        {
+          "label": "움직임·활동",
+          "value": "1분 미만"
+        },
+        {
+          "label": "낌새 사용",
+          "value": "1분 미만"
+        },
+        {
+          "label": "음성 샘플",
+          "value": "미수집"
+        }
+      ],
+      "lastTile": 460.078125,
+      "actionsBottom": 541.078125,
+      "icons": [],
+      "nav": 0,
+      "details": false
+    },
+    {
+      "key": "monitoring-status-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "note": "비교할 생활기록을 모으고 있습니다."
+    },
+    {
+      "key": "baseline-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "baseline": "14일 관찰 · 2일째"
+    },
+    {
+      "key": "health-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "training-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "medication-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "settings-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "report-375-large",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "home-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [
+        "🧠",
+        "🧩",
+        "💊",
+        "💚"
+      ],
+      "nav": 5
+    },
+    {
+      "key": "collection-status-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [
+        {
+          "label": "위치·이동",
+          "value": "미수집"
+        },
+        {
+          "label": "생활반경",
+          "value": "미수집"
+        },
+        {
+          "label": "외출 신호",
+          "value": "미수집"
+        },
+        {
+          "label": "움직임·활동",
+          "value": "1분 미만"
+        },
+        {
+          "label": "낌새 사용",
+          "value": "1분 미만"
+        },
+        {
+          "label": "음성 샘플",
+          "value": "미수집"
+        }
+      ],
+      "lastTile": 447.140625,
+      "actionsBottom": 528.140625,
+      "icons": [],
+      "nav": 0,
+      "details": false
+    },
+    {
+      "key": "monitoring-status-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "note": "비교할 생활기록을 모으고 있습니다."
+    },
+    {
+      "key": "baseline-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0,
+      "baseline": "14일 관찰 · 2일째"
+    },
+    {
+      "key": "health-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "training-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 5
+    },
+    {
+      "key": "medication-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "settings-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "key": "report-375-contrast",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "tiles": [],
+      "icons": [],
+      "nav": 0
+    },
+    {
+      "smoke": "demo-capture",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-demo-capture",
+      "headline": "실제 앱을 자동 조작해약 1분로 촬영합니다"
+    },
+    {
+      "smoke": "start",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-start",
+      "headline": "낌새"
+    },
+    {
+      "smoke": "role",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-role",
+      "headline": "어떤 목적으로 사용하시나요?"
+    },
+    {
+      "smoke": "auth",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-auth",
+      "headline": "로그인"
+    },
+    {
+      "smoke": "onboarding-profile",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-onboarding-profile",
+      "headline": "태어난 연대를 골라주세요"
+    },
+    {
+      "smoke": "initial-check",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-initial-check senior-screen",
+      "headline": "처음 보여드린 세 단어가 기억나세요?"
+    },
+    {
+      "smoke": "voice-check",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-voice-check senior-screen",
+      "headline": "편하게 말씀해주세요"
+    },
+    {
+      "smoke": "initial-result",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-initial-result",
+      "headline": "오늘의 기록을잘 저장했어요"
+    },
+    {
+      "smoke": "cognitive-recheck",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-cognitive-recheck",
+      "headline": "세 단어를 기억해주세요"
+    },
+    {
+      "smoke": "cognitive-recheck-result",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-cognitive-recheck-result",
+      "headline": "반복 인지 체크가 필요해요"
+    },
+    {
+      "smoke": "consent",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-consent senior-screen",
+      "headline": "어떤 데이터를 모을지직접 선택해주세요"
+    },
+    {
+      "smoke": "evidence-proof",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow overview-page screen-evidence-proof",
+      "headline": "낌새는 무엇을 살펴볼까요?"
+    },
+    {
+      "smoke": "research-engine",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow overview-page screen-research-engine senior-screen",
+      "headline": "연구 근거와 내 기록은어떻게 연결될까요?"
+    },
+    {
+      "smoke": "baseline",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow overview-page screen-baseline senior-screen",
+      "headline": "14일 관찰 · 2일째"
+    },
+    {
+      "smoke": "brain-map",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow overview-page screen-brain-map senior-screen",
+      "headline": "기능별 관찰 지도"
+    },
+    {
+      "smoke": "monitoring-status",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow overview-page screen-monitoring-status senior-screen",
+      "headline": "평소의 생활패턴을알아가는 중이에요"
+    },
+    {
+      "smoke": "collection-status",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-collection-status",
+      "headline": "오늘 수집 상태"
+    },
+    {
+      "smoke": "brain-trends",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow overview-page screen-brain-trends senior-screen",
+      "headline": "전체 기능의 변화"
+    },
+    {
+      "smoke": "account",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-account",
+      "headline": "내 계정 / 역할 관리"
+    },
+    {
+      "smoke": "switch",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-switch",
+      "headline": "어떤 화면으로 이동할까요?"
+    },
+    {
+      "smoke": "home",
+      "doc": 360,
+      "w": 375,
+      "screen": "page   screen-home",
+      "headline": "안녕하세요, 김노인님"
+    },
+    {
+      "smoke": "assessment-start",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-assessment-start",
+      "headline": "앞으로의 인지건강 위험요인 확인"
+    },
+    {
+      "smoke": "assessment",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-assessment",
+      "headline": "연령 구간을 선택해주세요."
+    },
+    {
+      "smoke": "result",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-result",
+      "headline": "CAIDE Dementia Risk Score · Model 1"
+    },
+    {
+      "smoke": "training",
+      "doc": 360,
+      "w": 375,
+      "screen": "page   screen-training",
+      "headline": "인지 훈련"
+    },
+    {
+      "smoke": "training-play",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-training-play",
+      "headline": "조금 전 본 세 단어 중 포함된 것은?"
+    },
+    {
+      "smoke": "medication",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-medication",
+      "headline": "복약 관리"
+    },
+    {
+      "smoke": "medication-add",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-medication-add",
+      "headline": "약 등록"
+    },
+    {
+      "smoke": "health",
+      "doc": 360,
+      "w": 375,
+      "screen": "page   screen-health",
+      "headline": "건강 기록"
+    },
+    {
+      "smoke": "health-detail",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-health-detail",
+      "headline": "지난밤 몇 시간 주무셨어요?"
+    },
+    {
+      "smoke": "caregiver-home",
+      "doc": 360,
+      "w": 375,
+      "screen": "page  overview-page screen-caregiver-home senior-screen",
+      "headline": "가족의 변화확인하기"
+    },
+    {
+      "smoke": "family-feedback",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-family-feedback",
+      "headline": "확인할 변화 알림이 없어요"
+    },
+    {
+      "smoke": "care-schedule",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-care-schedule",
+      "headline": "가족 일정 관리"
+    },
+    {
+      "smoke": "family",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-family",
+      "headline": "가족 연결 관리"
+    },
+    {
+      "smoke": "family-add",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-family-add",
+      "headline": "보호자 계정 초대"
+    },
+    {
+      "smoke": "family-call",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-family-call",
+      "headline": "가족과 안부를 나눠요"
+    },
+    {
+      "smoke": "call-room",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-call-room",
+      "headline": "통화 정보를 불러오는 중이에요"
+    },
+    {
+      "smoke": "clinical-handoff",
+      "doc": 360,
+      "w": 375,
+      "screen": "page   screen-clinical-handoff",
+      "headline": "최근 변화를 정리해병원에 가져갈 수 있어요"
+    },
+    {
+      "smoke": "medical-records",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-medical-records",
+      "headline": "병원·검사 결과는새로 생길 때마다 추가하세요"
+    },
+    {
+      "smoke": "clinical-context-event",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-clinical-context-event",
+      "headline": "진료 전에 전할 변화 기록"
+    },
+    {
+      "smoke": "medical-record-add",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-medical-record-add",
+      "headline": "이번에 새로 생긴 것만간단히 추가하세요"
+    },
+    {
+      "smoke": "professional-outcome",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-professional-outcome",
+      "headline": "전문평가 결과 등록"
+    },
+    {
+      "smoke": "report",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-report",
+      "headline": "상태 리포트"
+    },
+    {
+      "smoke": "emergency",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-emergency",
+      "headline": "비상 알림"
+    },
+    {
+      "smoke": "alert-add",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-alert-add",
+      "headline": "비상알림 수신자 추가"
+    },
+    {
+      "smoke": "market",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-market",
+      "headline": "치매 케어관"
+    },
+    {
+      "smoke": "market-detail",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-market-detail",
+      "headline": "실비아 웰니스"
+    },
+    {
+      "smoke": "partnership",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-partnership",
+      "headline": "입점·제휴 문의"
+    },
+    {
+      "smoke": "plan",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-plan",
+      "headline": "구독 관리"
+    },
+    {
+      "smoke": "accessibility",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-accessibility",
+      "headline": "글씨·화면 설정"
+    },
+    {
+      "smoke": "admin-partners",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-admin-partners",
+      "headline": "제휴 문의 관리자"
+    },
+    {
+      "smoke": "settings",
+      "doc": 360,
+      "w": 375,
+      "screen": "page narrow  screen-settings",
+      "headline": "설정"
+    }
+  ],
+  "problems": []
+}
