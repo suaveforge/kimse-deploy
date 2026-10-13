@@ -2,7 +2,7 @@
 const {chromium}=require(process.env.RUNNER_TEMP+'/kh-preview/node_modules/playwright');
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const out='qa-artifacts/remaining-mobile';fs.mkdirSync(out,{recursive:true});
-const routes='demo-capture start role auth onboarding-profile initial-check voice-check initial-result cognitive-recheck cognitive-recheck-result consent evidence-proof research-engine baseline brain-map monitoring-status collection-status brain-trends account switch home assessment-start assessment result training training-play medication medication-add health health-detail caregiver-home family-feedback care-schedule family family-add family-call call-room clinical-handoff medical-records clinical-context-event medical-record-add professional-outcome report emergency alert-add market market-detail partnership plan accessibility admin-partners settings'.split(' ');
+const routes='demo-capture start role auth onboarding-profile initial-check voice-check initial-result cognitive-recheck cognitive-recheck-result consent evidence-proof research-engine baseline brain-map monitoring-status collection-status brain-trends account switch home assessment-start assessment result training training-play medication medication-add health health-detail caregiver-home family-feedback care-schedule family family-add family-call call-room clinical-handoff consultation-report medical-records clinical-context-event medical-record-add professional-outcome report emergency alert-add market market-detail partnership plan accessibility admin-partners settings'.split(' ');
 const variants=[{width:320,height:720,mode:'normal'},{width:375,height:812,mode:'normal'},{width:375,height:812,mode:'large'}];
 const state=mode=>({version:14,account:{name:'김노인',email:'preview@example.invalid'},intent:'both',self:true,care:true,mode:'self',
  onboarding:{profileDone:true,initialDone:true,consentDone:true,completed:true},
@@ -52,6 +52,15 @@ const audited=async(page,route,variant)=>{
      if(x.scrollWidth>x.viewportWidth+2)fatal.push({tag,issue:'horizontal overflow',width:x.scrollWidth});
      if(x.route!==route)fatal.push({tag,issue:'route unexpected',actual:x.route});
      if(x.errors.length)fatal.push({tag,issue:'JavaScript runtime errors',errors:x.errors.slice(0,2)});
+     if(sc.mode==='normal'&&route==='medical-records'&&(x.firstAction?.bottom??9999)>sc.height)
+       fatal.push({tag,issue:'Primary medical record entry button below first screen',bottom:x.firstAction?.bottom});
+     if(sc.mode==='normal'&&route==='voice-check'&&(x.firstAction?.bottom??9999)>sc.height)
+       fatal.push({tag,issue:'Voice recording button below first screen',bottom:x.firstAction?.bottom});
+     if(route==='consultation-report'){
+       const noData=await page.evaluate(()=>document.querySelector('#main')?.innerText||'');
+       if(noData.includes('현재 큰 변화가 확인되지 않았습니다.')||noData.includes('14/14일'))
+         fatal.push({tag,issue:'Unsupported clinical comparison presented as observed evidence'});
+     }
      await page.screenshot({path:out+'/'+tag+'.png',fullPage:false,animations:'disabled'});
      console.log('AUDITED '+tag+' screens='+x.scrollScreens+' actionBelow='+x.actionBeyondViewport);
     }catch(e){fatal.push({tag,issue:String(e).slice(0,260)});}
