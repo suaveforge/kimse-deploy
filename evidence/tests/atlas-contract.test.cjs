@@ -63,18 +63,18 @@ for(const v of data.institutions){
 assert.equal(byCode.GB,39);
 assert.equal(byCode.US,10);
 assert.equal(data.institutions.filter(x=>x.progress.requestSent).length,31,'transport-confirmed outreach counts');
-assert.equal(data.institutions.filter(x=>x.stage==='FORMAL_FOI_REGISTERED').length,15,'official FOI references');
+assert.equal(data.institutions.filter(x=>x.stage==='FORMAL_FOI_REGISTERED').length,data.contacts.formalFOIRegistered,'official FOI references equal verified receive count');
 assert.equal(data.institutions.filter(x=>x.stage==='AUTOMATED_ACK_ONLY').length,2,'automatic replies');
-assert.equal(data.institutions.filter(x=>x.stage==='INFORMATION_REQUEST_SENT').length,13,'sent and waiting');
+assert.equal(data.institutions.filter(x=>x.stage==='INFORMATION_REQUEST_SENT').length,data.contacts.outreachSent-data.contacts.formalFOIRegistered-data.contacts.automatedAckOnly-data.contacts.researchMethodsReply,'sent and waiting derived from actual transport evidence');
 assert.equal(data.institutions.filter(x=>x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED').length,1,'methodology-only reply');
 assert.equal(data.institutions.filter(x=>x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED').length,4,'approved and still not submitted');
 assert.equal(data.institutions.filter(x=>x.progress.contactStatus==='IDENTIFIED_NOT_CONTACTED').length,61,'uncontacted total');
-assert.equal(data.institutions.filter(x=>x.progress.formalFOIRef).length,15,'verifiable formal references');
+assert.equal(data.institutions.filter(x=>x.progress.formalFOIRef).length,data.contacts.formalFOIRegistered,'verifiable formal references match live acknowledgement ledger');
 const routeReady=data.institutions.filter(x=>x.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT');
 assert.equal(routeReady.length,data.routeReview20261013.verifiedFirstEnquiryUnsent,'official first-enquiry P0 routing count must match evidence-backed review');
 assert.ok(routeReady.every(x=>x.progress.phase===0 && !x.progress.requestSent && x.progress.sendApproved===false),'routing review must not advance outreach or sending');
 assert.equal(data.institutions.filter(x=>x.progress.formSubmitted).length,5,'five web form submissions with proof');
-for(const [id,reference] of Object.entries({hackney_council:'50807786',southampton_city_council:'98N5UZS4U',newham_council:'FOIEIR-2026-004173',cambridgeshire_county_council:'CCC882925672'})){
+for(const [id,reference] of Object.entries({hackney_council:'50807786',southampton_city_council:'98N5UZS4U',newham_council:'FOIEIR-2026-004173',cambridgeshire_county_council:'CCC882925672',hillingdon_council:'FOI 06272',manchester_city_council:'FOI/21992'})){
  const x=data.institutions.find(y=>y.id===id);
  assert.ok(x && x.progress.formSubmitted,'known submitted form must be registered: '+id);
  assert.equal(x.progress.formalFOIRef,reference,'official reference: '+id);
@@ -102,4 +102,4 @@ for(const local of ['rd-world-map.js','rd-world-map.css','evidence-application-t
   assert.ok(html.includes('./'+local+'?v='),'HTML links '+local);
 }
 assert.ok(html.includes('d3@7.9.0') && html.includes('topojson-client@3.1.0'),'map dependencies');
-console.log('PASS: 249 territories · 24 selected markets · 92 institutions · 31 contacted · 15 registered FOI · 4 approved unsubmitted forms · 0 contracts · JS/CSS/HTML contract');
+console.log('PASS: 249 territories · 24 selected markets · '+data.total+' institutions · '+data.contacts.outreachSent+' contacted · '+data.contacts.formalFOIRegistered+' registered FOI · '+data.contacts.approvedFOIFormNotSubmitted+' approved unsubmitted forms · 0 contracts · JS/CSS/HTML contract');
