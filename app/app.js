@@ -2125,6 +2125,25 @@ page['brain-map']=()=>{
 
 page['monitoring-status']=()=>{
   const careMode=S.mode==='care'&&!!S.careOverview.subjectId,s=careMode?S.careOverview.summary:S.monitoring.summary,changes=s&&Array.isArray(s.changes)?s.changes:[],ready=s?.status==='READY',status=monitoringUiStatus(s,changes),stage=careMode?S.careOverview.stage:S.stage.summary,sm=observationStageMeta(stage);
+  if(!ready){
+    const stateTitle=stage?.observation_pattern?sm.label:'생활기록 비교 준비 중';
+    return wrap(
+      '<section class="kimse-monitoring-insufficient" aria-label="현재 기록 상태">'+
+        '<h1 class="page-title">자료 수집 중</h1>'+
+        '<p>평소와 비교할 생활기록이 아직 충분하지 않습니다.</p>'+
+        '<div class="kimse-monitoring-current"><span>현재 확인</span><strong>'+esc(stateTitle)+'</strong></div>'+
+      '</section>'+
+      '<a class="btn-kimse btn-primary-k kimse-monitoring-collect" href="#/collection-status">오늘 수집 상태 확인 '+I('chevron-right')+'</a>'+
+      '<details class="kimse-monitoring-insufficient-more"><summary>기록 근거·상담 안내 자세히</summary>'+
+        '<p>'+esc(stageWhyText(stage,changes))+'</p>'+
+        (stage?.professional_anchor?'<p>등록된 전문평가: '+esc(professionalResultLabel(stage.professional_anchor.result_category))+'</p>':'')+
+        '<a href="#/baseline">14일 관찰 현황 보기</a>'+
+        '<a href="'+evidenceUrl()+'" target="_blank" rel="noopener">근거 자료 확인</a>'+
+        '<a href="tel:18999988">치매상담콜센터 1899-9988</a>'+
+      '</details>',
+      {title:'최근 변화',narrow:true,overview:true}
+    );
+  }
   const changeHtml=changes.length?changes.slice(0,6).map(x=>{
     const pct=x.relative_change==null?0:Math.round(Number(x.relative_change)*100),up=pct>0,down=pct<0,dir=up?'up':down?'down':'flat',sign=up?'+':down?'−':'',arrow=up?'arrow-up':down?'arrow-down':'minus';
     return '<div class="result-change direction-'+dir+'"><span class="result-change-label">'+I(SIGNAL_ICONS[x.metric]||'activity')+'<strong>'+esc(SIGNAL_LABELS[x.metric]||x.metric)+'</strong><em>'+esc(SIGNAL_EVIDENCE_AREA[x.metric]||'관찰 신호')+'</em></span><b>'+I(arrow)+' '+sign+Math.abs(pct)+'%</b><small><span>14일 기준 '+esc(formatMonitoringValue(x.metric,x.baseline))+'</span><em>→ 최근 '+esc(formatMonitoringValue(x.metric,x.recent))+(x.recent_days?' · '+x.recent_days+'일 관찰':'')+'</em></small></div>';
