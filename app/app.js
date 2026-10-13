@@ -2712,7 +2712,7 @@ page.partnership=()=>wrap(`<h1 class="page-title">입점·제휴 문의</h1><p c
 page.plan=()=>wrap(`<h1 class="page-title">구독 관리</h1><div class="summary-card"><h3>현재 이용 범위</h3>${row('비상상태 알림 수신자','첫 1인','무료')}${row('추가 수신자','2인째부터','구독 대상')}</div>${notice('가족 연결은 무료입니다.','가족·보호자 역할을 연결하는 것과 비상상태 알림 수신자를 추가하는 것은 별도입니다.')}`,{title:'구독 관리',narrow:true});
 page.accessibility=()=>{
   const R=[['largeText','글자 크게 보기'],['highContrast','고대비 화면'],['largeTouchTargets','큰 누르기 영역'],['reduceMotion','화면 움직임 줄이기'],['voiceGuidance','화면 음성 안내'],['soundEffects','선택·완료 소리']];
-  return wrap('<h1 class="page-title">글씨와 화면을 편하게 설정하세요</h1>'+
+  return wrap('<h1 class="page-title">글씨·화면 설정</h1>'+
     '<p class="page-desc">스위치를 누르면 바로 적용됩니다. 언제든 다시 바꿀 수 있어요.</p>'+
     '<div class="summary-card">'+R.map(([k,t])=>'<div class="switch-row"><label for="a-'+k+'">'+t+'</label><input id="a-'+k+'" class="switch" type="checkbox" data-a11y="'+k+'" '+(S.a11y[k]?'checked':'')+'></div>').join('')+'</div>'+
     '<p class="accessibility-guidance">기기의 화면 읽기 기능은 휴대전화 접근성 설정에서 켤 수 있습니다.</p>'+
