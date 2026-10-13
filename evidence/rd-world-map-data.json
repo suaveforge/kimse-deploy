@@ -2927,13 +2927,13 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 공개 문의 경로 검증 · V4 문안 및 수신처 승인 대기 (아직 미발송)",
+        "nextAction": "연구 내용에 맞는 NILS-LSA 사무국 공식 문의처 확인 · 원문 유지, 발송 승인 대기",
         "formURL": null,
         "formSubmitted": false,
         "requestSent": false,
         "routeVerified": true,
-        "routeType": "OFFICIAL_NCGG_DEMENTIA_CLINICAL_RESEARCH_NETWORK_OFFICE",
-        "contactRouteURL": "https://www.ncgg.go.jp/hospital/ictr/crnd/home/",
+        "routeType": "OFFICIAL_NILS_LSA_STUDY_OFFICE",
+        "contactRouteURL": "https://www.ncgg.go.jp/ri/lab/cgss/department/ep/",
         "sendApproved": false
       }
     },
@@ -5033,6 +5033,9 @@
     "newlyVerifiedCurrentCheck": 3,
     "remainingRouteOrSubmissionBlockers": 27,
     "approvedSevenResearchFirstContactsDelivered": 7,
-    "deliveryProofFile": "private docs/RND_FIRST_ENQUIRY_PRIORITY_7_RESEND_DELIVERY_PROOF_20261013.json"
+    "deliveryProofFile": "private docs/RND_FIRST_ENQUIRY_PRIORITY_7_RESEND_DELIVERY_PROOF_20261013.json",
+    "ncggRecipientCorrectionWithoutSend20261013": true,
+    "approvedNext16": false,
+    "pendingExactCopy16": "private docs/RND_FIRST_ENQUIRY_NEXT_16_EXACT_COPY_APPROVAL_20261013.json"
   }
 }
