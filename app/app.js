@@ -2419,7 +2419,7 @@ function clinicalMetricCard(metric){
   const coverageValue=clinicalFiniteNumber(metric.quality?.calendar_day_coverage),coverage=coverageValue===null?null:Math.round(coverageValue*100);
   const validDays=clinicalFiniteNumber(metric.quality?.valid_days),expectedDays=clinicalFiniteNumber(metric.quality?.expected_calendar_days);
   const dayCount=validDays===null||expectedDays===null?'자료 없음':validDays+'/'+expectedDays+'일';
-  const state=metric.changed?'change':'stable';
+  const state=!hasRel?'unavailable':metric.changed?'change':'stable';
   const deltaText=pct===null?'비교값 부족':(pct>0?'+':'')+pct+'%';
   return '<article class="clinical-metric '+state+'" data-clinical-metric="'+esc(metric.metric)+'" data-clinical-domain-name="'+esc(metric.domain||'other')+'"><div class="clinical-metric-head"><div><span class="clinical-domain">'+esc(metric.domain||'관찰')+'</span><h3>'+esc(metric.clinical_label||SIGNAL_LABELS[metric.metric]||metric.metric)+'</h3></div><strong class="clinical-delta">'+esc(deltaText)+'</strong></div><div class="clinical-baseline-copy"><span>개인 기준 '+esc(formatMonitoringValue(metric.metric,metric.baseline))+'</span><i>→</i><span>최근 '+esc(formatMonitoringValue(metric.metric,metric.recent))+'</span></div>'+clinicalDeviationCopy(metric)+clinicalSeriesSvg(metric)+'<div class="clinical-quality"><span>기록일 '+esc(dayCount)+'</span><span>기간 coverage '+(coverage===null?'자료 없음':coverage+'%')+'</span></div><details><summary>원자료 · 출처 · 근거 · 해석 한계</summary>'+clinicalRawSampleTable(metric)+'<div class="clinical-evidence-links">'+clinicalEvidenceLinks(metric)+'</div><p>'+esc(metric.interpretation_guard||'')+'</p><p class="clinical-microcopy">'+esc(metric.quality?.note||'')+'</p></details></article>';
 }
