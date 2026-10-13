@@ -181,8 +181,14 @@ jobs:
             await p.locator('#clinical-target-institution').selectOption('GB-DORSET-MAS');
             check(await p.locator('#clinical-electronic-submit').isDisabled(),'research-only-nhs-recipient-is-blocked');
             check((await p.locator('.clinical-delivery-preflight').innerText()).includes('수신 승인'),'unverified-destination-warning-visible');
-            await p.locator('#clinical-target-department').fill('Research department');
+            await p.locator('#clinical-target-department').fill('Neurology');
             await p.locator('#clinical-target-department').press('Tab');
+            check(await p.locator('#clinical-department-hints option').count()>=4,'specialty-selectable-hints');
+            const specialtyPriority=await p.locator('.clinical-national-priority ol li').allTextContents();
+            check(specialtyPriority.length===5 && specialtyPriority[1].includes('인지'),
+              'neurology-moves-existing-cognitive-history-ahead-without-inventing-guidelines');
+            check((await p.locator('.clinical-national-priority').innerText()).includes('기존 공개자료 항목만 재정렬했습니다'),
+              'specialty-priority-editorial-not-provider-approved');
             await p.locator('#clinical-target-clinician').fill('Unverified clinician');
             await p.locator('#clinical-target-clinician').press('Tab');
             await p.locator('#clinical-target-institution').selectOption('GB-LEEDS-MAS');
@@ -253,6 +259,7 @@ jobs:
             await dp.waitForFunction(()=>window.KIMSE_CLINICAL_SUBMISSION?.getRequirementsState?.()==='PUBLIC_RESEARCH_LOADED',null,{timeout:12000});
             await dp.waitForFunction(()=>!!document.querySelector('.clinical-visit-list .clinical-visit-trace a[href^="https://"]'),null,{timeout:12000});
             check(await dp.locator('#clinical-report-print').isEnabled(),'hospital-print-waits-for-research-crosswalk');
+            check(await dp.locator('#clinical-preflight-print').isEnabled(),'both-print-buttons-wait-for-research-crosswalk');
             const printedOrigins=await dp.locator('.clinical-print-source-records').innerText();
             check(printedOrigins.includes('가족·보호자 관찰')&&printedOrigins.includes('외부 검사·의료기록')&&printedOrigins.includes('전문 의료진 평가'),
               'hospital-print-keeps-family-and-professional-source-separate');
