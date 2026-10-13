@@ -164,6 +164,9 @@ jobs:
                   'actual-missingness-visible-'+target.id);
 
                 check((await p.locator('.clinical-visit-brief').innerText()).includes('공개자료 참고'),'source-backed-patient-print-'+target.id);
+                check((await p.locator('.clinical-visit-source a').getAttribute('href'))===target.source_url,'print-citation-matches-public-hospital-'+target.id);
+                check(await p.locator('.clinical-visit-list li').count()<=6,'print-brief-six-or-fewer-gaps-'+target.id);
+                check((await p.locator('.clinical-visit-brief').getAttribute('data-provider-approved'))==='false','print-never-hospital-approved-'+target.id);
                 check(await p.locator('#clinical-electronic-submit').isDisabled(),'unapproved-receiver-blocked-'+target.id);
                 if(target.id==='US-EMORY-COGNITIVE-NEUROLOGY')
                   check((await p.locator('.clinical-delivery-preflight').innerText()).includes('접수경로 상충'),
