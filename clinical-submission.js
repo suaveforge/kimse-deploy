@@ -317,5 +317,48 @@
     });
   };
 
-  root.KIMSE_CLINICAL_SUBMISSION=Object.freeze({genericProfile,countryLabels,researchTargets,getTargets,getSelection,setSelection,evaluate,getRequirementsState,loadResearchRequirements,getResearchRequirements,assessResearchRequirements});
+  // Patient-carried hospital visit brief derived from exact published research.
+  // It may assist preparation, but does NOT transform public advice into approved
+  // institution requirements, hospital verification or electronic submission.
+  const buildVisitBrief=(report,override)=>{
+    const gate=evaluate(report,override);
+    const choice=gate.selection;
+    const target=gate.selectedResearchTarget;
+    const assessment=target?assessResearchRequirements(report,target.id):null;
+    const groups=assessment?.groups||[];
+    const rank=group=>{
+      const needsRecord=group.state==='RELATED_CONTEXT_NOT_COLLECTED';
+      const external=group.state==='NO_DIRECT_APP_MAPPING';
+      const externalSource=/EXTERNAL|DOCUMENT|PROFESSIONAL|PROVIDER|REFERRAL|TEST/.test(group.sourceStatus);
+      return (externalSource?0:1)+(needsRecord?0:external?1:2);
+    };
+    const selected=groups
+      .filter(g=>g.state!=='APP_CONTEXT_REFERENCE_ONLY')
+      .slice().sort((a,b)=>rank(a)-rank(b))
+      .slice(0,6).map(g=>Object.freeze({
+        id:g.id,wording:g.wording,limit:g.limit,state:g.state,
+        display:g.display,referencePaths:g.referencePaths,uncollectedPaths:g.uncollectedPaths,
+        sourceStatus:g.sourceStatus,
+        action:'EXTERNAL_SOURCE_OR_PATIENT_CONFIRMATION'
+      }));
+    return Object.freeze({
+      country:choice.country,countryName:countryLabels[choice.country]||'국가 미확인',
+      institutionId:target?.id||null,institutionName:target?.name||null,
+      publicSourceUrl:target?.url||null,
+      departmentMemo:choice.department,clinicianMemo:choice.clinician,
+      memoVerified:false,providerApproved:false,formApproved:false,recipientAuthorized:false,
+      delivery:'PATIENT_CARRIED_PRINT_ONLY',printReady:gate.printReady,
+      outputLanguage:'ko',translationValidated:false,formatValidatedByHospital:false,
+      researchLoaded:!!assessment,routeConflict:!!target?.routeConflict,
+      researchedGroupCount:assessment?.counts.researchGroups||0,
+      referenceOnlyCount:assessment?.counts.appReferenceOnly||0,
+      uncollectedCount:assessment?.counts.relatedUncollected||0,
+      noDirectMappingCount:assessment?.counts.noDirectMapping||0,
+      briefItems:Object.freeze(selected),
+      missingMoreCount:Math.max(0,groups.filter(g=>g.state!=='APP_CONTEXT_REFERENCE_ONLY').length-selected.length),
+      caution:'이 문서는 환자 지참용 한국어 진료 준비 자료입니다. 병원 승인 서식이나 필수 제출자료 목록이 아니며, 미수집은 정상 소견이 아닙니다.',
+      electronicSubmissionReady:false,hospitalReceipt:null
+    });
+  };
+  root.KIMSE_CLINICAL_SUBMISSION=Object.freeze({genericProfile,countryLabels,researchTargets,getTargets,getSelection,setSelection,evaluate,getRequirementsState,loadResearchRequirements,getResearchRequirements,assessResearchRequirements,buildVisitBrief});
 })(typeof window!=='undefined'?window:globalThis);
