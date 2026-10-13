@@ -8,6 +8,7 @@ const base='http://127.0.0.1:8765/evidence/rd.html';
 const root=path.resolve(__dirname,'../..');
 const mod=f=>path.join(root,'node_modules',f);
 const out=path.join(root,'evidence','test-results');
+const verifiedRouteCount=JSON.parse(fs.readFileSync(path.join(root,'evidence','rd-world-map-data.json'),'utf8')).routeReview20261013.verifiedFirstEnquiryUnsent;
 fs.mkdirSync(out,{recursive:true});
 
 async function run(){
@@ -51,8 +52,8 @@ async function run(){
       await page.selectOption('#kimse-progress-phase','');
       assert.match(await page.locator('#kimse-progress-total').innerText(),/92 \/ 92/,'institution table total');
       await page.selectOption('#kimse-progress-stage','FIRST_CONTACT_ROUTE_VERIFIED_UNSENT');
-      assert.equal(await page.locator('#kimse-progress-rows tr').count(),17,'17 ready-for-review unsent official routes');
-      assert.equal(await page.locator('#kimse-progress-rows a[href^="https://"]').count(),17,'all confirmed initial-enquiry channels link official institutions');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),verifiedRouteCount,'ready-for-review unsent official routes must match public data');
+      assert.equal(await page.locator('#kimse-progress-rows a[href^="https://"]').count(),verifiedRouteCount,'all confirmed initial-enquiry channels link official institutions');
       assert.match(await page.locator('#kimse-progress-rows').innerText(),/0단계/,'route verified institutions remain P0');
       await page.selectOption('#kimse-progress-stage','FORMAL_FOI_REGISTERED');
       assert.equal(await page.locator('#kimse-progress-rows tr').count(),15,'fifteen formal FOI registrations');
