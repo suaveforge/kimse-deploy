@@ -40,6 +40,15 @@ async function run(){
       assert.match(await page.locator('#kimse-atlas-stats').innerText(),/249/);
       // Institution stage table: every record and official sending/receipt phase must be visible and filterable.
       assert.equal(await page.locator('#kimse-progress-rows tr').count(),92,'all 92 institutions appear by default');
+      assert.equal(await page.locator('.kimse-progress-number').count(),3,'three numeric phase filters');
+      assert.equal(await page.locator('#kimse-progress-rows .kimse-progress-bignum').count(),92,'numeric phase beside each institution');
+      await page.selectOption('#kimse-progress-phase','1');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),25,'stage one institution count');
+      await page.selectOption('#kimse-progress-phase','2');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),1,'stage two institution count');
+      await page.selectOption('#kimse-progress-phase','0');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),66,'stage zero institution count');
+      await page.selectOption('#kimse-progress-phase','');
       assert.match(await page.locator('#kimse-progress-total').innerText(),/92 \/ 92/,'institution table total');
       await page.selectOption('#kimse-progress-stage','FORMAL_FOI_REGISTERED');
       assert.equal(await page.locator('#kimse-progress-rows tr').count(),11,'eleven formal FOI registrations');
