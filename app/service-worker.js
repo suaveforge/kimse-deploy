@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261013-clinical-crosswalk-arrays-07';
+const CACHE = 'kimse-pwa-20261013-clinical-quality-families-08';
 const CORE = [
   './',
   './index.html',
