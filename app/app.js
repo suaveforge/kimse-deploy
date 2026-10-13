@@ -2605,7 +2605,7 @@ function clinicalPrintableVisitBrief(report){
   const appendix=brief.researchLoaded&&otherItems.length
     ?'<div class="clinical-visit-appendix"><h3>공개 조사 항목 전체 대조 · 추가 '+otherItems.length+'건</h3>'
      +'<p>위 핵심 항목을 포함한 총 '+brief.researchedGroupCount+'건의 공개 조사 내용입니다. 병원에서 요구하는 필수 제출항목이라는 의미는 아닙니다.</p>'
-     +'<ol class="clinical-visit-list">'+otherItems.map(item=>'<li><strong>'+esc(item.wording)+'</strong>'
+     +'<ol class="clinical-visit-all-list">'+otherItems.map(item=>'<li><strong>'+esc(item.wording)+'</strong>'
        +'<span>'+esc(item.preparationLabel)+' · '+esc(item.display)+'</span><span>'+esc(item.limit)+'</span>'
        +(item.referencePaths.length?'<span>앱 참고 경로: '+esc(item.referencePaths.join(', '))+'</span>':'')
        +(item.uncollectedPaths.length?'<span>미수집 경로: '+esc(item.uncollectedPaths.join(', '))+'</span>':'')
