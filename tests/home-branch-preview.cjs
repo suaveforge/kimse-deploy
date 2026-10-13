@@ -33,6 +33,8 @@ const variants=[
     return {screen:location.hash,viewport:innerWidth,docWidth:document.documentElement.scrollWidth,
       actions:[...document.querySelectorAll('.kh2-action')].map(x=>({name:x.querySelector('strong')?.textContent,icon:x.querySelector('.icon')?.textContent,href:x.getAttribute('href')})),
       navCount:document.querySelectorAll('.bottom-nav .nav-item').length,
+      viewHeight:innerHeight,
+      tileSizes:[...document.querySelectorAll('.kh2-action')].map(x=>({height:x.getBoundingClientRect().height,width:x.getBoundingClientRect().width})),
       lastTileBottom:r('.kh2-action:last-child')?.bottom,
       navTop:r('.bottom-nav')?.top,
       status:q('.kh2-status-content>strong')?.textContent,
@@ -42,7 +44,7 @@ const variants=[
    });
    const key='home-'+v.w+'-'+v.mode;
    await page.screenshot({path:root+'/'+key+'.png',fullPage:true,animations:'disabled'});
-   if(v.w===375&&v.mode==='normal')await page.screenshot({path:root+'/home-375-first-screen.png',fullPage:false,animations:'disabled'});
+   if(v.w<=375&&v.mode==='normal')await page.screenshot({path:root+'/home-'+v.w+'-first-screen.png',fullPage:false,animations:'disabled'});
    report.push({key,...m,errors});
    assert.equal(m.screen,'#/home','real home page');
    assert(m.docWidth<=m.viewport+2,'horizontal overflow: '+key+' '+JSON.stringify(m));
@@ -51,7 +53,19 @@ const variants=[
    assert.equal(m.actions.length,4);
    assert(m.status&&!m.status.includes('정상'),'do not infer a normal state without data');
    assert.equal(errors.filter(x=>!x.includes('require is not defined')).length,0,'JavaScript errors: '+errors.join(' | '));
-   if(v.w<=375&&v.mode==='normal')assert(m.lastTileBottom<=m.navTop+2,'four original actions must fit above bottom nav at '+v.w+'px: '+JSON.stringify(m));
+   if(v.w<=375&&v.mode==='normal'){
+    assert(m.lastTileBottom<=m.navTop-(v.w===320?5:0),'four original actions must fit entirely above bottom nav at '+v.w+'px: '+JSON.stringify(m));
+    assert(m.lastTileBottom<=m.viewHeight,'all four actions must be inside the initial viewport: '+key);
+    assert(m.tileSizes.every(x=>x.height>=44&&x.width>=44),'touch targets must be at least 44px: '+key);
+    assert.equal(m.status,'자료 수집 중','insufficient records must not imply a healthy/normal state');
+    assert.equal(m.progAria,'14일 관찰 시간 경과','progress is elapsed time, not data collection rate');
+    for(let i=0;i<m.actions.length;i++){
+     await page.locator('.screen-home .kh2-action').nth(i).click();
+     assert.equal(new URL(page.url()).hash,'#/'+m.actions[i].href.slice(2),'real action routing: '+m.actions[i].name);
+     await page.goto('http://127.0.0.1:4173/#/home',{waitUntil:'domcontentloaded'});
+     await page.locator('.screen-home .kh2-actions').waitFor({timeout:16000});
+    }
+   }
    console.log('HOME_COMPACT_PASS '+key+' '+JSON.stringify({lastTileBottom:m.lastTileBottom,navTop:m.navTop,docWidth:m.docWidth}));
    await page.close();
   }
