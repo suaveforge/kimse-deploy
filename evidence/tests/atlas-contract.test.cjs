@@ -70,7 +70,9 @@ assert.equal(data.institutions.filter(x=>x.stage==='RESEARCH_METHODS_RESPONSE_RE
 assert.equal(data.institutions.filter(x=>x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED').length,4,'approved and still not submitted');
 assert.equal(data.institutions.filter(x=>x.progress.contactStatus==='IDENTIFIED_NOT_CONTACTED').length,61,'uncontacted total');
 assert.equal(data.institutions.filter(x=>x.progress.formalFOIRef).length,15,'verifiable formal references');
-assert.equal(data.institutions.filter(x=>x.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT').length,17,'17 official first enquiry routes verified but no contact');
+const routeReady=data.institutions.filter(x=>x.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT');
+assert.equal(routeReady.length,data.routeReview20261013.verifiedFirstEnquiryUnsent,'official first-enquiry P0 routing count must match evidence-backed review');
+assert.ok(routeReady.every(x=>x.progress.phase===0 && !x.progress.requestSent && x.progress.sendApproved===false),'routing review must not advance outreach or sending');
 assert.equal(data.institutions.filter(x=>x.progress.formSubmitted).length,5,'five web form submissions with proof');
 for(const [id,reference] of Object.entries({hackney_council:'50807786',southampton_city_council:'98N5UZS4U',newham_council:'FOIEIR-2026-004173',cambridgeshire_county_council:'CCC882925672'})){
  const x=data.institutions.find(y=>y.id===id);
