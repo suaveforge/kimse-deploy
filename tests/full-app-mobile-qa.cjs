@@ -30,7 +30,7 @@ const mkState=mode=>({version:14,account:{name:'김노인',email:'preview@exampl
       lastTile:box('.kimse-collection-tile:last-child')?.bottom,actionsBottom:box('.kimse-collection-actions')?.bottom,
       icons:[...document.querySelectorAll('.screen-home .kh2-action .icon')].map(x=>x.textContent),
       nav:document.querySelectorAll('.bottom-nav .nav-item').length,
-      note:q('.monitoring-stable-note')?.textContent,baseline:q('.screen-baseline h1')?.textContent,
+      note:q('.monitoring-stable-note')?.textContent,pending:q('.kimse-monitoring-insufficient')?.textContent,decorativeJourney:!!q('.monitoring-journey'),baseline:q('.screen-baseline h1')?.textContent,
       details:q('.kimse-collection-more')?.open
      };
     });
@@ -47,7 +47,7 @@ const mkState=mode=>({version:14,account:{name:'김노인',email:'preview@exampl
      await page.locator('.kimse-collection-more summary').click();
      assert(await page.locator('.kimse-collection-more').evaluate(e=>e.open),'details expand '+key);
     }
-    if(route==='monitoring-status')assert(!String(m.note||'').includes('큰 변화가 확인되지 않았습니다'),'no unsupported stable result');
+    if(route==='monitoring-status'){assert(String(m.pending||'').includes('자료 수집 중'),'no-data screen must display pending evidence');assert.equal(m.decorativeJourney,false,'no fabricated decorative comparison before sufficient data');assert(!String(m.note||'').includes('큰 변화가 확인되지 않았습니다'),'no unsupported stable result');}
     if(route==='baseline')assert(String(m.baseline).includes('14일 관찰'),'elapsed time label');
     if(route==='home'){assert.deepEqual(m.icons,['🧠','🧩','💊','💚']);assert.equal(m.nav,5);}
     assert.equal(errors.filter(e=>!e.includes('require is not defined')).length,0,'unexpected errors '+key+' '+errors);
