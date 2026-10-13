@@ -8,7 +8,7 @@ on:
       - 'senior-journey.css'
       - 'app/senior-journey.css'
       - 'tests/vertical-audit.cjs'
-      - '.github/workflows/full-app-mobile-qa.yml'
+      - '.github/workflows/vertical-audit.yml'
 permissions:
   contents: write
 jobs:
