@@ -1,0 +1,394 @@
+[
+  {
+    "key": "home-320-normal",
+    "screen": "#/home",
+    "viewport": 320,
+    "docWidth": 305,
+    "actions": [
+      {
+        "name": "근거 기반 체크",
+        "icon": "🧠",
+        "href": "#/assessment-start"
+      },
+      {
+        "name": "인지 훈련",
+        "icon": "🧩",
+        "href": "#/training"
+      },
+      {
+        "name": "복약 관리",
+        "icon": "💊",
+        "href": "#/medication"
+      },
+      {
+        "name": "건강 기록",
+        "icon": "💚",
+        "href": "#/health"
+      }
+    ],
+    "navCount": 5,
+    "viewHeight": 720,
+    "tileSizes": [
+      {
+        "height": 85,
+        "width": 137.5
+      },
+      {
+        "height": 85,
+        "width": 137.5
+      },
+      {
+        "height": 85,
+        "width": 137.5
+      },
+      {
+        "height": 85,
+        "width": 137.5
+      }
+    ],
+    "lastTileBottom": 505.4375,
+    "navTop": 639,
+    "status": "자료 수집 중",
+    "progText": " 14일 관찰2일째 / 14일",
+    "progAria": "14일 관찰 시간 경과",
+    "errors": [
+      "ReferenceError: require is not defined"
+    ]
+  },
+  {
+    "key": "home-375-normal",
+    "screen": "#/home",
+    "viewport": 375,
+    "docWidth": 360,
+    "actions": [
+      {
+        "name": "근거 기반 체크",
+        "icon": "🧠",
+        "href": "#/assessment-start"
+      },
+      {
+        "name": "인지 훈련",
+        "icon": "🧩",
+        "href": "#/training"
+      },
+      {
+        "name": "복약 관리",
+        "icon": "💊",
+        "href": "#/medication"
+      },
+      {
+        "name": "건강 기록",
+        "icon": "💚",
+        "href": "#/health"
+      }
+    ],
+    "navCount": 5,
+    "viewHeight": 812,
+    "tileSizes": [
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      }
+    ],
+    "lastTileBottom": 596.71875,
+    "navTop": 731,
+    "status": "자료 수집 중",
+    "progText": " 14일 관찰2일째 / 14일",
+    "progAria": "14일 관찰 시간 경과",
+    "errors": [
+      "ReferenceError: require is not defined"
+    ]
+  },
+  {
+    "key": "home-430-normal",
+    "screen": "#/home",
+    "viewport": 430,
+    "docWidth": 415,
+    "actions": [
+      {
+        "name": "근거 기반 체크",
+        "icon": "🧠",
+        "href": "#/assessment-start"
+      },
+      {
+        "name": "인지 훈련",
+        "icon": "🧩",
+        "href": "#/training"
+      },
+      {
+        "name": "복약 관리",
+        "icon": "💊",
+        "href": "#/medication"
+      },
+      {
+        "name": "건강 기록",
+        "icon": "💚",
+        "href": "#/health"
+      }
+    ],
+    "navCount": 5,
+    "viewHeight": 860,
+    "tileSizes": [
+      {
+        "height": 93,
+        "width": 188
+      },
+      {
+        "height": 93,
+        "width": 188
+      },
+      {
+        "height": 93,
+        "width": 188
+      },
+      {
+        "height": 93,
+        "width": 188
+      }
+    ],
+    "lastTileBottom": 582.828125,
+    "navTop": 779,
+    "status": "자료 수집 중",
+    "progText": " 14일 관찰2일째 / 14일",
+    "progAria": "14일 관찰 시간 경과",
+    "errors": [
+      "ReferenceError: require is not defined"
+    ]
+  },
+  {
+    "key": "home-1440-normal",
+    "screen": "#/home",
+    "viewport": 1440,
+    "docWidth": 1425,
+    "actions": [
+      {
+        "name": "근거 기반 체크",
+        "icon": "🧠",
+        "href": "#/assessment-start"
+      },
+      {
+        "name": "인지 훈련",
+        "icon": "🧩",
+        "href": "#/training"
+      },
+      {
+        "name": "복약 관리",
+        "icon": "💊",
+        "href": "#/medication"
+      },
+      {
+        "name": "건강 기록",
+        "icon": "💚",
+        "href": "#/health"
+      }
+    ],
+    "navCount": 5,
+    "viewHeight": 900,
+    "tileSizes": [
+      {
+        "height": 110,
+        "width": 212.75
+      },
+      {
+        "height": 110,
+        "width": 212.75
+      },
+      {
+        "height": 110,
+        "width": 212.75
+      },
+      {
+        "height": 110,
+        "width": 212.75
+      }
+    ],
+    "lastTileBottom": 419,
+    "navTop": 513,
+    "status": "자료 수집 중",
+    "progText": " 14일 관찰2일째 / 14일",
+    "progAria": "14일 관찰 시간 경과",
+    "errors": [
+      "ReferenceError: require is not defined"
+    ]
+  },
+  {
+    "key": "home-375-large",
+    "screen": "#/home",
+    "viewport": 375,
+    "docWidth": 360,
+    "actions": [
+      {
+        "name": "근거 기반 체크",
+        "icon": "🧠",
+        "href": "#/assessment-start"
+      },
+      {
+        "name": "인지 훈련",
+        "icon": "🧩",
+        "href": "#/training"
+      },
+      {
+        "name": "복약 관리",
+        "icon": "💊",
+        "href": "#/medication"
+      },
+      {
+        "name": "건강 기록",
+        "icon": "💚",
+        "href": "#/health"
+      }
+    ],
+    "navCount": 5,
+    "viewHeight": 812,
+    "tileSizes": [
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      }
+    ],
+    "lastTileBottom": 602.4375,
+    "navTop": 731,
+    "status": "자료 수집 중",
+    "progText": " 14일 관찰2일째 / 14일",
+    "progAria": "14일 관찰 시간 경과",
+    "errors": [
+      "ReferenceError: require is not defined"
+    ]
+  },
+  {
+    "key": "home-375-contrast",
+    "screen": "#/home",
+    "viewport": 375,
+    "docWidth": 360,
+    "actions": [
+      {
+        "name": "근거 기반 체크",
+        "icon": "🧠",
+        "href": "#/assessment-start"
+      },
+      {
+        "name": "인지 훈련",
+        "icon": "🧩",
+        "href": "#/training"
+      },
+      {
+        "name": "복약 관리",
+        "icon": "💊",
+        "href": "#/medication"
+      },
+      {
+        "name": "건강 기록",
+        "icon": "💚",
+        "href": "#/health"
+      }
+    ],
+    "navCount": 5,
+    "viewHeight": 812,
+    "tileSizes": [
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      },
+      {
+        "height": 93,
+        "width": 160.5
+      }
+    ],
+    "lastTileBottom": 596.71875,
+    "navTop": 730,
+    "status": "자료 수집 중",
+    "progText": " 14일 관찰2일째 / 14일",
+    "progAria": "14일 관찰 시간 경과",
+    "errors": [
+      "ReferenceError: require is not defined"
+    ]
+  },
+  {
+    "key": "home-220-zoom",
+    "screen": "#/home",
+    "viewport": 220,
+    "docWidth": 213,
+    "actions": [
+      {
+        "name": "근거 기반 체크",
+        "icon": "🧠",
+        "href": "#/assessment-start"
+      },
+      {
+        "name": "인지 훈련",
+        "icon": "🧩",
+        "href": "#/training"
+      },
+      {
+        "name": "복약 관리",
+        "icon": "💊",
+        "href": "#/medication"
+      },
+      {
+        "name": "건강 기록",
+        "icon": "💚",
+        "href": "#/health"
+      }
+    ],
+    "navCount": 5,
+    "viewHeight": 812,
+    "tileSizes": [
+      {
+        "height": 103.21875,
+        "width": 87.5
+      },
+      {
+        "height": 103.21875,
+        "width": 87.5
+      },
+      {
+        "height": 85,
+        "width": 87.5
+      },
+      {
+        "height": 85,
+        "width": 87.5
+      }
+    ],
+    "lastTileBottom": 567.484375,
+    "navTop": 731,
+    "status": "자료 수집 중",
+    "progText": " 14일 관찰2일째 / 14일",
+    "progAria": "14일 관찰 시간 경과",
+    "errors": [
+      "ReferenceError: require is not defined"
+    ]
+  }
+]
