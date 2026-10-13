@@ -163,6 +163,7 @@ jobs:
                 check(readinessText.includes('관련 기록 미수집'),
                   'actual-missingness-visible-'+target.id);
 
+                check((await p.locator('.clinical-visit-brief').innerText()).includes('공개자료 참고'),'source-backed-patient-print-'+target.id);
                 check(await p.locator('#clinical-electronic-submit').isDisabled(),'unapproved-receiver-blocked-'+target.id);
                 if(target.id==='US-EMORY-COGNITIVE-NEUROLOGY')
                   check((await p.locator('.clinical-delivery-preflight').innerText()).includes('접수경로 상충'),
