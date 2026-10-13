@@ -1271,3 +1271,72 @@ body:has(.screen-home) .bottom-nav-inner{max-width:920px}
 }
 .large-text .screen-monitoring-status .kimse-monitoring-current>strong{font-size:24px}
 .high-contrast .screen-monitoring-status .kimse-monitoring-insufficient,.high-contrast .screen-monitoring-status .kimse-monitoring-current{background:#fff;color:#000;border:2px solid #111}
+
+/* KIMSE 2026-10-13: second-pass mobile density, scoped to reviewed screens. */
+.screen-medical-records.page{padding-top:14px}
+.screen-medical-records .page-title{font-size:clamp(24px,6vw,29px);line-height:1.2;margin:0 0 7px}
+.screen-medical-records .page-desc{font-size:16px;line-height:1.43;margin:0 0 12px}
+.screen-medical-records .kimse-medical-record-actions{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:9px;margin:0 0 12px}
+.screen-medical-records .kimse-medical-record-actions>.btn-kimse{min-width:0;min-height:57px;padding:10px 8px;font-size:16px;text-align:center;word-break:keep-all}
+.screen-medical-records .kimse-medical-record-guide{margin:8px 0 15px;border:1px solid #d6e4de;border-radius:15px;background:#fff;padding:0 13px 12px}
+.screen-medical-records .kimse-medical-record-guide>summary{font-size:16px;line-height:1.4;min-height:48px;font-weight:800;display:flex;align-items:center;cursor:pointer;color:#184739}
+.screen-medical-records .kimse-medical-record-guide .summary-card{margin:8px 0 12px;padding:13px}
+.screen-medical-records .kimse-medical-record-guide .list-row{min-height:62px;padding:10px}
+.screen-medical-records .kimse-medical-record-guide .notice{margin-top:10px;font-size:15px;line-height:1.4}
+.screen-medical-records .section-title{margin-top:13px;margin-bottom:10px}
+.screen-medical-records .list-row{min-height:65px}
+@media(max-width:370px){
+ .screen-medical-records.page{padding:12px 11px 25px}
+ .screen-medical-records .kimse-medical-record-actions>.btn-kimse{font-size:15px;min-height:58px}
+}
+
+/* The prompt remains readable, but the microphone action is not buried after empty space. */
+@media(max-width:460px){
+ .screen-voice-check.page{padding-top:10px}
+ .screen-voice-check .kimse-journey-top{margin-bottom:12px}
+ .screen-voice-check .kimse-journey-prompt{margin-bottom:11px}
+ .screen-voice-check .kimse-flow-title{font-size:28px!important;line-height:1.2!important;margin-bottom:5px!important}
+ .screen-voice-check .kimse-flow-hint{font-size:16px!important;line-height:1.38!important}
+ .screen-voice-check .kimse-voice-prompt{min-height:134px;padding:15px 17px 20px;margin:0 0 10px;border-radius:19px}
+ .screen-voice-check .kimse-voice-prompt p{font-size:21px;line-height:1.35;margin-top:7px}
+ .screen-voice-check .kimse-voice-orbit{height:32px;opacity:.18}
+ .screen-voice-check .kimse-voice-state{min-height:35px;margin-bottom:3px}
+ .screen-voice-check .kimse-flow-actions{padding-top:8px;margin-top:0}
+ .screen-voice-check .kimse-flow-primary{min-height:60px!important;padding:10px 14px!important;font-size:19px!important}
+ .screen-voice-check .kimse-flow-secondary{margin-top:7px}
+}
+/* Switch controls communicate on/off; explanatory text remains visible without another state paragraph. */
+@media(max-width:460px){
+ .screen-accessibility.page{padding:13px 12px 24px}
+ .screen-accessibility .accessibility-hero{grid-template-columns:44px minmax(0,1fr);gap:10px;margin-bottom:10px}
+ .screen-accessibility .accessibility-hero-icon{width:44px;height:44px;border-radius:13px}
+ .screen-accessibility .accessibility-hero-icon i{font-size:25px}
+ .screen-accessibility .accessibility-hero .page-title{font-size:27px!important;line-height:1.17!important;margin:2px 0 4px!important}
+ .screen-accessibility .accessibility-hero .page-desc{font-size:15px!important;line-height:1.32!important}
+ .screen-accessibility .accessibility-control-card{padding:0 13px!important;border-radius:16px!important}
+ .screen-accessibility .accessibility-card-head{padding:12px 0 9px}
+ .screen-accessibility .a11y-setting-row{min-height:65px!important;padding:7px 0!important}
+ .screen-accessibility .a11y-setting-row label strong{font-size:17px!important;line-height:1.28!important}
+ .screen-accessibility .a11y-setting-row label small{font-size:14px!important;line-height:1.27!important;margin-top:2px!important}
+ .screen-accessibility .accessibility-guidance{font-size:14px;line-height:1.4;margin:11px 0}
+ .screen-accessibility .a11y-setting-row .a11y-setting-state{display:none!important}
+}
+.large-text .screen-accessibility .a11y-setting-row{min-height:82px!important}
+.large-text .screen-accessibility .a11y-setting-row label strong{font-size:19px!important}
+.large-text .screen-accessibility .a11y-setting-row label small{font-size:16px!important}
+
+/* Caregiver without sharing consent: one compact expandable reminder instead of a large duplicate card. */
+.screen-caregiver-home .gov-care-summary.gov-care-compact{padding:0 13px 11px;border-radius:14px;margin:9px 0 12px;background:#fff}
+.screen-caregiver-home .gov-care-compact>summary{min-height:49px;display:flex;align-items:center;cursor:pointer;font-size:16px;line-height:1.4;font-weight:850;color:#1b5344}
+.screen-caregiver-home .gov-care-compact>p{font-size:15px;line-height:1.45;margin:2px 0 0}
+@media(max-width:440px){
+ .screen-caregiver-home.page{padding-top:12px}
+ .screen-caregiver-home .page-title{font-size:27px;line-height:1.21;margin-bottom:9px}
+ .screen-caregiver-home .kimse-caregiver-overview{padding:14px 13px;margin-bottom:13px;border-radius:17px}
+ .screen-caregiver-home .kimse-caregiver-overview>h3{font-size:20px;line-height:1.35;margin:8px 0 5px}
+ .screen-caregiver-home .kimse-caregiver-overview>p{font-size:15px;line-height:1.38;margin-bottom:8px}
+ .screen-caregiver-home .kimse-caregiver-quick .card-grid{gap:8px;margin-top:8px}
+ .screen-caregiver-home .kimse-caregiver-quick .action-card{min-height:88px;padding:10px;border-radius:15px}
+ .screen-caregiver-home .kimse-caregiver-quick .action-card strong{font-size:16px;line-height:1.35}
+}
+.high-contrast .screen-medical-records .kimse-medical-record-guide,.high-contrast .screen-caregiver-home .gov-care-compact{border:2px solid #000;background:#fff;color:#000}
