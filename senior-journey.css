@@ -1340,3 +1340,16 @@ body:has(.screen-home) .bottom-nav-inner{max-width:920px}
  .screen-caregiver-home .kimse-caregiver-quick .action-card strong{font-size:16px;line-height:1.35}
 }
 .high-contrast .screen-medical-records .kimse-medical-record-guide,.high-contrast .screen-caregiver-home .gov-care-compact{border:2px solid #000;background:#fff;color:#000}
+
+@media(max-width:360px){
+ .screen-caregiver-home.page{padding-top:8px}
+ .screen-caregiver-home .context-chip.caregiver{font-size:12px;padding:4px 7px;margin-bottom:4px}
+ .screen-caregiver-home .page-title{font-size:25px;line-height:1.16;margin:3px 0 7px}
+ .screen-caregiver-home .gov-care-compact{margin:5px 0 8px!important}
+ .screen-caregiver-home .gov-care-compact>summary{min-height:43px}
+ .screen-caregiver-home .kimse-caregiver-pending{padding:10px!important;margin:0 0 7px!important}
+ .screen-caregiver-home .kimse-caregiver-pending>h3{margin:5px 0!important;font-size:19px;line-height:1.25}
+ .screen-caregiver-home .kimse-caregiver-pending .kimse-caregiver-details>summary{min-height:42px}
+ .screen-caregiver-home .kimse-caregiver-quick{margin-bottom:12px}
+ .screen-caregiver-home .kimse-caregiver-quick .kimse-health-section-title{margin:4px 0 4px;font-size:18px}
+}
