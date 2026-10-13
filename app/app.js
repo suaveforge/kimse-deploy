@@ -2803,7 +2803,7 @@ page.settings=()=>{
     '<p class="page-desc">글씨와 화면을 바꾸거나, 가족과 기록의 공유 범위를 확인할 수 있어요.</p>'+
     '<nav class="settings-quick" aria-label="자주 사용하는 설정">'+
       '<a href="#/accessibility"><strong>글씨와 화면 바꾸기 '+I('chevron-right')+'</strong><span>큰 글씨 '+fontState+' · 고대비 '+contrastState+'</span></a>'+
-      '<a href="#/consent"><strong>수집·공유 동의 확인 '+I('chevron-right')+'</strong><span>가족 공유 '+familyConsent+' · 위치 수집 '+locationConsent+'</span></a>'+
+      '<a href="#/consent"><strong>수집·공유 동의 확인 '+I('chevron-right')+'</strong><span class="settings-consent-summary"><span>가족 공유 <b>'+familyConsent+'</b></span><span>위치 수집 <b>'+locationConsent+'</b></span></span></a>'+
     '</nav>'+
     '<section class="kimse-settings-section"><h2>내 정보와 가족</h2><div class="list">'+
       '<a class="list-row" href="#/account">내 프로필과 역할 '+I('chevron-right')+'</a>'+

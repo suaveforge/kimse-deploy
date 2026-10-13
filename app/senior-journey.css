@@ -882,6 +882,9 @@
 .screen-settings .settings-quick a+ a{background:#fff;border-color:#dbe4ed;color:#193c53}
 .screen-settings .settings-quick a strong{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:19px;line-height:1.4;word-break:keep-all}
 .screen-settings .settings-quick a span{font-size:16px;line-height:1.5;color:#35594b;word-break:keep-all}
+.screen-settings .settings-consent-summary{display:grid;gap:4px}
+.screen-settings .settings-consent-summary>span{display:block}
+.screen-settings .settings-consent-summary b{font-weight:850;white-space:nowrap}
 .screen-settings .settings-quick a+ a span{color:#4e6173}
 .screen-settings .settings-quick a:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
 .large-text .screen-settings .settings-quick a strong{font-size:22px}
