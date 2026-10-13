@@ -1,17 +1,17 @@
 {
-  "schemaVersion": "2026-10-13.map.4",
+  "schemaVersion": "2026-10-13.map.5",
   "asOf": "2026-10-13",
   "displayPolicy": "Institution outreach stages show only evidence-supported message delivery, statutory FOI acknowledgements and research-method responses; none indicates institutional partnership, clinical validation, purchasing interest or a paid contract. Approved unsubmitted web forms remain uncontacted. No private sender addresses or Gmail IDs are included.",
   "mapSource": "Natural Earth 110m geography via world-atlas topojson",
   "total": 92,
   "countryCount": 24,
   "contacts": {
-    "outreachSent": 26,
-    "formalFOIRegistered": 11,
+    "outreachSent": 31,
+    "formalFOIRegistered": 15,
     "automatedAckOnly": 2,
     "researchMethodsReply": 1,
-    "approvedFOIFormNotSubmitted": 9,
-    "uncontacted": 66,
+    "approvedFOIFormNotSubmitted": 4,
+    "uncontacted": 61,
     "procurementSpendEvidence": 0,
     "mutualCollaboration": 0
   },
@@ -475,8 +475,8 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "FOI_FORM_APPROVED_NOT_SUBMITTED",
-      "stageLabel": "FOI 양식 승인 · 미제출",
+      "stage": "FORMAL_FOI_REGISTERED",
+      "stageLabel": "FOI 공식 접수",
       "sourceURL": null,
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": "Southampton",
@@ -488,24 +488,25 @@
       "authorityTier": "C",
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
-        "phase": 0,
-        "phaseLabel": "P0 접수 준비",
-        "order": 20,
-        "stageCode": "FOI_FORM_APPROVED_NOT_SUBMITTED",
+        "phase": 1,
+        "phaseLabel": "P1 공식 정보요청 접수",
+        "order": 55,
+        "stageCode": "FORMAL_FOI_REGISTERED",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
-        "contactStatus": "IDENTIFIED_NOT_CONTACTED",
-        "formalFOIRef": null,
+        "contactStatus": "FORMAL_FOI_REGISTERED",
+        "formalFOIRef": "98N5UZS4U",
         "formalResponseDeadline": null,
-        "approvedWebFormNotSubmitted": true,
+        "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "기관 공식 회신 대기 · 접수번호 98N5UZS4U",
         "formURL": "https://www.southampton.gov.uk/council-democracy/council-data/freedom-of-information/",
-        "formSubmitted": false,
-        "requestSent": false
+        "formSubmitted": true,
+        "requestSent": true,
+        "submissionProof": "https://agent.tinyfish.ai/runs/2d372f7b-e254-4a31-81b6-cadc5bc36f21"
       }
     },
     {
@@ -517,8 +518,8 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "FOI_FORM_APPROVED_NOT_SUBMITTED",
-      "stageLabel": "FOI 양식 승인 · 미제출",
+      "stage": "INFORMATION_REQUEST_SENT",
+      "stageLabel": "FOI 웹양식 제출 · 답변 대기",
       "sourceURL": null,
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": null,
@@ -527,24 +528,25 @@
       "authorityTier": "C",
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
-        "phase": 0,
-        "phaseLabel": "P0 접수 준비",
-        "order": 20,
-        "stageCode": "FOI_FORM_APPROVED_NOT_SUBMITTED",
+        "phase": 1,
+        "phaseLabel": "P1 공식 정보요청 접수",
+        "order": 31,
+        "stageCode": "INFORMATION_REQUEST_SENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
-        "contactStatus": "IDENTIFIED_NOT_CONTACTED",
+        "contactStatus": "INFORMATION_REQUEST_SENT",
         "formalFOIRef": null,
         "formalResponseDeadline": null,
-        "approvedWebFormNotSubmitted": true,
+        "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "기관 접수확인 메일 대기 · 재제출 금지",
         "formURL": "https://www.shropshire.gov.uk/forms/freedom-of-information-request/",
-        "formSubmitted": false,
-        "requestSent": false
+        "formSubmitted": true,
+        "requestSent": true,
+        "submissionProof": "https://agent.tinyfish.ai/runs/1d5967f1-b3ab-4095-b5e3-88723920b60e"
       }
     },
     {
@@ -598,8 +600,8 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "FOI_FORM_APPROVED_NOT_SUBMITTED",
-      "stageLabel": "FOI 양식 승인 · 미제출",
+      "stage": "FORMAL_FOI_REGISTERED",
+      "stageLabel": "FOI 공식 접수",
       "sourceURL": null,
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": null,
@@ -608,24 +610,25 @@
       "authorityTier": "C",
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
-        "phase": 0,
-        "phaseLabel": "P0 접수 준비",
-        "order": 20,
-        "stageCode": "FOI_FORM_APPROVED_NOT_SUBMITTED",
+        "phase": 1,
+        "phaseLabel": "P1 공식 정보요청 접수",
+        "order": 55,
+        "stageCode": "FORMAL_FOI_REGISTERED",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
-        "contactStatus": "IDENTIFIED_NOT_CONTACTED",
-        "formalFOIRef": null,
+        "contactStatus": "FORMAL_FOI_REGISTERED",
+        "formalFOIRef": "50807786",
         "formalResponseDeadline": null,
-        "approvedWebFormNotSubmitted": true,
+        "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "기관 공식 회신 대기 · 접수번호 50807786",
         "formURL": "https://foi.hackney.gov.uk/foi/request/new",
-        "formSubmitted": false,
-        "requestSent": false
+        "formSubmitted": true,
+        "requestSent": true,
+        "submissionProof": "https://agent.tinyfish.ai/runs/ab9bb887-7255-4edc-849b-190b5b8c7df9"
       }
     },
     {
@@ -940,7 +943,7 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출) · 미제출 사유 확인: INTERACTIVE_FORM_UNSUBMITTED_REQUIRES_ADDRESS_VALIDATION",
         "formURL": "https://www.rbkc.gov.uk/contact-us/freedom-information-foi-requests/freedom-information-and-your-rights",
         "formSubmitted": false,
         "requestSent": false
@@ -1039,8 +1042,8 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "FOI_FORM_APPROVED_NOT_SUBMITTED",
-      "stageLabel": "FOI 양식 승인 · 미제출",
+      "stage": "FORMAL_FOI_REGISTERED",
+      "stageLabel": "FOI 공식 접수",
       "sourceURL": null,
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
@@ -1049,24 +1052,25 @@
       "authorityTier": "C",
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
-        "phase": 0,
-        "phaseLabel": "P0 접수 준비",
-        "order": 20,
-        "stageCode": "FOI_FORM_APPROVED_NOT_SUBMITTED",
+        "phase": 1,
+        "phaseLabel": "P1 공식 정보요청 접수",
+        "order": 55,
+        "stageCode": "FORMAL_FOI_REGISTERED",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
-        "contactStatus": "IDENTIFIED_NOT_CONTACTED",
-        "formalFOIRef": null,
+        "contactStatus": "FORMAL_FOI_REGISTERED",
+        "formalFOIRef": "FOIEIR-2026-004173",
         "formalResponseDeadline": null,
-        "approvedWebFormNotSubmitted": true,
+        "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "기관 공식 회신 대기 · 접수번호 FOIEIR-2026-004173",
         "formURL": "https://my.newham.gov.uk/foi/",
-        "formSubmitted": false,
-        "requestSent": false
+        "formSubmitted": true,
+        "requestSent": true,
+        "submissionProof": "https://agent.tinyfish.ai/runs/237285ac-3e18-4c3f-8615-8305afbaa1dd"
       }
     },
     {
@@ -1102,7 +1106,7 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출) · 미제출 사유 확인: INTERACTIVE_FORM_NOT_FOUND",
         "formURL": "https://foi.nottinghamshire.gov.uk/",
         "formSubmitted": false,
         "requestSent": false
@@ -1918,7 +1922,7 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출) · 미제출 사유 확인: ANONYMOUS_FOI_PORTAL_GATEWAY_BLOCKED_NOT_SUBMITTED",
         "formURL": "https://www.middlesbrough.gov.uk/open-data-and-foi/freedom-of-information-foi-requests/",
         "formSubmitted": false,
         "requestSent": false
@@ -2038,7 +2042,7 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출) · 미제출 사유 확인: INTERACTIVE_FORM_NOT_SUBMITTED_TIME_LIMIT",
         "formURL": "https://www.coventry.gov.uk/freedom-information-environmental-information-regulations/freedom-information-act-2000/3",
         "formSubmitted": false,
         "requestSent": false
@@ -2053,8 +2057,8 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "FOI_FORM_APPROVED_NOT_SUBMITTED",
-      "stageLabel": "FOI 양식 승인 · 미제출",
+      "stage": "FORMAL_FOI_REGISTERED",
+      "stageLabel": "FOI 공식 접수",
       "sourceURL": null,
       "sourceScope": "Historic official dementia/passive monitoring reference; confirm responsible authority and recoverable records",
       "city": "Cambridge",
@@ -2066,24 +2070,25 @@
       "authorityTier": "C",
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
-        "phase": 0,
-        "phaseLabel": "P0 접수 준비",
-        "order": 20,
-        "stageCode": "FOI_FORM_APPROVED_NOT_SUBMITTED",
+        "phase": 1,
+        "phaseLabel": "P1 공식 정보요청 접수",
+        "order": 55,
+        "stageCode": "FORMAL_FOI_REGISTERED",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
-        "contactStatus": "IDENTIFIED_NOT_CONTACTED",
-        "formalFOIRef": null,
+        "contactStatus": "FORMAL_FOI_REGISTERED",
+        "formalFOIRef": "CCC882925672",
         "formalResponseDeadline": null,
-        "approvedWebFormNotSubmitted": true,
+        "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 웹양식 실제 제출 후 확인번호 기록 (현재 미제출)",
+        "nextAction": "기관 공식 회신 대기 · 접수번호 CCC882925672",
         "formURL": "https://cambridgeshire-self.achieveservice.com/service/Freedom_of_Information",
-        "formSubmitted": false,
-        "requestSent": false
+        "formSubmitted": true,
+        "requestSent": true,
+        "submissionProof": "https://agent.tinyfish.ai/runs/87623faa-ac68-498c-a6de-aa437def5aba"
       }
     },
     {
@@ -4793,7 +4798,7 @@
   "untouchedCountryAreaCount": 225,
   "masterPolicy": "ISO 3166-1 249 official country/territory codes are planned-screening master only, not all researched. Institution records currently cover 24 geographically assigned codes.",
   "authorityScale": "KIMSE internal contextual research-influence band A/B/C, determined from published institutional type and research evidence only. Not an independent ranking, endorsement, scientific validity grade, or partnership validation.",
-  "updated": "Updated 2026.10.13 · R&D Atlas Institution Stages 01",
+  "updated": "2026-10-13",
   "progressStages": [
     {
       "code": "CANDIDATE_REVIEW_SCHEDULED",
@@ -4806,29 +4811,29 @@
       "count": 36
     },
     {
-      "code": "FOI_FORM_APPROVED_NOT_SUBMITTED",
-      "label": "FOI 양식 승인 · 미제출",
-      "count": 9
-    },
-    {
-      "code": "INFORMATION_REQUEST_SENT",
-      "label": "정보요청 발송",
-      "count": 12
-    },
-    {
       "code": "AUTOMATED_ACK_ONLY",
       "label": "자동 접수회신",
       "count": 2
     },
     {
-      "code": "FORMAL_FOI_REGISTERED",
-      "label": "FOI 공식 접수",
-      "count": 11
-    },
-    {
       "code": "RESEARCH_METHODS_RESPONSE_RECEIVED",
       "label": "연구방법 답변 수신",
       "count": 1
+    },
+    {
+      "code": "FOI_FORM_APPROVED_NOT_SUBMITTED",
+      "label": "FOI 양식 승인 · 미제출",
+      "count": 4
+    },
+    {
+      "code": "INFORMATION_REQUEST_SENT",
+      "label": "정보요청 발송 · 웹양식 제출",
+      "count": 13
+    },
+    {
+      "code": "FORMAL_FOI_REGISTERED",
+      "label": "FOI 공식 접수",
+      "count": 15
     }
   ]
 }
