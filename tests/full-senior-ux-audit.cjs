@@ -5,7 +5,7 @@ const assert=require('node:assert/strict');
 const base='https://kimse.suaveforge.com/#/';
 const js=fs.readFileSync('app.js','utf8');
 const routes=[...js.matchAll(/page(?:\.([a-zA-Z_$][\w$-]*)|\[['"]([^'"]+)['"]\])\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z_$]+)\s*=>/g)].map(m=>m[1]||m[2]);
-const unique=[...new Set(routes)],states=[{width:320,mode:'normal'},{width:375,mode:'normal'},{width:768,mode:'normal'},{width:375,mode:'large'},{width:375,mode:'contrast'}];
+const unique=[...new Set(routes)],states=[{width:320,mode:'normal'},{width:375,mode:'normal'},{width:430,mode:'normal'},{width:768,mode:'normal'},{width:375,mode:'large'},{width:375,mode:'contrast'}];
 const report=[];
 const priority=new Set(['start','role','auth','onboarding-profile','consent','initial-check','voice-check','initial-result','home','assessment','cognitive-recheck','cognitive-recheck-result','training-play','health-detail','caregiver-home','family-feedback','care-schedule','family-call','family-add','medication-add','clinical-handoff','clinical-context-event','medical-record-add','professional-outcome','monitoring-status']);
 function slug(x){return x.replace(/[^a-z0-9-]/ig,'_')}
@@ -78,6 +78,27 @@ try{
    assert((await page.locator('.screen-assessment-start .context-chip').innerText()).includes('CAIDE'),'Keep original research model visible');
    assert.equal(await page.locator('#begin').innerText(),'7가지 항목 확인하기','Risk-check primary action must explain what follows');
  }
+ if(screen==='evidence-proof'){
+   const wraps=await page.locator('.evidence-story-stat strong,.evidence-story-stat span').evaluateAll(els=>els.map(el=>{
+     const st=getComputedStyle(el),height=el.getBoundingClientRect().height,line=parseFloat(st.lineHeight)||parseFloat(st.fontSize)*1.2;
+     return {text:el.innerText,lines:height/line};
+   }));
+   assert(wraps.every(w=>w.lines<1.65),'Evidence sample and duration labels must not break into isolated Korean syllables: '+JSON.stringify(wraps));
+ }
+ if(screen==='monitoring-status'){
+   const ratios=await page.locator('.monitoring-detail-link').evaluateAll(els=>{
+     const rgb=(value)=>{const m=String(value).match(/\d+(?:\.\d+)?/g)||[];return m.slice(0,3).map(Number)};
+     const lum=v=>{const a=v.map(x=>x/255).map(x=>x<=.04045?x/12.92:Math.pow((x+.055)/1.055,2.4));return a[0]*.2126+a[1]*.7152+a[2]*.0722};
+     return els.map(el=>{const style=getComputedStyle(el),l=lum(rgb(style.color)),b=lum(rgb(style.backgroundColor));return {text:el.innerText.trim(),ratio:Math.round(((Math.max(l,b)+.05)/(Math.min(l,b)+.05))*10)/10}});
+   });
+   assert(ratios.every(x=>x.ratio>=4.5),'Monitoring secondary action contrast should meet WCAG AA: '+JSON.stringify(ratios));
+ }
+ if(screen==='accessibility'&&display.width===375&&display.mode==='normal'){
+   const heading=await page.locator('.accessibility-hero .page-title').evaluate(el=>{
+     const st=getComputedStyle(el);return {height:el.getBoundingClientRect().height,line:parseFloat(st.lineHeight)||parseFloat(st.fontSize)*1.2};
+   });
+   assert(heading.height/heading.line<2.5,'Accessibility heading should not strand a final syllable');
+ }
  if(screen==='settings'){
    assert.equal(await page.locator('.kimse-settings-section').count(),4,'Settings must have four labeled groups');
    const links=await page.locator('.kimse-settings-section a.list-row').count();
@@ -94,6 +115,8 @@ try{
    await page.screenshot({path:'qa-artifacts/screens/clarity-'+slug(screen)+'-'+display.width+'-'+display.mode+'.png',fullPage:true,animations:'disabled'});
  }
  if(display.mode==='normal'&&display.width===375)await page.screenshot({path:'qa-artifacts/screens/'+slug(screen)+'-375.png',fullPage:true});
+ if(display.mode==='normal'&&display.width===430&&['brain-map','evidence-proof','research-engine','settings','accessibility','monitoring-status'].includes(screen))await page.screenshot({path:'qa-artifacts/screens/'+slug(screen)+'-430.png',fullPage:true});
+ if(display.mode==='large'&&display.width===215)await page.screenshot({path:'qa-artifacts/screens/reflow-200-'+slug(screen)+'.png',fullPage:true});
 }catch(e){result.error=String(e).slice(0,500)}
 result.unexpectedJsErrors=errors;
 report.push(result);
@@ -614,6 +637,7 @@ fs.mkdirSync('qa-artifacts/screens',{recursive:true});
 const browser=await chromium.launch({headless:true});
 try{
 for(const d of states)for(const screen of unique)await run(browser,screen,d);
+for(const screen of ['brain-map','evidence-proof','research-engine','settings','accessibility'])await run(browser,screen,{width:215,mode:'large'});
 await verifyBaseline24HourMeter(browser);
 await verifyCoreVisualHierarchy(browser);
 await verifySeniorJourneys(browser);
