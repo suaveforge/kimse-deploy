@@ -15,6 +15,7 @@ function statusKey(card){
   return ['stable','warning','danger','serious','urgent'].find(k=>card?.classList.contains('level-'+k))||'stable';
 }
 function enhanceMonitoring(screen){
+  if(screen.querySelector('.kimse-monitoring-insufficient'))return;
   const level=screen.querySelector('.monitoring-level-card');
   const eyebrow=screen.querySelector('.eyebrow');
   const title=screen.querySelector('.page-title');
