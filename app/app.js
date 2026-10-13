@@ -2585,7 +2585,7 @@ function clinicalCooccurrenceView(r){
 function clinicalPrintableVisitBrief(report){
   const gate=window.KIMSE_CLINICAL_SUBMISSION;
   const brief=gate?.buildVisitBrief?.(report);
-  if(!brief)return '<section class="clinical-visit-brief"><h2>진료 방문 준비 자료</h2><p>기관 조사자료를 확인하지 못했습니다. 한국어 일반 진료 방문용이며 병원 승인 서식이 아닙니다.</p></section>';
+  if(!brief||!brief.institutionId)return ''; // Do not expand standard A4 when no research hospital is selected.
   const receiver=brief.institutionName||'기관 미선택 · 국가 공통 방문 자료';
   const providerMemos=(brief.departmentMemo||brief.clinicianMemo)
     ?'<p class="clinical-visit-memo">'+(brief.departmentMemo?'진료과 메모(미확인): '+esc(brief.departmentMemo)+' · ':'')
