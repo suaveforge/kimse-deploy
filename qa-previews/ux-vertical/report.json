@@ -1786,16 +1786,16 @@
       "h": 812,
       "screen": "page narrow  screen-market",
       "headline": "치매 케어관",
-      "scrollHeight": 3001,
-      "scrollRatio": 3.7,
+      "scrollHeight": 1936,
+      "scrollRatio": 2.38,
       "headerBottom": 85,
       "navTop": 812,
-      "controls": 18,
-      "actionsAboveFold": 3,
+      "controls": 19,
+      "actionsAboveFold": 11,
       "firstAction": {
         "label": "입점/제휴",
-        "top": 109,
-        "bottom": 211,
+        "top": 98,
+        "bottom": 176,
         "tag": "BUTTON",
         "visible": true
       },
@@ -1918,21 +1918,21 @@
       "h": 812,
       "screen": "page narrow  screen-settings",
       "headline": "설정",
-      "scrollHeight": 1919,
-      "scrollRatio": 2.36,
+      "scrollHeight": 813,
+      "scrollRatio": 1,
       "headerBottom": 85,
       "navTop": 812,
-      "controls": 16,
+      "controls": 15,
       "actionsAboveFold": 5,
       "firstAction": {
         "label": "글씨와 화면 바꾸기 큰 글씨 꺼짐 · 고대비 꺼짐",
-        "top": 216.1875,
-        "bottom": 314.78125,
+        "top": 147.75,
+        "bottom": 223.390625,
         "tag": "A",
         "visible": true
       },
       "firstActionAboveFold": true,
-      "cards": 14
+      "cards": 12
     }
   ],
   "problems": [],
@@ -1944,44 +1944,21 @@
       "h": 812,
       "screen": "page narrow  screen-market",
       "headline": "치매 케어관",
-      "scrollHeight": 3001,
-      "scrollRatio": 3.7,
+      "scrollHeight": 1936,
+      "scrollRatio": 2.38,
       "headerBottom": 85,
       "navTop": 812,
-      "controls": 18,
-      "actionsAboveFold": 3,
+      "controls": 19,
+      "actionsAboveFold": 11,
       "firstAction": {
         "label": "입점/제휴",
-        "top": 109,
-        "bottom": 211,
+        "top": 98,
+        "bottom": 176,
         "tag": "BUTTON",
         "visible": true
       },
       "firstActionAboveFold": true,
       "cards": 1
-    },
-    {
-      "smoke": "settings",
-      "doc": 360,
-      "w": 375,
-      "h": 812,
-      "screen": "page narrow  screen-settings",
-      "headline": "설정",
-      "scrollHeight": 1919,
-      "scrollRatio": 2.36,
-      "headerBottom": 85,
-      "navTop": 812,
-      "controls": 16,
-      "actionsAboveFold": 5,
-      "firstAction": {
-        "label": "글씨와 화면 바꾸기 큰 글씨 꺼짐 · 고대비 꺼짐",
-        "top": 216.1875,
-        "bottom": 314.78125,
-        "tag": "A",
-        "visible": true
-      },
-      "firstActionAboveFold": true,
-      "cards": 14
     },
     {
       "smoke": "evidence-proof",
@@ -3120,6 +3097,29 @@
       },
       "firstActionAboveFold": true,
       "cards": 1
+    },
+    {
+      "smoke": "settings",
+      "doc": 360,
+      "w": 375,
+      "h": 812,
+      "screen": "page narrow  screen-settings",
+      "headline": "설정",
+      "scrollHeight": 813,
+      "scrollRatio": 1,
+      "headerBottom": 85,
+      "navTop": 812,
+      "controls": 15,
+      "actionsAboveFold": 5,
+      "firstAction": {
+        "label": "글씨와 화면 바꾸기 큰 글씨 꺼짐 · 고대비 꺼짐",
+        "top": 147.75,
+        "bottom": 223.390625,
+        "tag": "A",
+        "visible": true
+      },
+      "firstActionAboveFold": true,
+      "cards": 12
     }
   ]
 }
