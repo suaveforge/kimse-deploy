@@ -35,10 +35,11 @@ jobs:
           name: kimse-remaining-mobile-qa
           path: qa-artifacts/remaining-mobile/
           if-no-files-found: ignore
-      - name: Publish selected branch-only actual screenshots
-        if: success()
+      - name: Publish diagnostic screenshots and report (including failed assertions)
+        if: always()
         run: |
           mkdir -p qa-previews/remaining-mobile
+          test -f qa-artifacts/remaining-mobile/report.json || exit 0
           cp qa-artifacts/remaining-mobile/report.json qa-previews/remaining-mobile/report.json
           for r in health training medication settings accessibility medical-records clinical-handoff family-call family-feedback caregiver-home initial-result result evidence-proof research-engine monitoring-status voice-check consent consultation-report; do
             cp "qa-artifacts/remaining-mobile/${r}-375-normal.png" "qa-previews/remaining-mobile/${r}-375.png"
