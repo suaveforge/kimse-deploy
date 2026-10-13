@@ -1997,7 +1997,7 @@ page['evidence-proof']=()=>wrap(
     '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>118명</strong><span>복수 신호</span></div><div><strong>걷기·말하기·그리기를 함께 분석</strong><p>한 가지 신호보다 여러 신호를 함께 봤을 때 성능이 높았습니다.</p><small>연구 출처 · Gait + Speech + Drawing</small></div></section>'+
   '</div>'+
   '<div class="evidence-story-conclusion">'+I('route')+'<div><strong>낌새는 동의한 기록을 개인의 평소 모습과 비교합니다.</strong><p>처음 14일은 생활패턴 비교를 시작하는 기준입니다. 위 연구들이 낌새의 14일 감지 정확도를 검증했다는 뜻은 아닙니다.</p></div></div>'+
-  '<div class="hero-actions evidence-registry-link"><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">연구별 원문과 적용 범위 보기</a></div>',
+  '<div class="hero-actions evidence-registry-link"><a class="btn-kimse btn-primary-k" href="#/research-engine">연구 근거를 내 기록과 비교하는 방법</a><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">연구별 원문과 적용 범위 보기</a></div>',
   {title:'근거',narrow:true,overview:true}
 );
 
@@ -2022,7 +2022,8 @@ page['research-engine']=()=>wrap(
       '<div class="research-factor-row"><span>이동</span><em>내 평소 이동과 비교</em></div>'+
     '</div>'+
   '</section>'+
-  '<p class="research-personal-note">동의한 항목에서 실제로 수집된 기록만 비교할 수 있습니다. 연구 결과를 개인의 치매 확률이나 진단 점수로 바꾸지 않습니다.</p>',
+  '<p class="research-personal-note">동의한 항목에서 실제로 수집된 기록만 비교할 수 있습니다. 연구 결과를 개인의 치매 확률이나 진단 점수로 바꾸지 않습니다.</p>'+
+  '<nav class="hero-actions research-next-actions" aria-label="연구와 생활기록 더 보기"><a class="btn-kimse btn-primary-k" href="#/evidence-proof">네 가지 관찰 항목의 연구 근거 보기</a><a class="btn-kimse btn-secondary-k" href="#/monitoring-status">내 생활 변화 확인하기</a></nav>',
   {title:'연구',narrow:true,overview:true}
 );
 
@@ -2112,7 +2113,7 @@ page['brain-map']=()=>{
     brainSvg(S.brainView,S.brainFocus)+
     '<div class="brain-focus-summary" role="status"><strong>'+meta[1]+'</strong><span>'+(m?m[0]:'개인 점수 미산출')+'</span><small>'+meta[2]+'와 관련된 변화 영역입니다. 이 지도는 참고용이며 낌새 자체 질문의 점수를 임상 검사 점수로 바꾸지 않습니다.</small></div>'+
     '<div class="brain-view-switch" role="group" aria-label="뇌 지도 보는 방향"><button type="button" data-brain-view="side" aria-pressed="'+(S.brainView==='side')+'" class="'+(S.brainView==='side'?'active':'')+'">옆면</button><button type="button" data-brain-view="top" aria-pressed="'+(S.brainView==='top')+'" class="'+(S.brainView==='top'?'active':'')+'">윗면</button></div>'+
-    (S.brainHistory.length?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="brain-trends">시간 변화 보기</button></div>':'')+
+    (S.brainHistory.length?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="brain-trends">시간 변화 보기</button></div>':'<div class="hero-actions brain-next-action"><a class="btn-kimse btn-primary-k" href="#/monitoring-status">3. 최근 생활 변화 확인하기</a></div>')+
     '<p class="screen-footnote">뇌영상 검사나 진단 점수가 아니라, 근거 레지스트리에 연결된 관찰 영역을 설명하는 지도입니다.</p>',
     {title:'지도',narrow:true,overview:true}
   );
@@ -2797,11 +2798,12 @@ async function loadAdminInquiries(){
 page.settings=()=>{
   if(!demo())return accountRequired();
   const fontState=S.a11y.largeText?'켜짐':'꺼짐',contrastState=S.a11y.highContrast?'켜짐':'꺼짐';
+  const familyConsent=S.consents?.caregiverShare?'동의함':'동의 안 함',locationConsent=S.consents?.location?'동의함':'동의 안 함';
   return wrap('<h1 class="page-title">설정</h1>'+
     '<p class="page-desc">글씨와 화면을 바꾸거나, 가족과 기록의 공유 범위를 확인할 수 있어요.</p>'+
     '<nav class="settings-quick" aria-label="자주 사용하는 설정">'+
       '<a href="#/accessibility"><strong>글씨와 화면 바꾸기 '+I('chevron-right')+'</strong><span>큰 글씨 '+fontState+' · 고대비 '+contrastState+'</span></a>'+
-      '<a href="#/consent"><strong>수집·공유 동의 확인 '+I('chevron-right')+'</strong><span>어떤 기록을 모으고 누구와 나눌지 확인</span></a>'+
+      '<a href="#/consent"><strong>수집·공유 동의 확인 '+I('chevron-right')+'</strong><span>가족 공유 '+familyConsent+' · 위치 수집 '+locationConsent+'</span></a>'+
     '</nav>'+
     '<section class="kimse-settings-section"><h2>내 정보와 가족</h2><div class="list">'+
       '<a class="list-row" href="#/account">내 프로필과 역할 '+I('chevron-right')+'</a>'+
