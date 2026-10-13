@@ -295,8 +295,16 @@
       const status=(Array.isArray(report.clinical_coverage)?report.clinical_coverage:[]).find(x=>x?.id===coverageId)?.status;
       if(status!=='available')return false;
     }
-    const node=path.split('.').reduce((value,key)=>value&&typeof value==='object'?value[key]:undefined,report);
-    return hasActualValue(node);
+    // Canonical clinical groups include arrays of professional encounters.
+    // A dotted path must inspect each record, never stop at the array itself.
+    const traverse=(node,parts)=>{
+      if(!parts.length)return hasActualValue(node);
+      if(Array.isArray(node))return node.some(entry=>traverse(entry,parts));
+      if(!node||typeof node!=='object')return false;
+      const [key,...rest]=parts;
+      return Object.prototype.hasOwnProperty.call(node,key)&&traverse(node[key],rest);
+    };
+    return traverse(report,path.split('.'));
   };
   // Classification is based only on the published crosswalk's source status.
   // It is a patient preparation aid, never a hospital-approved checklist.
