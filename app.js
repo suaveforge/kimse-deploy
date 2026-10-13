@@ -2769,7 +2769,8 @@ function clinicalPrintableVisitBrief(report){
   const guidance=priority?'<div class="clinical-national-priority"><h3>국가 공개 임상 근거 · 진료 시 확인할 정보</h3>'
     +'<p>'+esc(priority.profileName)+' · 기관·진료과·의료진별 검증된 서식 아님</p>'
     +'<p>'+(priority.specialtyFocus&&priority.specialtyFocus!=='UNSPECIFIED'?'입력한 진료과에 따라 기존 공개자료 항목만 재정렬했습니다. 해당 병원의 진료 프로토콜은 아닙니다.':'해당 국가 공개 지침의 기본 확인 순서입니다.')+'</p>'
-    +'<ol>'+priority.priorities.map(field=>'<li><span>'+esc(field.label)+'</span><strong>'+(field.recorded?'관련 기록 있음 · 공식 검사와 구분':'자료 없음 · 추가 확인')+'</strong></li>').join('')+'</ol>'
+    +(priority.terminologyStatus==='EDITORIAL_DRAFT_NOT_VALIDATED'?'<p class="clinical-translation-caution">한국어 원문 옆의 외국어 용어는 검수되지 않은 참고 번역입니다. 병원 승인 용어·공식 번역이 아닙니다.</p>':'')
+    +'<ol>'+priority.priorities.map(field=>'<li><span>'+esc(field.label)+(field.draftTerm?'<small class="clinical-draft-term" lang="'+esc(priority.terminologyLanguage)+'">'+esc(field.draftTerm)+'</small>':'')+'</span><strong>'+(field.recorded?'관련 기록 있음 · 공식 검사와 구분':'자료 없음 · 추가 확인')+'</strong></li>').join('')+'</ol>'
     +'<p>'+esc(priority.note)+'</p>'
     +(priority.guidelineSources.length?'<p class="clinical-national-sources">참고 근거: '+priority.guidelineSources.map(s=>'<a href="'+esc(s.url)+'" rel="noopener noreferrer" target="_blank">'+esc(s.id)+'</a>'+((s.metadataOnly||/HISTORICAL|CURRENTNESS_REVIEW|FINAL_UNVERIFIED/.test(s.status))?' (최신 권고 본문 미확인 또는 역사적 자료)':'')).join(' · ')+'</p>':'')
     +'</div>':'';
