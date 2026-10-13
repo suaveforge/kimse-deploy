@@ -244,6 +244,17 @@ jobs:
             const pdfDocument=await PDFDocument.load(pdf);
             check(pdfDocument.getPageCount()===1,'a4-summary-exactly-one-page',String(pdfDocument.getPageCount()));
             fs.writeFileSync(path.join(out,'clinical-handoff-a4.pdf'),pdf);
+            await dp.emulateMedia({media:'screen'});
+            await dp.locator('#clinical-target-country').selectOption('GB');
+            await dp.locator('#clinical-target-institution').selectOption('GB-DORSET-MAS');
+            await dp.waitForFunction(()=>document.querySelector('.clinical-visit-brief')?.textContent.includes('Dorset'),null,{timeout:12000});
+            check((await dp.locator('.clinical-report-stamp').innerText()).includes('영국'),'uk-print-target-not-mislabeled-as-korean');
+            check((await dp.locator('.clinical-visit-brief').innerText()).includes('Dorset'),'uk-public-source-inside-print-page');
+            await dp.emulateMedia({media:'print'});
+            const hospitalPdf=await dp.pdf({format:'A4',printBackground:true,margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
+            const hospitalPageCount=(await PDFDocument.load(hospitalPdf)).getPageCount();
+            check(hospitalPageCount>=1&&hospitalPageCount<=3,'uk-targeted-a4-print-pages',String(hospitalPageCount));
+            fs.writeFileSync(path.join(out,'clinical-handoff-uk-public-hospital-a4.pdf'),hospitalPdf);
             const evidencePage=await ctx.newPage();
             await evidencePage.goto(BASE+'evidence/clinical.html',{waitUntil:'domcontentloaded',timeout:30000});
             await evidencePage.waitForSelector('#clinical-requirements-mapped',{timeout:15000});
