@@ -1070,6 +1070,25 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 }
 
 
+/* Published-referral source companion inside the patient-carried printable report. */
+.clinical-visit-brief{border:1px solid #d7e0e6;border-radius:12px;padding:11px 14px;min-width:0;background:#fff;color:var(--kimse-text)}
+.clinical-visit-brief h2{font-size:15px;line-height:1.35;margin:0 0 5px;color:var(--kimse-navy)}
+.clinical-visit-brief p{font-size:11px;margin:4px 0;overflow-wrap:anywhere}
+.clinical-visit-brief .clinical-visit-meta{color:#425761}
+.clinical-visit-caption{font-weight:800;margin-top:7px!important}
+.clinical-visit-list{padding-left:18px;margin:5px 0 7px;display:grid;gap:5px}
+.clinical-visit-list li{font-size:11px;line-height:1.35;break-inside:avoid}
+.clinical-visit-list strong{display:block}
+.clinical-visit-list span{display:block;color:#425761;overflow-wrap:anywhere}
+.clinical-visit-brief .clinical-visit-caution,.clinical-visit-conflict{font-weight:750;color:#7a341f}
+.clinical-visit-source a{overflow-wrap:anywhere;color:#175f83}
+@media print{
+  .clinical-visit-brief{padding:7px 9px;break-inside:auto}
+  .clinical-visit-brief h2{font-size:10pt}
+  .clinical-visit-brief p,.clinical-visit-list li{font-size:8pt;line-height:1.25}
+  .clinical-visit-list{gap:3px;margin:4px 0}
+}
+
 /* Clinical Handoff · clinician-first dynamic review */
 .clinical-coverage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .clinical-coverage-item{border:1px solid var(--line,#dde6ef);border-radius:16px;padding:14px;background:#fff;min-width:0}
