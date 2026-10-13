@@ -48,7 +48,7 @@ const seed=(route,mode)=>({
       assert.equal(m.researchCards.length,3,'three citation sources required');
       assert(m.researchCards.every(x=>x.w>=profile.w*.71&&x.font>=15),'source labels are squeezed or too small: '+JSON.stringify(m.researchCards));
       for(let i=1;i<m.researchCards.length;i++)assert(m.researchCards[i].y>=m.researchCards[i-1].y+m.researchCards[i-1].h-2,'citation cards overlap');
-      assert.deepEqual(m.factorLabels,['나의 평소 기준','나의 평소 기준','나의 평소 기준','나의 평소 기준'],'baseline must be legible Korean');
+      assert.deepEqual(m.factorLabels,['내 평소 수면과 비교','내 평소 활동과 비교','내 평소 말하기와 비교','내 평소 이동과 비교'],'each factor must explain its own personal comparison in plain Korean');
      }
      if(route==='brain-map'){
       assert.equal(m.originalDescriptions,1,'brain map repeats original introduction');
