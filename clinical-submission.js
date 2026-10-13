@@ -310,6 +310,263 @@
     PATIENT_OR_FAMILY_CONFIRMATION:'본인·가족 추가 확인',
     OBSERVATION_REFERENCE:'낌새 관찰·진료 참고'
   });
+  // Projected from app/clinical-profile-authorities.json, verified by smoke tests.
+  // This is a published-source display order, not a validated specialty protocol.
+  const countryPublicClinicalPriority=Object.freeze({
+  "KR": {
+    "profileName": "대한민국 진료전 요약 후보",
+    "priorities": [
+      {
+        "id": "consultation_reason",
+        "label": "상담·의뢰 사유",
+        "path": "previsit_summary.handoff_reason"
+      },
+      {
+        "id": "onset_trajectory",
+        "label": "관찰된 변화의 시작·순서·지속",
+        "path": "previsit_summary.first_observed_change_at"
+      },
+      {
+        "id": "cognitive_history",
+        "label": "인지 관련 변화/반복과제",
+        "path": "clinical_domains.cognition"
+      },
+      {
+        "id": "function_independence",
+        "label": "ADL·IADL·안전 영향",
+        "path": "clinical_domains.function_independence"
+      },
+      {
+        "id": "informant_history",
+        "label": "가족·보호자 정보·불일치",
+        "path": "clinical_domains.subjective_change"
+      }
+    ],
+    "sources": [
+      {
+        "id": "KR-KDA-2021",
+        "url": "https://www.dementia.or.kr/bbs/?code=guideline",
+        "status": "OFFICIAL_PUBLISHED_2022_NEEDS_CURRENTNESS_REVIEW",
+        "metadataOnly": false
+      },
+      {
+        "id": "US-AA-DETECD-2025",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12173843/",
+        "status": "PUBLISHED_PRIMARY_GUIDELINE",
+        "metadataOnly": false
+      }
+    ]
+  },
+  "GB": {
+    "profileName": "영국 Memory Assessment 후보",
+    "priorities": [
+      {
+        "id": "consultation_reason",
+        "label": "상담·의뢰 사유",
+        "path": "previsit_summary.handoff_reason"
+      },
+      {
+        "id": "onset_trajectory",
+        "label": "관찰된 변화의 시작·순서·지속",
+        "path": "previsit_summary.first_observed_change_at"
+      },
+      {
+        "id": "informant_history",
+        "label": "가족·보호자 정보·불일치",
+        "path": "clinical_domains.subjective_change"
+      },
+      {
+        "id": "function_independence",
+        "label": "ADL·IADL·안전 영향",
+        "path": "clinical_domains.function_independence"
+      },
+      {
+        "id": "cognitive_history",
+        "label": "인지 관련 변화/반복과제",
+        "path": "clinical_domains.cognition"
+      }
+    ],
+    "sources": [
+      {
+        "id": "GB-NICE-NG97",
+        "url": "https://www.nice.org.uk/guidance/ng97/chapter/recommendations",
+        "status": "OFFICIAL_LIVE_GUIDANCE_REVIEWED_2025_10_NO_UPDATE",
+        "metadataOnly": false
+      }
+    ]
+  },
+  "US": {
+    "profileName": "미국 Primary/Specialty Care 후보",
+    "priorities": [
+      {
+        "id": "consultation_reason",
+        "label": "상담·의뢰 사유",
+        "path": "previsit_summary.handoff_reason"
+      },
+      {
+        "id": "onset_trajectory",
+        "label": "관찰된 변화의 시작·순서·지속",
+        "path": "previsit_summary.first_observed_change_at"
+      },
+      {
+        "id": "informant_history",
+        "label": "가족·보호자 정보·불일치",
+        "path": "clinical_domains.subjective_change"
+      },
+      {
+        "id": "cognitive_history",
+        "label": "인지 관련 변화/반복과제",
+        "path": "clinical_domains.cognition"
+      },
+      {
+        "id": "function_independence",
+        "label": "ADL·IADL·안전 영향",
+        "path": "clinical_domains.function_independence"
+      }
+    ],
+    "sources": [
+      {
+        "id": "US-AA-DETECD-2025",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12173843/",
+        "status": "PUBLISHED_PRIMARY_GUIDELINE",
+        "metadataOnly": false
+      }
+    ]
+  },
+  "CA": {
+    "profileName": "캐나다 인지저하 평가 후보",
+    "priorities": [
+      {
+        "id": "consultation_reason",
+        "label": "상담·의뢰 사유",
+        "path": "previsit_summary.handoff_reason"
+      },
+      {
+        "id": "informant_history",
+        "label": "가족·보호자 정보·불일치",
+        "path": "clinical_domains.subjective_change"
+      },
+      {
+        "id": "function_independence",
+        "label": "ADL·IADL·안전 영향",
+        "path": "clinical_domains.function_independence"
+      },
+      {
+        "id": "cognitive_history",
+        "label": "인지 관련 변화/반복과제",
+        "path": "clinical_domains.cognition"
+      },
+      {
+        "id": "mood_neuropsychiatric",
+        "label": "기분·행동·정신증상 맥락",
+        "path": "clinical_domains.mood_behavior"
+      }
+    ],
+    "sources": [
+      {
+        "id": "CA-CCCDTD5-2020",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7657153/",
+        "status": "PUBLISHED_2020_LATEST_LISTED_BY_CANADIAN_DEMENTIA_GUIDELINE_GROUP_2026_10",
+        "metadataOnly": false
+      }
+    ]
+  },
+  "AU": {
+    "profileName": "호주 1차 진료 후보",
+    "priorities": [
+      {
+        "id": "consultation_reason",
+        "label": "상담·의뢰 사유",
+        "path": "previsit_summary.handoff_reason"
+      },
+      {
+        "id": "informant_history",
+        "label": "가족·보호자 정보·불일치",
+        "path": "clinical_domains.subjective_change"
+      },
+      {
+        "id": "onset_trajectory",
+        "label": "관찰된 변화의 시작·순서·지속",
+        "path": "previsit_summary.first_observed_change_at"
+      },
+      {
+        "id": "cognitive_history",
+        "label": "인지 관련 변화/반복과제",
+        "path": "clinical_domains.cognition"
+      },
+      {
+        "id": "function_independence",
+        "label": "ADL·IADL·안전 영향",
+        "path": "clinical_domains.function_independence"
+      }
+    ],
+    "sources": [
+      {
+        "id": "AU-RACGP-2016",
+        "url": "https://www.racgp.org.au/afp/2016/december/clinical-practice-guidelines-and-principles-of-car",
+        "status": "OFFICIAL_HISTORICAL_2016_2026_DRAFT_CONSULTATION_ENDED_FINAL_UNVERIFIED",
+        "metadataOnly": false
+      }
+    ]
+  },
+  "JP": {
+    "profileName": "일본 인지저하 평가 후보",
+    "priorities": [
+      {
+        "id": "consultation_reason",
+        "label": "상담·의뢰 사유",
+        "path": "previsit_summary.handoff_reason"
+      },
+      {
+        "id": "onset_trajectory",
+        "label": "관찰된 변화의 시작·순서·지속",
+        "path": "previsit_summary.first_observed_change_at"
+      },
+      {
+        "id": "informant_history",
+        "label": "가족·보호자 정보·불일치",
+        "path": "clinical_domains.subjective_change"
+      },
+      {
+        "id": "cognitive_history",
+        "label": "인지 관련 변화/반복과제",
+        "path": "clinical_domains.cognition"
+      },
+      {
+        "id": "function_independence",
+        "label": "ADL·IADL·안전 영향",
+        "path": "clinical_domains.function_independence"
+      }
+    ],
+    "sources": [
+      {
+        "id": "JP-JSN-2026",
+        "url": "https://webview.isho.jp/book/detail/abs/10.11477/9784260665537",
+        "status": "OFFICIALLY_PUBLISHED_2026_METADATA_ONLY_CONTENT_NOT_REVIEWED",
+        "metadataOnly": true
+      },
+      {
+        "id": "JP-JSN-2017",
+        "url": "https://www.neurology-jp.org/guidelinem/dementia/index.html",
+        "status": "OFFICIAL_HISTORICAL_SUPERSEDED_BY_2026_PUBLICATION",
+        "metadataOnly": false
+      }
+    ]
+  }
+});
+  const buildCountryPriority=(report,country)=>{
+    const profile=countryPublicClinicalPriority[country];
+    if(!profile)return null;
+    return Object.freeze({
+      profileName:profile.profileName,country,providerApproved:false,clinicianApproved:false,
+      officialTranslationVerified:false,
+      priorities:Object.freeze(profile.priorities.map(row=>Object.freeze({
+        ...row,recorded:pathHasRecord(report,row.path)
+      }))),
+      guidelineSources:Object.freeze(profile.sources.map(row=>Object.freeze({...row}))),
+      note:'국가 공개 임상지침을 참고한 정보 확인 순서이며, 전문의 개인 선호·병원 승인 양식이 아닙니다. 없는 자료는 정상으로 판단하지 않습니다.'
+    });
+  };
   const assessResearchRequirements=(report,institutionId)=>{
     const research=getResearchRequirements(institutionId);
     if(!research)return null;
@@ -393,6 +650,7 @@
       noDirectMappingCount:assessment?.counts.noDirectMapping||0,
       briefItems:Object.freeze(selected),
       researchItems:Object.freeze(researchItems),preparationCounts,
+      countryClinicalPriority:buildCountryPriority(report,choice.country),
       missingMoreCount:Math.max(0,groups.filter(g=>g.state!=='APP_CONTEXT_REFERENCE_ONLY').length-selected.length),
       caution:'이 문서는 환자 지참용 한국어 진료 준비 자료입니다. 병원 승인 서식이나 필수 제출자료 목록이 아니며, 미수집은 정상 소견이 아닙니다.',
       electronicSubmissionReady:false,hospitalReceipt:null

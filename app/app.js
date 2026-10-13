@@ -2610,6 +2610,13 @@ function clinicalPrintableVisitBrief(report){
        +(item.referencePaths.length?'<span>앱 참고 경로: '+esc(item.referencePaths.join(', '))+'</span>':'')
        +(item.uncollectedPaths.length?'<span>미수집 경로: '+esc(item.uncollectedPaths.join(', '))+'</span>':'')
        +'<span class="clinical-visit-trace">'+sourceTrace(item)+'</span></li>').join('')+'</ol></div>':'';
+  const priority=brief.countryClinicalPriority;
+  const guidance=priority?'<div class="clinical-national-priority"><h3>국가 공개 임상 근거 · 진료 시 확인할 정보</h3>'
+    +'<p>'+esc(priority.profileName)+' · 기관·진료과·의료진별 검증된 서식 아님</p>'
+    +'<ol>'+priority.priorities.map(field=>'<li><span>'+esc(field.label)+'</span><strong>'+(field.recorded?'관련 기록 있음 · 공식 검사와 구분':'자료 없음 · 추가 확인')+'</strong></li>').join('')+'</ol>'
+    +'<p>'+esc(priority.note)+'</p>'
+    +(priority.guidelineSources.length?'<p class="clinical-national-sources">참고 근거: '+priority.guidelineSources.map(s=>'<a href="'+esc(s.url)+'" rel="noopener noreferrer" target="_blank">'+esc(s.id)+'</a>'+((s.metadataOnly||/HISTORICAL|CURRENTNESS_REVIEW|FINAL_UNVERIFIED/.test(s.status))?' (최신 권고 본문 미확인 또는 역사적 자료)':'')).join(' · ')+'</p>':'')
+    +'</div>':'';
   const preview=brief.researchLoaded
     ?'<p class="clinical-visit-meta">공개 조사 '+brief.researchedGroupCount+'항목 · 앱 참고 기록 '+brief.referenceOnlyCount+' · 관련 기록 미수집 '+brief.uncollectedCount+' · 직접 대응 없음 '+brief.noDirectMappingCount+'</p>'
       +(items?'<p class="clinical-visit-caption">진료 전 추가 확인 참고(미확인·외부 자료 중 최대 6건)</p><ol class="clinical-visit-list">'+items+'</ol>':'<p>공개 조사 기준 별도 미확인·외부 항목이 표시되지 않았습니다. 이것이 병원 필수요건 충족을 뜻하지 않습니다.</p>')
@@ -2620,7 +2627,7 @@ function clinicalPrintableVisitBrief(report){
     +'<p><strong>'+esc(brief.countryName)+' · '+esc(receiver)+'</strong> · 한국어 환자 지참용(해당 국가 공식 번역 아님)</p>'
     +providerMemos+source
     +(brief.routeConflict?'<p class="clinical-visit-conflict">주의: 공식 공개자료의 접수 경로가 서로 다릅니다. 의료기관에 직접 확인해야 합니다.</p>':'')
-    +preview+appendix+'<p class="clinical-visit-caution">'+esc(brief.caution)+'</p></section>';
+    +guidance+preview+appendix+'<p class="clinical-visit-caution">'+esc(brief.caution)+'</p></section>';
 }
 
 function clinicalDeliveryPreflight(report){
