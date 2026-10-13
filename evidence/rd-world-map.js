@@ -106,7 +106,7 @@
     var formal=state.data.institutions.filter(function(x){return x.stage==='FORMAL_FOI_REGISTERED'}).length;
     var methods=state.data.institutions.filter(function(x){return x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'}).length;
     document.getElementById('kimse-atlas-stats').innerHTML=[
-      ['전체 후보기관',total,'곳'],['등록 국가·지역',countries,'곳'],['정보요청 발송',sent,'곳'],['공식 FOI 접수',formal,'곳'],['연구방법 답변',methods,'곳']
+      ['전체 후보기관',total,'곳'],['등록 국가·지역',countries,'곳'],['세계 검토대상',state.data.isoMasterCount||0,'개'],['정보요청 발송',sent,'곳'],['공식 FOI 접수',formal,'곳'],['연구방법 답변',methods,'곳']
     ].map(function(a){return '<div class="kimse-atlas-stat"><small>'+safe(a[0])+'</small><strong>'+a[1]+'<em>'+safe(a[2])+'</em></strong></div>'}).join('');
   }
   function setupProgressFilters() {
