@@ -2206,7 +2206,7 @@ page.home=()=>{if(!demo())return accountRequired();
         '<div class="baseline-home-copy"><span class="context-chip">'+progressDone+'</span>'+
           '<h3 id="kh-home-progress-title">'+progressTitle+'</h3>'+
           '<p>기간이 지난 것과 실제 생활 기록이 수집된 것은 다릅니다.</p></div>'+
-        baselineMeterHtml(clock)+
+        baselineMeterHtml(clock).replace('이번 24시간','오늘 시간 경과')+
         '<button class="btn-kimse btn-secondary-k btn-full" data-go="baseline">14일 진행 상황 보기</button>'+
       '</div></section>':
     '<section class="kh-home-setup" aria-labelledby="kh-home-progress-title">'+
@@ -2243,7 +2243,7 @@ page.home=()=>{if(!demo())return accountRequired();
     '</section>'+
     '<details class="kimse-home-secondary kh-home-more"><summary>병원 기록과 자세한 정보</summary>'+
       '<div class="kimse-home-secondary-content">'+clinicalRecordHomeCard()+'</div></details>'+
-    '<p class="kh-home-disclaimer">낌새는 일상 변화를 관찰하도록 돕는 서비스이며, 의료 진단을 대신하지 않습니다.</p>',
+    '' ,
     {back:false,bottom:true,active:'home'});
 };
 page['assessment-start']=()=>{const a=EVIDENCE_MODEL?.activeModel;if(!a)return wrap(`<h1 class="page-title">근거 모델을 불러오지 못했습니다</h1>${notice('점수를 추정하지 않습니다.','근거 레지스트리를 다시 불러온 뒤 이용해주세요.')}`,{title:'근거 기반 체크',narrow:true});return wrap(`<div class="eyebrow">근거 기반 위험요인 체크</div><h1 class="page-title">앞으로의 인지건강 위험요인 확인</h1><p class="page-desc">7가지 건강·생활 항목을 살펴봅니다. 지금 치매인지 판단하는 검사는 아닙니다.</p><div class="context-chip">연구모델: ${esc(a.name)}</div>${row('확인 항목',a.factors.map(f=>f.label).join(' · '),a.factors.length+'개')}${row('점수 계산',a.combination.rule,'최대 '+a.combination.maxScore+'점')}${notice('공개 검증된 원 점수체계를 사용합니다.','이 점수는 장기 위험요인 연구모델이며 치매 진단이나 현재 인지상태 판정이 아닙니다.')}<button id="begin" class="btn-kimse btn-primary-k btn-full">7가지 항목 확인하기</button>`,{title:'근거 기반 체크',narrow:true})};
