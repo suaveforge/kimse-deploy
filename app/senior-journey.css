@@ -1108,6 +1108,7 @@
   .large-text .screen-evidence-proof .evidence-story-stat span{margin-top:0}
 }
 
+
 /* KIMSE HOME preview v2. One-page, icon-first. Replace prior prototype rules, no global override. */
 .screen-home.page{max-width:920px;width:100%;margin:0 auto;padding-top:18px}
 .screen-home .kh2-welcome{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 15px}
@@ -1171,8 +1172,22 @@ body:has(.screen-home) .bottom-nav-inner{max-width:920px}
  .screen-home .kh2-family{min-height:49px;margin-top:11px}
 }
 @media(max-width:360px){
+ /* Keep four original tools above the fixed navigation on narrow phones.
+    Secondary explanations remain available on the destination screen. */
+ .screen-home.page{padding-top:9px}
+ .screen-home .kh2-welcome{margin-bottom:7px}
+ .screen-home .kh2-overview{gap:8px}
+ .screen-home .kh2-status{min-height:76px;padding:10px 12px;gap:9px;grid-template-columns:40px minmax(0,1fr) 15px}
+ .screen-home .kh2-status-icon{width:40px;height:40px}
+ .screen-home .kh2-status-content>span{display:none}
+ .screen-home .kh2-progress{min-height:78px;padding:10px 12px;gap:6px}
+ .screen-home .kh2-progress-head>span{font-size:15px}
+ .screen-home .kh2-progress-head b{font-size:19px}
+ .screen-home .kh2-track{height:9px}
+ .screen-home .kh2-tools{margin-top:9px}
+ .screen-home .kh2-actions{gap:8px}
+ .screen-home .kh2-action{min-height:85px;padding:8px 6px}
  .screen-home .kh2-family{display:none}
- .screen-home .kh2-action{min-height:85px}
 }
 @media(max-width:340px){
  .screen-home.page{padding-left:11px;padding-right:11px}
