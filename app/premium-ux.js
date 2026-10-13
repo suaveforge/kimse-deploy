@@ -116,19 +116,19 @@ function enhanceAccessibility(screen){
   const head=make('div','accessibility-card-head','<strong>사용 환경 조정</strong><small>변경 즉시 앱 전체에 적용됩니다.</small>');
   card.prepend(head);
   const meta={
-    largeText:['글자 크게 보기','본문과 핵심 수치를 더 크게 표시합니다.','text-size'],
-    highContrast:['고대비 모드','글자·경계·버튼 대비를 더 분명하게 합니다.','contrast-2'],
-    largeTouchTargets:['큰 터치 영역','주요 조작 영역을 더 넓게 만들어 누르기 쉽게 합니다.','hand-finger'],
-    voiceGuidance:['음성 안내','화면 제목과 주요 완료 상태를 음성으로 안내합니다.','volume'],
-    soundEffects:['효과음','선택·완료 상황을 소리로 알립니다.','bell'],
-    reduceMotion:['화면 움직임 줄이기','전환·애니메이션 효과를 줄입니다.','motion']
+    largeText:['글자 크게 보기','글자를 더 크게 봅니다.','text-size'],
+    highContrast:['고대비 모드','글자와 버튼을 뚜렷하게 봅니다.','contrast-2'],
+    largeTouchTargets:['큰 터치 영역','누르기 쉽게 버튼을 넓힙니다.','hand-finger'],
+    voiceGuidance:['음성 안내','화면 내용을 소리로 안내합니다.','volume'],
+    soundEffects:['효과음','선택하거나 저장하면 소리가 납니다.','bell'],
+    reduceMotion:['화면 움직임 줄이기','화면 움직임을 줄입니다.','motion']
   };
   card.querySelectorAll('.switch-row').forEach(row=>{
     const input=row.querySelector('input[data-a11y]'),m=meta[input?.dataset.a11y];
     if(!input||!m)return;
     row.classList.add('a11y-setting-row');
     const label=row.querySelector('label');
-    if(label)label.innerHTML='<span class="a11y-setting-icon">'+icon(m[2])+'</span><span><strong>'+m[0]+'</strong><small>'+m[1]+'</small><span class="a11y-setting-state">현재 '+(input.checked?'켜짐':'꺼짐')+'</span></span>';
+    if(label)label.innerHTML='<span class="a11y-setting-icon">'+icon(m[2])+'</span><span><strong>'+m[0]+'</strong><small>'+m[1]+'</small></span>';
   });
   return true;
 }
