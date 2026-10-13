@@ -1998,7 +1998,7 @@ page['evidence-proof']=()=>wrap(
   '</div>'+
   '<div class="evidence-story-conclusion">'+I('route')+'<div><strong>낌새는 동의한 기록을 개인의 평소 모습과 비교합니다.</strong><p>처음 14일은 생활패턴 비교를 시작하는 기준입니다. 위 연구들이 낌새의 14일 감지 정확도를 검증했다는 뜻은 아닙니다.</p></div></div>'+
   '<div class="hero-actions evidence-registry-link"><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">연구별 원문과 적용 범위 보기</a></div>',
-  {title:'근거 자료',narrow:true,overview:true}
+  {title:'근거',narrow:true,overview:true}
 );
 
 page['research-engine']=()=>wrap(
@@ -2023,7 +2023,7 @@ page['research-engine']=()=>wrap(
     '</div>'+
   '</section>'+
   '<p class="research-personal-note">동의한 항목에서 실제로 수집된 기록만 비교할 수 있습니다. 연구 결과를 개인의 치매 확률이나 진단 점수로 바꾸지 않습니다.</p>',
-  {title:'연구 업데이트',narrow:true,overview:true}
+  {title:'연구',narrow:true,overview:true}
 );
 
 function baselineEvent(day){
@@ -2103,7 +2103,7 @@ page.baseline=()=>{
 };
 
 page['brain-map']=()=>{
-  if(!S.initial.completedAt)return wrap('<div class="eyebrow">기능 지도</div><h1 class="page-title">첫 상태 확인을 마치면<br>관찰 영역을 볼 수 있어요</h1>'+notice('아직 기록이 없어요.','연구 근거에 연결된 초기 과제를 먼저 진행해주세요.')+'<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">초기 과제 시작</button>',{title:'기능 지도',narrow:true,overview:true});
+  if(!S.initial.completedAt)return wrap('<div class="eyebrow">기능 지도</div><h1 class="page-title">첫 상태 확인을 마치면<br>관찰 영역을 볼 수 있어요</h1>'+notice('아직 기록이 없어요.','연구 근거에 연결된 초기 과제를 먼저 진행해주세요.')+'<button class="btn-kimse btn-primary-k btn-full" data-go="initial-check">초기 과제 시작</button>',{title:'지도',narrow:true,overview:true});
   const d=initialScores(),meta=brainFocusMeta(),m=demoAutoRunning&&d?statusMeta(d[S.brainFocus]):null;
   return wrap(
     '<div class="eyebrow">근거 기반 관찰 영역</div>'+
@@ -2114,7 +2114,7 @@ page['brain-map']=()=>{
     '<div class="brain-view-switch" role="group" aria-label="뇌 지도 보는 방향"><button type="button" data-brain-view="side" aria-pressed="'+(S.brainView==='side')+'" class="'+(S.brainView==='side'?'active':'')+'">옆면</button><button type="button" data-brain-view="top" aria-pressed="'+(S.brainView==='top')+'" class="'+(S.brainView==='top'?'active':'')+'">윗면</button></div>'+
     (S.brainHistory.length?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="brain-trends">시간 변화 보기</button></div>':'')+
     '<p class="screen-footnote">뇌영상 검사나 진단 점수가 아니라, 근거 레지스트리에 연결된 관찰 영역을 설명하는 지도입니다.</p>',
-    {title:'기능 지도',narrow:true,overview:true}
+    {title:'지도',narrow:true,overview:true}
   );
 };
 
@@ -2742,7 +2742,7 @@ page.accessibility=()=>{
     '<div class="summary-card">'+R.map(([k,t])=>'<div class="switch-row"><label for="a-'+k+'">'+t+'</label><input id="a-'+k+'" class="switch" type="checkbox" data-a11y="'+k+'" '+(S.a11y[k]?'checked':'')+'></div>').join('')+'</div>'+
     '<p class="accessibility-guidance">기기의 화면 읽기 기능은 휴대전화 접근성 설정에서 켤 수 있습니다.</p>'+
     '<a class="btn-kimse btn-secondary-k btn-full" href="#/settings">설정으로 돌아가기</a>',
-    {title:'접근성 설정',narrow:true});
+    {title:'접근성',narrow:true});
 };
 page['admin-partners']=()=>{const token=sessionStorage.getItem('kimse.admin.token')||'';return wrap(`<h1 class="page-title">제휴 문의 관리자</h1><p class="page-desc">입점·제휴 문의를 확인하고 처리 상태를 관리합니다.</p>${token?`<div class="d-flex justify-content-between align-items-center mb-3"><span class="context-chip">운영자 인증됨</span><button class="btn-kimse btn-secondary-k compact-btn" id="admin-logout">로그아웃</button></div><div id="admin-inquiry-list" class="list"><div class="empty-state"><h3>문의 목록을 불러오는 중…</h3></div></div>`:`<div class="summary-card"><div class="field"><label for="admin-token">운영자 접근 코드</label><input id="admin-token" type="password" autocomplete="current-password" placeholder="운영자 접근 코드"></div><button id="admin-login" class="btn-kimse btn-primary-k btn-full mt-3">문의함 열기</button></div>`}`,{title:'제휴 문의 관리자',narrow:true})};
 async function loadAdminInquiries(){
