@@ -65,3 +65,49 @@
 @media(prefers-reduced-motion:reduce){.kimse-atlas-country,.kimse-atlas-btn{transition:none!important}}
 
 .kimse-atlas-chip.tier-a{color:#86510e;background:#fff3d9;border-color:#f3d69c}.kimse-atlas-chip.tier-b{color:#3159a2;background:#eaf2ff;border-color:#c5d8f6}.kimse-atlas-chip.tier-c{color:#53657e;background:#f3f6fa;border-color:#dbe4ed}
+
+/* Institution stage table · Updated 2026.10.13 / Atlas Stage 01 */
+.kimse-atlas-chip.status-registered{color:#164e91;background:#e7f1ff;border-color:#b6d3fa}
+.kimse-atlas-chip.status-research{color:#31508e;background:#edefff;border-color:#cad0fb}
+.kimse-atlas-chip.status-ack{color:#805b08;background:#fff5d9;border-color:#f0d48b}
+.kimse-atlas-chip.status-pending-form{color:#775215;background:#fff8e9;border-color:#ead59b}
+.kimse-atlas-progress-line{font-size:.79rem;line-height:1.55;color:#4b607f;margin-top:8px}
+.kimse-atlas-progress-line strong{color:#1c5489}
+.kimse-atlas-foi-ref{color:#2e5987;font-size:.75rem;font-weight:700;margin-top:5px;overflow-wrap:anywhere}
+.kimse-atlas-progress{padding:29px 30px 32px;background:#fff;border-top:1px solid #dee8f3}
+.kimse-atlas-progress-head{display:flex;align-items:end;justify-content:space-between;gap:18px}
+.kimse-atlas-progress-head h3{color:#1c344f;font-size:clamp(1.4rem,2.1vw,1.9rem);letter-spacing:-.035em;margin:5px 0}
+.kimse-atlas-progress-head p{margin:0;color:#647895;font-size:.89rem;line-height:1.6;max-width:900px}
+.kimse-atlas-progress-total{font-size:.85rem;color:#426083;font-weight:800;white-space:nowrap}
+.kimse-progress-overview{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:20px 0}
+.kimse-progress-metric{display:flex;flex-direction:column;justify-content:center;align-items:start;min-width:0;text-align:left;padding:13px 12px;background:#f4f8fd;border:1px solid #dfebf7;border-radius:10px;min-height:88px;color:#335273;cursor:pointer;transition:background .16s,border-color .16s}
+.kimse-progress-metric strong{font-size:1.75rem;line-height:1;font-weight:850;color:#1c4775;letter-spacing:-.045em}
+.kimse-progress-metric span{font-size:.74rem;line-height:1.35;margin-top:7px;font-weight:750;word-break:keep-all}
+.kimse-progress-metric:hover,.kimse-progress-metric:focus-visible,.kimse-progress-metric.is-selected{background:#e5f1ff;border-color:#6ea4df;outline-offset:2px}
+.kimse-progress-tools{display:grid;grid-template-columns:minmax(155px,1fr) minmax(155px,1fr) minmax(210px,1.6fr);gap:12px;margin:0 0 15px}
+.kimse-progress-tools label{display:flex;flex-direction:column;gap:6px;font-size:.78rem;color:#425b78;font-weight:800}
+.kimse-progress-tools select,.kimse-progress-tools input{border:1px solid #c8d8e9;border-radius:9px;min-width:0;width:100%;padding:10px 12px;background:#fff;color:#173652;font-size:.87rem;min-height:42px;line-height:1.3}
+.kimse-progress-tools select:focus-visible,.kimse-progress-tools input:focus-visible{outline:2px solid #528edf;outline-offset:1px}
+.kimse-progress-table-scroll{border:1px solid #dbe6f1;border-radius:13px;max-height:670px;overflow:auto;scrollbar-color:#a2b8d4 #f2f6fc}
+.kimse-progress-table{border-collapse:separate;border-spacing:0;width:100%;min-width:865px;font-size:.83rem;line-height:1.48;color:#344e69}
+.kimse-progress-table th{position:sticky;top:0;z-index:2;background:#eaf2fb;color:#30496a;text-align:left;font-size:.76rem;letter-spacing:.012em;padding:12px;border-bottom:1px solid #cad8e9}
+.kimse-progress-table td{vertical-align:top;padding:13px 12px;border-bottom:1px solid #e6edf6;overflow-wrap:anywhere}
+.kimse-progress-table tr:nth-child(2n){background:#fbfdff}
+.kimse-progress-table tr:hover{background:#f0f7ff}
+.kimse-progress-table td:first-child{min-width:185px;max-width:310px}
+.kimse-progress-table td:nth-child(2){min-width:170px}
+.kimse-progress-table td:nth-child(3){min-width:160px}
+.kimse-progress-table td:nth-child(4){min-width:205px}
+.kimse-progress-table td:nth-child(5){min-width:112px}
+.kimse-progress-table td strong{display:block;color:#1e3c5c;font-size:.85rem;margin-bottom:3px}
+.kimse-progress-table td small{display:block;font-size:.74rem;color:#6e8199;margin-top:6px}
+.kimse-progress-reference{font-weight:800;color:#155a90;margin-top:5px}
+.kimse-progress-deadline{margin-top:4px;font-size:.74rem;color:#657b95}
+.kimse-progress-form-link{margin-top:7px;font-weight:800;font-size:.79rem}.kimse-progress-form-link a{color:#165aa0;text-decoration:underline;text-underline-offset:3px}.kimse-progress-form-link a:hover,.kimse-progress-form-link a:focus-visible{color:#092f68}
+.kimse-progress-unverified{font-size:.76rem;background:#f0f3f8;border:1px solid #d9e1eb;border-radius:7px;padding:4px 6px;color:#536781;font-weight:750;display:inline-block}
+.kimse-progress-noresults{text-align:center;padding:25px!important;color:#687f9a}
+.kimse-progress-legal{padding-top:15px;font-size:.78rem;line-height:1.65;color:#647791}
+.kimse-progress-legal strong{color:#915300}
+@media(max-width:1250px){.kimse-progress-overview{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:700px){.kimse-atlas-progress{padding:22px 15px 25px}.kimse-atlas-progress-head{flex-direction:column;align-items:start;gap:8px}.kimse-progress-overview{grid-template-columns:repeat(2,minmax(0,1fr));margin:16px 0}.kimse-progress-metric{min-height:80px}.kimse-progress-tools{grid-template-columns:1fr 1fr}.kimse-progress-query-label{grid-column:1 / -1}.kimse-progress-table-scroll{max-height:550px}}
+@media(prefers-reduced-motion:reduce){.kimse-progress-metric{transition:none}}
