@@ -74,10 +74,15 @@ const routeReady=data.institutions.filter(x=>x.stage==='FIRST_CONTACT_ROUTE_VERI
 assert.equal(routeReady.length,data.routeReview20261013.verifiedFirstEnquiryUnsent,'official first-enquiry P0 routing count must match evidence-backed review');
 assert.ok(routeReady.every(x=>x.progress.phase===0 && !x.progress.requestSent && x.progress.sendApproved===false),'routing review must not advance outreach or sending');
 assert.equal(data.institutions.filter(x=>x.progress.formSubmitted).length,5,'five web form submissions with proof');
-for(const [id,reference] of Object.entries({hackney_council:'50807786',southampton_city_council:'98N5UZS4U',newham_council:'FOIEIR-2026-004173',cambridgeshire_county_council:'CCC882925672',hillingdon_council:'FOI 06272',manchester_city_council:'FOI/21992'})){
+for(const [id,reference] of Object.entries({hackney_council:'50807786',southampton_city_council:'98N5UZS4U',newham_council:'FOIEIR-2026-004173',cambridgeshire_county_council:'CCC882925672'})){
  const x=data.institutions.find(y=>y.id===id);
  assert.ok(x && x.progress.formSubmitted,'known submitted form must be registered: '+id);
  assert.equal(x.progress.formalFOIRef,reference,'official reference: '+id);
+}
+for(const [id,reference] of Object.entries({hillingdon_council:'FOI 06272',manchester_city_council:'FOI/21992'})){
+ const x=data.institutions.find(y=>y.id===id);
+ assert.ok(x && x.progress.requestSent && !x.progress.formSubmitted,'email FOI receipt must not be counted as a web form: '+id);
+ assert.equal(x.progress.formalFOIRef,reference,'verified official email FOI reference: '+id);
 }
 const shropshire=data.institutions.find(x=>x.id==='shropshire_council');
 assert.equal(shropshire.progress.formSubmitted,true,'Shropshire form confirmation received');
