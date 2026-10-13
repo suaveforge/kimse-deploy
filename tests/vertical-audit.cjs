@@ -73,7 +73,7 @@ const mkState=mode=>({version:14,account:{name:'김노인',email:'preview@exampl
   firstAction:action[0]||null,firstActionAboveFold:action.length?!!(action[0].top>=top&&action[0].bottom<=navTop):null,
   cards:screen?.querySelectorAll('.summary-card,.list-row,.role-card,.action-card,.notice,.kimse-collection-tile').length
  };
-}));
+});
     if(m.doc>m.w+2)problems.push({route,issue:'horizontal-overflow',...m});
     results.push({smoke:route,...m});
     await page.screenshot({path:out+'/audit-'+route+'.png',fullPage:false,animations:'disabled'});
