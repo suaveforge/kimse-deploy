@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261013-clinical-quality-families-08';
+const CACHE = 'kimse-pwa-20261013-clinical-bilingual-09';
 const CORE = [
   './',
   './index.html',
