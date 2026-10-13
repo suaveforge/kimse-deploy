@@ -8,6 +8,9 @@ on:
       - 'app.js'
       - 'senior-journey.css'
       - 'premium-ux.js'
+concurrency:
+  group: kimse-remaining-mobile-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -37,10 +40,10 @@ jobs:
         run: |
           mkdir -p qa-previews/remaining-mobile
           cp qa-artifacts/remaining-mobile/report.json qa-previews/remaining-mobile/report.json
-          for r in health training medication settings accessibility medical-records clinical-handoff family-call family-feedback caregiver-home initial-result result evidence-proof research-engine monitoring-status; do
+          for r in health training medication settings accessibility medical-records clinical-handoff family-call family-feedback caregiver-home initial-result result evidence-proof research-engine monitoring-status voice-check consent consultation-report; do
             cp "qa-artifacts/remaining-mobile/${r}-375-normal.png" "qa-previews/remaining-mobile/${r}-375.png"
           done
-          for r in health training medication medical-records clinical-handoff; do
+          for r in health training medication medical-records clinical-handoff voice-check consultation-report; do
             cp "qa-artifacts/remaining-mobile/${r}-320-normal.png" "qa-previews/remaining-mobile/${r}-320.png"
           done
           git config user.name "github-actions[bot]"
