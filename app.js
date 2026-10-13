@@ -1979,39 +1979,50 @@ page.consent=()=>wrap(`<div class="eyebrow">처음 설정 1/4</div><h1 class="pa
 
 
 page['evidence-proof']=()=>wrap(
-  '<div class="eyebrow">근거 자료</div>'+
-  '<h1 class="page-title">왜 수면·활동·말하기를<br>함께 볼까요?</h1>'+
-  '<p class="page-desc evidence-story-lead">연구에서 확인해 온 생활·인지 신호를 지난 14일 생활패턴과 비교합니다.</p>'+
-  '<div class="evidence-story-list">'+
-    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>20년</strong><span>1,409명</span></div><div><strong>장기 생활·건강 위험요인 추적</strong><p>오랜 기간 생활·건강 요인이 치매 위험과 어떻게 이어지는지 추적했습니다.</p><small>CAIDE Dementia Risk Score</small></div></section>'+
-    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>196명</strong><span>국내 검증</span></div><div><strong>기억·주의·언어 기능 검증</strong><p>한국어 환경에서 인지기능 검사의 민감도와 특이도를 확인했습니다.</p><small>MoCA-K Validation</small></div></section>'+
-    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>118명</strong><span>복수 신호</span></div><div><strong>걷기·말하기·그리기를 함께 분석</strong><p>한 가지 신호보다 여러 신호를 함께 봤을 때 성능이 높았습니다.</p><small>Gait + Speech + Drawing</small></div></section>'+
+  '<div class="eyebrow">근거 자료 · 생활 변화</div>'+
+  '<h1 class="page-title">낌새는 무엇을 살펴볼까요?</h1>'+
+  '<p class="page-desc evidence-story-lead">평소 생활에서 달라진 신호를 살펴봅니다. 한 번의 검사로 치매를 판정하지 않습니다.</p>'+
+  '<h2 class="evidence-section-title">내 생활에서 살피는 네 가지 변화</h2>'+
+  '<div class="evidence-signals" aria-label="생활 변화 관찰 항목">'+
+    '<div class="evidence-signal"><strong>수면</strong><span>자는 시간과 수면 리듬</span></div>'+
+    '<div class="evidence-signal"><strong>활동</strong><span>움직이는 시간과 활동량</span></div>'+
+    '<div class="evidence-signal"><strong>말하기</strong><span>말소리와 말하는 흐름</span></div>'+
+    '<div class="evidence-signal"><strong>이동</strong><span>외출과 이동 패턴</span></div>'+
   '</div>'+
-  '<div class="evidence-story-conclusion">'+I('route')+'<strong>그래서 한 번의 점수가 아니라, 지난 14일 생활패턴에서 달라진 흐름을 봅니다.</strong></div>'+
-  '<div class="hero-actions evidence-registry-link"><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">전체 연구·원문 보기</a></div>',
+  '<h2 class="evidence-section-title">관찰 항목을 고를 때 참고한 연구</h2>'+
+  '<p class="evidence-study-intro">아래 수치는 각 연구의 대상과 기간이며, 낌새 앱의 진단 정확도나 실증 성과가 아닙니다.</p>'+
+  '<div class="evidence-story-list">'+
+    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>20년</strong><span>1,409명</span></div><div><strong>장기 생활·건강 위험요인 추적</strong><p>오랜 기간 생활·건강 요인이 치매 위험과 어떻게 이어지는지 추적했습니다.</p><small>연구 출처 · CAIDE Dementia Risk Score</small></div></section>'+
+    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>196명</strong><span>국내 검증</span></div><div><strong>기억·주의·언어 기능 검증</strong><p>한국어 환경에서 인지기능 검사의 민감도와 특이도를 확인했습니다.</p><small>연구 출처 · MoCA-K Validation</small></div></section>'+
+    '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>118명</strong><span>복수 신호</span></div><div><strong>걷기·말하기·그리기를 함께 분석</strong><p>한 가지 신호보다 여러 신호를 함께 봤을 때 성능이 높았습니다.</p><small>연구 출처 · Gait + Speech + Drawing</small></div></section>'+
+  '</div>'+
+  '<div class="evidence-story-conclusion">'+I('route')+'<div><strong>낌새는 동의한 기록을 개인의 평소 모습과 비교합니다.</strong><p>처음 14일은 생활패턴 비교를 시작하는 기준입니다. 위 연구들이 낌새의 14일 감지 정확도를 검증했다는 뜻은 아닙니다.</p></div></div>'+
+  '<div class="hero-actions evidence-registry-link"><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">연구별 원문과 적용 범위 보기</a></div>',
   {title:'근거 자료',narrow:true,overview:true}
 );
 
 page['research-engine']=()=>wrap(
-  '<div class="eyebrow">근거·개인화 업데이트</div>'+
-  '<h1 class="page-title">새 근거와 내 기록이 쌓일수록<br>개인별 비교가 더 정교해집니다</h1>'+
-  '<p class="page-desc research-personal-lead">검증된 논문과 실증 데이터, 공식 가이드라인을 계속 확인합니다.</p>'+
+  '<div class="eyebrow">연구 업데이트 · 비교 기준</div>'+
+  '<h1 class="page-title">연구 근거와 내 기록은<br>어떻게 연결될까요?</h1>'+
+  '<p class="page-desc research-personal-lead">연구는 살펴볼 항목을 정할 때 참고하고, 실제 변화는 내 생활기록과 비교합니다.</p>'+
   '<section class="research-personal-engine">'+
+    '<h2 class="research-section-title">1. 외부 자료를 확인합니다</h2>'+
     '<div class="research-source-stack">'+
-      '<div class="research-source paper">'+I('book-2')+'<span><small>검증된 논문</small><strong>연구 결과</strong></span></div>'+
-      '<div class="research-source field">'+I('chart-dots-3')+'<span><small>실증 데이터</small><strong>실제 관찰 결과</strong></span></div>'+
-      '<div class="research-source guide">'+I('clipboard-check')+'<span><small>공식 가이드</small><strong>권고 기준</strong></span></div>'+
+      '<div class="research-source paper">'+I('book-2')+'<span><small>학술 논문</small><strong>연구 결과</strong></span></div>'+
+      '<div class="research-source field">'+I('chart-dots-3')+'<span><small>실제 사용 연구</small><strong>관찰 결과</strong></span></div>'+
+      '<div class="research-source guide">'+I('clipboard-check')+'<span><small>공식 지침</small><strong>권고 기준</strong></span></div>'+
     '</div>'+
-    '<div class="research-review-gate">'+I('sparkles')+'<strong>근거와 기록을 함께 비교</strong><span>버전 관리</span></div>'+
+    '<div class="research-review-gate">'+I('clipboard-check')+'<strong>연구 결과와 적용 범위를 검토합니다</strong><span>근거 확인</span></div>'+
+    '<h2 class="research-section-title">2. 내 평소 기록과 비교합니다</h2>'+
     '<div class="research-factor-panel">'+
-      '<div class="research-factor-head"><small>개인별 변화 기준</small><strong>내 14일 기록과 새 기록을 같은 방식으로 비교</strong></div>'+
-      '<div class="research-factor-row"><span>수면</span><em>개인 baseline</em></div>'+
-      '<div class="research-factor-row"><span>활동</span><em>개인 baseline</em></div>'+
-      '<div class="research-factor-row"><span>말하기</span><em>개인 baseline</em></div>'+
-      '<div class="research-factor-row"><span>이동</span><em>개인 baseline</em></div>'+
+      '<div class="research-factor-head"><small>개인별 생활패턴</small><strong>처음 14일 기록을 기준으로 새 기록과 비교합니다</strong></div>'+
+      '<div class="research-factor-row"><span>수면</span><em>내 평소 수면과 비교</em></div>'+
+      '<div class="research-factor-row"><span>활동</span><em>내 평소 활동과 비교</em></div>'+
+      '<div class="research-factor-row"><span>말하기</span><em>내 평소 말하기와 비교</em></div>'+
+      '<div class="research-factor-row"><span>이동</span><em>내 평소 이동과 비교</em></div>'+
     '</div>'+
   '</section>'+
-  '<p class="research-personal-note">개인의 14일 기준선, 실제 수집 범위와 가족 확인을 함께 보며 근거 없는 가중치를 만들지 않습니다.</p>',
+  '<p class="research-personal-note">동의한 항목에서 실제로 수집된 기록만 비교할 수 있습니다. 연구 결과를 개인의 치매 확률이나 진단 점수로 바꾸지 않습니다.</p>',
   {title:'연구 업데이트',narrow:true,overview:true}
 );
 
@@ -2699,7 +2710,15 @@ page.market=()=>{const q=(S.marketSearch||'').trim().toLowerCase();const items=M
 page['market-detail']=()=>{const x=MARKET_ITEMS.find(i=>i.id===S.marketItem)||MARKET_ITEMS[0],fav=S.marketFavorites.includes(x.id);return wrap(`<div class="eyebrow">${x.icon} ${x.vendor}</div><h1 class="page-title">${x.title}</h1><div class="summary-card"><div class="tag-row"><span class="status-pill">비제휴 정보</span><span class="status-pill neutral">${MARKET_CAT_LABEL(x.cat)}</span></div><p>${x.desc}</p></div><div class="list">${row('업체 / 운영주체','',x.vendor)}${row('카테고리','',MARKET_CAT_LABEL(x.cat))}${row('핵심 용도',x.useFor,'')}${row('선택 시 확인',x.check,'')}</div><div class="hero-actions"><a class="btn-kimse btn-primary-k" href="${x.url}" target="_blank" rel="noopener">공식 페이지 보기 ${I('external-link')}</a><button class="btn-kimse ${fav?'btn-secondary-k':'btn-blue-k'}" data-market-fav="${x.id}">${fav?'관심 저장됨 ✓':'관심 품목 저장'}</button><button class="btn-kimse btn-secondary-k" data-go="partnership">이 분야 입점·제휴 제안</button></div>`,{title:'케어관 상세',narrow:true})};
 page.partnership=()=>wrap(`<h1 class="page-title">입점·제휴 문의</h1><p class="page-desc">상품 입점, 돌봄 서비스, 광고, 공동사업 제안을 구분해 접수합니다.</p><div class="form-stack"><div class="field"><label for="partner-type">문의 유형</label><select id="partner-type"><option value="PRODUCT">상품 입점</option><option value="SERVICE">서비스 제휴</option><option value="AD">광고/콘텐츠 제휴</option><option value="COOPERATION">공동사업/기관 협력</option></select></div><div class="field"><label for="partner-company">회사/기관명</label><input id="partner-company" placeholder="회사 또는 기관명"></div><div class="field"><label for="partner-name">담당자명</label><input id="partner-name" placeholder="담당자 이름"></div><div class="field"><label for="partner-email">이메일</label><input id="partner-email" type="email" placeholder="partner@example.com"></div><div class="field"><label for="partner-phone">연락처</label><input id="partner-phone" inputmode="tel" placeholder="선택 입력"></div><div class="field"><label for="partner-web">회사/서비스 URL</label><input id="partner-web" inputmode="url" placeholder="https://"></div><div class="field"><label for="partner-category">카테고리</label><select id="partner-category">${MARKET_CATS.filter(x=>x[0]!=='all').map(x=>`<option value="${x[2]}">${x[2]}</option>`).join('')}</select></div><div class="field"><label for="partner-message">제안 내용</label><textarea id="partner-message" rows="6" placeholder="제품/서비스, 대상 사용자, 제공 지역, 인증·허가 여부, 제휴 방식 등을 적어주세요."></textarea></div><label class="consent-row"><input id="partner-consent" type="checkbox"> <span>문의 처리를 위한 담당자 연락정보 저장에 동의합니다.</span></label><button id="partner-submit" class="btn-kimse btn-primary-k">문의 접수</button></div>${notice('입점은 검토 후 결정됩니다.','접수된 제안은 표시 기준, 의료·광고 표현, 개인정보 처리 여부 등을 확인한 뒤 입력하신 연락처로 안내합니다.')}`,{title:'입점·제휴 문의',narrow:true});
 page.plan=()=>wrap(`<h1 class="page-title">구독 관리</h1><div class="summary-card"><h3>현재 이용 범위</h3>${row('비상상태 알림 수신자','첫 1인','무료')}${row('추가 수신자','2인째부터','구독 대상')}</div>${notice('가족 연결은 무료입니다.','가족·보호자 역할을 연결하는 것과 비상상태 알림 수신자를 추가하는 것은 별도입니다.')}`,{title:'구독 관리',narrow:true});
-page.accessibility=()=>{let R=[['largeText','글자 크게 보기'],['highContrast','고대비 모드'],['voiceGuidance','음성 안내 (화면·버튼·완료)'],['soundEffects','효과음 (선택·완료·경고)'],['captions','자막 / 텍스트 대체'],['largeTouchTargets','큰 터치 영역'],['colorIcons','색상 + 아이콘 병행'],['screenReader','화면 읽기 지원'],['reduceMotion','동작 최소화']];return wrap(`<h1 class="page-title">접근성 설정</h1><p class="page-desc">고령층·저시력/시각장애·청각장애·색각 이상·운동장애를 기본 범위로 지원합니다.</p><div class="summary-card">${R.map(([k,t])=>`<div class="switch-row"><label for="a-${k}">${t}</label><input id="a-${k}" class="switch" type="checkbox" data-a11y="${k}" ${S.a11y[k]?'checked':''}></div>`).join('')}</div>${notice('시청각 동시중복장애','촉각/모스 인터페이스는 후속 단계로 분리했습니다.')}`,{title:'접근성 설정',narrow:true})};
+page.accessibility=()=>{
+  const R=[['largeText','글자 크게 보기'],['highContrast','고대비 화면'],['largeTouchTargets','큰 누르기 영역'],['voiceGuidance','화면 음성 안내'],['soundEffects','선택·완료 소리']];
+  return wrap('<h1 class="page-title">글씨와 화면을 편하게 설정하세요</h1>'+
+    '<p class="page-desc">스위치를 누르면 바로 적용됩니다. 언제든 다시 바꿀 수 있어요.</p>'+
+    '<div class="summary-card">'+R.map(([k,t])=>'<div class="switch-row"><label for="a-'+k+'">'+t+'</label><input id="a-'+k+'" class="switch" type="checkbox" data-a11y="'+k+'" '+(S.a11y[k]?'checked':'')+'></div>').join('')+'</div>'+
+    '<p class="accessibility-guidance">기기의 화면 읽기 기능은 휴대전화 접근성 설정에서 켤 수 있습니다.</p>'+
+    '<a class="btn-kimse btn-secondary-k btn-full" href="#/settings">설정으로 돌아가기</a>',
+    {title:'접근성 설정',narrow:true});
+};
 page['admin-partners']=()=>{const token=sessionStorage.getItem('kimse.admin.token')||'';return wrap(`<h1 class="page-title">제휴 문의 관리자</h1><p class="page-desc">입점·제휴 문의를 확인하고 처리 상태를 관리합니다.</p>${token?`<div class="d-flex justify-content-between align-items-center mb-3"><span class="context-chip">운영자 인증됨</span><button class="btn-kimse btn-secondary-k compact-btn" id="admin-logout">로그아웃</button></div><div id="admin-inquiry-list" class="list"><div class="empty-state"><h3>문의 목록을 불러오는 중…</h3></div></div>`:`<div class="summary-card"><div class="field"><label for="admin-token">운영자 접근 코드</label><input id="admin-token" type="password" autocomplete="current-password" placeholder="운영자 접근 코드"></div><button id="admin-login" class="btn-kimse btn-primary-k btn-full mt-3">문의함 열기</button></div>`}`,{title:'제휴 문의 관리자',narrow:true})};
 async function loadAdminInquiries(){
   const token=sessionStorage.getItem('kimse.admin.token');
@@ -2721,7 +2740,34 @@ async function loadAdminInquiries(){
     box.innerHTML='<div class="notice danger"><strong>문의함을 불러오지 못했습니다.</strong>잠시 뒤 다시 시도해주세요.</div>';
   }
 }
-page.settings=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">설정</h1><div class="summary-card"><h3>${S.account.name}</h3><p>${S.account.email}</p></div><p class="page-desc">필요한 항목을 골라 설정하거나 기록을 확인하세요.</p><section class="kimse-settings-section"><h2>글씨와 화면</h2><div class="list"><a class="list-row" href="#/accessibility">접근성 설정 ${I('chevron-right')}</a></div></section><section class="kimse-settings-section"><h2>내 정보와 가족</h2><div class="list"><a class="list-row" href="#/account">내 프로필 / 역할 관리 ${I('chevron-right')}</a><a class="list-row" href="#/family">가족 / 보호자 관리 ${I('chevron-right')}</a><a class="list-row" href="#/consent">데이터 수집 / 공유 동의 ${I('chevron-right')}</a></div></section><section class="kimse-settings-section"><h2>생활 변화와 건강</h2><div class="list"><a class="list-row" href="#/monitoring-status">개인 변화 관찰 상태 ${I('chevron-right')}</a><a class="list-row" href="#/collection-status">실제 수집 상태 ${I('chevron-right')}</a><a class="list-row" href="#/brain-trends">기능별 변화 흐름 보기 ${I('chevron-right')}</a><a class="list-row" href="#/brain-map">뇌 기능 연관 지도 ${I('chevron-right')}</a><a class="list-row" href="#/medical-records">병원·검사 기록 ${I('chevron-right')}</a></div></section><section class="kimse-settings-section"><h2>서비스와 연구</h2><div class="list"><a class="list-row" href="#/plan">구독 관리 ${I('chevron-right')}</a><a class="list-row" href="#/market">치매 케어관 ${I('chevron-right')}</a><a class="list-row" href="#/partnership">사업자 입점 / 제휴 문의 ${I('chevron-right')}</a><a class="list-row" href="${evidenceUrl()}" target="_blank">연구 근거 / Evidence ${I('external-link')}</a></div></section>`,{title:'설정',narrow:true})};
+page.settings=()=>{
+  if(!demo())return accountRequired();
+  const fontState=S.a11y.largeText?'켜짐':'꺼짐',contrastState=S.a11y.highContrast?'켜짐':'꺼짐';
+  return wrap('<h1 class="page-title">설정</h1>'+
+    '<p class="page-desc">글씨와 화면을 바꾸거나, 가족과 기록의 공유 범위를 확인할 수 있어요.</p>'+
+    '<nav class="settings-quick" aria-label="자주 사용하는 설정">'+
+      '<a href="#/accessibility"><strong>글씨와 화면 바꾸기 '+I('chevron-right')+'</strong><span>큰 글씨 '+fontState+' · 고대비 '+contrastState+'</span></a>'+
+      '<a href="#/consent"><strong>수집·공유 동의 확인 '+I('chevron-right')+'</strong><span>어떤 기록을 모으고 누구와 나눌지 확인</span></a>'+
+    '</nav>'+
+    '<section class="kimse-settings-section"><h2>내 정보와 가족</h2><div class="list">'+
+      '<a class="list-row" href="#/account">내 프로필과 역할 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="#/family">가족·보호자 관리 '+I('chevron-right')+'</a>'+
+    '</div></section>'+
+    '<section class="kimse-settings-section"><h2>생활 기록 확인</h2><div class="list">'+
+      '<a class="list-row" href="#/monitoring-status">최근 생활 변화 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="#/collection-status">실제 기록 수집 상태 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="#/brain-trends">기능별 변화 흐름 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="#/brain-map">기능 지도 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="#/medical-records">병원·검사 기록 '+I('chevron-right')+'</a>'+
+    '</div></section>'+
+    '<section class="kimse-settings-section"><h2>서비스와 근거</h2><div class="list">'+
+      '<a class="list-row" href="#/plan">구독 관리 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="#/market">치매 케어관 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="#/partnership">사업자 입점·제휴 문의 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="'+evidenceUrl()+'" target="_blank" rel="noopener">연구 근거 자료 '+I('external-link')+'</a>'+
+    '</div></section>',
+    {title:'설정',narrow:true});
+};
 function applyA11y(){document.documentElement.classList.toggle('large-text',S.a11y.largeText);document.documentElement.classList.toggle('large-touch',S.a11y.largeTouchTargets);document.documentElement.classList.toggle('high-contrast',S.a11y.highContrast)}
 document.addEventListener('click',e=>{
   const link=e.target.closest('a.skip-link');

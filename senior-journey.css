@@ -877,6 +877,18 @@
 .screen-settings .page-desc{font-size:16px;line-height:1.55}
 .screen-settings .kimse-settings-section{margin:22px 0 0}
 .screen-settings .kimse-settings-section h2{font-size:18px;line-height:1.4;font-weight:850;color:#174e3b;margin:0 0 10px;padding:0 3px}
+.screen-settings .settings-quick{display:grid;grid-template-columns:minmax(0,1fr);gap:11px;margin:20px 0 14px}
+.screen-settings .settings-quick a{display:grid;gap:8px;min-width:0;min-height:92px;padding:19px;border:1px solid #cbded6;background:#eef7f2;color:#174635;border-radius:18px;text-decoration:none}
+.screen-settings .settings-quick a+ a{background:#fff;border-color:#dbe4ed;color:#193c53}
+.screen-settings .settings-quick a strong{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:19px;line-height:1.4;word-break:keep-all}
+.screen-settings .settings-quick a span{font-size:16px;line-height:1.5;color:#35594b;word-break:keep-all}
+.screen-settings .settings-quick a+ a span{color:#4e6173}
+.screen-settings .settings-quick a:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.large-text .screen-settings .settings-quick a strong{font-size:22px}
+.large-text .screen-settings .settings-quick a span{font-size:19px}
+.high-contrast .screen-settings .settings-quick a{background:#fff;color:#000;border:2px solid #111}
+.high-contrast .screen-settings .settings-quick a span{color:#111}
+
 .screen-settings .kimse-settings-section .list{gap:8px}
 .screen-settings .kimse-settings-section .list-row{min-height:66px;padding:14px 16px;font-size:16px;line-height:1.45;word-break:keep-all}
 .screen-settings .kimse-settings-section .list-row:focus-visible{outline:3px solid #126cbe;outline-offset:3px}

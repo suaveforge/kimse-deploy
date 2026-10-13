@@ -103,7 +103,6 @@ function enhanceMonitoring(screen){
   }
 }
 function enhanceAccessibility(screen){
-  if(screen.querySelector('input[data-a11y="captions"],input[data-a11y="colorIcons"],input[data-a11y="screenReader"]'))return false;
   const title=screen.querySelector('.page-title'),desc=screen.querySelector('.page-desc'),card=screen.querySelector('.summary-card');
   if(!title||!desc||!card)return false;
   const hero=make('section','accessibility-hero');
@@ -119,16 +118,15 @@ function enhanceAccessibility(screen){
     largeText:['글자 크게 보기','본문과 핵심 수치를 더 크게 표시합니다.','text-size'],
     highContrast:['고대비 모드','글자·경계·버튼 대비를 더 분명하게 합니다.','contrast-2'],
     largeTouchTargets:['큰 터치 영역','주요 조작 영역을 더 넓게 만들어 누르기 쉽게 합니다.','hand-finger'],
-    reduceMotion:['동작 최소화','화면 전환과 움직임을 가능한 한 줄입니다.','motion'],
     voiceGuidance:['음성 안내','화면 제목과 주요 완료 상태를 음성으로 안내합니다.','volume'],
-    soundEffects:['효과음','선택·완료·경고 상황을 짧은 소리로 함께 알립니다.','bell']
+    soundEffects:['효과음','선택·완료 상황을 소리로 알립니다.','bell']
   };
   card.querySelectorAll('.switch-row').forEach(row=>{
     const input=row.querySelector('input[data-a11y]'),m=meta[input?.dataset.a11y];
     if(!input||!m)return;
     row.classList.add('a11y-setting-row');
     const label=row.querySelector('label');
-    if(label)label.innerHTML='<span class="a11y-setting-icon">'+icon(m[2])+'</span><span><strong>'+m[0]+'</strong><small>'+m[1]+'</small></span>';
+    if(label)label.innerHTML='<span class="a11y-setting-icon">'+icon(m[2])+'</span><span><strong>'+m[0]+'</strong><small>'+m[1]+'</small><span class="a11y-setting-state">현재 '+(input.checked?'켜짐':'꺼짐')+'</span></span>';
   });
   return true;
 }
@@ -170,7 +168,7 @@ function enhanceTrends(screen){
 function enhanceBrainMap(screen){
   const title=screen.querySelector('.page-title'),tabs=screen.querySelector('.brain-domain-tabs'),visual=screen.querySelector('.brain-visual-wrap'),summary=screen.querySelector('.brain-focus-summary'),views=screen.querySelector('.brain-view-switch'),actions=screen.querySelector('.hero-actions');
   if(!title||!tabs||!visual||!summary)return;
-  if(!screen.querySelector('.brain-page-desc')&&!screen.querySelector('.page-desc'))title.after(make('p','page-desc brain-page-desc','기록된 생활·인지 변화를 기능 단위로 이해하기 쉽게 연결합니다.'));
+  tabs.before(make('h2','brain-section-heading','1. 살펴볼 기능을 선택하세요'));
   const icons={memory:'brain',executive:'target-arrow',language:'message-circle',spatial:'compass',daily:'home-heart'};
   tabs.querySelectorAll('button[data-brain-focus]').forEach(btn=>{
     const key=btn.dataset.brainFocus,label=clean(btn.textContent).replace(/^[^\p{L}\p{N}]+/u,'');
@@ -178,33 +176,32 @@ function enhanceBrainMap(screen){
   });
   const selected=tabs.querySelector('button.active');
   const selectedLabel=clean(selected?.textContent)||clean(summary.querySelector('strong')?.textContent)||'선택 기능';
-  const status=clean(summary.querySelector(':scope > span')?.textContent)||'기록 확인';
+  const rawStatus=clean(summary.querySelector(':scope > span')?.textContent);
+  const status=rawStatus==='개인 점수 미산출'?'참고 지도':rawStatus||'참고 지도';
   const stage=make('section','brain-map-stage');
-  stage.setAttribute('aria-label','선택한 인지 기능 지도');
-  stage.innerHTML='<div class="brain-stage-kicker"><span>선택 기능</span><strong>'+selectedLabel+'</strong><em class="brain-stage-status">'+status+'</em></div>';
+  stage.setAttribute('aria-label','선택한 기능과 관련된 참고 지도');
+  stage.innerHTML='<div class="brain-stage-kicker"><span>2. 선택한 기능과 관련된 영역</span><strong>'+selectedLabel+'</strong><em class="brain-stage-status">'+status+'</em></div>';
   visual.before(stage);stage.append(visual,summary);
   const oldStrong=summary.querySelector('strong'),oldSmall=summary.querySelector('small'),oldStatus=summary.querySelector(':scope > span');
   const region=clean(oldSmall?.textContent).split('와 관련된')[0].trim()||'관찰 영역';
-  const final=region.charCodeAt(region.length-1);const withParticle=final>=0xac00&&final<=0xd7a3&&((final-0xac00)%28)!==0?'과':'와';
   if(oldStrong&&oldSmall&&oldStatus){
-    summary.innerHTML='<div><small>선택 기능과 관련된 영역</small><strong>'+region+'</strong></div><p>이 그림은 생활·인지 변화를 이해하기 위한 참고 지도입니다. 개인 진단 점수나 뇌영상 검사 결과가 아닙니다.</p>';
+    summary.innerHTML='<div><small>그림에서 강조된 영역</small><strong>'+region+'</strong></div><p>이 그림은 관련 기능을 이해하기 위한 안내입니다. 뇌영상 검사나 개인의 치매 진단 결과가 아닙니다.</p>';
   }
   if(views){
     views.querySelectorAll('button').forEach(btn=>{btn.textContent=btn.dataset.brainView==='side'?'옆면 보기':'윗면 보기'});
     const controls=make('div','brain-map-controls');
-    views.before(controls);controls.append(views);
-    // Keep the map view selector above the large visualization so it is visible and usable immediately.
-    tabs.after(controls);
-    if(actions){
-      const btn=actions.querySelector('button');
-      if(btn){btn.classList.add('brain-trend-cta');btn.innerHTML=icon('chart-line')+'<span>시간에 따른 변화 보기</span>';controls.append(btn)}
-      actions.remove();
-    }
+    controls.append(views);
+    stage.insertBefore(controls,visual);
+  }
+  if(actions){
+    actions.classList.add('brain-next-action');
+    const btn=actions.querySelector('button');
+    if(btn){btn.classList.add('brain-trend-cta');btn.innerHTML=icon('chart-line')+'<span>3. 시간에 따른 변화 보기</span>';}
   }
 }
 function enhanceResearchEngine(screen){
   const title=screen.querySelector('.page-title');
-  if(title)title.innerHTML='새 근거와 내 기록을<br>함께 살펴봅니다';
+  // Keep the original page heading; it explains the two-step evidence-to-record flow.
   screen.querySelectorAll('.research-factor-row em').forEach(label=>{
     if(label.textContent.trim()==='개인 baseline')label.textContent='나의 평소 기준';
   });
