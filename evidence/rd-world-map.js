@@ -16,6 +16,14 @@
         '<p>국가별 연구·사업화 후보를 발굴하고, 공개 근거에 따라 적합성을 선별합니다. 지도는 실제 자료조사와 공식 연락 이력을 구분해 보여줍니다.</p>' +
         '<div class="kimse-atlas-stats" id="kimse-atlas-stats" aria-live="polite"></div>' +
       '</div>' +
+      '<section class="kimse-atlas-progress" aria-labelledby="kimse-progress-title">' +
+        '<div class="kimse-atlas-progress-head"><div><div class="kimse-atlas-kicker">INSTITUTION BY INSTITUTION · 2026.10.13</div><h3 id="kimse-progress-title">어느 기관과 몇 단계인가?</h3><p>기관 이름 옆에 <strong>0·1·2단계</strong>를 직접 표시합니다. 0단계는 미접촉, 1단계는 연락·접수, 2단계는 실제 연구정보 답변입니다. 협력 단계와 구분합니다.</p></div><div class="kimse-atlas-progress-total" id="kimse-progress-total">기관 원장 확인 중</div></div>' +
+        '<div class="kimse-progress-numbers" id="kimse-progress-numbers" aria-label="숫자 단계별 기관 필터"></div>' +
+        '<div class="kimse-progress-overview" id="kimse-progress-overview" aria-label="세부 진행상태별 기관 수"></div>' +
+        '<div class="kimse-progress-tools"><label for="kimse-progress-phase">숫자 단계<select id="kimse-progress-phase"><option value="">전체 (0~2단계)</option><option value="0">0단계 · 미접촉</option><option value="1">1단계 · 연락·접수</option><option value="2">2단계 · 자료 회신</option></select></label><label for="kimse-progress-stage">상세 상태<select id="kimse-progress-stage"><option value="">전체 상태</option></select></label><label for="kimse-progress-country">국가·지역<select id="kimse-progress-country"><option value="">전체 국가·지역</option></select></label><label class="kimse-progress-query-label" for="kimse-progress-search">기관 검색<input type="search" id="kimse-progress-search" placeholder="기관명 · 국가명 · 접수번호" autocomplete="off"></label></div>' +
+        '<div class="kimse-progress-table-scroll"><table class="kimse-progress-table"><thead><tr><th scope="col">기관 · 숫자 단계</th><th scope="col">상세 상태</th><th scope="col">확인 근거</th><th scope="col">다음 행동</th><th scope="col">협력·매출</th></tr></thead><tbody id="kimse-progress-rows"><tr><td colspan="5">진행 데이터를 불러오는 중입니다.</td></tr></tbody></table></div>' +
+        '<div class="kimse-progress-legal">상태 표시는 낌새가 수행한 자료조사·발송·FOI 접수·연구정보 회신만 반영합니다. 모든 기관의 사업협력·구매의향·임상검증은 미확인입니다. 승인만 받은 웹양식 9건은 <strong>미제출</strong>로 표시합니다. 개인 이메일과 내부 메일 식별자는 공개하지 않습니다.</div>' +
+      '</section>' +
       '<div class="kimse-atlas-grid">' +
         '<div class="kimse-atlas-map-col">' +
           '<div class="kimse-atlas-toolbar">' +
@@ -47,13 +55,6 @@
           '<div class="kimse-atlas-institutions" id="kimse-atlas-institutions"><div class="kimse-atlas-empty">세계지도에서 국가를 선택하면 적합성 평가 대상과 근거가 표시됩니다.</div></div>' +
         '</aside>' +
       '</div>' +
-      '<section class="kimse-atlas-progress" aria-labelledby="kimse-progress-title">' +
-        '<div class="kimse-atlas-progress-head"><div><div class="kimse-atlas-kicker">INSTITUTION PROGRESS · UPDATED 2026.10.13</div><h3 id="kimse-progress-title">기관별 진행 단계</h3><p>후보 검토 → 공식 문의·접수 → 자료 회신 → 별도 사업화 협의. 단계는 실제 발송·답변 증거 기준이며 구매·제휴 확정과 구분합니다.</p></div><div class="kimse-atlas-progress-total" id="kimse-progress-total">기관 원장 확인 중</div></div>' +
-        '<div class="kimse-progress-overview" id="kimse-progress-overview" aria-label="기관 단계별 건수"></div>' +
-        '<div class="kimse-progress-tools"><label for="kimse-progress-stage">진행상태<select id="kimse-progress-stage"><option value="">전체 단계</option></select></label><label for="kimse-progress-country">국가·지역<select id="kimse-progress-country"><option value="">전체 국가·지역</option></select></label><label class="kimse-progress-query-label" for="kimse-progress-search">기관 검색<input type="search" id="kimse-progress-search" placeholder="기관명 · 국가명 · 접수번호" autocomplete="off"></label></div>' +
-        '<div class="kimse-progress-table-scroll"><table class="kimse-progress-table"><thead><tr><th scope="col">기관 · 국가</th><th scope="col">현재 단계</th><th scope="col">확인 근거</th><th scope="col">다음 행동</th><th scope="col">협력·매출</th></tr></thead><tbody id="kimse-progress-rows"><tr><td colspan="5">진행 데이터를 불러오는 중입니다.</td></tr></tbody></table></div>' +
-        '<div class="kimse-progress-legal">상태 표시는 낌새가 수행한 자료조사·발송·FOI 접수·연구정보 회신만 반영합니다. 모든 기관의 사업협력·구매의향·임상검증은 미확인입니다. 승인만 받은 웹양식 9건은 <strong>미제출</strong>로 표시합니다. 개인 이메일과 내부 메일 식별자는 공개하지 않습니다.</div>' +
-      '</section>' +
       '<div class="kimse-atlas-foot"><strong>상태·영향력 표시 기준</strong> · ‘검토 예정’과 ‘적합성 검토 중’은 낌새의 내부 후보 평가입니다. 자료요청 발송·접수 확인은 실제 기록 기준이며, 외부 기관의 승인·보증·제휴나 협의 착수를 뜻하지 않습니다. ISO 3166-1 기준 249개 국가·지역이 검토대상이며, 현재 기관이 등록된 곳은 24개 국가·지역입니다. 영향력 A/B/C는 기관 유형과 공개 연구·거래 근거를 토대로 한 낌새 내부 참고 분류이며 독립적 공식 순위가 아닙니다. 도시 핀은 기관 건물의 정확한 위치가 아닌 도시 중심 참고좌표입니다. 지도 경계는 Natural Earth 50m 우선·110m 대체 경계이며, 작은 국가·영역은 선택 목록에서 확인할 수 있습니다.</div>' +
     '</div>';
   mount.insertBefore(root,mount.firstChild);
@@ -116,18 +117,21 @@
     var countries=new Map();
     state.data.institutions.forEach(function(x){var z=countries.get(x.countryNumeric)||{numeric:x.countryNumeric,name:x.countryName,count:0};z.count++;countries.set(x.countryNumeric,z)});
     countryEl.innerHTML='<option value="">전체 국가·지역</option>'+Array.from(countries.values()).sort(function(a,b){return b.count-a.count||a.name.localeCompare(b.name)}).map(function(x){return '<option value="'+safe(x.numeric)+'">'+safe(x.name)+' · '+x.count+'곳</option>'}).join('');
-    ['kimse-progress-stage','kimse-progress-country','kimse-progress-search'].forEach(function(id){var el=document.getElementById(id);el.addEventListener(id==='kimse-progress-search'?'input':'change',renderProgress)});
+    ['kimse-progress-phase','kimse-progress-stage','kimse-progress-country','kimse-progress-search'].forEach(function(id){var el=document.getElementById(id);el.addEventListener(id==='kimse-progress-search'?'input':'change',renderProgress)});
+    document.getElementById('kimse-progress-numbers').addEventListener('click',function(event){var target=event.target.closest('button[data-phase]');if(!target)return;var phaseSelect=document.getElementById('kimse-progress-phase'),next=target.getAttribute('data-phase');phaseSelect.value=phaseSelect.value===next?'':next;renderProgress();});
     document.getElementById('kimse-progress-overview').addEventListener('click',function(event){var node=event.target.closest('button[data-stage]');if(!node)return;stageEl.value=stageEl.value===node.getAttribute('data-stage')?'':node.getAttribute('data-stage');renderProgress();});
   }
   function renderProgress() {
     if(!state.data)return;
-    var stageEl=document.getElementById('kimse-progress-stage'),countryEl=document.getElementById('kimse-progress-country'),searchEl=document.getElementById('kimse-progress-search');
-    if(!stageEl||!countryEl||!searchEl)return;
+    var phaseEl=document.getElementById('kimse-progress-phase'),stageEl=document.getElementById('kimse-progress-stage'),countryEl=document.getElementById('kimse-progress-country'),searchEl=document.getElementById('kimse-progress-search');
+    if(!phaseEl||!stageEl||!countryEl||!searchEl)return;
     var stages=state.data.progressStages||[];
+    document.getElementById('kimse-progress-numbers').innerHTML=[0,1,2].map(function(n){var num=state.data.institutions.filter(function(x){return x.progress&&x.progress.phase===n}).length;return '<button type="button" class="kimse-progress-number '+(phaseEl.value===String(n)?'is-selected':'')+'" data-phase="'+n+'" aria-pressed="'+(phaseEl.value===String(n)?'true':'false')+'"><span class="kimse-progress-number-value">'+n+'단계</span><strong>'+num+'곳</strong><small>'+(n===0?'접촉 전 · 준비':n===1?'발송 · 공식 접수':'연구정보 답변')+'</small></button>'}).join('');
     document.getElementById('kimse-progress-overview').innerHTML=stages.map(function(p){
       return '<button type="button" class="kimse-progress-metric '+(stageEl.value===p.code?'is-selected':'')+'" data-stage="'+safe(p.code)+'" aria-pressed="'+(stageEl.value===p.code?'true':'false')+'"><strong>'+Number(p.count||0)+'</strong><span>'+safe(p.label)+'</span></button>';
     }).join('');
     var phrase=norm(searchEl.value).trim(),filtered=state.data.institutions.filter(function(x){
+      if(phaseEl.value!=='' && (!x.progress || String(x.progress.phase)!==phaseEl.value))return false;
       if(stageEl.value && x.stage!==stageEl.value)return false;
       if(countryEl.value && x.countryNumeric!==countryEl.value)return false;
       var p=x.progress||{};
@@ -142,7 +146,7 @@
       var deadline=p.formalResponseDeadline?'<div class="kimse-progress-deadline">답변 예정 '+safe(p.formalResponseDeadline)+'</div>':'';
       var evidence=p.formalFOIRef?'공식 FOI 접수번호 확인':x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'?'기관 연구방법 회신':x.stage==='AUTOMATED_ACK_ONLY'?'자동 확인메일 · 정식 접수 미확정':x.stage==='INFORMATION_REQUEST_SENT'?'회사메일 전송 · 답변 대기':x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED'?'사용자 승인 · 실제 제출 전':'공식 담당·연구 근거 검토';
       var phase=p.phase===2?'2단계 · 자료 검토':p.phase===1?'1단계 · 자료요청':'0단계 · 접촉 준비';
-      return '<tr><td><strong>'+safe(x.name)+'</strong><small>'+safe(x.countryName)+' · '+safe(x.sector)+'</small></td>'+
+      return '<tr><td><div class="kimse-progress-name-and-phase"><span class="kimse-progress-bignum phase-'+Number(p.phase||0)+'">'+Number(p.phase||0)+'단계</span><strong>'+safe(x.name)+'</strong></div><small>'+safe(x.countryName)+' · '+safe(x.sector)+'</small></td>'+
         '<td><span class="kimse-atlas-chip '+stageClass(x)+'">'+safe(x.stageLabel)+'</span><small>'+safe(phase)+'</small></td>'+
         '<td>'+safe(evidence)+ref+deadline+'</td>'+
         '<td>'+safe(p.nextAction||'근거 확인 후 진행')+(p.approvedWebFormNotSubmitted && /^https:\/\//.test(p.formURL||'')?'<div class="kimse-progress-form-link"><a href="'+safe(p.formURL)+'" target="_blank" rel="noopener noreferrer">공식 FOI 양식 열기 ↗</a></div>':'')+'</td>'+
