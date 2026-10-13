@@ -2372,12 +2372,12 @@ function clinicalRawSampleTable(metric){
   const raw=Array.isArray(metric?.raw_samples)?metric.raw_samples:[];
   const daily=Array.isArray(metric?.series)?metric.series:[];
   if(raw.length){
-    const rows=raw.slice(0,12).map(x=>'<tr><td>'+esc(String(x.observed_at||'').replace('T',' ').slice(0,19))+'</td><td>'+esc(formatMonitoringValue(metric.metric,x.value))+'</td><td>'+esc(x.source||'')+'</td></tr>').join('');
-    return '<div class="clinical-raw-block"><div class="clinical-raw-head"><strong>최근 source event</strong><span>서버에 보존된 관찰 이벤트 · 좌표/임의 metadata 제외</span></div><div class="clinical-raw-table-wrap"><table class="clinical-raw-table"><thead><tr><th>관찰 시각</th><th>값</th><th>출처</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+    const rows=raw.map(x=>'<tr><td>'+esc(String(x.observed_at||'').replace('T',' ').slice(0,19))+'</td><td>'+esc(formatMonitoringValue(metric.metric,x.value))+'</td><td>'+esc(x.source||'')+'</td></tr>').join('');
+    return '<div class="clinical-raw-block"><div class="clinical-raw-head"><strong>최근 source event · 전달받은 '+raw.length+'건 전체</strong><span>서버에서 제공한 최근 관찰 이벤트이며 과거 전체 보관 건수와는 다를 수 있습니다. 좌표·임의 metadata 제외</span></div><div class="clinical-raw-table-wrap"><table class="clinical-raw-table"><thead><tr><th>관찰 시각</th><th>값</th><th>출처</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   }
   if(daily.length){
-    const rows=daily.slice(-12).reverse().map(x=>'<tr><td>'+esc(x.day||'')+'</td><td>'+esc(formatMonitoringValue(metric.metric,x.value))+'</td><td>'+esc(String(x.samples||0))+' samples</td></tr>').join('');
-    return '<div class="clinical-raw-block"><div class="clinical-raw-head"><strong>최근 일별 집계</strong><span>현재 서버가 source event를 아직 전달하지 않아 일별 집계값만 표시</span></div><div class="clinical-raw-table-wrap"><table class="clinical-raw-table"><thead><tr><th>날짜</th><th>값</th><th>표본수</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+    const shown=daily.slice(-12),rows=shown.slice().reverse().map(x=>'<tr><td>'+esc(x.day||'')+'</td><td>'+esc(formatMonitoringValue(metric.metric,x.value))+'</td><td>'+esc(String(x.samples||0))+' samples</td></tr>').join('');
+    return '<div class="clinical-raw-block"><div class="clinical-raw-head"><strong>최근 일별 집계 · '+shown.length+'/'+daily.length+'일 표시</strong><span>현재 서버가 source event를 전달하지 않아 일별 집계값만 표시합니다. 전체 기간 추이는 위 차트를 참고하세요.</span></div><div class="clinical-raw-table-wrap"><table class="clinical-raw-table"><thead><tr><th>날짜</th><th>값</th><th>표본수</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   }
   return '<div class="clinical-chart-empty">드릴다운할 관찰값이 없습니다.</div>';
 }
@@ -2394,16 +2394,51 @@ function clinicalQualityBand(metrics){
   return '<div class="clinical-quality-band"><div class="clinical-quality-band-title"><strong>데이터 공백 overlay</strong><span>날짜별 결측 원인이 보존되지 않은 경우 임의 위치를 만들지 않고 기간 내 누락일 수만 표시합니다.</span></div><div class="clinical-quality-band-grid">'+rows.map(x=>{const q=x.quality||{},missing=clinicalFiniteNumber(q.missing_calendar_days),expected=clinicalFiniteNumber(q.expected_calendar_days),coverage=clinicalFiniteNumber(q.calendar_day_coverage),pct=coverage===null?null:Math.max(0,Math.min(100,Math.round(coverage*100))),knownGap=missing!==null&&expected!==null;return '<div class="clinical-quality-band-item '+(!knownGap?'unknown':missing>0?'has-gap':'complete')+'"><span>'+esc(x.clinical_label||SIGNAL_LABELS[x.metric]||x.metric)+'</span><b>'+(pct===null?'자료 없음':pct+'%')+'</b><small>'+(knownGap?esc(String(missing))+'/'+esc(String(expected))+'일 기록 공백':'기록 공백 확인 불가')+'</small></div>'}).join('')+'</div></div>';
 }
 function clinicalSeriesSvg(metric){
-  const rows=(metric?.series||[]).filter(x=>clinicalFiniteNumber(x.value)!==null);
-  if(rows.length<2)return '<div class="clinical-chart-empty">기간 내 연속 추이 데이터가 충분하지 않습니다.</div>';
-  const w=640,h=150,p=14,vals=rows.map(x=>clinicalFiniteNumber(x.value)),base=clinicalFiniteNumber(metric?.baseline);
-  if(base!==null)vals.push(base);
-  let lo=Math.min(...vals),hi=Math.max(...vals);if(Math.abs(hi-lo)<1e-9){lo-=1;hi+=1}
-  const x=i=>p+i*((w-p*2)/Math.max(1,rows.length-1)),y=v=>h-p-((v-lo)/(hi-lo))*(h-p*2);
-  const pts=rows.map((r,i)=>x(i).toFixed(1)+','+y(Number(r.value)).toFixed(1)).join(' ');
-  const baseLine=base!==null?'<line class="clinical-baseline-line" x1="'+p+'" x2="'+(w-p)+'" y1="'+y(base).toFixed(1)+'" y2="'+y(base).toFixed(1)+'"></line>':'';
-  const first=esc(rows[0].day||''),last=esc(rows[rows.length-1].day||'');
-  return '<svg class="clinical-series-chart" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(metric.clinical_label||metric.metric)+' 기간별 실제 기록 추이">'+baseLine+'<polyline class="clinical-series-line" points="'+pts+'"></polyline><circle class="clinical-series-dot" cx="'+x(rows.length-1).toFixed(1)+'" cy="'+y(Number(rows[rows.length-1].value)).toFixed(1)+'" r="4"></circle><text x="'+p+'" y="'+(h-1)+'">'+first+'</text><text x="'+(w-p)+'" y="'+(h-1)+'" text-anchor="end">'+last+'</text></svg>';
+  // Chart positions follow actual observation dates. Never bridge a missing day:
+  // connecting two observations across absent dates invents a continuous trend.
+  const source=Array.isArray(metric?.series)?metric.series:[];
+  const parseDay=day=>{
+    if(typeof day!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(day))return null;
+    const n=Date.parse(day+'T00:00:00Z');
+    return Number.isFinite(n)&&new Date(n).toISOString().slice(0,10)===day?Math.round(n/86400000):null;
+  };
+  const rows=source.map((row,index)=>({
+    index,day:row?.day||'',stamp:parseDay(row?.day),
+    value:clinicalFiniteNumber(row?.value)
+  }));
+  const valid=rows.filter(row=>row.value!==null);
+  if(valid.length<2)return '<div class="clinical-chart-empty">기간 내 연속 추이 데이터가 충분하지 않습니다.</div>';
+  const dated=rows.every(row=>row.stamp!==null);
+  const w=640,h=150,p=14,baseline=clinicalFiniteNumber(metric?.baseline);
+  const vals=valid.map(row=>row.value);
+  if(baseline!==null)vals.push(baseline);
+  let lo=Math.min(...vals),hi=Math.max(...vals);
+  if(Math.abs(hi-lo)<1e-9){lo-=1;hi+=1}
+  const firstStamp=dated?rows[0].stamp:null,lastStamp=dated?rows[rows.length-1].stamp:null;
+  const x=row=>p+((dated?(row.stamp-firstStamp)/Math.max(1,lastStamp-firstStamp):row.index/Math.max(1,rows.length-1))*(w-p*2));
+  const y=value=>h-p-((value-lo)/(hi-lo))*(h-p*2);
+  const points=[],segments=[];
+  let chain=[],previous=null,hasGap=false;
+  const flush=()=>{
+    if(chain.length>1)segments.push('<polyline class="clinical-series-line" points="'+chain.join(' ')+'"></polyline>');
+    chain=[];
+  };
+  for(const row of rows){
+    if(row.value===null){if(chain.length)flush();if(previous)hasGap=true;previous=null;continue}
+    if(previous){
+      const consecutive=dated?(row.stamp-previous.stamp===1):(row.index-previous.index===1);
+      if(!consecutive){hasGap=true;flush()}
+    }
+    const pt=x(row).toFixed(1)+','+y(row.value).toFixed(1);
+    chain.push(pt);points.push(row);
+    previous=row;
+  }
+  flush();
+  const baseLine=baseline!==null?'<line class="clinical-baseline-line" x1="'+p+'" x2="'+(w-p)+'" y1="'+y(baseline).toFixed(1)+'" y2="'+y(baseline).toFixed(1)+'"></line>':'';
+  const dots=points.map(row=>'<circle class="clinical-series-dot" cx="'+x(row).toFixed(1)+'" cy="'+y(row.value).toFixed(1)+'" r="3"></circle>').join('');
+  const first=esc(rows[0]?.day||''),last=esc(rows[rows.length-1]?.day||'');
+  return '<svg class="clinical-series-chart" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(metric.clinical_label||metric.metric)+' 실제 날짜별 관찰 추이. 결측 날짜는 선으로 연결하지 않음">'+baseLine+segments.join('')+dots+'<text x="'+p+'" y="'+(h-1)+'">'+first+'</text><text x="'+(w-p)+'" y="'+(h-1)+'" text-anchor="end">'+last+'</text></svg>'
+    +(hasGap?'<p class="clinical-microcopy">기록이 없는 날짜는 연속 관찰로 이어 그리지 않았습니다.</p>':'');
 }
 function clinicalDeviationCopy(metric){
   const d=metric?.deviation_summary||{};
