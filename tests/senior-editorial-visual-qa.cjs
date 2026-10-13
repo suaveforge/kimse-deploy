@@ -6,7 +6,7 @@ const out='qa-artifacts/senior-editorial';
 fs.mkdirSync(out,{recursive:true});
 const BASE='https://kimse.suaveforge.com/#/';
 const profiles=[{w:320,mode:'normal'},{w:375,mode:'normal'},{w:375,mode:'large'},{w:375,mode:'contrast'}];
-const routes=['evidence-proof','research-engine','assessment','brain-map'];
+const routes=['evidence-proof','research-engine','assessment','brain-map','settings'];
 const audit=[];
 const seed=(route,mode)=>({
   version:14,account:{name:'시각 검수',email:'qa@example.invalid'},intent:'both',self:true,care:true,mode:'self',
@@ -39,7 +39,9 @@ const seed=(route,mode)=>({
        title:box('.page-title'),researchCards:boxes,summaryText:q('.brain-focus-summary')?.innerText||'',
        originalDescriptions:screen.querySelectorAll(':scope > .page-desc').length,
        factorLabels:[...screen.querySelectorAll('.research-factor-row em')].map(e=>e.textContent.trim()),
-       sourceText:[...screen.querySelectorAll('.research-source strong')].map(e=>e.innerText.trim())}
+       sourceText:[...screen.querySelectorAll('.research-source strong')].map(e=>e.innerText.trim()),
+       internalLinks:[...screen.querySelectorAll('a[href^="#/"]')].map(e=>e.getAttribute('href')),
+       consentSummary:[...screen.querySelectorAll('.settings-quick a span')].map(e=>e.textContent.trim())}
      },route);
      assert(m.docWidth<=m.viewWidth+2,route+' overflows viewport at '+profile.w+'/'+profile.mode);
      if(route==='evidence-proof'&&profile.mode==='normal'&&profile.w===375)
@@ -49,8 +51,15 @@ const seed=(route,mode)=>({
       assert(m.researchCards.every(x=>x.w>=profile.w*.71&&x.font>=15),'source labels are squeezed or too small: '+JSON.stringify(m.researchCards));
       for(let i=1;i<m.researchCards.length;i++)assert(m.researchCards[i].y>=m.researchCards[i-1].y+m.researchCards[i-1].h-2,'citation cards overlap');
       assert.deepEqual(m.factorLabels,['내 평소 수면과 비교','내 평소 활동과 비교','내 평소 말하기와 비교','내 평소 이동과 비교'],'each factor must explain its own personal comparison in plain Korean');
+      assert(m.internalLinks.includes('#/evidence-proof')&&m.internalLinks.includes('#/monitoring-status'),'research needs links to evidence and actual monitoring');
+     }
+     if(route==='evidence-proof')assert(m.internalLinks.includes('#/research-engine'),'evidence page needs an in-app follow-up');
+     if(route==='settings'){
+      assert(m.consentSummary[0]?.includes('큰 글씨')&&m.consentSummary[0]?.includes('고대비'),'settings must expose current accessibility mode');
+      assert(m.consentSummary[1]?.includes('가족 공유 동의 안 함')&&m.consentSummary[1]?.includes('위치 수집 동의 안 함'),'settings must show precise permission state');
      }
      if(route==='brain-map'){
+      assert(m.internalLinks.includes('#/monitoring-status'),'brain map must offer a useful next step without history');
       assert.equal(m.originalDescriptions,1,'brain map repeats original introduction');
       assert(m.summaryText.includes('뇌영상 검사나 개인의 치매 진단 결과가 아닙니다'),'map must retain the actual medical limitation shown to users');
      }
@@ -63,6 +72,6 @@ const seed=(route,mode)=>({
    }
   }
   fs.writeFileSync(out+'/audit.json',JSON.stringify(audit,null,2));
-  console.log('KIMSE_EDITORIAL_VISUAL_ALL=PASS 16 browser states');
+  console.log('KIMSE_EDITORIAL_VISUAL_ALL=PASS 20 browser states');
  }finally{await browser.close()}
 })().catch(e=>{console.error('KIMSE_EDITORIAL_VISUAL_FAILED',e.stack||e);process.exitCode=1});
