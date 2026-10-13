@@ -119,7 +119,8 @@ function enhanceAccessibility(screen){
     highContrast:['고대비 모드','글자·경계·버튼 대비를 더 분명하게 합니다.','contrast-2'],
     largeTouchTargets:['큰 터치 영역','주요 조작 영역을 더 넓게 만들어 누르기 쉽게 합니다.','hand-finger'],
     voiceGuidance:['음성 안내','화면 제목과 주요 완료 상태를 음성으로 안내합니다.','volume'],
-    soundEffects:['효과음','선택·완료 상황을 소리로 알립니다.','bell']
+    soundEffects:['효과음','선택·완료 상황을 소리로 알립니다.','bell'],
+    reduceMotion:['화면 움직임 줄이기','전환·애니메이션 효과를 줄입니다.','motion']
   };
   card.querySelectorAll('.switch-row').forEach(row=>{
     const input=row.querySelector('input[data-a11y]'),m=meta[input?.dataset.a11y];
