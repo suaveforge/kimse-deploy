@@ -24,7 +24,7 @@ for(const v of data.institutions){
   assert.match(v.countryNumeric,/^\d{3}$/);
   assert.ok(['A','B','C'].includes(v.authorityTier));
   assert.ok(['CANDIDATE_REVIEW_SCHEDULED','CANDIDATE_FIT_PRELIMINARY',
-    'FOI_FORM_APPROVED_NOT_SUBMITTED','INFORMATION_REQUEST_SENT',
+    'FOI_FORM_APPROVED_NOT_SUBMITTED','FIRST_CONTACT_ROUTE_VERIFIED_UNSENT','INFORMATION_REQUEST_SENT',
     'AUTOMATED_ACK_ONLY','FORMAL_FOI_REGISTERED',
     'RESEARCH_METHODS_RESPONSE_RECEIVED'].includes(v.stage),'only approved, evidence-based outreach stages');
   assert.ok(v.progress && [0,1,2].includes(v.progress.phase),'P0/P1/P2 evidence phase required');
@@ -41,6 +41,12 @@ for(const v of data.institutions){
     assert.equal(v.stage,'FOI_FORM_APPROVED_NOT_SUBMITTED','approved forms remain pending P0');
     assert.match(v.progress.formURL,/^https:\/\//,'pending form must link official HTTPS route');
     assert.equal(v.progress.requestSent,false,'approval does not equal sending');
+  }
+  if(v.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT'){
+    assert.equal(v.progress.phase,0,'verified initial-contact route must remain stage zero');
+    assert.equal(v.progress.requestSent,false,'verified first contact does not mean sent');
+    assert.equal(v.progress.formSubmitted,false,'verified first contact is not a form submission');
+    assert.match(v.progress.contactRouteURL,/^https:\/\//,'verified first enquiry links official route');
   }
   if(v.stage==='FORMAL_FOI_REGISTERED')assert.ok(v.progress.formalFOIRef,'official reference only when verified');
   assert.ok(!Object.keys(v).some(k=>/email|gmail|password|auth_token/i.test(k)),'public fields must not include message IDs/emails');
@@ -64,6 +70,7 @@ assert.equal(data.institutions.filter(x=>x.stage==='RESEARCH_METHODS_RESPONSE_RE
 assert.equal(data.institutions.filter(x=>x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED').length,4,'approved and still not submitted');
 assert.equal(data.institutions.filter(x=>x.progress.contactStatus==='IDENTIFIED_NOT_CONTACTED').length,61,'uncontacted total');
 assert.equal(data.institutions.filter(x=>x.progress.formalFOIRef).length,15,'verifiable formal references');
+assert.equal(data.institutions.filter(x=>x.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT').length,17,'17 official first enquiry routes verified but no contact');
 assert.equal(data.institutions.filter(x=>x.progress.formSubmitted).length,5,'five web form submissions with proof');
 for(const [id,reference] of Object.entries({hackney_council:'50807786',southampton_city_council:'98N5UZS4U',newham_council:'FOIEIR-2026-004173',cambridgeshire_county_council:'CCC882925672'})){
  const x=data.institutions.find(y=>y.id===id);
