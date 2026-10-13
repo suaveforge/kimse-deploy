@@ -24,8 +24,21 @@ for(const v of data.institutions){
   assert.match(v.countryNumeric,/^\d{3}$/);
   assert.ok(['A','B','C'].includes(v.authorityTier));
   assert.ok(['CANDIDATE_REVIEW_SCHEDULED','CANDIDATE_FIT_PRELIMINARY',
-    'INFORMATION_REQUEST_SENT','INFORMATION_REQUEST_REGISTERED',
-    'INFORMATION_REQUEST_ACKNOWLEDGED'].includes(v.stage),'no invented collaboration status');
+    'FOI_FORM_APPROVED_NOT_SUBMITTED','INFORMATION_REQUEST_SENT',
+    'AUTOMATED_ACK_ONLY','FORMAL_FOI_REGISTERED',
+    'RESEARCH_METHODS_RESPONSE_RECEIVED'].includes(v.stage),'only approved, evidence-based outreach stages');
+  assert.ok(v.progress && [0,1,2].includes(v.progress.phase),'P0/P1/P2 evidence phase required');
+  assert.equal(v.progress.cooperation,'NONE','no invented collaboration or endorsement');
+  assert.equal(v.progress.commercialDiscussion,'NOT_STARTED','FOI is not a commercial conversation');
+  assert.equal(v.progress.procurementEvidenceVerified,false,'do not imply proven procurement from FOI registration');
+  assert.equal(v.progress.requestSent,v.progress.contactStatus!=='IDENTIFIED_NOT_CONTACTED','outbound transport and stage parity');
+  assert.equal(v.progress.formSubmitted,false,'web forms not marked submitted without receipt');
+  if(v.progress.approvedWebFormNotSubmitted){
+    assert.equal(v.stage,'FOI_FORM_APPROVED_NOT_SUBMITTED','approved forms remain pending P0');
+    assert.match(v.progress.formURL,/^https:\/\//,'pending form must link official HTTPS route');
+    assert.equal(v.progress.requestSent,false,'approval does not equal sending');
+  }
+  if(v.stage==='FORMAL_FOI_REGISTERED')assert.ok(v.progress.formalFOIRef,'official reference only when verified');
   assert.ok(!Object.keys(v).some(k=>/email|gmail|password|auth_token/i.test(k)),'public fields must not include message IDs/emails');
   if(v.sourceURL)assert.match(v.sourceURL,/^https:\/\/\S+$/);
   if(v.cityCoordinate){
@@ -39,7 +52,18 @@ for(const v of data.institutions){
 }
 assert.equal(byCode.GB,39);
 assert.equal(byCode.US,10);
-assert.equal(data.institutions.filter(x=>/^INFORMATION_REQUEST_/.test(x.stage)).length,3);
+assert.equal(data.institutions.filter(x=>x.progress.requestSent).length,26,'transport-confirmed outreach counts');
+assert.equal(data.institutions.filter(x=>x.stage==='FORMAL_FOI_REGISTERED').length,11,'official FOI references');
+assert.equal(data.institutions.filter(x=>x.stage==='AUTOMATED_ACK_ONLY').length,2,'automatic replies');
+assert.equal(data.institutions.filter(x=>x.stage==='INFORMATION_REQUEST_SENT').length,12,'sent and waiting');
+assert.equal(data.institutions.filter(x=>x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED').length,1,'methodology-only reply');
+assert.equal(data.institutions.filter(x=>x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED').length,9,'approved and still not submitted');
+assert.equal(data.institutions.filter(x=>x.progress.contactStatus==='IDENTIFIED_NOT_CONTACTED').length,66,'uncontacted total');
+assert.equal(data.institutions.filter(x=>x.progress.formalFOIRef).length,11,'verifiable formal references');
+assert.equal(data.contacts.procurementSpendEvidence,0,'FOI references are not actual spend documents');
+assert.equal(data.contacts.mutualCollaboration,0,'no partnership has been agreed');
+assert.equal(data.progressStages.reduce((s,x)=>s+x.count,0),92,'all stages accounted for');
+assert.ok(!JSON.stringify(data).match(/(?:programmer119@gmail\.com|gmailMessageId|sentGmailMessageId)/i),'no private outbound-identifying data in public JSON');
 assert.equal(data.institutions.filter(x=>x.cityCoordinate).length,62);
 new vm.Script(mapJs,{filename:'rd-world-map.js'});
 new vm.Script(appJs,{filename:'evidence-application-tabs.js'});
@@ -48,9 +72,12 @@ assert.match(mapJs,/countryTextFallback/,'country picker works if map topology u
 assert.match(mapJs,/setSelected/);
 assert.match(mapJs,/renderPins/);
 assert.match(mapJs,/schemaVersion|rd-world-map-data\.json/);
+assert.match(mapJs,/renderProgress/,'institution phase table renders');
+assert.match(mapJs,/kimse-progress-rows/,'institution phase table DOM exists');
+assert.match(mapJs,/kimse-progress-overview/,'phase counts with clickable filters');
 assert.match(style,/@media\(max-width:700px\)/);
 for(const local of ['rd-world-map.js','rd-world-map.css','evidence-application-tabs.js']){
   assert.ok(html.includes('./'+local+'?v='),'HTML links '+local);
 }
 assert.ok(html.includes('d3@7.9.0') && html.includes('topojson-client@3.1.0'),'map dependencies');
-console.log('PASS: 249 countries/territories · 24 with institutions · 92 records · 62 city pins · 3 FOI requests · JS/CSS/HTML contract');
+console.log('PASS: 249 territories · 24 selected markets · 92 institutions · 26 contacted · 11 registered FOI · 9 approved unsubmitted forms · 0 contracts · JS/CSS/HTML contract');
