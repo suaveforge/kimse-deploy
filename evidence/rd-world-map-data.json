@@ -7,7 +7,7 @@
   "countryCount": 24,
   "contacts": {
     "outreachSent": 31,
-    "formalFOIRegistered": 15,
+    "formalFOIRegistered": 17,
     "automatedAckOnly": 2,
     "researchMethodsReply": 1,
     "approvedFOIFormNotSubmitted": 4,
@@ -151,8 +151,8 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "INFORMATION_REQUEST_SENT",
-      "stageLabel": "정보요청 발송",
+      "stage": "FORMAL_FOI_REGISTERED",
+      "stageLabel": "FOI 공식 접수",
       "sourceURL": null,
       "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
       "city": "Manchester",
@@ -165,20 +165,20 @@
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
         "phase": 1,
-        "phaseLabel": "자료요청 · 회신 대기",
-        "order": 30,
-        "stageCode": "INFORMATION_REQUEST_SENT",
-        "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
+        "phaseLabel": "자료요청 · 공식 접수",
+        "order": 50,
+        "stageCode": "FORMAL_FOI_REGISTERED",
+        "source": "VERIFIED_RECEIVED_GMAIL_OFFICIAL_ACK_20261013",
         "asOf": "2026-10-13",
-        "contactStatus": "REQUEST_SENT",
-        "formalFOIRef": null,
+        "contactStatus": "FORMAL_FOI_REGISTERED",
+        "formalFOIRef": "FOI/21992",
         "formalResponseDeadline": null,
         "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 접수·답변 대기, 중복 발송 금지",
+        "nextAction": "공식 FOI 답변 및 실제 계약·집행 자료 대기",
         "formURL": null,
         "formSubmitted": false,
         "requestSent": true
@@ -880,8 +880,8 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "INFORMATION_REQUEST_SENT",
-      "stageLabel": "정보요청 발송",
+      "stage": "FORMAL_FOI_REGISTERED",
+      "stageLabel": "FOI 공식 접수",
       "sourceURL": null,
       "sourceScope": "Reconfirm Just Checking contracted service, disease scope, actual people and episode duration",
       "city": null,
@@ -891,20 +891,20 @@
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
         "phase": 1,
-        "phaseLabel": "자료요청 · 회신 대기",
-        "order": 30,
-        "stageCode": "INFORMATION_REQUEST_SENT",
-        "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
+        "phaseLabel": "자료요청 · 공식 접수",
+        "order": 50,
+        "stageCode": "FORMAL_FOI_REGISTERED",
+        "source": "VERIFIED_RECEIVED_GMAIL_OFFICIAL_ACK_20261013",
         "asOf": "2026-10-13",
-        "contactStatus": "REQUEST_SENT",
-        "formalFOIRef": null,
-        "formalResponseDeadline": null,
+        "contactStatus": "FORMAL_FOI_REGISTERED",
+        "formalFOIRef": "FOI 06272",
+        "formalResponseDeadline": "2026-11-09",
         "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 접수·답변 대기, 중복 발송 금지",
+        "nextAction": "공식 FOI 답변 및 실제 계약·집행 자료 대기",
         "formURL": null,
         "formSubmitted": false,
         "requestSent": true
@@ -1843,8 +1843,8 @@
       "countryEnglish": "United Kingdom",
       "sector": "연구·데이터",
       "authority": "기술·연구 전문성",
-      "stage": "CANDIDATE_REVIEW_SCHEDULED",
-      "stageLabel": "접촉 전 검토",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": null,
       "sourceScope": "Clinical cohort / digital endpoint / data access: specific contracted product, measured N, actual observation, deal scope",
       "city": "Edinburgh",
@@ -1857,10 +1857,10 @@
       "authorityTierDescription": "전문 연구·데이터",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 10,
-        "stageCode": "CANDIDATE_REVIEW_SCHEDULED",
-        "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+        "source": "FRESH_20261013_UNIVERSITY_EDINBURGH_OFFICIAL_EDP",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
         "formalFOIRef": null,
@@ -1870,10 +1870,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 연구팀 문의 이메일 확인 · 기존 V4 문의문 승인 대기 (미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "sendApproved": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_EDINBURGH_DEMENTIA_PREVENTION_STUDY_OFFICE_EMAIL",
+        "contactRouteURL": "https://clinical-brain-sciences.ed.ac.uk/edinburgh-dementia-prevention/contact-us"
       }
     },
     {
@@ -4923,7 +4927,7 @@
     {
       "code": "CANDIDATE_REVIEW_SCHEDULED",
       "label": "접촉 전 검토",
-      "count": 13
+      "count": 12
     },
     {
       "code": "CANDIDATE_FIT_PRELIMINARY",
@@ -4938,7 +4942,7 @@
     {
       "code": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
       "label": "공식 문의경로 확인 · 미발송",
-      "count": 30
+      "count": 31
     },
     {
       "code": "RESEARCH_METHODS_RESPONSE_RECEIVED",
@@ -4953,22 +4957,24 @@
     {
       "code": "INFORMATION_REQUEST_SENT",
       "label": "정보요청 발송 · 웹양식 제출",
-      "count": 13
+      "count": 11
     },
     {
       "code": "FORMAL_FOI_REGISTERED",
       "label": "FOI 공식 접수",
-      "count": 15
+      "count": 17
     }
   ],
   "routeReview20261013": {
-    "verifiedFirstEnquiryUnsent": 30,
+    "verifiedFirstEnquiryUnsent": 31,
     "previouslyVerified": 17,
     "additionalVerified": 13,
     "newOutreachSends": 0,
     "remainingUncontacted": 61,
     "source": "private docs/RND_FIRST_ENQUIRY_17_REVIEW_PACKET_20261013.json and docs/RND_FIRST_ENQUIRY_25_ROUTE_REVIEW_PACKET_20261013.json",
     "actualAdditionalSent": 0,
-    "sourceOfTruth": "Current institution-level evidence, no public partner or purchasing claims"
+    "sourceOfTruth": "Current institution-level evidence, no public partner or purchasing claims",
+    "newOfficialWrittenFrom11": 1,
+    "officialContactRefNewlyReconciled": 2
   }
 }
