@@ -2753,6 +2753,10 @@ page.settings=()=>{
       '<a class="list-row" href="#/account">내 프로필과 역할 '+I('chevron-right')+'</a>'+
       '<a class="list-row" href="#/family">가족·보호자 관리 '+I('chevron-right')+'</a>'+
     '</div></section>'+
+    '<section class="kimse-settings-section"><h2>개인정보와 공유</h2><div class="list">'+
+      '<a class="list-row" href="#/consent">데이터 수집·가족 공유 동의 '+I('chevron-right')+'</a>'+
+      '<a class="list-row" href="#/collection-status">수집되는 기록 확인 '+I('chevron-right')+'</a>'+
+    '</div></section>'+
     '<section class="kimse-settings-section"><h2>생활 기록 확인</h2><div class="list">'+
       '<a class="list-row" href="#/monitoring-status">최근 생활 변화 '+I('chevron-right')+'</a>'+
       '<a class="list-row" href="#/collection-status">실제 기록 수집 상태 '+I('chevron-right')+'</a>'+
