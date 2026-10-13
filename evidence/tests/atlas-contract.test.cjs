@@ -62,7 +62,7 @@ for(const v of data.institutions){
 }
 assert.equal(byCode.GB,39);
 assert.equal(byCode.US,10);
-assert.equal(data.institutions.filter(x=>x.progress.requestSent).length,31,'transport-confirmed outreach counts');
+assert.equal(data.institutions.filter(x=>x.progress.requestSent).length,data.contacts.outreachSent,'transport-confirmed outreach counts match verified delivery ledger');
 assert.equal(data.institutions.filter(x=>x.stage==='FORMAL_FOI_REGISTERED').length,data.contacts.formalFOIRegistered,'official FOI references equal verified receive count');
 assert.equal(data.institutions.filter(x=>x.stage==='AUTOMATED_ACK_ONLY').length,2,'automatic replies');
 assert.equal(data.institutions.filter(x=>x.stage==='INFORMATION_REQUEST_SENT').length,data.contacts.outreachSent-data.contacts.formalFOIRegistered-data.contacts.automatedAckOnly-data.contacts.researchMethodsReply,'sent and waiting derived from actual transport evidence');
