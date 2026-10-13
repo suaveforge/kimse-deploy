@@ -1146,7 +1146,9 @@
 .screen-home .kh2-family>i:last-child{font-size:19px}
 .screen-home a:focus-visible,.screen-home button:focus-visible{outline:3px solid #1272ba;outline-offset:3px}
 body:has(.screen-home) .bottom-nav-inner{max-width:920px}
+.screen-home .app-footer{display:none}
 @media(min-width:801px){
+ .screen-home.page{padding-bottom:18px}
  body:has(.screen-home) .bottom-nav{position:static;inset:auto;transform:none;width:calc(100% - 36px);max-width:920px;margin:8px auto 18px;border-radius:15px}
 }
 @media(max-width:800px){
@@ -1167,6 +1169,10 @@ body:has(.screen-home) .bottom-nav-inner{max-width:920px}
  .screen-home .kh2-action .icon{font-size:29px;min-height:35px}
  .screen-home .kh2-action strong{font-size:17px}
  .screen-home .kh2-family{min-height:49px;margin-top:11px}
+}
+@media(max-width:360px){
+ .screen-home .kh2-family{display:none}
+ .screen-home .kh2-action{min-height:85px}
 }
 @media(max-width:340px){
  .screen-home.page{padding-left:11px;padding-right:11px}
