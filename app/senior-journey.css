@@ -1353,3 +1353,7 @@ body:has(.screen-home) .bottom-nav-inner{max-width:920px}
  .screen-caregiver-home .kimse-caregiver-quick{margin-bottom:12px}
  .screen-caregiver-home .kimse-caregiver-quick .kimse-health-section-title{margin:4px 0 4px;font-size:18px}
 }
+
+.screen-medical-records .list-row>span:first-child{min-width:0;flex:1}
+.screen-medical-records .kimse-medical-stat-value{white-space:nowrap;flex:0 0 auto;font-size:16px;font-weight:850;color:#173f34;margin-left:auto}
+.high-contrast .screen-medical-records .kimse-medical-stat-value{color:#000}
