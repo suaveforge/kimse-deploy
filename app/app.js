@@ -2601,7 +2601,11 @@ function clinicalPrintableVisitBrief(report){
     const caption=pdf?'공개 PDF '+item.sourcePage+'쪽':item.sourceHeading?'공개 페이지 · '+item.sourceHeading:'공개 원문';
     return '<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(caption)+'</a>';
   };
-  const items=brief.briefItems.map(item=>'<li><strong>'+esc(item.wording)+'</strong><span>'+esc(item.preparationLabel)+' · '+esc(item.display)+' · '+esc(item.limit)+'</span><span class="clinical-visit-trace">'+sourceTrace(item)+'</span></li>').join('');
+  const items=brief.briefItems.map(item=>'<li><strong>'+esc(item.wording)+'</strong><span>'+esc(item.preparationLabel)+' · '+esc(item.display)+' · '+esc(item.limit)+'</span>'
+      +(item.referencePaths.length?'<span>앱 참고 기록 경로: '+esc(item.referencePaths.join(', '))+'</span>':'')
+      +(item.uncollectedPaths.length?'<span>관련 기록 미수집: '+esc(item.uncollectedPaths.join(', '))+'</span>':'')
+      +(!item.referencePaths.length&&!item.uncollectedPaths.length?'<span>앱 직접 대응 기록 없음 · 외부 확인 필요</span>':'')
+      +'<span class="clinical-visit-trace">'+sourceTrace(item)+'</span></li>').join('');
   const appendix=brief.researchLoaded&&otherItems.length
     ?'<div class="clinical-visit-appendix"><h3>공개 조사 항목 전체 대조 · 추가 '+otherItems.length+'건</h3>'
      +'<p>위 핵심 항목을 포함한 총 '+brief.researchedGroupCount+'건의 공개 조사 내용입니다. 병원에서 요구하는 필수 제출항목이라는 의미는 아닙니다.</p>'
