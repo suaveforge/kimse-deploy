@@ -88,6 +88,13 @@ async function run(){
           gridCols:getComputedStyle(document.querySelector('.kimse-atlas-grid')).gridTemplateColumns.split(' ').length,
           mapScrollable:document.getElementById('kimse-atlas-viewport').scrollWidth>document.getElementById('kimse-atlas-viewport').clientWidth
         }));
+        if(metrics.scrollW>metrics.vw+12){
+          const culprits=await page.evaluate(()=>{
+            const vw=window.innerWidth;
+            return [...document.querySelectorAll('body *')].map(el=>{const box=el.getBoundingClientRect(),cs=getComputedStyle(el);return {tag:el.tagName,id:el.id,cls:typeof el.className==='string'?el.className.slice(0,100):'',right:Math.round(box.right),left:Math.round(box.left),width:Math.round(box.width),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:cs.overflowX,display:cs.display};}).filter(x=>x.right>vw+15&&x.width>0&&x.display!=='none').slice(0,28);
+          });
+          console.error('MOBILE_OVERFLOW_ELEMENTS',JSON.stringify(culprits));
+        }
         assert.ok(metrics.scrollW<=metrics.vw+12,'unexpected body horizontal overflow '+JSON.stringify(metrics));
         assert.equal(metrics.gridCols,1,'mobile map/sidebar should stack');
         assert.ok(metrics.mapScrollable,'mobile map viewport must scroll internally');
