@@ -2608,7 +2608,8 @@ function clinicalPrintableSourceRecords(report){
     +groups.map(group=>{
       const count=group.rows.length;
       const content=count?'<ol>'+group.rows.map(r=>'<li><strong>'+esc(stamp(group.date(r)))+'</strong>'
-        +'<span>'+esc(group.detail(r)||'상세 내용 미입력')+'</span><small>출처: '+esc(group.origin(r))+'</small></li>').join('')+'</ol>'
+        +'<span>'+esc(group.detail(r)||'상세 내용 미입력')+'</span><small>출처: '+esc(group.origin(r))+'</small>'
+        +(r.recorded_at&&stamp(r.recorded_at)!==stamp(group.date(r))?'<small>기록 등록일: '+esc(stamp(r.recorded_at))+'</small>':'')+'</li>').join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
     }).join('')+'</section>';
