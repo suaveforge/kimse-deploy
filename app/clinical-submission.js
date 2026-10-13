@@ -273,7 +273,15 @@
     if(typeof value==='number')return Number.isFinite(value); // 0 is a measured value.
     if(typeof value==='string')return !!value.trim();
     if(Array.isArray(value))return value.some(hasActualValue);
-    if(typeof value==='object')return Object.values(value).some(hasActualValue);
+    if(typeof value==='object'){
+      // A status marker is not the measurement it describes. Preserve true zeros
+      // and explicitly reported normal states, but never turn missing metadata
+      // into a clinical observation or a negative finding.
+      const status=typeof value.status==='string'?value.status.toLowerCase():'';
+      if(['missing','not_collected','not_available','unavailable','unknown','not_recorded','not_observed','not_provided'].includes(status))return false;
+      const metadata=new Set(['status','guard','source_type','evidence_refs','unit','recorded_at','collected_at','updated_at']);
+      return Object.entries(value).some(([key,entry])=>!metadata.has(key)&&hasActualValue(entry));
+    }
     return typeof value==='boolean'; // false is a real observation, not "missing".
   };
   const pathHasRecord=(report,path)=>{
