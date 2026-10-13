@@ -250,6 +250,9 @@ jobs:
             await dp.waitForFunction(()=>document.querySelector('.clinical-visit-brief')?.textContent.includes('Dorset'),null,{timeout:12000});
             check((await dp.locator('.clinical-report-stamp').innerText()).includes('영국'),'uk-print-target-not-mislabeled-as-korean');
             check((await dp.locator('.clinical-visit-brief').innerText()).includes('Dorset'),'uk-public-source-inside-print-page');
+            await dp.waitForFunction(()=>window.KIMSE_CLINICAL_SUBMISSION?.getRequirementsState?.()==='PUBLIC_RESEARCH_LOADED',null,{timeout:12000});
+            await dp.waitForFunction(()=>!!document.querySelector('.clinical-visit-list .clinical-visit-trace a[href^="https://"]'),null,{timeout:12000});
+            check(await dp.locator('#clinical-report-print').isEnabled(),'hospital-print-waits-for-research-crosswalk');
             const printedOrigins=await dp.locator('.clinical-print-source-records').innerText();
             check(printedOrigins.includes('가족·보호자 관찰')&&printedOrigins.includes('외부 검사·의료기록')&&printedOrigins.includes('전문 의료진 평가'),
               'hospital-print-keeps-family-and-professional-source-separate');
