@@ -2187,11 +2187,64 @@ page['brain-trends']=()=>{
 page.account=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">내 계정 / 역할 관리</h1><div class="summary-card"><h3>${S.account.name}님</h3><p>${S.account.email}</p></div><div class="list">${row('사용자','내 건강을 관리하는 역할',`<span class="context-chip">${S.self?'활성':'미등록'}</span>`)}${row('보호자','가족을 돌보는 역할',`<span class="context-chip caregiver">${S.care?'활성':'미등록'}</span>`)}</div><div class="hero-actions"><button class="btn-kimse btn-blue-k" data-add-role="self">+ 사용자 역할 추가</button><button class="btn-kimse btn-secondary-k" data-add-role="care">+ 보호자 역할 추가</button>${btn('역할 전환','switch')}</div>`,{title:'내 계정',narrow:true})};
 page.switch=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="page-title">어떤 화면으로 이동할까요?</h1>${S.self?`<button class="role-card bg-blue" data-mode="self"><span class="avatar-lg">👵</span><span><h3>사용자 화면</h3><p>내 건강을 관리해요.</p></span>${I('chevron-right')}</button>`:''}${S.care?`<button class="role-card bg-pink" data-mode="care"><span class="avatar-lg">👩</span><span><h3>보호자 화면</h3><p>가족을 돌봐요.</p></span>${I('chevron-right')}</button>`:''}${!S.care?notice('보호자 역할이 아직 없어요.','내 계정에서 언제든 추가할 수 있어요.'):''}`,{title:'역할 전환',narrow:true})};
 page.home=()=>{if(!demo())return accountRequired();
-  const day=baselineDay(),d=S.initial.completedAt?initialScores():null,avg=demoAutoRunning&&d?Math.round(Object.values(d).reduce((x,y)=>x+y,0)/5):null,m=avg===null?null:statusMeta(avg),stage=S.stage.summary,sm=observationStageMeta(stage),changes=S.monitoring.summary?.changes||[],ready=S.monitoring.summary?.status==='READY';
-  const baselineClock=baselineTimeProgress();
-  const journey=!S.onboarding.completed?`<div class="summary-card bg-blue"><div class="eyebrow">처음 설정이 아직 남아 있어요</div><h3>생활패턴 확인을 준비해주세요.</h3><p>초기 과제·음성 기준·데이터 동의를 마치면 14일 생활패턴 확인이 시작됩니다.</p><button class="btn-kimse btn-primary-k btn-full mt-3" data-go="${S.onboarding.profileDone?'initial-check':'onboarding-profile'}">설정 이어하기</button></div>`:`<div class="baseline-home-card"><div class="baseline-home-copy"><span class="context-chip">${baselineClock.complete?'14일 시간 경과 완료':'생활패턴 확인 중'}</span><h3>${baselineClock.complete?'14일 시간 확인을 마쳤어요':'생활패턴을 확인하고 있어요'}</h3><p>${baselineClock.complete?'실제로 수집된 생활 데이터를 확인해 주세요.':baselineClock.day+'일째 24시간을 채우는 중이에요.'}</p></div>${baselineMeterHtml(baselineClock)}<button class="btn-kimse btn-secondary-k btn-full" data-go="baseline">14일 진행 보기</button></div>`;
-  const stageCard=S.onboarding.completed?`<button class="summary-card home-stage-summary" data-go="monitoring-status"><div class="eyebrow">낌새가 본 최근 변화</div><div class="d-flex justify-content-between gap-2"><h2>${esc(sm.label)}</h2><span class="context-chip">${esc(STAGE_SUFFICIENCY[stage?.data_sufficiency]||'확인 자료 수집 중')}</span></div><div class="list-row"><span><strong>왜 이렇게 보나요?</strong><small>${esc(stageWhyText(stage,changes))}</small></span></div><div class="list-row"><span><strong>지금 할 일</strong><small>${esc(stagePrimaryActionText(stage))}</small></span>${I('chevron-right')}</div></button>`:''; 
-  return wrap(`<div class="d-flex justify-content-between"><div><span class="context-chip">오늘의 낌새</span><h1 class="page-title">안녕하세요<br>${esc(S.account.name)}님</h1></div><button class="icon-button" data-go="switch" aria-label="역할 전환">${I('switch-horizontal')}</button></div><h2 class="kimse-home-primary-heading">지금 확인할 내용</h2>${journey}${stageCard}<h2 class="kimse-home-primary-heading">자주 쓰는 기능</h2><div class="card-grid kimse-home-actions">${[['🧠','근거 기반 체크','assessment-start','bg-pink'],['🧩','인지 훈련','training','bg-purple'],['💊','복약 관리','medication','bg-amber'],['💚','건강 기록','health','bg-mint']].map(x=>`<a class="action-card ${x[3]}" href="#/${x[2]}"><span class="icon">${x[0]}</span><strong>${x[1]}</strong></a>`).join('')}</div><h2 class="section-title">가족과 함께</h2><a href="#/family" class="list-row"><span><strong>${S.caregivers.length?`연결된 보호자 ${S.caregivers.length}명`:'가족/보호자 연결하기'}</strong><small>가족/보호자 연결은 구독과 별개로 관리할 수 있어요.</small></span>${I('chevron-right')}</a><details class="kimse-home-secondary"><summary>병원 기록과 자세한 정보 보기</summary><div class="kimse-home-secondary-content">${clinicalRecordHomeCard()}${m?`<button class="brain-home-card" data-go="brain-map"><span class="brain-home-icon">🧠</span><span><small>현재 기능 상태 참고</small><strong>${m[0]}</strong><em>기억·주의·언어·공간·일상기능을 함께 봅니다.</em></span>${I('chevron-right')}</button>`:''}</div></details>`,{back:false,bottom:true,active:'home'});
+  const clock=baselineTimeProgress();
+  const stage=S.stage.summary,summary=S.monitoring.summary;
+  const changes=Array.isArray(summary?.changes)?summary.changes:[];
+  const ready=summary?.status==='READY';
+  const enough=ready&&!['LOW','INSUFFICIENT'].includes(stage?.data_sufficiency);
+  const felt=Array.isArray(stage?.basis)&&stage.basis.some(x=>x?.axis==='subjective'&&x?.state==='PRESENT');
+  const stageMeta=observationStageMeta(stage);
+  const headline=enough?stageMeta.label:(felt?'느낀 변화가 기록되어 있어요':'지금은 변화를 판단할 자료가 부족해요');
+  const explanation=enough?stageWhyText(stage,changes):(felt?'본인이나 가족이 평소와 다르다고 느낀 내용은 기록됐습니다. 실제 생활 기록과 비교할 자료는 아직 충분하지 않습니다.':'아직 평소의 생활패턴을 알아가는 중입니다. 자료가 쌓이기 전에는 정상·이상 여부를 판단하지 않습니다.');
+  const progressDone=clock.complete?'14일 시간 경과 완료':'생활패턴 관찰 중';
+  const progressTitle=clock.complete?'14일이 지났어요. 수집된 기록을 확인하세요.':clock.day+'일째, 나의 평소 모습을 알아가고 있어요';
+  const nextAction=enough?'최근 변화 자세히 확인하기':'실제 기록 수집 상태 확인';
+  const progress=S.onboarding.completed?
+    '<section class="kh-home-progress" aria-labelledby="kh-home-progress-title">'+
+      '<div class="kh-card-label">'+I('calendar-clock')+'<span>14일 생활패턴 확인</span></div>'+
+      '<div class="baseline-home-card kh-home-baseline">'+
+        '<div class="baseline-home-copy"><span class="context-chip">'+progressDone+'</span>'+
+          '<h3 id="kh-home-progress-title">'+progressTitle+'</h3>'+
+          '<p>기간이 지난 것과 실제 생활 기록이 수집된 것은 다릅니다.</p></div>'+
+        baselineMeterHtml(clock)+
+        '<button class="btn-kimse btn-secondary-k btn-full" data-go="baseline">14일 진행 상황 보기</button>'+
+      '</div></section>':
+    '<section class="kh-home-setup" aria-labelledby="kh-home-progress-title">'+
+      '<div class="kh-card-label">'+I('clipboard-check')+'<span>첫 사용 준비</span></div>'+
+      '<h2 id="kh-home-progress-title">생활패턴 확인을 시작해 주세요</h2>'+
+      '<p>초기 과제와 데이터 동의를 마치면 14일 관찰을 시작할 수 있습니다.</p>'+
+      '<button class="btn-kimse btn-primary-k btn-full" data-go="'+(S.onboarding.profileDone?'initial-check':'onboarding-profile')+'">설정 이어하기</button></section>';
+  const observation=S.onboarding.completed?
+    '<section class="kh-home-observation" aria-labelledby="kh-home-status-title">'+
+      '<div class="kh-card-label">'+I('activity-heartbeat')+'<span>최근 변화 확인</span></div>'+
+      '<span class="kh-home-badge '+(enough?'is-ready':'is-waiting')+'">'+(enough?'기록 비교 가능':'기록 확인 중')+'</span>'+
+      '<h2 id="kh-home-status-title">'+esc(headline)+'</h2>'+
+      '<p>'+esc(explanation)+'</p>'+
+      (felt&&!enough?'<p class="kh-home-source">본인·가족의 관찰 기록과 시스템이 확인한 변화는 구별해서 보여드립니다.</p>':'')+
+      '<button class="btn-kimse btn-primary-k btn-full" data-go="'+(enough?'monitoring-status':'collection-status')+'">'+nextAction+I('chevron-right')+'</button>'+
+      '</section>':'';
+  const actions=[['brain','근거 기반 체크','assessment-start'],['puzzle','인지 훈련','training'],['pill','복약 관리','medication'],['heart-handshake','건강 기록','health']];
+  return wrap(
+    '<header class="kh-home-intro">'+
+      '<div><span class="kh-home-eyebrow">오늘의 낌새</span><h1 class="page-title">안녕하세요, '+esc(S.account.name)+'님</h1>'+
+      '<p>평소와 달라진 점을 알아보기 쉽게 확인하세요.</p></div>'+
+      '<button class="kh-home-switch" type="button" data-go="switch" aria-label="본인과 보호자 화면 전환">'+I('switch-horizontal')+'<span>화면 전환</span></button>'+
+    '</header>'+
+    '<div class="kh-home-grid">'+progress+observation+'</div>'+
+    '<section class="kh-home-tools" aria-labelledby="kh-home-tools-title">'+
+      '<h2 id="kh-home-tools-title">자주 쓰는 기능</h2>'+
+      '<div class="kh-home-action-grid">'+actions.map(x=>
+         '<a href="#/'+x[2]+'" class="kh-home-action">'+I(x[0])+'<strong>'+x[1]+'</strong>'+I('chevron-right')+'</a>'
+       ).join('')+'</div></section>'+
+    '<section class="kh-home-family" aria-labelledby="kh-home-family-title">'+
+      '<h2 id="kh-home-family-title">가족과 함께</h2>'+
+      '<a href="#/family" class="kh-home-family-link">'+I('users')+
+         '<span><strong>'+(S.caregivers.length?'연결된 보호자 '+S.caregivers.length+'명':'가족·보호자 연결하기')+'</strong><small>가족 공유는 동의한 범위 안에서 이루어집니다.</small></span>'+I('chevron-right')+'</a>'+
+    '</section>'+
+    '<details class="kimse-home-secondary kh-home-more"><summary>병원 기록과 자세한 정보</summary>'+
+      '<div class="kimse-home-secondary-content">'+clinicalRecordHomeCard()+'</div></details>'+
+    '<p class="kh-home-disclaimer">낌새는 일상 변화를 관찰하도록 돕는 서비스이며, 의료 진단을 대신하지 않습니다.</p>',
+    {back:false,bottom:true,active:'home'});
 };
 page['assessment-start']=()=>{const a=EVIDENCE_MODEL?.activeModel;if(!a)return wrap(`<h1 class="page-title">근거 모델을 불러오지 못했습니다</h1>${notice('점수를 추정하지 않습니다.','근거 레지스트리를 다시 불러온 뒤 이용해주세요.')}`,{title:'근거 기반 체크',narrow:true});return wrap(`<div class="eyebrow">근거 기반 위험요인 체크</div><h1 class="page-title">앞으로의 인지건강 위험요인 확인</h1><p class="page-desc">7가지 건강·생활 항목을 살펴봅니다. 지금 치매인지 판단하는 검사는 아닙니다.</p><div class="context-chip">연구모델: ${esc(a.name)}</div>${row('확인 항목',a.factors.map(f=>f.label).join(' · '),a.factors.length+'개')}${row('점수 계산',a.combination.rule,'최대 '+a.combination.maxScore+'점')}${notice('공개 검증된 원 점수체계를 사용합니다.','이 점수는 장기 위험요인 연구모델이며 치매 진단이나 현재 인지상태 판정이 아닙니다.')}<button id="begin" class="btn-kimse btn-primary-k btn-full">7가지 항목 확인하기</button>`,{title:'근거 기반 체크',narrow:true})};
 page.assessment=()=>{if(!Q.length)return page['assessment-start']();let i=Math.min(S.q,Q.length-1),q=Q[i];return wrap(`<strong>위험요인 체크 ${i+1}/${Q.length}</strong><div class="progress-k mt-2"><span style="width:${(i+1)/Q.length*100}%"></span></div><div class="eyebrow mt-4">${q.label}</div><h1 class="page-title">${q.question}</h1><p class="page-desc">가장 가까운 답을 누르면 다음 질문으로 넘어가요.</p><div class="answer-grid">${q.options.map((x,j)=>`<button class="answer" data-answer="${j}" aria-pressed="${S.answers[i]===j}">${x.label}</button>`).join('')}</div>${i>0?'<button type="button" class="kimse-answer-back" data-assessment-prev>← 이전 질문</button>':''}`,{title:'근거 기반 체크',narrow:true})};
