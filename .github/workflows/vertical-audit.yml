@@ -42,6 +42,8 @@ jobs:
           cp qa-artifacts/ux-vertical/collection-status-1440-normal.png qa-previews/ux-vertical/1440-collection.png
           cp qa-artifacts/ux-vertical/monitoring-status-375-normal.png qa-previews/ux-vertical/375-monitoring.png
           cp qa-artifacts/ux-vertical/baseline-375-normal.png qa-previews/ux-vertical/375-baseline.png
+          cp qa-artifacts/ux-vertical/audit-market.png qa-previews/ux-vertical/375-market.png
+          cp qa-artifacts/ux-vertical/audit-settings.png qa-previews/ux-vertical/375-settings.png
           cp qa-artifacts/ux-vertical/report.json qa-previews/ux-vertical/report.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
