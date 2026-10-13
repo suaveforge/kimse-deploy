@@ -1,0 +1,35 @@
+name: KIMSE Home Preview Branch
+on:
+  push:
+    branches: [ux-home-evidence-20261013]
+    paths:
+      - 'app.js'
+      - 'app/app.js'
+      - 'senior-journey.css'
+      - 'app/senior-journey.css'
+      - 'tests/home-branch-preview.cjs'
+      - '.github/workflows/home-branch-preview.yml'
+permissions:
+  contents: read
+jobs:
+  home-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser
+        run: |
+          npm install --prefix "$RUNNER_TEMP/kh-preview" playwright@1.55.0 --no-audit --no-fund
+          "$RUNNER_TEMP/kh-preview/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Capture actual app preview
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/kh-preview.log 2>&1 &
+          sleep 2
+          node tests/home-branch-preview.cjs
+      - name: Upload preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-actual-home-preview
+          path: qa-artifacts/home-preview/
+          if-no-files-found: ignore
