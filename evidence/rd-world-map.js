@@ -47,6 +47,13 @@
           '<div class="kimse-atlas-institutions" id="kimse-atlas-institutions"><div class="kimse-atlas-empty">세계지도에서 국가를 선택하면 적합성 평가 대상과 근거가 표시됩니다.</div></div>' +
         '</aside>' +
       '</div>' +
+      '<section class="kimse-atlas-progress" aria-labelledby="kimse-progress-title">' +
+        '<div class="kimse-atlas-progress-head"><div><div class="kimse-atlas-kicker">INSTITUTION PROGRESS · UPDATED 2026.10.13</div><h3 id="kimse-progress-title">기관별 진행 단계</h3><p>후보 검토 → 공식 문의·접수 → 자료 회신 → 별도 사업화 협의. 단계는 실제 발송·답변 증거 기준이며 구매·제휴 확정과 구분합니다.</p></div><div class="kimse-atlas-progress-total" id="kimse-progress-total">기관 원장 확인 중</div></div>' +
+        '<div class="kimse-progress-overview" id="kimse-progress-overview" aria-label="기관 단계별 건수"></div>' +
+        '<div class="kimse-progress-tools"><label for="kimse-progress-stage">진행상태<select id="kimse-progress-stage"><option value="">전체 단계</option></select></label><label for="kimse-progress-country">국가·지역<select id="kimse-progress-country"><option value="">전체 국가·지역</option></select></label><label class="kimse-progress-query-label" for="kimse-progress-search">기관 검색<input type="search" id="kimse-progress-search" placeholder="기관명 · 국가명 · 접수번호" autocomplete="off"></label></div>' +
+        '<div class="kimse-progress-table-scroll"><table class="kimse-progress-table"><thead><tr><th scope="col">기관 · 국가</th><th scope="col">현재 단계</th><th scope="col">확인 근거</th><th scope="col">다음 행동</th><th scope="col">협력·매출</th></tr></thead><tbody id="kimse-progress-rows"><tr><td colspan="5">진행 데이터를 불러오는 중입니다.</td></tr></tbody></table></div>' +
+        '<div class="kimse-progress-legal">상태 표시는 낌새가 수행한 자료조사·발송·FOI 접수·연구정보 회신만 반영합니다. 모든 기관의 사업협력·구매의향·임상검증은 미확인입니다. 승인만 받은 웹양식 9건은 <strong>미제출</strong>로 표시합니다. 개인 이메일과 내부 메일 식별자는 공개하지 않습니다.</div>' +
+      '</section>' +
       '<div class="kimse-atlas-foot"><strong>상태·영향력 표시 기준</strong> · ‘검토 예정’과 ‘적합성 검토 중’은 낌새의 내부 후보 평가입니다. 자료요청 발송·접수 확인은 실제 기록 기준이며, 외부 기관의 승인·보증·제휴나 협의 착수를 뜻하지 않습니다. ISO 3166-1 기준 249개 국가·지역이 검토대상이며, 현재 기관이 등록된 곳은 24개 국가·지역입니다. 영향력 A/B/C는 기관 유형과 공개 연구·거래 근거를 토대로 한 낌새 내부 참고 분류이며 독립적 공식 순위가 아닙니다. 도시 핀은 기관 건물의 정확한 위치가 아닌 도시 중심 참고좌표입니다. 지도 경계는 Natural Earth 50m 우선·110m 대체 경계이며, 작은 국가·영역은 선택 목록에서 확인할 수 있습니다.</div>' +
     '</div>';
   mount.insertBefore(root,mount.firstChild);
@@ -66,9 +73,15 @@
     });
   }
   function norm(x) { return String(x == null?'':x).toLocaleLowerCase(); }
-  function isContact(x) { return !!(x && /^INFORMATION_REQUEST_/.test(x.stage)); }
+  function isContact(x) { return !!(x && x.progress && x.progress.contactStatus!=='IDENTIFIED_NOT_CONTACTED'); }
   function stageClass(x) {
-    return isContact(x) ? 'status-request' : x.stage==='CANDIDATE_FIT_PRELIMINARY'?'status-screen':'status-review';
+    var name=x&&x.stage||'';
+    if(name==='FORMAL_FOI_REGISTERED')return 'status-registered';
+    if(name==='RESEARCH_METHODS_RESPONSE_RECEIVED')return 'status-research';
+    if(name==='AUTOMATED_ACK_ONLY')return 'status-ack';
+    if(name==='INFORMATION_REQUEST_SENT')return 'status-request';
+    if(name==='FOI_FORM_APPROVED_NOT_SUBMITTED')return 'status-pending-form';
+    return name==='CANDIDATE_FIT_PRELIMINARY'?'status-screen':'status-review';
   }
   function fromNumeric(id) { return String(id == null?'':id).padStart(3,'0'); }
   function selectedRecords(id) {
@@ -90,9 +103,51 @@
     var total=state.data.institutions.length, countries=new Set(state.data.institutions.map(function(x){return x.countryNumeric;})).size;
     var screening=state.data.institutions.filter(function(x){return x.stage==='CANDIDATE_FIT_PRELIMINARY'}).length;
     var sent=state.data.institutions.filter(isContact).length;
+    var formal=state.data.institutions.filter(function(x){return x.stage==='FORMAL_FOI_REGISTERED'}).length;
+    var methods=state.data.institutions.filter(function(x){return x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'}).length;
     document.getElementById('kimse-atlas-stats').innerHTML=[
-      ['등록 후보기관',total,'곳'],['기관 등록 국가·지역',countries,'곳'],['세계 검토대상',state.data.isoMasterCount||0,'개'],['적합성 검토 중',screening,'곳'],['공식 자료요청 발송',sent,'건']
+      ['전체 후보기관',total,'곳'],['등록 국가·지역',countries,'곳'],['정보요청 발송',sent,'곳'],['공식 FOI 접수',formal,'곳'],['연구방법 답변',methods,'곳']
     ].map(function(a){return '<div class="kimse-atlas-stat"><small>'+safe(a[0])+'</small><strong>'+a[1]+'<em>'+safe(a[2])+'</em></strong></div>'}).join('');
+  }
+  function setupProgressFilters() {
+    var stageEl=document.getElementById('kimse-progress-stage'), countryEl=document.getElementById('kimse-progress-country');
+    if(!stageEl || !countryEl)return;
+    stageEl.innerHTML='<option value="">전체 단계</option>'+(state.data.progressStages||[]).map(function(x){return '<option value="'+safe(x.code)+'">'+safe(x.label)+' ('+Number(x.count||0)+')</option>'}).join('');
+    var countries=new Map();
+    state.data.institutions.forEach(function(x){var z=countries.get(x.countryNumeric)||{numeric:x.countryNumeric,name:x.countryName,count:0};z.count++;countries.set(x.countryNumeric,z)});
+    countryEl.innerHTML='<option value="">전체 국가·지역</option>'+Array.from(countries.values()).sort(function(a,b){return b.count-a.count||a.name.localeCompare(b.name)}).map(function(x){return '<option value="'+safe(x.numeric)+'">'+safe(x.name)+' · '+x.count+'곳</option>'}).join('');
+    ['kimse-progress-stage','kimse-progress-country','kimse-progress-search'].forEach(function(id){var el=document.getElementById(id);el.addEventListener(id==='kimse-progress-search'?'input':'change',renderProgress)});
+    document.getElementById('kimse-progress-overview').addEventListener('click',function(event){var node=event.target.closest('button[data-stage]');if(!node)return;stageEl.value=stageEl.value===node.getAttribute('data-stage')?'':node.getAttribute('data-stage');renderProgress();});
+  }
+  function renderProgress() {
+    if(!state.data)return;
+    var stageEl=document.getElementById('kimse-progress-stage'),countryEl=document.getElementById('kimse-progress-country'),searchEl=document.getElementById('kimse-progress-search');
+    if(!stageEl||!countryEl||!searchEl)return;
+    var stages=state.data.progressStages||[];
+    document.getElementById('kimse-progress-overview').innerHTML=stages.map(function(p){
+      return '<button type="button" class="kimse-progress-metric '+(stageEl.value===p.code?'is-selected':'')+'" data-stage="'+safe(p.code)+'" aria-pressed="'+(stageEl.value===p.code?'true':'false')+'"><strong>'+Number(p.count||0)+'</strong><span>'+safe(p.label)+'</span></button>';
+    }).join('');
+    var phrase=norm(searchEl.value).trim(),filtered=state.data.institutions.filter(function(x){
+      if(stageEl.value && x.stage!==stageEl.value)return false;
+      if(countryEl.value && x.countryNumeric!==countryEl.value)return false;
+      var p=x.progress||{};
+      return !phrase||norm([x.name,x.countryName,x.stageLabel,p.formalFOIRef,x.sector].join(' ')).includes(phrase);
+    });
+    filtered.sort(function(a,b){return (b.progress?.order||0)-(a.progress?.order||0)||a.name.localeCompare(b.name)});
+    document.getElementById('kimse-progress-total').textContent=filtered.length+' / '+state.data.institutions.length+'개 기관 · 기준 2026.10.13';
+    var body=document.getElementById('kimse-progress-rows');
+    if(!filtered.length){body.innerHTML='<tr><td colspan="5" class="kimse-progress-noresults">검색조건에 맞는 기관이 없습니다.</td></tr>';return;}
+    body.innerHTML=filtered.map(function(x){
+      var p=x.progress||{},ref=p.formalFOIRef?'<div class="kimse-progress-reference">접수번호 '+safe(p.formalFOIRef)+'</div>':'';
+      var deadline=p.formalResponseDeadline?'<div class="kimse-progress-deadline">답변 예정 '+safe(p.formalResponseDeadline)+'</div>':'';
+      var evidence=p.formalFOIRef?'공식 FOI 접수번호 확인':x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'?'기관 연구방법 회신':x.stage==='AUTOMATED_ACK_ONLY'?'자동 확인메일 · 정식 접수 미확정':x.stage==='INFORMATION_REQUEST_SENT'?'회사메일 전송 · 답변 대기':x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED'?'사용자 승인 · 실제 제출 전':'공식 담당·연구 근거 검토';
+      var phase=p.phase===2?'2단계 · 자료 검토':p.phase===1?'1단계 · 자료요청':'0단계 · 접촉 준비';
+      return '<tr><td><strong>'+safe(x.name)+'</strong><small>'+safe(x.countryName)+' · '+safe(x.sector)+'</small></td>'+
+        '<td><span class="kimse-atlas-chip '+stageClass(x)+'">'+safe(x.stageLabel)+'</span><small>'+safe(phase)+'</small></td>'+
+        '<td>'+safe(evidence)+ref+deadline+'</td>'+
+        '<td>'+safe(p.nextAction||'근거 확인 후 진행')+(p.approvedWebFormNotSubmitted && /^https:\/\//.test(p.formURL||'')?'<div class="kimse-progress-form-link"><a href="'+safe(p.formURL)+'" target="_blank" rel="noopener noreferrer">공식 FOI 양식 열기 ↗</a></div>':'')+'</td>'+
+        '<td><span class="kimse-progress-unverified">협력 미확정</span><small>구매·계약 증거 0</small></td></tr>';
+    }).join('');
   }
   function nameFor(id) {
     var sample=state.data.institutions.find(function(x){return x.countryNumeric===id;});
@@ -120,17 +175,19 @@
     var arr=selectedRecords(id).filter(function(x){
       return !query || norm([x.name,x.sector,x.city,x.authority,x.stageLabel].join(' ')).includes(query);
     });
-    arr.sort(function(a,b){var s=function(x){return isContact(x)?3:x.stage==='CANDIDATE_FIT_PRELIMINARY'?2:1};return s(b)-s(a)||a.name.localeCompare(b.name)});
+    arr.sort(function(a,b){return (b.progress?.order||0)-(a.progress?.order||0)||a.name.localeCompare(b.name)});
     if(!sum.all){list.innerHTML='<div class="kimse-atlas-empty"><strong>검토 예정</strong><p>현재 기관 원장에 등록된 조사 대상은 없습니다. 등록 기관이 없다는 것은 해당 국가에 적합한 기관이 없다는 뜻이 아닙니다.</p></div>';return;}
     if(!arr.length){list.innerHTML='<div class="kimse-atlas-empty">검색조건에 맞는 기관이 없습니다.</div>';return;}
     list.innerHTML=arr.map(function(x){
       var source=x.sourceURL && /^https:\/\//.test(x.sourceURL) ? '<a class="kimse-atlas-source" href="'+safe(x.sourceURL)+'" rel="noopener noreferrer" target="_blank">연구·거래 근거 보기 ↗</a>':'<span class="kimse-atlas-location">기관별 근거 확인 대상</span>';
       var place=x.city?'<div class="kimse-atlas-location">📍 '+safe(x.city)+' · 도시 단위 참고점</div>':'<div class="kimse-atlas-location">위치 확인 중 · 국가 단위 등록</div>';
       var desc=x.sourceScope?'<p class="kimse-atlas-excerpt">'+safe(x.sourceScope)+'</p>':'';
+      var progress=x.progress||{};
+      var trace='<div class="kimse-atlas-progress-line"><strong>'+(progress.phase===2?'2단계':progress.phase===1?'1단계':'0단계')+'</strong> · '+safe(progress.nextAction||'기관별 자료 확인 중')+'</div>'+(progress.formalFOIRef?'<div class="kimse-atlas-foi-ref">공식 FOI 접수번호: '+safe(progress.formalFOIRef)+'</div>':'');
       return '<article class="kimse-atlas-institution" id="kimse-atlas-inst-'+safe(x.id)+'"><h4>'+safe(x.name)+'</h4><div class="kimse-atlas-chiprow">'+
         '<span class="kimse-atlas-chip '+stageClass(x)+'">'+safe(x.stageLabel)+'</span>'+
         '<span class="kimse-atlas-chip">'+safe(x.sector)+'</span>'+
-        '<span class="kimse-atlas-chip tier-'+safe(norm(x.authorityTier))+'" title="낌새 내부 평가용 영향력 분류 · 외부 공식 순위가 아닙니다">영향력 '+safe(x.authorityTier)+' · '+safe(x.authorityTierDescription)+'</span></div>'+place+desc+source+'</article>';
+        '<span class="kimse-atlas-chip tier-'+safe(norm(x.authorityTier))+'" title="낌새 내부 평가용 영향력 분류 · 외부 공식 순위가 아닙니다">영향력 '+safe(x.authorityTier)+' · '+safe(x.authorityTierDescription)+'</span></div>'+place+trace+desc+source+'</article>';
     }).join('');
   }
   function renderPins() {
@@ -240,11 +297,13 @@
   }
   async function start() {
     try {
-      var r=await fetch('./rd-world-map-data.json?v=20261010-globalatlas',{cache:'no-store'});
+      var r=await fetch('./rd-world-map-data.json?v=20261013-institution-stage1',{cache:'no-store'});
       if(!r.ok)throw new Error('기관 자료 HTTP '+r.status);
       state.data=await r.json();
       if(!state.data||!Array.isArray(state.data.institutions)||state.data.institutions.length!==state.data.total)throw new Error('기관 원장 자료 무결성 오류');
       renderStats();
+      setupProgressFilters();
+      renderProgress();
       enableControls();
       try{
         var topo=await jsonFallback(['https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json','https://unpkg.com/world-atlas@2/countries-50m.json','https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json']);
