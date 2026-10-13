@@ -582,10 +582,45 @@
     if(/가정의학|내과|family medic|primary care|general practic|総合診療|内科/.test(raw))return 'PRIMARY_CARE';
     return 'UNSPECIFIED';
   };
+  // Editorial terminology aids for patient-carried print only. Do not present
+  // these human-drafted glosses as certified translations or hospital templates.
+  const clinicalTermDraft=Object.freeze({
+    en:Object.freeze({
+      consultation_reason:'Reason for visit or referral',
+      onset_trajectory:'First observed change and course (not disease onset)',
+      longitudinal_signals:'Personal-baseline sleep, activity, mobility and speech changes',
+      cognitive_history:'Cognitive observations and repeated app tasks',
+      function_independence:'Daily activities (ADL/IADL) and safety concerns',
+      informant_history:'Family or caregiver observations and discrepancies',
+      mood_neuropsychiatric:'Mood, behavior and neuropsychiatric context',
+      sensory_motor:'Hearing, vision, gait and motor context',
+      medication_reversible_context:'Medication, illness, delirium and reversible factors',
+      professional_assessments:'Previously documented professional assessments',
+      external_records:'Existing investigations, imaging and referral records',
+      coverage_provenance:'Collection gaps and data provenance'
+    }),
+    ja:Object.freeze({
+      consultation_reason:'受診・紹介の理由',
+      onset_trajectory:'最初に観察された変化と経過（発症日ではありません）',
+      longitudinal_signals:'個人の基準値からの睡眠・活動・移動・発話の変化',
+      cognitive_history:'認知機能に関する観察とアプリ内の反復課題',
+      function_independence:'日常生活動作（ADL・IADL）と安全上の懸念',
+      informant_history:'家族・介護者の観察および本人との認識の違い',
+      mood_neuropsychiatric:'気分・行動・精神症状に関する情報',
+      sensory_motor:'聴覚・視覚・歩行・運動に関する情報',
+      medication_reversible_context:'薬剤・疾病・急性の混乱・可逆的な要因',
+      professional_assessments:'医療従事者による既存の評価結果',
+      external_records:'既存の検査・画像・紹介状の記録',
+      coverage_provenance:'未収集期間とデータの出所'
+    })
+  });
+  const countryDraftLang=Object.freeze({KR:'ko',GB:'en',US:'en',CA:'en',AU:'en',JP:'ja'});
   const buildCountryPriority=(report,country,department)=>{
     const profile=countryPublicClinicalPriority[country];
     if(!profile)return null;
     const specialtyFocus=classifySpecialty(department);
+    const terminologyLanguage=countryDraftLang[country]||'ko';
+    const terms=clinicalTermDraft[terminologyLanguage]||null;
     const order=specialtyOrder[specialtyFocus]||[];
     const ranked=profile.priorities.slice();
     if(order.length){
@@ -601,11 +636,13 @@
     }
     return Object.freeze({
       profileName:profile.profileName,country,specialtyFocus,
+      terminologyLanguage,terminologyStatus:terms?'EDITORIAL_DRAFT_NOT_VALIDATED':'KOREAN_SOURCE',
       orderingBasis:specialtyFocus==='UNSPECIFIED'?'COUNTRY_PUBLIC_GUIDELINE_ONLY':'USER_ENTERED_SPECIALTY_EDITORIAL_PRIORITY',
       providerApproved:false,clinicianApproved:false,
       officialTranslationVerified:false,
       priorities:Object.freeze(ranked.map(row=>Object.freeze({
-        ...row,recorded:pathHasRecord(report,row.path)
+        ...row,recorded:pathHasRecord(report,row.path),
+        draftTerm:terms?(terms[row.id]||null):null
       }))),
       guidelineSources:Object.freeze(profile.sources.map(row=>Object.freeze({...row}))),
       note:'국가 공개 임상지침을 참고한 정보 확인 순서이며, 전문의 개인 선호·병원 승인 양식이 아닙니다. 없는 자료는 정상으로 판단하지 않습니다.'
