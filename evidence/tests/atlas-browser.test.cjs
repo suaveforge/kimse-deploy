@@ -50,6 +50,10 @@ async function run(){
       assert.equal(await page.locator('#kimse-progress-rows tr').count(),61,'stage zero institution count');
       await page.selectOption('#kimse-progress-phase','');
       assert.match(await page.locator('#kimse-progress-total').innerText(),/92 \/ 92/,'institution table total');
+      await page.selectOption('#kimse-progress-stage','FIRST_CONTACT_ROUTE_VERIFIED_UNSENT');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),17,'17 ready-for-review unsent official routes');
+      assert.equal(await page.locator('#kimse-progress-rows a[href^="https://"]').count(),17,'all confirmed initial-enquiry channels link official institutions');
+      assert.match(await page.locator('#kimse-progress-rows').innerText(),/0단계/,'route verified institutions remain P0');
       await page.selectOption('#kimse-progress-stage','FORMAL_FOI_REGISTERED');
       assert.equal(await page.locator('#kimse-progress-rows tr').count(),15,'fifteen formal FOI registrations');
       await page.selectOption('#kimse-progress-stage','FOI_FORM_APPROVED_NOT_SUBMITTED');
