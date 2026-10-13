@@ -2644,12 +2644,24 @@ function clinicalInformantSummary(rows){
   if(!feedback.length)return '<div class="clinical-chart-empty">가족/Informant 확인 기록이 없습니다. 없는 기록을 “변화 없음”으로 간주하지 않습니다.</div>';
   const labels={CONFIRMED:'변화 확인',NO_CHANGE:'특별한 변화 확인 안 됨',UNKNOWN:'판단 어려움'};
   const actions={CALL:'전화 확인',MESSAGE:'메시지 확인',VISIT:'직접 방문',CONSULT:'상담',HOSPITAL:'의료기관 방문',NONE:'후속 행동 없음'};
-  return '<div class="clinical-informant-list">'+feedback.slice(0,8).map(x=>'<div class="clinical-informant-row"><div><span>'+esc(String(x.feedback_at||'').slice(0,10))+'</span><strong>'+esc(labels[x.assessment]||x.assessment||'가족 확인')+'</strong>'+(x.note?'<p>'+esc(x.note)+'</p>':'')+'</div><small>'+esc(actions[x.action_taken]||x.action_taken||'')+'</small></div>').join('')+'</div>';
+  const list=items=>'<div class="clinical-informant-list">'+items.map(x=>'<div class="clinical-informant-row"><div><span>'+esc(String(x.feedback_at||'').slice(0,10))+'</span><strong>'+esc(labels[x.assessment]||x.assessment||'가족 확인')+'</strong>'+(x.note?'<p>'+esc(x.note)+'</p>':'')+'</div><small>'+esc(actions[x.action_taken]||x.action_taken||'')+'</small></div>').join('')+'</div>';
+  const initial=feedback.slice(0,8),rest=feedback.slice(8);
+  return '<p class="clinical-microcopy">가족·보호자 보고 '+feedback.length+'건 · 진단/정상 소견과 구분</p>'+list(initial)
+    +(rest.length?'<details class="clinical-more-informant"><summary>그 외 가족·보호자 보고 '+rest.length+'건 모두 보기</summary>'+list(rest)+'</details>':'');
 }
 function clinicalQualitySummary(metrics){
   const rows=(metrics||[]).filter(x=>x?.quality);
   if(!rows.length)return '<div class="clinical-chart-empty">데이터 품질을 계산할 종단 신호가 없습니다.</div>';
-  return '<div class="clinical-quality-grid">'+rows.map(x=>{const pct=Math.max(0,Math.min(100,Math.round(Number(x.quality?.calendar_day_coverage||0)*100)));return '<div class="clinical-quality-row"><div><strong>'+esc(x.clinical_label||SIGNAL_LABELS[x.metric]||x.metric)+'</strong><span>'+esc(String(x.quality?.valid_days??0))+'/'+esc(String(x.quality?.expected_calendar_days??0))+'일 · 누락 '+esc(String(x.quality?.missing_calendar_days??0))+'일</span></div><div class="clinical-quality-track" role="img" aria-label="'+esc((x.clinical_label||x.metric)+' 기록일 coverage '+pct+'%')+'"><i style="width:'+pct+'%"></i></div><b>'+pct+'%</b></div>'}).join('')+'</div>';
+  return '<div class="clinical-quality-grid">'+rows.map(x=>{
+    const q=x.quality||{},coverage=clinicalFiniteNumber(q.calendar_day_coverage),valid=clinicalFiniteNumber(q.valid_days),
+      expected=clinicalFiniteNumber(q.expected_calendar_days),missing=clinicalFiniteNumber(q.missing_calendar_days);
+    const pct=coverage===null?null:Math.max(0,Math.min(100,Math.round(coverage*100)));
+    const ratio=valid===null||expected===null?'기록일 자료 없음':valid+'/'+expected+'일';
+    const gap=missing===null?'누락일 자료 없음':'누락 '+missing+'일';
+    const pctText=pct===null?'자료 없음':pct+'%';
+    const bar=pct===null?'':'<i style="width:'+pct+'%"></i>';
+    return '<div class="clinical-quality-row"><div><strong>'+esc(x.clinical_label||SIGNAL_LABELS[x.metric]||x.metric)+'</strong><span>'+esc(ratio)+' · '+esc(gap)+'</span></div><div class="clinical-quality-track" role="img" aria-label="'+esc((x.clinical_label||x.metric)+' 기록일 coverage '+pctText)+'">'+bar+'</div><b>'+pctText+'</b></div>';
+  }).join('')+'</div>';
 }
 function clinicalCooccurrenceView(r){
   const metricMap=Object.fromEntries(((r?.monitoring?.metrics)||[]).map(x=>[x.metric,x]));
