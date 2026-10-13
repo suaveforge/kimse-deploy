@@ -2178,8 +2178,8 @@
       "countryEnglish": "South Korea",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.kci.go.kr/kciportal/landing/article.kci?arti_id=ART002284661",
       "sourceScope": null,
       "city": "Seoul",
@@ -2192,9 +2192,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -2205,10 +2205,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 연구 문의 경로 검증 · 기존 V4 문안 최종 발송 승인 대기 (미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "sendApproved": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_GAAIN_REGISTERED_KBASE_STUDY_CONTACT",
+        "contactRouteURL": "https://www.gaaindata.org/partner/KBASE"
       }
     },
     {
@@ -2567,8 +2571,8 @@
       "countryEnglish": "United States",
       "sector": "제약·산업",
       "authority": "산업 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://content.cambridgecognition.com/case-studies/project-intuition",
       "sourceScope": "Project Intuition with Cambridge Cognition used repeated device-based remote cognitive tests, around 23k participants; study participation does not prove KIMSE demand.",
       "city": "Cambridge, MA",
@@ -2581,9 +2585,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -2594,10 +2598,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 연구 문의 경로 검증 · 기존 V4 문안 최종 발송 승인 대기 (미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "sendApproved": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_BIOGEN_CLINICAL_RESEARCH_INITIAL_ENQUIRY_EMAIL",
+        "contactRouteURL": "https://www.biogen.com/science-and-innovation/clinical-trials.html"
       }
     },
     {
@@ -3039,8 +3047,8 @@
       "countryEnglish": "Germany",
       "sector": "임상·코호트",
       "authority": "연구 영향력",
-      "stage": "CANDIDATE_FIT_PRELIMINARY",
-      "stageLabel": "적합성 검토 중",
+      "stage": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
+      "stageLabel": "공식 문의경로 확인 · 미발송",
       "sourceURL": "https://www.dzne.de/en/research/studies/clinical-studies/prospect-ad/",
       "sourceScope": "DZNE DELCODE long-term observational AD/SCD/MCI study and PROSPECT-AD speech validation; not an identified external Korean cohort purchaser.",
       "city": "Bonn",
@@ -3053,9 +3061,9 @@
       "authorityTierDescription": "국제 산업·연구 코호트",
       "progress": {
         "phase": 0,
-        "phaseLabel": "P0 후보 검증",
-        "order": 11,
-        "stageCode": "CANDIDATE_FIT_PRELIMINARY",
+        "phaseLabel": "P0 1차 문의 준비",
+        "order": 26,
+        "stageCode": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
         "asOf": "2026-10-13",
         "contactStatus": "IDENTIFIED_NOT_CONTACTED",
@@ -3066,10 +3074,14 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "담당자·공식 경로·거래 근거 검증 후 별도 발송 승인",
+        "nextAction": "공식 공개 연구 문의 경로 검증 · 기존 V4 문안 최종 발송 승인 대기 (미발송)",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": false
+        "requestSent": false,
+        "sendApproved": false,
+        "routeVerified": true,
+        "routeType": "OFFICIAL_DZNE_DELCODE_LEAD_SCIENTIFIC_CONTACT",
+        "contactRouteURL": "https://www.dzne.de/en/research/research-areas/clinical-research/research-groups/jessen/research-areasfocus/"
       }
     },
     {
@@ -4932,7 +4944,7 @@
     {
       "code": "CANDIDATE_FIT_PRELIMINARY",
       "label": "적합성 검토 중",
-      "count": 14
+      "count": 11
     },
     {
       "code": "AUTOMATED_ACK_ONLY",
@@ -4942,7 +4954,7 @@
     {
       "code": "FIRST_CONTACT_ROUTE_VERIFIED_UNSENT",
       "label": "공식 문의경로 확인 · 미발송",
-      "count": 31
+      "count": 34
     },
     {
       "code": "RESEARCH_METHODS_RESPONSE_RECEIVED",
@@ -4966,7 +4978,7 @@
     }
   ],
   "routeReview20261013": {
-    "verifiedFirstEnquiryUnsent": 31,
+    "verifiedFirstEnquiryUnsent": 34,
     "previouslyVerified": 17,
     "additionalVerified": 13,
     "newOutreachSends": 0,
@@ -4975,6 +4987,8 @@
     "actualAdditionalSent": 0,
     "sourceOfTruth": "Current institution-level evidence, no public partner or purchasing claims",
     "newOfficialWrittenFrom11": 1,
-    "officialContactRefNewlyReconciled": 2
+    "officialContactRefNewlyReconciled": 2,
+    "newlyVerifiedCurrentCheck": 3,
+    "remainingRouteOrSubmissionBlockers": 27
   }
 }
