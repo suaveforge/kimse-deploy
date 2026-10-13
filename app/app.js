@@ -2585,6 +2585,9 @@ function clinicalCooccurrenceView(r){
 // It never treats an absent record as a normal examination or a user statement
 // as a verified clinician finding. Keep the whole record on the interactive view.
 function clinicalPrintableSourceRecords(report){
+  // The generic clinician briefing is intentionally a single A4 sheet.
+  // After a public hospital is selected, an accompanying source annex is printed.
+  if(!window.KIMSE_CLINICAL_SUBMISSION?.getSelection?.()?.institutionId)return '';
   const safe=rows=>Array.isArray(rows)?rows:[];
   const stamp=value=>value?String(value).slice(0,10):'기록일 미입력';
   const joined=parts=>parts.filter(x=>x!==null&&x!==undefined&&x!=='').map(String).join(' · ');
