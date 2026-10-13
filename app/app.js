@@ -2098,7 +2098,7 @@ page.baseline=()=>{
     '<div class="baseline-milestone-rail"><span class="'+(day>=1?'on':'')+'"><b>1일</b>시작</span><i></i><span class="'+(day>=7?'on':'')+'"><b>7일</b>첫 주 확인</span><i></i><span class="'+(baselineComplete()?'on':'')+'"><b>14일</b>시간 완료</span></div>'+
     (baselineComplete()?'<div class="hero-actions"><button class="btn-kimse btn-primary-k" data-go="monitoring-status">최근 변화 보기</button></div>':'')+
     '<div class="hero-actions"><button class="btn-kimse btn-secondary-k btn-full" data-go="collection-status">오늘 수집 상태 확인</button></div>'+
-    '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다. 앱을 닫은 동안의 위치·움직임은 현재 PWA에서 계속 측정할 수 없습니다.</p>',
+    '<p class="screen-footnote">14일 확인이 끝나기 전에는 변화 알림을 만들지 않습니다. 현재 웹앱은 화면을 닫으면 위치와 움직임을 계속 측정하지 못합니다.</p>',
     {title:'생활패턴 확인',narrow:true,overview:true}
   );
 };
@@ -2157,12 +2157,12 @@ page['collection-status']=()=>{
   return wrap(
     '<div class="eyebrow">오늘 · 실제 수집 상태</div>'+
     '<h1 class="page-title">지금 들어오는 생활 신호를<br>직접 확인할 수 있어요</h1>'+
-    '<p class="page-desc">현재 PWA가 실제로 받은 값만 표시합니다. 앱을 닫으면 위치·움직임 센서 수집은 계속되지 않습니다.</p>'+
+    '<p class="page-desc">현재 웹앱이 실제로 받은 값만 표시합니다. 화면을 닫으면 위치와 움직임을 계속 기록하지 못합니다.</p>'+
     '<div class="list">'+collectionStateRows()+'</div>'+
     coverageHtml+
     '<div class="summary-card"><h3>서버 동기화</h3><p>전송 대기 '+pending+'건 · 마지막 전송 '+esc(last)+'</p>'+(S.monitoring.lastSyncError?'<p>'+esc(S.monitoring.lastSyncError)+'</p>':'')+'</div>'+
     '<div class="hero-actions"><button id="sync-monitoring" class="btn-kimse btn-primary-k btn-full">지금 동기화</button><button class="btn-kimse btn-secondary-k btn-full" data-go="consent">수집 동의·권한 확인</button></div>'+
-    '<p class="screen-footnote">현재 PWA에서는 이동거리·생활반경·활동시간을 수집된 범위에서 서버 비교에 사용합니다. 일일 걸음수는 네이티브 앱의 기기 건강 데이터 연동값을 사용합니다.</p>',
+    '<p class="screen-footnote">현재 웹앱에서는 실제로 수집된 이동거리·생활반경·활동시간만 서버 비교에 사용합니다. 일일 걸음수는 휴대전화 전용 앱에서 건강 데이터가 연동된 경우에 사용합니다.</p>',
     {title:'수집 상태',narrow:true}
   );
 };
