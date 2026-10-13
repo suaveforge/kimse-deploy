@@ -1416,3 +1416,25 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .clinical-target-controls select:focus-visible,.clinical-target-controls input:focus-visible{outline:3px solid #a1d5cd;outline-offset:2px}
 .clinical-delivery-disclaimer a{color:#0e6b8a;text-decoration:underline;text-underline-offset:2px}
 @media(max-width:650px){.clinical-target-controls{grid-template-columns:1fr}}
+
+/* Clinical source provenance is readable on screen and on patient-carried A4 print. */
+.clinical-print-source-records{border-top:1px solid #dce4e8;margin-top:18px;padding-top:16px;min-width:0}
+.clinical-print-source-records h2{font-size:18px;line-height:1.35;margin:0 0 12px}
+.clinical-print-source-group{margin-top:12px;min-width:0}
+.clinical-print-source-group h3{font-size:14px;line-height:1.35;margin:0 0 6px}
+.clinical-print-source-group h3 span{color:#536672;font-weight:600}
+.clinical-print-source-group ol{margin:0;padding-left:21px}
+.clinical-print-source-group li{padding:7px 0;line-height:1.5;border-bottom:1px solid #e7edf0;overflow-wrap:anywhere}
+.clinical-print-source-group li strong{font-size:12px;white-space:nowrap}
+.clinical-print-source-group li span{margin-left:8px;font-size:12px}
+.clinical-print-source-group li small{display:block;color:#516473;font-size:11px;margin-top:2px}
+.clinical-print-source-group>p{margin:5px 0;font-size:12px;color:#516473}
+@media print{
+ .clinical-print-source-records{margin-top:10pt;padding-top:8pt}
+ .clinical-print-source-records h2{font-size:12pt}
+ .clinical-print-source-group{break-inside:auto}
+ .clinical-print-source-group h3{font-size:10pt;break-after:avoid}
+ .clinical-print-source-group li{break-inside:avoid;page-break-inside:avoid;padding:4pt 0}
+ .clinical-print-source-group li strong,.clinical-print-source-group li span{font-size:9pt}
+ .clinical-print-source-group li small{font-size:8pt}
+}
