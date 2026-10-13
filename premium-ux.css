@@ -384,20 +384,30 @@ body{background:linear-gradient(180deg,#fffdfa 0%,var(--kimse-ivory) 52%,#f7f4ed
   .screen-accessibility .accessibility-control-card{padding:0 10px!important}
   .screen-accessibility .a11y-setting-row{
     display:grid!important;
-    grid-template-columns:minmax(0,1fr) 54px!important;
-    gap:8px!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:10px!important;
+    padding:16px 4px!important;
+    align-items:start!important;
   }
-  .screen-accessibility .a11y-setting-row label{gap:7px!important;min-width:0!important}
+  .screen-accessibility .a11y-setting-row label{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    overflow-wrap:normal!important;
+  }
   .screen-accessibility .a11y-setting-row label strong,
-  .screen-accessibility .a11y-setting-row label small{
-    overflow-wrap:anywhere!important;
-    word-break:keep-all;
+  .screen-accessibility .a11y-setting-row label small,
+  .screen-accessibility .a11y-setting-row .a11y-setting-state{
+    overflow-wrap:normal!important;
+    word-break:keep-all!important;
+    line-height:1.5!important;
   }
-  .screen-accessibility .a11y-setting-icon{
-    width:34px!important;
-    height:34px!important;
-    flex-basis:34px!important;
-    border-radius:11px!important;
+  .screen-accessibility .a11y-setting-icon{display:none!important}
+  .screen-accessibility .a11y-setting-row .switch{
+    justify-self:start!important;
+    margin-left:0!important;
+    min-width:54px!important;
+    width:54px!important;
   }
   .screen-accessibility .accessibility-basics{padding:12px!important}
   .screen-accessibility .accessibility-basic-row{

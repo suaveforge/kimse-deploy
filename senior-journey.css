@@ -1043,6 +1043,35 @@
 .screen-evidence-proof .page-desc{
   word-break:keep-all;overflow-wrap:break-word;line-height:1.52!important
 }
+@media(max-width:260px){
+  .screen-research-engine .research-factor-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:5px;
+    align-items:start;
+    margin-top:15px;
+  }
+  .screen-research-engine .research-factor-row em{
+    justify-self:stretch;
+    width:100%;
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:16px;
+    line-height:1.45;
+    text-align:left;
+    word-break:keep-all;
+    overflow-wrap:normal;
+  }
+  .screen-research-engine .research-source{
+    grid-template-columns:minmax(0,1fr);
+    gap:5px;
+  }
+  .screen-research-engine .research-source i{justify-self:start}
+  .screen-research-engine .research-review-gate{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .screen-research-engine .research-review-gate span{grid-column:1}
+}
 @media(max-width:360px){
   .screen-evidence-proof .page-desc{font-size:17px!important}
   .screen-evidence-proof .evidence-story-card{

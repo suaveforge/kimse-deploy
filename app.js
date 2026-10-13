@@ -2107,7 +2107,7 @@ page['brain-map']=()=>{
   const d=initialScores(),meta=brainFocusMeta(),m=demoAutoRunning&&d?statusMeta(d[S.brainFocus]):null;
   return wrap(
     '<div class="eyebrow">근거 기반 관찰 영역</div>'+
-    '<h1 class="page-title">기억·말하기·일상 기능을 살펴봐요</h1><p class="page-desc">아래 항목을 누르면 관련 관찰 영역이 바뀝니다. 뇌 검사가 아닌 생활 변화 설명입니다.</p>'+
+    '<h1 class="page-title">기능별 관찰 지도</h1><p class="page-desc">기억·말하기·일상 기능을 선택해 관련 영역을 살펴보세요. 뇌 검사나 진단 결과가 아닙니다.</p>'+
     '<div class="brain-domain-tabs" role="group" aria-label="관찰 영역 선택">'+BRAIN_DOMAINS.map(([k,t,r,icon])=>'<button type="button" data-brain-focus="'+k+'" aria-pressed="'+(S.brainFocus===k)+'" class="'+(S.brainFocus===k?'active':'')+'"><span>'+icon+'</span>'+t+'</button>').join('')+'</div>'+
     brainSvg(S.brainView,S.brainFocus)+
     '<div class="brain-focus-summary" role="status"><strong>'+meta[1]+'</strong><span>'+(m?m[0]:'개인 점수 미산출')+'</span><small>'+meta[2]+'와 관련된 변화 영역입니다. 이 지도는 참고용이며 낌새 자체 질문의 점수를 임상 검사 점수로 바꾸지 않습니다.</small></div>'+
