@@ -38,6 +38,21 @@ async function run(){
       assert.equal(await page.locator('#kimse-atlas-country-select option').count(),250);
       assert.equal(await page.locator('.kimse-atlas-institution').count(),39,'UK first-selected records');
       assert.match(await page.locator('#kimse-atlas-stats').innerText(),/249/);
+      // Institution stage table: every record and official sending/receipt phase must be visible and filterable.
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),92,'all 92 institutions appear by default');
+      assert.match(await page.locator('#kimse-progress-total').innerText(),/92 \/ 92/,'institution table total');
+      await page.selectOption('#kimse-progress-stage','FORMAL_FOI_REGISTERED');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),11,'eleven formal FOI registrations');
+      await page.selectOption('#kimse-progress-stage','FOI_FORM_APPROVED_NOT_SUBMITTED');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),9,'approved but unsubmitted forms');
+      assert.equal(await page.locator('#kimse-progress-rows a[href^="https://"]').count(),9,'all unsubmitted forms link official portals');
+      await page.selectOption('#kimse-progress-stage','RESEARCH_METHODS_RESPONSE_RECEIVED');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),1,'methodology-only research reply');
+      await page.selectOption('#kimse-progress-stage','');
+      await page.selectOption('#kimse-progress-country','826');
+      assert.equal(await page.locator('#kimse-progress-rows tr').count(),39,'UK progress table country filter');
+      await page.selectOption('#kimse-progress-country','');
+
       await page.selectOption('#kimse-atlas-country-select','840');
       await page.waitForTimeout(750);
       assert.equal(await page.locator('.kimse-atlas-institution').count(),10,'USA 10 institutions');
