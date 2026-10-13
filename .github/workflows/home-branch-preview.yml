@@ -10,7 +10,7 @@ on:
       - 'tests/home-branch-preview.cjs'
       - '.github/workflows/home-branch-preview.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   home-preview:
     runs-on: ubuntu-latest
@@ -33,3 +33,20 @@ jobs:
           name: kimse-actual-home-preview
           path: qa-artifacts/home-preview/
           if-no-files-found: ignore
+
+      - name: Publish branch-only visual QA captures
+        if: success()
+        run: |
+          mkdir -p qa-previews/home
+          cp qa-artifacts/home-preview/home-320-first-screen.png qa-previews/home/320-first-screen.png
+          cp qa-artifacts/home-preview/home-375-first-screen.png qa-previews/home/375-first-screen.png
+          cp qa-artifacts/home-preview/home-1440-normal.png qa-previews/home/1440-desktop.png
+          cp qa-artifacts/home-preview/home-320-normal.png qa-previews/home/320-full.png
+          cp qa-artifacts/home-preview/report.json qa-previews/home/report.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qa-previews/home
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(qa): refresh home branch-only Chromium screenshots"
+            git push origin HEAD:ux-home-evidence-20261013
+          fi
