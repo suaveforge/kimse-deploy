@@ -64,14 +64,17 @@ async function run() {
       if(await a.count()===0)throw new Error(name+' menu link missing');
       await a.click();
       await page.waitForURL(url=>url.pathname.endsWith(expectedPath),{timeout:20000});
-      await page.waitForFunction(()=>document.documentElement.lang==='en',{timeout:20000});
+      await page.waitForFunction(()=>document.documentElement.lang==='en'&&window.KIMSE_LOCALIZEHUB?.locale==='en',{timeout:25000});
+      await page.waitForTimeout(1000);
       const state=await page.evaluate(()=>({url:location.href,lang:document.documentElement.lang,selector:document.querySelector('[data-kimse-locale-select]')?.value,hangul:(document.body.innerText.match(/[가-힣]/g)||[]).length}));
       if(state.selector!=='en')throw new Error(name+' selected language reset: '+JSON.stringify(state));
+      if(state.hangul>0)console.warn('UNTRANSLATED_DEEP_PAGE',name,state.hangul);
       console.log('DEEP_LINK_LOCALE',JSON.stringify({name,...state}));
     }
     for(const route of ['start','role','auth']){
       await page.goto(base+'/?lang=en#/'+route,{waitUntil:'domcontentloaded'});
       await page.waitForFunction(()=>document.documentElement.lang==='en',{timeout:20000});
+      await page.waitForFunction(()=>window.KIMSE_LOCALIZEHUB?.locale==='en',{timeout:25000});
       await page.waitForTimeout(300);
       const stat=await page.evaluate(()=>({route:location.hash,lang:document.documentElement.lang,hangul:(document.body.innerText.match(/[가-힣]/g)||[]).length,text:document.querySelector('#app')?.innerText.slice(0,350)}));
       console.log('APP_ROUTE_LOCALE',JSON.stringify(stat));
