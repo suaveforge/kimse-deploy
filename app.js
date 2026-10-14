@@ -2736,7 +2736,9 @@ function clinicalPrintableSourceRecords(report){
 function clinicalPrintableVisitBrief(report){
   const gate=window.KIMSE_CLINICAL_SUBMISSION;
   const brief=gate?.buildVisitBrief?.(report);
-  if(!brief||!brief.institutionId)return ''; // Do not expand standard A4 when no research hospital is selected.
+  // Specialty-only patient-carried print must work without a selected research hospital.
+  // Suppress the extra A4 panel for the generic case with neither hospital nor recognized specialty.
+  if(!brief||(!brief.institutionId&&brief.countryClinicalPriority?.specialtyFocus==='UNSPECIFIED'))return '';
   const receiver=brief.institutionName||'기관 미선택 · 국가 공통 방문 자료';
   const providerMemos=(brief.departmentMemo||brief.clinicianMemo)
     ?'<p class="clinical-visit-memo">'+(brief.departmentMemo?'진료과 메모(미확인): '+esc(brief.departmentMemo)+' · ':'')
@@ -2778,7 +2780,9 @@ function clinicalPrintableVisitBrief(report){
     ?'<p class="clinical-visit-meta">공개 조사 '+brief.researchedGroupCount+'항목 · 앱 참고 기록 '+brief.referenceOnlyCount+' · 관련 기록 미수집 '+brief.uncollectedCount+' · 직접 대응 없음 '+brief.noDirectMappingCount+'</p>'
       +(items?'<p class="clinical-visit-caption">진료 전 추가 확인 참고(미확인·외부 자료 중 최대 6건)</p><ol class="clinical-visit-list">'+items+'</ol>':'<p>공개 조사 기준 별도 미확인·외부 항목이 표시되지 않았습니다. 이것이 병원 필수요건 충족을 뜻하지 않습니다.</p>')
       +(brief.missingMoreCount?'<p class="clinical-visit-meta">그 외 미확인·외부 항목 '+brief.missingMoreCount+'건은 앱의 원문 조사 목록에서 확인하세요.</p>':'')
-    :'<p class="clinical-visit-meta">기관별 공개 조사자료 미조회 · 자료 준비상태 평가 불가 (병원 공식 서식과 별개)</p>';
+    :!brief.institutionId
+      ?'<p class="clinical-visit-meta">기관 미선택 · 병원별 공개 의뢰요건은 평가하지 않았습니다. 위 진료과 확인 순서는 공개 임상자료를 바탕으로 재정렬한 비공식 참고 항목입니다.</p>'
+      :'<p class="clinical-visit-meta">기관별 공개 조사자료 미조회 · 자료 준비상태 평가 불가 (병원 공식 서식과 별개)</p>';
   return '<section class="clinical-visit-brief" aria-label="병원별 공개자료 기반 진료 준비 참고" data-provider-approved="false" data-transport-authorized="false">'
     +'<h2>진료 방문 준비 · 공개자료 참고</h2>'
     +'<p><strong>'+esc(brief.countryName)+' · '+esc(receiver)+'</strong> · 한국어 환자 지참용(해당 국가 공식 번역 아님)</p>'
