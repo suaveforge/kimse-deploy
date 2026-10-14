@@ -69,7 +69,10 @@ function translationFor(key){
   if(sourceToTarget.has(key))return sourceToTarget.get(key);
   if(activeLocale!=='en'||!/[가-힣]/.test(key))return null;
   if(compositeCache.has(key))return compositeCache.get(key);
-  let out=key;
+  let out=key.replace(/(\d{4})년대/g,'$1s')
+    .replace(/([\d,]+)명/g,'$1 people')
+    .replace(/(\d+)회/g,'$1 times')
+    .replace(/(\d+)개(?!\s*기관)/g,'$1 items');
   for(const pair of englishParts)out=out.replace(pair.pattern,pair.translation);
   out=out.replace(/(\d+)\s*개 기관/g,'$1 institutions')
     .replace(/(\d+)\s*곳/g,'$1 institutions')
@@ -222,7 +225,7 @@ async function setLocale(locale){
       ]);
       sourceToTarget=translationMap(sourceBundle,targetBundle);
       if(next==='en'){
-        const verifiedGlossary=await fetchJSON('/kimse-en.json?v=20261014-research-en1');
+        const verifiedGlossary=await fetchJSON('/kimse-en.json?v=20261015-screen-audit10');
         const entries=verifiedGlossary?.translations||{};
         for(const [k,v] of Object.entries(entries)){
           if(normalize(k)&&normalize(v))sourceToTarget.set(normalize(k),String(v));
