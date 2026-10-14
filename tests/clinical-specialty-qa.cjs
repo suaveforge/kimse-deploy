@@ -86,8 +86,8 @@ async function main(){
    const file='clinical-specialty-'+item.id+'.pdf';
    fs.writeFileSync('clinical-specialty-qa/'+file,pdf);
    const extracted=execFileSync('pdftotext',['-layout','clinical-specialty-qa/'+file,'-'],{encoding:'utf8'});
-   const compact=extracted.replace(/\\s+/g,'');
-   check(compact.includes(item.needle.replace(/\\s+/g,'')),'pdf-specialty-heading-'+item.id);
+   const compact=extracted.replace(/\s+/g,'');
+   check(compact.includes(item.needle.replace(/\s+/g,'')),'pdf-specialty-heading-'+item.id);
    check(compact.includes('정상소견으로해석하지않음'),'pdf-missing-does-not-become-normal-'+item.id);
    await page.emulateMedia({media:'screen'});
   }
