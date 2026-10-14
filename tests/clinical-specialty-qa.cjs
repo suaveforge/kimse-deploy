@@ -165,6 +165,55 @@ async function main(){
     }
     await testContext.close();
   }
+
+  // Mixed evidence must preserve UNKNOWN beside PRESENT/ABSENT on the real
+  // production screen and in the patient-carried A4 PDF. Synthetic records only.
+  for(const sample of [
+    {name:'present-and-unknown',statuses:['PRESENT','UNKNOWN'],fragments:['보고 1건','상태 미확인 1건 병존']},
+    {name:'absent-and-unknown',statuses:['ABSENT','UNKNOWN'],fragments:['없다고 보고 1건','상태 미확인 1건 병존']},
+    {name:'three-way-conflict',statuses:['PRESENT','ABSENT','UNKNOWN'],fragments:['보고 1건','부재 보고 1건 병존','상태 미확인 1건 병존']}
+  ]){
+    const mixed=JSON.parse(JSON.stringify(report));
+    const events=sample.statuses.map(status=>({status}));
+    mixed.clinical_domains.safety_support={context_events:events};
+    mixed.clinical_domains.mood_behavior={context_events:events};
+    mixed.risk_confounders.medication_change={events};
+    mixed.risk_confounders.current_medications=[];
+    mixed.risk_confounders.acute_illness_context={events};
+    const context=await browser.newContext({viewport:{width:1440,height:950},locale:'ko-KR',serviceWorkers:'block'});
+    await context.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),{...state,clinicalReport:mixed,professionalOutcomes:[]});
+    await context.route('https://api-kimse.suaveforge.com/**',route=>route.abort('failed'));
+    const p=await context.newPage();
+    await p.goto(BASE+'#/clinical-handoff',{waitUntil:'domcontentloaded',timeout:50000});
+    await p.waitForSelector('#clinical-target-department',{timeout:25000});
+    for(const [department,focus,field] of [
+      ['노인의학과','GERIATRICS','safety'],
+      ['노인의학과','GERIATRICS','medication'],
+      ['정신건강의학과','PSYCHIATRY','mood'],
+      ['가정의학과','PRIMARY_CARE','acute']
+    ]){
+      await p.locator('#clinical-target-department').fill(department);
+      await p.locator('#clinical-target-department').dispatchEvent('change');
+      await p.waitForFunction(id=>document.querySelector('.clinical-specialty-review')?.dataset.specialtyFocus===id,focus,{timeout:12000});
+      const card=p.locator('[data-specialty-field="'+field+'"]');
+      const value=await card.innerText();
+      for(const fragment of sample.fragments)check(value.includes(fragment),'mixed-'+sample.name+'-'+field+'-'+fragment);
+      check(await card.getAttribute('data-recorded')==='true','mixed-'+sample.name+'-collected-'+field);
+    }
+    if(sample.name!=='absent-and-unknown'){
+      await p.locator('#clinical-target-department').fill('노인의학과');
+      await p.locator('#clinical-target-department').dispatchEvent('change');
+      await p.waitForFunction(()=>document.querySelector('.clinical-specialty-review')?.dataset.specialtyFocus==='GERIATRICS',{timeout:12000});
+      await p.emulateMedia({media:'print'});
+      const output=await p.pdf({format:'A4',printBackground:true,margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
+      const file='clinical-specialty-'+sample.name+'.pdf';
+      fs.writeFileSync('clinical-specialty-qa/'+file,output);
+      const pdfText=execFileSync('pdftotext',['-layout','clinical-specialty-qa/'+file,'-'],{encoding:'utf8'}).replace(/\s+/g,'');
+      for(const fragment of sample.fragments)check(pdfText.includes(fragment.replace(/\s+/g,'')),'mixed-pdf-'+sample.name+'-'+fragment);
+      await p.emulateMedia({media:'screen'});
+    }
+    await context.close();
+  }
  }finally{await browser.close();}
  console.log('KIMSE_SPECIALTY_LIVE_24_CASES_4_A4_PDFS=PASS');
 }
