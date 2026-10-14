@@ -16,7 +16,7 @@ async function run(){
   const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   try{
     for(const viewport of [{width:1440,height:900,name:'desktop'},{width:390,height:844,name:'mobile'}]){
-      const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1});
+      const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},locale:'ko-KR',deviceScaleFactor:1});
       const page=await context.newPage();
       const errors=[];
       page.on('pageerror',e=>errors.push(String(e)));
