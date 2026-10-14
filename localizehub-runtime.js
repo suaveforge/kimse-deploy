@@ -280,16 +280,9 @@ async function boot(){
     activeLocale=locale;
     ensureLocaleControl(cfg);
     await setLocale(locale);
-    document.addEventListener('localechange',e=>{
-      if(e.detail?.project===PROJECT&&e.detail?.locale){
-        const next=baseLocale(e.detail.locale);
-        if(CONSISTENT_LOCALES.includes(next)){
-          const url=new URL(location.href);url.searchParams.set('lang',next);
-          history.replaceState(history.state,'',url.pathname+url.search+url.hash);
-        }
-        setLocale(next);
-      }
-    });
+    // The embedded legacy widget can emit its default ko locale during every
+    // document load. Only the verified explicit selector controls language.
+    // Do not let a widget initialization event silently reset ?lang=en.
     window.KIMSE_LOCALIZEHUB={project:PROJECT,api:API,get locale(){return activeLocale},setLocale};
   }catch(error){
     console.warn('KIMSE LocalizeHub unavailable:',error);
