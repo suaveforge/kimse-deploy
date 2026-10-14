@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-15.en.7",
+  "schemaVersion": "2026-10-15.en.8",
   "locale": "en",
   "sourceLocale": "ko",
   "translations": {
@@ -590,7 +590,28 @@
     "현재 인쇄·PDF는 환자가 직접 의료진에게 전달하는 방식입니다. 공개 의뢰자료에 병원명이 있어도 낌새가 그 기관에 자동 제출할 수 있다는 뜻이 아닙니다.": "Current printed reports and PDFs are patient-carried. Naming an institution as a public reference does not mean KIMSE has permission to submit records to it.",
     "원본의 무결성·존재시점·동의범위·접근/제공 이력을 독립적으로 검증할 수 있게 합니다.": "The proposed design supports independent verification of integrity, timestamps, consent scope and access or sharing history.",
     "현재 인쇄·PDF는 환자가 직접 의료진에게 전달하는 방식입니다.": "Current PDF and printouts are carried to clinicians by patients.",
-    "실제 연동 승인 없이 기관명·의료진 평가·제출 성공 상태를 생성하지 않습니다.": "No institutions, clinician endorsements or successful submissions are invented."
+    "실제 연동 승인 없이 기관명·의료진 평가·제출 성공 상태를 생성하지 않습니다.": "No institutions, clinician endorsements or successful submissions are invented.",
+    "걷는 양과 보행 패턴이 평소와 달라지는가": "Is walking activity or gait changing from usual?",
+    "일일 걸음수는 CAIDE의 신체활동 점수로 자동 환산하지 않습니다.": "Daily step counts are not automatically converted into the CAIDE physical-activity score.",
+    "기억·주의·언어 과제 수행이 평소와 달라지는가": "Are memory, attention or language task results changing from usual?",
+    "반복 과제 결과는 개인 변화 시계열로 보존하며 현재 CAIDE 위험점수에는 합산하지 않습니다.": "Repeated task outcomes are retained as individual longitudinal observations and are not added to the current CAIDE risk score.",
+    "스마트폰 하나로 시작하고, 기기를 더할수록 관찰 범위가 넓어집니다.": "Start with a smartphone; additional devices may extend the available observations.",
+    "한 환자의 관찰·전문검사·가족 확인 정보를 한 Clinical Dataset으로 유지하고,": "A shared clinical dataset keeps patient observations, professional assessments and informant reports distinct. Its views include",
+    "A4 출력·PDF": "A4 print/PDF",
+    "모니터·태블릿 인터랙티브 화면": "interactive monitor and tablet displays",
+    "및 향후 기관별 구조화 전송을 동일한 사실에서 만듭니다.": "and potential institution-specific structured data exchange, all based on the same recorded facts.",
+    "직접 연결 승인 기관 0곳. 실제 의사 검수 0건. 기관별 전문검사 결과나 공식 의뢰 권한을 낌새 자체 관찰로 대체하지 않습니다.": "No verified directly connected institutions or clinician reviews. KIMSE observations do not replace professional assessments or authorized referrals.",
+    "공식 공개자료 7곳·34개 항목을 후보 임상 필드, 미수집, 외부검사 및 승인 요건으로 구분했습니다. 기관이 낌새 리포트를 승인했다는 뜻이 아닙니다.": "Seven public institution sources and 34 requirements are classified as possible clinical fields, uncollected data, external tests or permissions. None constitutes endorsement of the KIMSE report.",
+    "공식 자료:": "Public source:",
+    "심층진찰·외래 진료의뢰 (일반 진료절차)": "Advanced consultation and outpatient referral (general care procedure)",
+    "신경과 · 기억장애 및 치매클리닉 (공식 의료진 진료안내)": "Neurology · memory disorders and dementia clinic (official clinical service information)",
+    "연결/승인 미확인": "No integration or approval verified",
+    "실제 의사 검수 0건": "Zero actual clinician reviews",
+    "기관별 전문검사 결과나 공식 의뢰 권한을 낌새 자체 관찰로 대체하지 않습니다.": "KIMSE observations do not replace institution-specific professional assessments or authorized referrals.",
+    "공식 공개자료": "Public-source documents",
+    "후보 임상 필드": "Candidate clinical fields",
+    "모니터·태블릿": "Monitor and tablet",
+    "기록과 근거를 검증합니다": "Verifying records and their evidence"
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
