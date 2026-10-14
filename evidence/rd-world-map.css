@@ -143,3 +143,6 @@
 /* International English copy can be longer than Korean: contain stat labels on phones. */
 .kimse-atlas-stat,.kimse-atlas-stat strong,.kimse-atlas-stat small{min-width:0;max-width:100%;overflow-wrap:anywhere}
 @media(max-width:700px){.kimse-atlas-stat strong,.kimse-atlas-stat small{word-break:normal;white-space:normal}.kimse-atlas-progress-number,.kimse-progress-number{min-width:0}}
+
+/* English stage cards: flex children may otherwise retain long-word intrinsic width. */
+@media(max-width:700px){.kimse-progress-number{box-sizing:border-box;width:100%;max-width:100%;min-width:0}.kimse-progress-number strong,.kimse-progress-number small,.kimse-progress-number-value{box-sizing:border-box;min-width:0;max-width:100%;overflow-wrap:anywhere;white-space:normal;text-align:center}}
