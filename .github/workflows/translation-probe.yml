@@ -1,0 +1,18 @@
+name: KIMSE Translation Connectivity Probe
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/translation-probe.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Confirm public text translation endpoint from GitHub runner
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          curl --silent --show-error --fail --location             --connect-timeout 7 --max-time 15             -w '\nTIME_TOTAL=%{time_total} HTTP=%{http_code}\n'             --get --data-urlencode 'client=gtx' --data-urlencode 'sl=ko'             --data-urlencode 'tl=en' --data-urlencode 'dt=t'             --data-urlencode 'q=관찰 근거'             'https://translate.googleapis.com/translate_a/single'
