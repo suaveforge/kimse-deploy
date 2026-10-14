@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261014-clinical-assay-31';
+const CACHE = 'kimse-pwa-20261014-native-resume-29';
 const CORE = [
   './',
   './index.html',
