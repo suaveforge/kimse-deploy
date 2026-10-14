@@ -122,7 +122,7 @@ jobs:
           (async()=>{
             await waitForVerifiedPages();
             const browser=await chromium.launch({headless:true});
-            const ctx=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:1});
+            const ctx=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:1,locale:'ko-KR'});
             await ctx.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),state);
             await ctx.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
             const p=await ctx.newPage();
@@ -144,10 +144,15 @@ jobs:
               check(values.length===targets.length,'provider-options-for-'+country);
               for(const target of targets){
                 await p.locator('#clinical-target-institution').selectOption(target.id);
-                await p.waitForFunction(count=>{
+                // Wait for the CURRENT institution, not merely a coincidentally
+                // equal number of requirements still displayed from the
+                // previous selection. This is a real UI-render consistency check.
+                await p.waitForFunction(({count,url})=>{
                   const details=document.querySelector('details.clinical-delivery-notes');
-                  return details&&details.querySelectorAll('ol>li').length===count;
-                },target.requirement_groups.length,{timeout:12000});
+                  const origin=document.querySelector('.clinical-visit-source a');
+                  return origin?.getAttribute('href')===url&&
+                    details?.querySelectorAll('ol>li').length===count;
+                },{count:target.requirement_groups.length,url:target.source_url},{timeout:12000});
                 const details=await p.locator('details.clinical-delivery-notes').textContent();
                 check(details.includes(target.requirement_groups[0].wording),'original-wording-'+target.id);
                 const expectedWithoutDirect=target.requirement_groups.filter(g=>g.related_paths.length===0).length;
@@ -182,7 +187,8 @@ jobs:
             check(await p.locator('#clinical-electronic-submit').isDisabled(),'research-only-nhs-recipient-is-blocked');
             check((await p.locator('.clinical-delivery-preflight').innerText()).includes('수신 승인'),'unverified-destination-warning-visible');
             await p.locator('#clinical-target-department').fill('Neurology');
-            await p.locator('#clinical-target-department').press('Tab');
+            await p.locator('#clinical-target-department').dispatchEvent('change');
+            await p.waitForFunction(()=>document.querySelector('.clinical-specialty-review')?.dataset.specialtyFocus==='NEUROLOGY');
             check(await p.locator('#clinical-department-hints option').count()>=4,'specialty-selectable-hints');
             const specialtyPriority=await p.locator('.clinical-national-priority ol li').allTextContents();
             check(specialtyPriority.length===5 && specialtyPriority[1].includes('인지'),
@@ -190,7 +196,7 @@ jobs:
             check((await p.locator('.clinical-national-priority').innerText()).includes('기존 공개자료 항목만 재정렬했습니다'),
               'specialty-priority-editorial-not-provider-approved');
             await p.locator('#clinical-target-clinician').fill('Unverified clinician');
-            await p.locator('#clinical-target-clinician').press('Tab');
+            await p.locator('#clinical-target-clinician').dispatchEvent('change');
             await p.locator('#clinical-target-institution').selectOption('GB-LEEDS-MAS');
             check((await p.locator('#clinical-target-department').inputValue())==='','hospital-change-clears-stale-department');
             check((await p.locator('#clinical-target-clinician').inputValue())==='','hospital-change-clears-stale-clinician');
@@ -231,7 +237,7 @@ jobs:
             const dims=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));
             check(dims.sw<=dims.cw+1,'mobile-no-horizontal-overflow',JSON.stringify(dims));
             await p.screenshot({path:path.join(out,'clinical-handoff-mobile.png'),fullPage:true});
-            const desktop=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+            const desktop=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1,locale:'ko-KR'});
             await desktop.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),state);
             await desktop.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
             const dp=await desktop.newPage();
@@ -328,7 +334,7 @@ jobs:
               await dp.emulateMedia({media:'screen'});
             }
             await dp.locator('#clinical-target-department').fill('');
-            await dp.locator('#clinical-target-department').press('Tab');
+            await dp.locator('#clinical-target-department').dispatchEvent('change');
             check(await dp.locator('.clinical-visit-brief').count()===0,
               'no-hospital-no-specialty-keeps-basic-print-compact');
             check(await dp.locator('.clinical-specialty-review').count()===0,
