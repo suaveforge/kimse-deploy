@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261014-clinical-longprint-29';
+const CACHE = 'kimse-pwa-20261014-clinical-external-parity-30';
 const CORE = [
   './',
   './index.html',
