@@ -288,8 +288,8 @@ jobs:
               },{neurology:'NEUROLOGY',geriatrics:'GERIATRICS',psychiatry:'PSYCHIATRY','primary-care':'PRIMARY_CARE'}[specialty],{timeout:12000});
               const review=dp.locator('.clinical-specialty-review');
               check(await review.count()===1,'specialty-has-source-grounded-review-'+specialty);
-              check(await review.locator('li').count()===4,'specialty-four-card-review-'+specialty);
-              const fields=await review.locator('li').evaluateAll(xs=>xs.map(x=>x.dataset.specialtyField));
+              check(await review.locator(':scope > ol > li').count()===4,'specialty-four-card-review-'+specialty);
+              const fields=await review.locator(':scope > ol > li').evaluateAll(xs=>xs.map(x=>x.dataset.specialtyField));
               check(JSON.stringify(fields)===JSON.stringify(specialtyOrders[specialty]),
                 'specialty-recorded-order-'+specialty,JSON.stringify(fields));
               check((await review.innerText()).includes('병원·의료진의 승인 서식이나 필수 검사 목록이 아닙니다'),
