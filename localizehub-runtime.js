@@ -151,7 +151,7 @@ function applyTranslations(root=document){
   }finally{applying=false}
 }
 function preserveLocaleLinks(root=document){
-  const links=root.querySelectorAll?.('a[href]')||[];
+  const links=[...(root.matches?.('a[href]')?[root]:[]),...(root.querySelectorAll?.('a[href]')||[])];
   for(const a of links){
     const href=a.getAttribute('href')||'';
     if(!href||href[0]==='#'||href.startsWith('mailto:')||href.startsWith('javascript:'))continue;
