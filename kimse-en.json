@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-15.en.6",
+  "schemaVersion": "2026-10-15.en.7",
   "locale": "en",
   "sourceLocale": "ko",
   "translations": {
@@ -399,7 +399,7 @@
     "낌새는 이런 작은 변화를 함께 봅니다": "KIMSE considers these subtle changes together",
     "한 가지 수치가 아니라 수면·말하기·이동·사회활동·보행·인지 변화를 평소의 나와 비교하고, 각 신호를 외부 근거와 연결해 관찰합니다.": "KIMSE compares multiple signals, including sleep, speech, mobility, social activity, gait and cognition, with each person's usual patterns and supporting studies.",
     "잠드는 시간과 수면량이 평소와 달라지는가": "Are usual bedtimes or sleep duration changing?",
-    "현재 고정 진단 가중치는 부여하지 않고 개인 baseline 변화로 추적합니다.": "Tracked as a change from an individual baseline, without fixed diagnostic weights.",
+    "현재 고정 진단 가중치는 부여하지 않고 개인 baseline 변화로 추적합니다.": "Tracked relative to each person's baseline without fixed diagnostic weighting.",
     "수면량 변화": "Changes in sleep duration",
     "말하기 변화": "Changes in speech",
     "이동 시간 변화": "Changes in mobility time",
@@ -549,7 +549,7 @@
     "낌새의 관찰값을 진단과 구분한 채, 변화의 시작·경과·기능 영향·가족 확인·데이터 품질을 구조화해 보여줍니다.": "KIMSE structures observations of onset, course, functional impact, family reports and data quality without representing them as diagnoses.",
     "국가·병원·진료과·의료진별 실제 요건과 논문·임상지침을 축적하여 동일한 관찰 데이터에서 인쇄/PDF·태블릿/모니터 인터랙티브·기관 전송 자료를 생성합니다. 수신기관의 공식 확인(ACK)이 있어야 제출 성공입니다.": "Institutional requirements and published guidance inform report views from the same observations. Submission success requires a verified institutional receipt (ACK).",
     "Evidence의 의료 리포트는 적용할 임상 근거와 한계, 병원별 확인 요건 및 검증 결과를 추가 축적하는 영역입니다. 실제 병원 또는 의료진의 승인 없이 기관 검증 완료로 표시하지 않습니다.": "Clinical Handoff documents the evidence, limits and requirements still to be verified with institutions. No hospital or clinician approval is claimed.",
-    "한 환자의 관찰·전문검사·가족 확인 정보를 한 Clinical Dataset으로 유지하고, A4 출력·PDF와 모니터·태블릿 인터랙티브 화면 및 향후 기관별 구조화 전송을 동일한 사실에서 만듭니다.": "Observations, professional test findings and informant reports remain distinguishable in a common clinical dataset for print, interactive display and potential structured exchange.",
+    "한 환자의 관찰·전문검사·가족 확인 정보를 한 Clinical Dataset으로 유지하고, A4 출력·PDF와 모니터·태블릿 인터랙티브 화면 및 향후 기관별 구조화 전송을 동일한 사실에서 만듭니다.": "The same clinical dataset preserves separate observations, professional assessments and family reports across printable, interactive and prospective exchange formats.",
     "임상 데이터 구조·인쇄·대화형 분석·근거 추적·미검증 FHIR 후보 및 제출 전 확인 상태": "Structured clinical data, printing, interactive review, evidence traceability, unvalidated FHIR candidates and pre-submission checks",
     "실제 의료기관별 문진 필수항목·표시 순서·진료과 선호·환자 매칭·동의·수신 방식 및 의료진 평가": "Clinic-specific required fields, ordering, specialty preferences, patient matching, consent, delivery and clinician feedback still need verification",
     "블록체인은 데이터를 저장하기 위해 쓰지 않습니다": "Blockchain is not used to store sensitive source records",
@@ -575,7 +575,22 @@
     "점": "points",
     "최대": "Maximum",
     "7개 팩터의 공개 CAIDE Model 1 점수를 합산합니다.": "Sums the published CAIDE Model 1 score across seven factors.",
-    "7개 팩터의 공개 CAIDE Model 1 점수를 합산합니다": "Sums the published CAIDE Model 1 score across seven factors."
+    "7개 팩터의 공개 CAIDE Model 1 점수를 합산합니다": "Sums the published CAIDE Model 1 score across seven factors.",
+    "말하기": "Speech",
+    "말의 속도·멈춤·운율이 평소와 달라지는가": "Are speech pace, pauses or intonation changing from usual?",
+    "음성 디지털 바이오마커 연구의 성능을 임상 진단 가중치로 직접 환산하지 않습니다.": "Published performance of speech biomarkers is not directly converted into KIMSE diagnostic weights.",
+    "외출·이동시간과 생활반경이 평소와 달라지는가": "Are outings, travel duration or usual activity radius changing?",
+    "위치·이동 데이터는 권한과 기기 지원 범위 안에서만 사용합니다.": "Location and mobility data are used only where consent, permission and device support permit.",
+    "연락 빈도와 사회적 활동이 평소와 달라지는가": "Is the frequency of social contact or participation changing?",
+    "사회활동 저하는 위험요인 근거가 있으나 ‘통화량’ 자체에 현재 고정 임상 가중치를 두지 않습니다.": "Reduced social activity is discussed in risk research, but KIMSE has no fixed clinical weight for call volume.",
+    "검증된 실제 병원 수신 채널·병원 수신 receipt·의료진 확인 근거 없음. PDF 생성은 접수가 아닙니다.": "No verified direct hospital receiving route, institutional receipt or clinician approval. Generating a PDF is not an accepted submission.",
+    "실제 연동 승인 없이 기관명·의료진 평가·제출 성공 상태를 생성하지 않습니다. 문서 기준: Clinical Report One-click Objective, 2026-10-09.": "Without actual integration approval, KIMSE does not invent institutions, clinician evaluations or delivery successes. Reference: Clinical Report One-click Objective, 9 October 2026.",
+    "한국 2 · 영국 4 · 미국 1. 기관마다 일반 환자 내원 안내, 전문 의료인 의뢰서, 특정 클리닉 안내는 출처의 성격이 다릅니다. 공개 정보만으로 기관별 KIMSE 필수 필드·환자 매칭·수신권한을 검증했다고 주장하지 않습니다.": "Public examples: South Korea 2, UK 4, US 1. General patient information, clinician referrals and specialty clinic guidance are different document types; public information does not validate KIMSE-specific requirements, matching or delivery authorization.",
+    "직접 연결 승인 기관 0곳. 실제 의사 검수 0건. 기관별 전문검사 결과나 공식 의뢰 권한을 KIMSE 자체 관찰로 대체하지 않습니다.": "Zero verified direct institution connections and zero clinician reviews. KIMSE observations cannot replace professional tests or an authorized clinical referral.",
+    "현재 인쇄·PDF는 환자가 직접 의료진에게 전달하는 방식입니다. 공개 의뢰자료에 병원명이 있어도 낌새가 그 기관에 자동 제출할 수 있다는 뜻이 아닙니다.": "Current printed reports and PDFs are patient-carried. Naming an institution as a public reference does not mean KIMSE has permission to submit records to it.",
+    "원본의 무결성·존재시점·동의범위·접근/제공 이력을 독립적으로 검증할 수 있게 합니다.": "The proposed design supports independent verification of integrity, timestamps, consent scope and access or sharing history.",
+    "현재 인쇄·PDF는 환자가 직접 의료진에게 전달하는 방식입니다.": "Current PDF and printouts are carried to clinicians by patients.",
+    "실제 연동 승인 없이 기관명·의료진 평가·제출 성공 상태를 생성하지 않습니다.": "No institutions, clinician endorsements or successful submissions are invented."
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
