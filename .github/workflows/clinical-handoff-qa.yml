@@ -294,8 +294,18 @@ jobs:
                 'specialty-recorded-order-'+specialty,JSON.stringify(fields));
               check((await review.innerText()).includes('병원·의료진의 승인 서식이나 필수 검사 목록이 아닙니다'),
                 'specialty-not-official-referral-'+specialty);
-              check(await review.locator('li[data-recorded="false"]').count()>=1,
-                'specialty-keeps-missing-markers-'+specialty);
+              // The synthetic psychiatry case legitimately has all four
+              // categories recorded; never invent a missing result simply
+              // to satisfy a QA assertion. Verify exact expected gaps.
+              const expectedMissing={
+                neurology:1,geriatrics:1,psychiatry:0,'primary-care':2
+              }[specialty];
+              const missingItems=review.locator('li[data-recorded="false"]');
+              check(await missingItems.count()===expectedMissing,
+                'specialty-exact-missing-count-'+specialty,String(expectedMissing));
+              check((await missingItems.allInnerTexts()).every(t=>
+                t.includes('자료 없음 · 정상 소견으로 해석하지 않음')),
+                'specialty-missing-not-normal-'+specialty);
               if(specialty==='neurology'){
                 check((await review.innerText()).includes('2026-09-20') &&
                   (await review.innerText()).includes('앱 반복과제 1회'),
