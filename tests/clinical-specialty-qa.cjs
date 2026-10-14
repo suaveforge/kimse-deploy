@@ -14,21 +14,28 @@ const order=[
  {id:'PRIMARY_CARE',name:'가정의학과',keys:['trajectory','medication','acute','external'],needle:'급성질환·감염·입원'}
 ];
 const countries=['KR','GB','US','CA','AU','JP'];
-async function awaitExactJS(){
- const expected=hash(fs.readFileSync('app.js'));
- for(let n=0;n<60;n++){
-   try{
-    const res=await fetch(BASE+'app.js?clinicalFocus='+expected.slice(0,16)+'&attempt='+n,{cache:'no-store'});
-    if(res.ok&&hash(Buffer.from(await res.arrayBuffer()))===expected){
-      console.log('KIMSE_SPECIALTY_LIVE_SHA256='+expected);return;
-    }
-   }catch{}
+async function awaitExactAssets(){
+ const expected=['app.js','app.css','index.html'].map(name=>({
+   name,sha:hash(fs.readFileSync(name))
+ }));
+ for(let n=0;n<65;n++){
+   const matches=await Promise.all(expected.map(async asset=>{
+     try{
+       const res=await fetch(BASE+asset.name+'?clinicalFocus='+asset.sha.slice(0,16)+'&attempt='+n,{cache:'no-store'});
+       return res.ok&&hash(Buffer.from(await res.arrayBuffer()))===asset.sha;
+     }catch{return false;}
+   }));
+   if(matches.every(Boolean)){
+     console.log('KIMSE_SPECIALTY_LIVE_ASSET_SHA_VERIFIED='+
+        expected.map(asset=>asset.name+':'+asset.sha).join(' '));return;
+   }
+   if(n%10===0)console.log('KIMSE_SPECIALTY_WAIT_PAGES_SHA attempt='+n+' match='+JSON.stringify(matches));
    await new Promise(r=>setTimeout(r,5000));
  }
- throw Error('CLINICAL_FOCUS_LIVE_JS_SHA_NOT_MATCHED');
+ throw Error('CLINICAL_FOCUS_LIVE_JS_CSS_HTML_SHA_NOT_MATCHED');
 }
 async function main(){
- await awaitExactJS();
+ await awaitExactAssets();
  const report=JSON.parse(fs.readFileSync('clinical-template-demo-data.json','utf8'));
  check(report.demo_marker==='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT','synthetic-only');
  const original=JSON.stringify(report);
@@ -79,6 +86,8 @@ async function main(){
   for(const item of order){
    await toId(item,'KR');
    await page.emulateMedia({media:'print'});
+   check(await page.locator('.skip-link').evaluate(el=>getComputedStyle(el).display)==='none',
+     'printed-navigation-is-hidden-by-css-'+item.id);
    const pdf=await page.pdf({format:'A4',printBackground:true,
      margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
    const pages=(await PDFDocument.load(pdf)).getPageCount();
