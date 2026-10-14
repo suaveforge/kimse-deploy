@@ -2887,9 +2887,15 @@ function clinicalSpecialtyReview(report){
     if(!records.length)return null;
     const present=records.filter(row=>row?.status==='PRESENT').length;
     const absent=records.filter(row=>row?.status==='ABSENT').length;
+    // A mix of observed, denied and unverified reports must stay visible.
+    // Omitting UNKNOWN beside PRESENT or ABSENT could hide clinical uncertainty.
+    const unknown=records.length-present-absent;
     if(present)return positive+' '+present+'건 · 사용자 보고(검증 아님)'
-      +(absent?' · 부재 보고 '+absent+'건 병존 · 확인 필요':'');
+      +(absent?' · 부재 보고 '+absent+'건 병존 · 확인 필요':'')
+      +(unknown?' · 상태 미확인 '+unknown+'건 병존 · 확인 필요':'');
     if(absent===records.length)return negative+' '+absent+'건 · 사용자 보고(객관 확인 아님)';
+    if(absent)return negative+' '+absent+'건 · 사용자 보고(객관 확인 아님)'
+      +' · 상태 미확인 '+unknown+'건 병존 · 확인 필요';
     return '상태 미확인 기록 '+records.length+'건 · 원자료 확인 필요';
   };
   const medNames=medicines.map(x=>x?.name).filter(yes);
