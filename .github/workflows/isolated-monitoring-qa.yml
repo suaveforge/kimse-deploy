@@ -1,0 +1,36 @@
+name: KIMSE isolated API monitoring proof
+on:
+  push:
+    branches: [ux-52-mobile-final-20261014]
+    paths:
+      - 'tests/live-isolated-monitoring-qa.py'
+      - '.github/workflows/isolated-monitoring-qa.yml'
+permissions:
+  contents: write
+jobs:
+  monitoring-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify API read and write with isolated synthetic QA account
+        run: python3 tests/live-isolated-monitoring-qa.py
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-monitoring-isolated-qa
+          path: qa-artifacts/api-monitoring/result.json
+          if-no-files-found: ignore
+      - name: Save verified report on test branch only
+        if: success()
+        run: |
+          mkdir -p qa-previews/api-monitoring
+          cp qa-artifacts/api-monitoring/result.json qa-previews/api-monitoring/result.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qa-previews/api-monitoring/result.json
+          if ! git diff --cached --quiet; then
+            git commit -m "test(api): record isolated live synthetic monitoring verification"
+            git push origin HEAD:ux-52-mobile-final-20261014
+          fi
