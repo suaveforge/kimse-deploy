@@ -1,6 +1,7 @@
 (()=>{
 'use strict';
 const PROJECT='p45';
+// KIMSE international English glossary: 2026-10-14; hub translations take precedence for other locales.
 const API='https://api-localizehub.suaveforge.com:18025';
 const DEFAULT_LOCALE='ko';
 const STORAGE_KEY=`localizehub:${PROJECT}:locale`;
@@ -31,11 +32,11 @@ async function bundle(locale){
 function requestedLocale(cfg){
   const supported=(cfg.supportedLocales||[]).map(baseLocale);
   const supportedSet=new Set(supported);
-  const direct=baseLocale(localStorage.getItem(STORAGE_KEY));
-  if(direct&&supportedSet.has(direct))return direct;
   let query='';
   try{query=baseLocale(new URL(location.href).searchParams.get('lang')||'')}catch{}
   if(query&&supportedSet.has(query))return query;
+  const direct=baseLocale(localStorage.getItem(STORAGE_KEY));
+  if(direct&&supportedSet.has(direct))return direct;
   for(const item of navigator.languages||[navigator.language]){
     const code=baseLocale(item);
     if(code&&supportedSet.has(code))return code;
@@ -123,8 +124,18 @@ async function setLocale(locale){
   document.documentElement.lang=next;
   try{
     if(next!==DEFAULT_LOCALE){
-      [sourceBundle,targetBundle]=await Promise.all([bundle(DEFAULT_LOCALE),bundle(next)]);
+      [sourceBundle,targetBundle]=await Promise.all([
+        bundle(DEFAULT_LOCALE).catch(()=>({})),
+        bundle(next).catch(()=>({}))
+      ]);
       sourceToTarget=translationMap(sourceBundle,targetBundle);
+      if(next==='en'){
+        const verifiedGlossary=await fetchJSON('/kimse-en.json?v=20261014-research-en1');
+        const entries=verifiedGlossary?.translations||{};
+        for(const [k,v] of Object.entries(entries)){
+          if(normalize(k)&&normalize(v))sourceToTarget.set(normalize(k),String(v));
+        }
+      }
       applyTranslations(document);
     }else{
       sourceBundle={};targetBundle={};sourceToTarget=new Map();
@@ -140,13 +151,14 @@ function observe(){
   observer=new MutationObserver(records=>{
     if(applying||activeLocale===DEFAULT_LOCALE||!sourceToTarget.size)return;
     for(const r of records){
+      if(r.type==='characterData'&&r.target?.parentElement){applyTranslations(r.target.parentElement);continue;}
       for(const node of r.addedNodes){
         if(node.nodeType===Node.ELEMENT_NODE)applyTranslations(node);
         else if(node.nodeType===Node.TEXT_NODE&&node.parentElement)applyTranslations(node.parentElement);
       }
     }
   });
-  observer.observe(document.documentElement,{subtree:true,childList:true});
+  observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
 }
 function setSwitcherVisibility(cfg){
   const count=new Set((cfg.supportedLocales||[]).map(baseLocale).filter(Boolean)).size;
@@ -158,7 +170,7 @@ function setSwitcherVisibility(cfg){
 }
 async function boot(){
   try{
-    const cfg=await config();
+    const cfg=await config().catch(()=>({defaultLocale:'ko',supportedLocales:['ko','en']}));
     setSwitcherVisibility(cfg);
     const locale=requestedLocale(cfg);
     await setLocale(locale);
