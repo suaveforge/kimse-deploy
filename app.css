@@ -1479,3 +1479,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  .clinical-specialty-review li p{font-size:7.5pt}
  .clinical-specialty-review li small{font-size:7pt}
 }
+
+/* Keyboard skip-link remains accessible on screen; print only contains the report. */
+@media print{.skip-link,.offline-banner,#announcer,.visually-hidden{display:none!important}}
