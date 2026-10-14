@@ -31,7 +31,8 @@ async function run(){
     institution:'SYNTHETIC TEST ONLY',source_route:'USER_UPLOAD',
     items:i===17?Array.from({length:17},(_,j)=>({
       name:'EXTERNAL_PARITY_'+String(j+1).padStart(2,'0'),
-      value:j===0?0:j===16?17:null,unit:'points'
+      value:j===0?0:j===16?17:null,unit:'points',
+      assay:j===0?'SYNTHETIC-LC-MS-MS-METHOD':null
     })):[{name:'ZERO_TEST_'+i,value:0,unit:'points'}]
   }));
   report.professional_outcomes=Array.from({length:18},(_,i)=>({
@@ -64,6 +65,10 @@ async function run(){
     ok(await externalTags.count()===34,'screen-17-extra-items-not-truncated');
     ok((await externalTags.nth(17).innerText()).includes('EXTERNAL_PARITY_01 · 0 points'),
       'screen-first-result-is-measured-zero');
+    ok((await externalTags.nth(17).innerText()).includes('SYNTHETIC-LC-MS-MS-METHOD'),
+      'screen-assay-input-visible-as-unverified');
+    ok((await externalTags.nth(17).innerText()).includes('미검증'),
+      'screen-assay-not-provider-verified');
     ok((await externalTags.nth(25).innerText()).includes('EXTERNAL_PARITY_09 · 검사값 미수집'),
       'screen-missing-result-is-not-zero');
     ok((await externalTags.nth(33).innerText()).includes('EXTERNAL_PARITY_17 · 17 points'),
@@ -84,6 +89,8 @@ async function run(){
     for(const token of ['FAMILY_FIRST','FAMILY_LAST','LONG_NOTE_END','EXTERNAL_FIRST','EXTERNAL_LAST','EXTERNAL_PARITY_01','EXTERNAL_PARITY_17','PROFESSIONAL_FIRST','PROFESSIONAL_LAST','ZERO_SCORE_17']){
       ok(text.includes(token),'pdf-text-'+token);
     }
+    ok(text.includes('SYNTHETIC-LC-MS-MS-METHOD'),
+      'pdf-entered-assay-metadata-preserved');
     for(let i=1;i<=17;i++){
       const label='EXTERNAL_PARITY_'+String(i).padStart(2,'0');
       ok(text.includes(label),'pdf-all-seventeen-'+label);
