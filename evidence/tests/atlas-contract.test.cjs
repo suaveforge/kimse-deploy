@@ -86,7 +86,11 @@ for(const [id,reference] of Object.entries({hillingdon_council:'FOI 06272',manch
 }
 const shropshire=data.institutions.find(x=>x.id==='shropshire_council');
 assert.equal(shropshire.progress.formSubmitted,true,'Shropshire form confirmation received');
-assert.equal(shropshire.progress.formalFOIRef,null,'Shropshire formal reference awaits email');
+assert.equal(shropshire.progress.formalFOIRef,'RFI# 13078','Shropshire formal reference confirmed by direct 14 Oct email');
+for(const [id,ref] of Object.entries({warrington_borough_council:'IR/FW/0875',southwark_council:'68279953'})){
+  const x=data.institutions.find(v=>v.id===id);
+  assert.equal(x?.progress?.formalFOIRef,ref,'official 14 Oct FOI registration: '+id);
+}
 assert.equal(data.contacts.procurementSpendEvidence,0,'FOI references are not actual spend documents');
 assert.equal(data.contacts.mutualCollaboration,0,'no partnership has been agreed');
 assert.equal(data.progressStages.reduce((s,x)=>s+x.count,0),92,'all stages accounted for');
