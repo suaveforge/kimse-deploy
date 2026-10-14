@@ -2877,21 +2877,40 @@ function clinicalSpecialtyReview(report){
   const fStatus=[d.function_independence?.informant_status,d.function_independence?.self_status,s.function_status].find(yes);
   const fAnswer=family.find(x=>['CONFIRMED','NO_CHANGE','UNKNOWN'].includes(x.assessment))?.assessment;
   const fLabel=({CONFIRMED:'가족이 변화 보고',NO_CHANGE:'가족이 변화 미확인(정상 소견 아님)',UNKNOWN:'판단 어려움'})[fAnswer]||'보호자 확인 기록';
-  const safety=arr(d.safety_support?.context_events).length||arr(d.safety_support?.events).length||arr(risk.safety_history?.events).length;
-  const mood=arr(d.mood_behavior?.context_events).length||arr(risk.mood_behavior_history?.events).length||yes(d.mood_behavior?.current_user_report);
+  // Presence and explicit absence are BOTH recorded statements, not clinical
+  // confirmation. Count/status distinctions must survive every specialty view.
+  const firstRows=(...groups)=>groups.map(arr).find(group=>group.length)||[];
+  const safetyRows=firstRows(d.safety_support?.context_events,d.safety_support?.events,risk.safety_history?.events);
+  const moodRows=firstRows(d.mood_behavior?.context_events,risk.mood_behavior_history?.events);
+  const recentCognition=arr(d.cognition?.recent_kimse_assessments);
+  const reportEvents=(records,positive,negative)=>{
+    if(!records.length)return null;
+    const present=records.filter(row=>row?.status==='PRESENT').length;
+    const absent=records.filter(row=>row?.status==='ABSENT').length;
+    if(present)return positive+' '+present+'건 · 사용자 보고(검증 아님)'
+      +(absent?' · 부재 보고 '+absent+'건 병존 · 확인 필요':'');
+    if(absent===records.length)return negative+' '+absent+'건 · 사용자 보고(객관 확인 아님)';
+    return '상태 미확인 기록 '+records.length+'건 · 원자료 확인 필요';
+  };
   const medNames=medicines.map(x=>x?.name).filter(yes);
-  const medValue=medicines.length?'현재 복약 '+medicines.length+'건'+(medNames.length?' · '+medNames.slice(0,2).join(', ')+(medNames.length>2?' 외':''):'')
-    :medChange.length?'복약 변경 '+medChange.length+'건':null;
+  const medicationList=medicines.length?'현재 복약 '+medicines.length+'건'
+    +(medNames.length?' · '+medNames.slice(0,2).join(', ')+(medNames.length>2?' 외':''):''):null;
+  const medicationChange=reportEvents(medChange,'복약 변경 보고','복약 변경 없다고 보고');
+  const medValue=[medicationList,medicationChange||medicationList&&'복약 변경 자료 없음'].filter(Boolean).join(' · ')||null;
+  const moodContext=reportEvents(moodRows,'기분·행동 변화 보고','기분·행동 변화 없다고 보고')
+    ||(yes(d.mood_behavior?.current_user_report)?'기분·행동 사용자 진술: '+String(d.mood_behavior.current_user_report).slice(0,80):null);
+  const safetyContext=reportEvents(safetyRows,'안전/지원 사건 보고','안전/지원 사건 없다고 보고');
+  const acuteContext=reportEvents(acute,'급성질환/감염/입원 관련 보고','급성질환/감염/입원 없다고 보고');
   const data={
     trajectory:['처음 관찰한 변화',yes(s.first_observed_change_at)?String(s.first_observed_change_at).slice(0,10)+' · 질환 발병일 아님':null,'KIMSE 변화 관찰 요약'],
-    cognition:['반복 인지과제',cognitive.length?'앱 반복과제 '+cognitive.length+'회 · 임상검사 아님':null,'KIMSE 앱 과제 · 표준 임상검사 아님'],
+    cognition:['반복 인지과제',cognitive.length?'앱 반복과제 '+cognitive.length+'회 · 임상검사 아님':recentCognition.length?'앱 인지관찰 '+recentCognition.length+'건 · 표준 임상검사 아님':null,'KIMSE 앱 과제 · 표준 임상검사 아님'],
     family:['가족·보호자 관찰',family.length?'가족 응답 '+family.length+'건 · '+fLabel:null,'보호자 진술 · 객관 진찰 아님'],
     external:['기존 검사·진료 기록',external.length?'연결된 외부 기록 '+external.length+'건 · 상세 원자료 참조':null,'사용자 연결자료 · 의료기관 검증 여부 별도'],
     function:['일상기능·독립성',fStatus?clinicalFunctionLabel(fStatus):null,'본인 또는 보호자 보고 · 의사 평가 아님'],
-    safety:['안전·지원 관련 사건',safety?'등록된 안전/지원 사건 정보 있음 · 원자료 확인':null,'사용자·보호자 기록 · 사고 없음 추정 금지'],
+    safety:['안전·지원 관련 사건',safetyContext,'사용자·보호자 기록 · 사고 없음 추정 금지'],
     medication:['복약·복약 변경',medValue,'사용자 복약 기록 · 처방 확인 아님'],
-    mood:['기분·행동 맥락',mood?'기분·행동 보고 있음 · 본문 상세 확인':null,'사용자/가족 진술 · 정신질환 진단 아님'],
-    acute:['급성질환·감염·입원',acute.length?'관련 사용자 기록 '+acute.length+'건':null,'사용자 사건 기록 · 의사 진단 아님']
+    mood:['기분·행동 맥락',moodContext,'사용자/가족 진술 · 정신질환 진단 아님'],
+    acute:['급성질환·감염·입원',acuteContext,'사용자 사건 기록 · 의사 진단 아님']
   };
   return '<section class="clinical-specialty-review" data-specialty-focus="'+focus
     +'" aria-label="진료과별 환자 지참 기록 요약">'
