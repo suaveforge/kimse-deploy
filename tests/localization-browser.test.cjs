@@ -47,6 +47,36 @@ async function run() {
       console.log(JSON.stringify({test:c.name,result:'PASS',...stats,pageErrors:errors.slice(0,4)}));
       await context.close();
     }
+
+    const context=await browser.newContext({locale:'en-GB',viewport:{width:390,height:844}});
+    const page=await context.newPage();
+    await page.goto(base+'/evidence/?lang=en',{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.body.innerText.includes('Choose a section to explore.'),{timeout:30000});
+    for(const [name,selector,expectedPath] of [
+      ['Observations','a[href*="observation.html"]','observation.html'],
+      ['Clinical','a[href*="clinical.html"]','clinical.html'],
+      ['R&D','a[href*="rd.html"]','rd.html'],
+      ['Trust','a[href*="trust.html"]','trust.html']
+    ]){
+      await page.goto(base+'/evidence/?lang=en',{waitUntil:'domcontentloaded'});
+      await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelectorAll('a[href]').length>3,{timeout:30000});
+      const a=page.locator(selector).first();
+      if(await a.count()===0)throw new Error(name+' menu link missing');
+      await a.click();
+      await page.waitForURL(url=>url.pathname.endsWith(expectedPath),{timeout:20000});
+      await page.waitForFunction(()=>document.documentElement.lang==='en',{timeout:20000});
+      const state=await page.evaluate(()=>({url:location.href,lang:document.documentElement.lang,selector:document.querySelector('[data-kimse-locale-select]')?.value,hangul:(document.body.innerText.match(/[가-힣]/g)||[]).length}));
+      if(state.selector!=='en')throw new Error(name+' selected language reset: '+JSON.stringify(state));
+      console.log('DEEP_LINK_LOCALE',JSON.stringify({name,...state}));
+    }
+    for(const route of ['start','role','auth']){
+      await page.goto(base+'/?lang=en#/'+route,{waitUntil:'domcontentloaded'});
+      await page.waitForFunction(()=>document.documentElement.lang==='en',{timeout:20000});
+      await page.waitForTimeout(300);
+      const stat=await page.evaluate(()=>({route:location.hash,lang:document.documentElement.lang,hangul:(document.body.innerText.match(/[가-힣]/g)||[]).length,text:document.querySelector('#app')?.innerText.slice(0,350)}));
+      console.log('APP_ROUTE_LOCALE',JSON.stringify(stat));
+    }
+    await context.close();
   }finally{await browser.close()}
 }
 run().catch(error=>{console.error('KIMSE English localization QA FAILED',error);process.exit(1)});
