@@ -30,7 +30,7 @@ jobs:
           sleep 2
       - name: Generate private-data-free English catalog
         env:
-          MAX_TRANSLATIONS: "2200"
+          MAX_TRANSLATIONS: "5000"
           TRANSLATION_CONCURRENCY: "5"
         run: node tools/build-english-catalog.cjs
       - name: Preserve generated English catalog
