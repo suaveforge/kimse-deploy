@@ -28,7 +28,7 @@ async function run() {
           const p=node.parentElement;
           if(p&&p.getClientRects().length&&!p.closest('script,style,noscript'))visibleText+=(node.nodeValue||'')+' ';
         }
-        return {lang:document.documentElement.lang,untranslatedHangulChars:(visibleText.match(/[가-힣]/g)||[]).length,bodyChars:visibleText.length,overflow:document.documentElement.scrollWidth>window.innerWidth+6,untranslatedExamples:[...new Set(visibleText.split(/[\n·|]/).map(t=>t.trim()).filter(t=>/[가-힣]/.test(t)))].slice(0,18).map(x=>x.slice(0,150))};
+        return {lang:document.documentElement.lang,untranslatedHangulChars:(visibleText.match(/[가-힣]/g)||[]).length,bodyChars:visibleText.length,overflow:document.documentElement.scrollWidth>window.innerWidth+6,scrollWidth:document.documentElement.scrollWidth,viewport:window.innerWidth,untranslatedExamples:[...new Set(visibleText.split(/[\n·|]/).map(t=>t.trim()).filter(t=>/[가-힣]/.test(t)))].slice(0,18).map(x=>x.slice(0,150))};
       });
       if(c.path.startsWith('/evidence/rd')&&expectedLanguage==='en'){
         const more=await page.evaluate(()=>{
