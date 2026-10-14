@@ -2855,6 +2855,76 @@ function clinicalPrintableSourceRecords(report){
     }).join('')+'</section>';
 }
 
+// Read-only source references for specialty cards. These paths point to the
+// exact Canonical Dataset field or array row, never an inferred medical finding.
+function clinicalSpecialtySourceTrace(report,id){
+  const d=report?.clinical_domains||{},risk=report?.risk_confounders||{},pre=report?.previsit_summary||{};
+  const rows=[],arr=x=>Array.isArray(x)?x:[],known=x=>x!==null&&x!==undefined&&x!=='';
+  const add=(path,values,source)=>{
+    arr(values).forEach((value,i)=>{
+      if(value===null||value===undefined)return;
+      const row=value&&typeof value==='object'?value:{value};
+      const date=row.occurred_at||row.feedback_at||row.performed_at||row.evaluation_date
+        ||row.observed_at||row.assessed_at||row.started_at||null;
+      const recorded=row.recorded_at||row.created_at||null;
+      const state=row.status??row.assessment??row.value??null;
+      rows.push({path:path+'['+i+']',date,recorded,state,
+        source:row.reported_by||row.provenance||row.source_type||row.source_route||row.institution||source});
+    });
+  };
+  const field=(path,value,source,date)=>{
+    if(known(value))add(path,[{value,date,source_type:source}],source);
+  };
+  const first=(groups)=>{
+    const selected=groups.find(x=>arr(x.rows).length);
+    if(selected)add(selected.path,selected.rows,selected.source);
+  };
+  switch(id){
+    case 'trajectory':
+      field('previsit_summary.first_observed_change_at',pre.first_observed_change_at,'KIMSE 첫 관찰 시점',pre.first_observed_change_at);break;
+    case 'cognition':
+      add('clinical_domains.cognition.repeatable_task_sessions',d.cognition?.repeatable_task_sessions,'KIMSE 앱 반복과제');
+      add('clinical_domains.cognition.recent_kimse_assessments',d.cognition?.recent_kimse_assessments,'KIMSE 앱 인지관찰');break;
+    case 'family':
+      add('family_feedback',report?.family_feedback,'가족·보호자 진술');break;
+    case 'external':
+      add('external_clinical_records',report?.external_clinical_records,'사용자 등록 외부기록');break;
+    case 'function':
+      for(const [path,value,source] of [
+        ['clinical_domains.function_independence.informant_status',d.function_independence?.informant_status,'가족 보고'],
+        ['clinical_domains.function_independence.self_status',d.function_independence?.self_status,'본인 보고'],
+        ['previsit_summary.function_status',pre.function_status,'KIMSE 요약']
+      ])if(known(value)&&value!=='UNKNOWN'&&value!=='not_collected')field(path,value,source);break;
+    case 'safety':
+      first([{path:'clinical_domains.safety_support.context_events',rows:d.safety_support?.context_events,source:'사용자·보호자 안전 보고'},
+        {path:'clinical_domains.safety_support.events',rows:d.safety_support?.events,source:'사용자·보호자 안전 보고'},
+        {path:'risk_confounders.safety_history.events',rows:risk.safety_history?.events,source:'사용자·보호자 안전 보고'}]);break;
+    case 'medication':
+      add('risk_confounders.current_medications',risk.current_medications,'사용자 복약 기록');
+      add('risk_confounders.medication_change.events',risk.medication_change?.events,'사용자 복약 변경 보고');break;
+    case 'mood':
+      first([{path:'clinical_domains.mood_behavior.context_events',rows:d.mood_behavior?.context_events,source:'사용자·가족 기분행동 보고'},
+        {path:'risk_confounders.mood_behavior_history.events',rows:risk.mood_behavior_history?.events,source:'사용자·가족 기분행동 보고'}]);
+      if(!rows.length)field('clinical_domains.mood_behavior.current_user_report',d.mood_behavior?.current_user_report,'사용자 진술');break;
+    case 'acute':
+      add('risk_confounders.acute_illness_context.events',risk.acute_illness_context?.events,'사용자 급성질환 기록');break;
+  }
+  if(!rows.length)return '<small class="clinical-specialty-source-empty">원자료 미수집 · 정상 소견으로 해석하지 않음</small>';
+  const date=x=>known(x)?String(x).slice(0,10):'날짜 미입력';
+  const summary='<small class="clinical-specialty-source-summary">원자료 '+rows.length+'건 · 출처·기록일 확인 가능 (의료기관 검증 아님)</small>';
+  const detail='<details class="clinical-specialty-trace"><summary>이 카드의 원자료 위치·상태 확인</summary><ol>'
+    +rows.map(row=>'<li data-clinical-source-path="'+esc(row.path)+'">'
+       +'<span class="clinical-specialty-source-path">'+esc(row.path)+'</span>'
+       +'<span>관찰·검사일 '+esc(date(row.date))
+       +' · 앱 등록일 '+esc(date(row.recorded))
+       +' · 출처 '+esc(String(row.source||'미확인'))
+       +' · 상태 '+esc(known(row.state)?String(row.state):'별도 상태값 없음')+'</span></li>').join('')
+    +'</ol><p>표시된 위치는 원본 기록의 참조 경로입니다. 사용자 입력·진단·의료진 확인 여부는 구분해야 합니다.</p></details>';
+  const paths=[...new Set(rows.map(row=>row.path.replace(/\\[\\d+\\]$/,'')))];
+  const print='<small class="clinical-specialty-print-refs">원자료 위치: '+esc(paths.join(' · '))+'</small>';
+  return summary+detail+print;
+}
+
 // This print-only preparation section reflects a selected public research source
 // without claiming that its guidance is an approved KIMSE intake format.
 // Four editorial reading orders of existing patient/carer/app records.
@@ -2928,7 +2998,8 @@ function clinicalSpecialtyReview(report){
       return '<li data-specialty-field="'+id+'" data-recorded="'+collected+'">'
         +'<b class="clinical-specialty-rank">'+(i+1)+'</b><div><strong>'+esc(label)+'</strong><p>'
         +esc(collected?value:'자료 없음 · 정상 소견으로 해석하지 않음')
-        +'</p><small>출처 · '+esc(origin)+'</small></div></li>';
+        +'</p><small>출처 · '+esc(origin)+'</small>'
+        +clinicalSpecialtySourceTrace(report,id)+'</div></li>';
     }).join('')+'</ol></section>';
 }
 
