@@ -2920,7 +2920,7 @@ function clinicalSpecialtySourceTrace(report,id){
        +' · 출처 '+esc(String(row.source||'미확인'))
        +' · 상태 '+esc(known(row.state)?String(row.state):'별도 상태값 없음')+'</span></li>').join('')
     +'</ol><p>표시된 위치는 원본 기록의 참조 경로입니다. 사용자 입력·진단·의료진 확인 여부는 구분해야 합니다.</p></details>';
-  const paths=[...new Set(rows.map(row=>row.path.replace(/\\[\\d+\\]$/,'')))];
+  const paths=[...new Set(rows.map(row=>row.path.replace(/\[\d+\]$/,'')))];
   const print='<small class="clinical-specialty-print-refs">원자료 위치: '+esc(paths.join(' · '))+'</small>';
   return summary+detail+print;
 }
