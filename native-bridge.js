@@ -68,6 +68,19 @@ async function startStepUpdates(callback){
     }
   }};
 }
+async function getRecentStepDays(days=7){
+  const p=plugin();
+  if(!p||typeof p.getRecentStepDays!=='function')return [];
+  try{
+    const result=await p.getRecentStepDays({days:Math.min(7,Math.max(1,Number(days)||7))});
+    if(!result||result.available===false||result.granted===false||!Array.isArray(result.days))return [];
+    return result.days.filter(x=>
+      typeof x.localDay==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.localDay)&&
+      Number.isSafeInteger(Number(x.steps))&&Number(x.steps)>=0&&
+      !Number.isNaN(new Date(x.observedAt).getTime())
+    ).map(x=>({day:x.localDay,steps:Number(x.steps),observedAt:x.observedAt,provider:x.provider||'ios-core-motion'}));
+  }catch{return []}
+}
 async function getDailySignals(){
   const rows=[];
   try{
@@ -82,6 +95,7 @@ window.KIMSE_NATIVE=Object.freeze({
   requestStepPermission:permissions,
   getTodaySteps:readToday,
   startStepUpdates,
-  getDailySignals
+  getDailySignals,
+  getRecentStepDays
 });
 })();
