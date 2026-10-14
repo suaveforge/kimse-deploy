@@ -41,7 +41,15 @@ async function run() {
           while(n=w.nextNode()){const e=n.parentElement;if(!e||e.getClientRects().length===0)continue;const txt=(n.nodeValue||'').trim();if(/[가-힣]/.test(txt))frequency.set(txt,(frequency.get(txt)||0)+1)}
           const targets=['html','body','.page','.page-wrapper','.page-body','.page-body .container-xl','.kimse-atlas-wrap','.kimse-atlas-shell','.kimse-atlas-progress','.kimse-progress-numbers','.kimse-progress-table-scroll','.kimse-progress-tools'];
           const boxes=targets.map(selector=>{const el=document.querySelector(selector);if(!el)return{selector,missing:true};const b=el.getBoundingClientRect(),c=getComputedStyle(el);return{selector,left:Math.round(b.left),right:Math.round(b.right),width:Math.round(b.width),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:c.overflowX}}); 
-          return {boxes,culprits,hangulTextNodes:[...frequency].sort((a,b)=>b[1]-a[1]).slice(0,35).map(([phrase,count])=>({phrase:phrase.slice(0,125),count}))};
+          const unclipped=[...document.querySelectorAll('body *')].filter(el=>{
+            const b=el.getBoundingClientRect();if(b.right<=view+8)return false;
+            for(let p=el.parentElement;p&&p!==document.body;p=p.parentElement){
+              const x=getComputedStyle(p).overflowX;
+              if(['auto','scroll','hidden','clip'].includes(x))return false;
+            }
+            return true;
+          }).slice(0,16).map(el=>({tag:el.tagName,id:el.id,cls:typeof el.className==='string'?el.className.slice(0,100):'',right:Math.round(el.getBoundingClientRect().right),text:(el.textContent||'').slice(0,80)}));
+          return {boxes,unclipped,culprits,hangulTextNodes:[...frequency].sort((a,b)=>b[1]-a[1]).slice(0,35).map(([phrase,count])=>({phrase:phrase.slice(0,125),count}))};
         });
         console.log('EN_ATLAS_DETAIL',JSON.stringify(more));
       }
