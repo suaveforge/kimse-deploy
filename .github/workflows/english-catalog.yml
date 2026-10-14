@@ -33,6 +33,14 @@ jobs:
           MAX_TRANSLATIONS: "2200"
           TRANSLATION_CONCURRENCY: "5"
         run: node tools/build-english-catalog.cjs
+      - name: Preserve generated English catalog
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-offline-English-catalog
+          path: kimse-en-auto.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Commit generated public catalog
         run: |
           git config user.name 'kimse-localization-bot'
@@ -40,5 +48,7 @@ jobs:
           git add kimse-en-auto.json
           if ! git diff --cached --quiet; then
             git commit -m "i18n: generate offline English public KIMSE UI catalog"
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           fi
