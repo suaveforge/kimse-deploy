@@ -270,8 +270,16 @@ jobs:
               ['psychiatry','정신건강의학과'],['primary-care','가정의학과']
             ]){
               await dp.locator('#clinical-target-department').fill(department);
-              await dp.locator('#clinical-target-department').press('Tab');
-              await dp.waitForFunction(()=>document.querySelector('.clinical-visit-brief')?.textContent.includes('기관 미선택 · 병원별 공개 의뢰요건은 평가하지 않았습니다'),null,{timeout:12000});
+              // Explicitly exercise the production delegated "change" handler:
+              // Playwright's Tab blur may race with DOM replacement after a
+              // previous print-mode switch.
+              await dp.locator('#clinical-target-department').dispatchEvent('change');
+              await dp.waitForFunction(expected=>{
+                const review=document.querySelector('.clinical-specialty-review');
+                const brief=document.querySelector('.clinical-visit-brief');
+                return review?.dataset.specialtyFocus===expected &&
+                  brief?.textContent.includes('기관 미선택 · 병원별 공개 의뢰요건은 평가하지 않았습니다');
+              },{neurology:'NEUROLOGY',geriatrics:'GERIATRICS',psychiatry:'PSYCHIATRY','primary-care':'PRIMARY_CARE'}[specialty],{timeout:12000});
               const review=dp.locator('.clinical-specialty-review');
               check(await review.count()===1,'specialty-has-source-grounded-review-'+specialty);
               check(await review.locator('li').count()===4,'specialty-four-card-review-'+specialty);
