@@ -1,0 +1,14 @@
+name: KIMSE native resume live proof
+on:
+  push:
+    branches: [ux-52-mobile-final-20261014]
+    paths:
+      - 'tests/live-native-resume-qa.py'
+      - '.github/workflows/live-native-resume-qa.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/live-native-resume-qa.py
