@@ -30,6 +30,19 @@ async function run() {
         }
         return {lang:document.documentElement.lang,untranslatedHangulChars:(visibleText.match(/[가-힣]/g)||[]).length,bodyChars:visibleText.length,overflow:document.documentElement.scrollWidth>window.innerWidth+6,untranslatedExamples:[...new Set(visibleText.split(/[\n·|]/).map(t=>t.trim()).filter(t=>/[가-힣]/.test(t)))].slice(0,18).map(x=>x.slice(0,150))};
       });
+      if(c.path.startsWith('/evidence/rd')&&expectedLanguage==='en'){
+        const more=await page.evaluate(()=>{
+          const view=window.innerWidth;
+          const culprits=[...document.querySelectorAll('body *')].map(el=>{
+            const b=el.getBoundingClientRect(),st=getComputedStyle(el);
+            return {tag:el.tagName,id:el.id,className:(typeof el.className==='string'?el.className:'').slice(0,75),right:Math.round(b.right),width:Math.round(b.width),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth};
+          }).filter(x=>x.right>view+8&&x.width>0).slice(0,14);
+          const frequency=new Map();const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+          while(n=w.nextNode()){const e=n.parentElement;if(!e||e.getClientRects().length===0)continue;const txt=(n.nodeValue||'').trim();if(/[가-힣]/.test(txt))frequency.set(txt,(frequency.get(txt)||0)+1)}
+          return {culprits,hangulTextNodes:[...frequency].sort((a,b)=>b[1]-a[1]).slice(0,35).map(([phrase,count])=>({phrase:phrase.slice(0,125),count}))};
+        });
+        console.log('EN_ATLAS_DETAIL',JSON.stringify(more));
+      }
       await page.screenshot({path:'/tmp/kimse-'+cases.indexOf(c)+'-mobile.png',fullPage:false});
       console.log(JSON.stringify({test:c.name,result:'PASS',...stats,pageErrors:errors.slice(0,4)}));
       await context.close();
