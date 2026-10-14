@@ -1456,3 +1456,26 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media print{
  .clinical-professional-tags .clinical-assay-note{font-size:8pt;break-inside:auto}
 }
+
+.clinical-specialty-review{margin-top:10px;border:1px solid #d5e0e7;border-radius:12px;padding:10px 12px;min-width:0;background:#fcfdfe}
+.clinical-specialty-heading h2{margin:0 0 3px;font-size:14px;color:var(--kimse-navy)}
+.clinical-specialty-heading p{margin:0 0 6px;font-size:11px;line-height:1.35;color:#536573}
+.clinical-specialty-review ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
+.clinical-specialty-review li{display:flex;gap:7px;min-width:0;padding:7px 8px;background:white;border:1px solid #e0e7ec;border-radius:8px;overflow-wrap:anywhere}
+.clinical-specialty-review li[data-recorded="false"]{border-style:dashed}
+.clinical-specialty-rank{min-width:14px;color:#466579;font-size:12px}
+.clinical-specialty-review li>div{min-width:0}
+.clinical-specialty-review li strong{display:block;font-size:11px;line-height:1.35}
+.clinical-specialty-review li p{margin:3px 0;font-size:11px;line-height:1.35}
+.clinical-specialty-review li small{display:block;font-size:10px;line-height:1.35;color:#576a77}
+@media(max-width:620px){.clinical-specialty-review ol{grid-template-columns:1fr}}
+@media print{
+ .clinical-specialty-review{margin-top:6pt;padding:6pt 8pt;break-inside:avoid}
+ .clinical-specialty-heading h2{font-size:10pt}
+ .clinical-specialty-heading p{font-size:8pt}
+ .clinical-specialty-review ol{grid-template-columns:repeat(2,minmax(0,1fr));gap:3pt}
+ .clinical-specialty-review li{padding:3pt 4pt;break-inside:avoid}
+ .clinical-specialty-review li strong{font-size:8pt}
+ .clinical-specialty-review li p{font-size:7.5pt}
+ .clinical-specialty-review li small{font-size:7pt}
+}
