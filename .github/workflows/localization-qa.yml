@@ -5,6 +5,7 @@ on:
     paths:
       - 'index.html'
       - 'kimse-en.json'
+      - 'kimse-en-auto.json'
       - 'localizehub-runtime.js'
       - 'evidence/**'
       - 'tests/localization-browser.test.cjs'
