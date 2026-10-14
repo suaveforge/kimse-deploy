@@ -74,7 +74,8 @@ function translationFor(key){
   out=out.replace(/(\d+)\s*개 기관/g,'$1 institutions')
     .replace(/(\d+)\s*곳/g,'$1 institutions')
     .replace(/(\d+)\s*단계/g,'Stage $1')
-    .replace(/(\d+)\s*건/g,'$1 records')\n    .replace(/(\d+)\s*점/g,'$1 points');
+    .replace(/(\d+)\s*건/g,'$1 records')
+    .replace(/(\d+)\s*점/g,'$1 points');
   const translated=out===key?null:out;
   if(compositeCache.size>2000)compositeCache.clear();
   compositeCache.set(key,translated);
