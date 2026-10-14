@@ -1302,6 +1302,14 @@ async function flushSignals(keepalive=false){
         const reply=await response.json();
         const known=new Set(batch.map(e=>e.client_event_id));
         const ids=new Set((reply.client_event_ids||[]).filter(id=>known.has(id)));
+        // Backward compatibility: the existing production API only reports newly
+        // inserted IDs. A fully accepted batch may contain already-stored IDs.
+        // The server's inserted+duplicates check is required before clearing them.
+        const inserted=Number(reply.inserted),duplicates=Number(reply.duplicates);
+        if(ids.size===inserted&&Number.isSafeInteger(inserted)&&Number.isSafeInteger(duplicates)&&
+           inserted>=0&&duplicates>=0&&inserted+duplicates===batch.length){
+          for(const event of batch)ids.add(event.client_event_id);
+        }
         if(!ids.size)throw new Error('signals_unacknowledged');
         if(journal&&!await journal.acknowledge([...ids]))throw new Error('journal_ack_failed');
         S.monitoring.pending=S.monitoring.pending.filter(e=>!ids.has(e.client_event_id));
