@@ -862,12 +862,30 @@ function ensureMonitoringDay(){
 function noteObserved(metric,value,unit='',source='pwa'){
   S.monitoring.lastObserved[metric]={value:Number(value),unit:unit||null,source,at:new Date().toISOString(),day:localDayKey()};
 }
+const journaledLocalIds=new Set();
+async function hydrateSignalJournal(){
+  const journal=window.KIMSE_SIGNAL_JOURNAL;
+  if(!journal)return false;
+  const done=await journal.migrate(S.monitoring.pending);
+  if(done&&S.monitoring.pending.length>120){S.monitoring.pending=S.monitoring.pending.slice(-120);save()}
+  return done;
+}
 function queueSignal(metric,value,unit='',source='pwa',metadata={}){
   const n=Number(value);if(!monitoringEnabled()||!Number.isFinite(n))return;
   noteObserved(metric,n,unit,source);
   const eventMetadata={...(metadata||{}),local_day:localDayKey()};
-  S.monitoring.pending.push({client_event_id:signalId(),source,metric,value:n,unit:unit||null,metadata:eventMetadata,observed_at:new Date().toISOString()});
-  if(S.monitoring.pending.length>300)S.monitoring.pending=S.monitoring.pending.slice(-300);save();
+  const event={client_event_id:signalId(),source,metric,value:n,unit:unit||null,metadata:eventMetadata,observed_at:new Date().toISOString()};
+  S.monitoring.pending.push(event);save();
+  const journal=window.KIMSE_SIGNAL_JOURNAL;
+  if(journal)void journal.enqueue(event).then(persisted=>{
+    if(!persisted){S.monitoring.lastSyncError='기기 저장소 확인 필요 · 기록은 임시 보관 중';save();return}
+    journaledLocalIds.add(event.client_event_id);
+    let trimmed=false;
+    while(S.monitoring.pending.length>120&&journaledLocalIds.has(S.monitoring.pending[0]?.client_event_id)){
+      journaledLocalIds.delete(S.monitoring.pending.shift().client_event_id);trimmed=true;
+    }
+    if(trimmed)save();
+  }).catch(()=>{S.monitoring.lastSyncError='관찰 기록 저장을 확인하지 못했습니다.';save()});
 }
 function queueInitialSignals(){
   if(!monitoringEnabled()||S.monitoring.initialSignalsQueued)return false;
@@ -1260,15 +1278,43 @@ function handleMonitoringAlert(alert){
     if(window.KIMSE_PUSH?.status)window.KIMSE_PUSH.status().then(x=>{if(!x?.active)fallback()}).catch(fallback);else fallback();
   }
 }
+let monitoringFlushPromise=null;
 async function flushSignals(keepalive=false){
-  if(!monitoringEnabled()||!navigator.onLine||!S.monitoring.pending.length)return false;
-  if(!await startRemoteMonitoring())return false;
-  const batch=S.monitoring.pending.slice(0,100);
-  try{
-    const r=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/signals/batch',{method:'POST',headers:remoteHeaders(),body:JSON.stringify({account_id:S.remote.accountId,events:batch}),keepalive:!!keepalive});
-    if(!r.ok)throw new Error('signals '+r.status);const x=await r.json(),ids=new Set(x.client_event_ids||[]);
-    S.monitoring.pending=S.monitoring.pending.filter(e=>!ids.has(e.client_event_id));S.monitoring.lastFlushAt=new Date().toISOString();S.monitoring.lastSyncError='';if(x.alert)handleMonitoringAlert(x.alert);if(x.stage)S.stage.summary=x.stage;save();return true;
-  }catch{S.monitoring.lastSyncError='관찰 데이터 전송 대기 중';save();return false}
+  if(monitoringFlushPromise)return monitoringFlushPromise;
+  monitoringFlushPromise=(async()=>{
+    if(!monitoringEnabled()||!navigator.onLine)return false;
+    const journal=window.KIMSE_SIGNAL_JOURNAL;
+    if(!S.monitoring.pending.length&&!journal)return false;
+    if(!await startRemoteMonitoring())return false;
+    let sent=0;
+    try{
+      for(let pass=0;pass<10;pass++){
+        const batch=journal?await journal.pending(100,S.monitoring.pending):S.monitoring.pending.slice(0,100);
+        if(!batch.length)break;
+        const response=await fetch(API+'/api/v1/subjects/'+encodeURIComponent(S.remote.subjectId)+'/signals/batch',{
+          method:'POST',headers:remoteHeaders(),body:JSON.stringify({account_id:S.remote.accountId,events:batch}),keepalive:!!keepalive
+        });
+        if(!response.ok)throw new Error('signals '+response.status);
+        const reply=await response.json();
+        const known=new Set(batch.map(e=>e.client_event_id));
+        const ids=new Set((reply.client_event_ids||[]).filter(id=>known.has(id)));
+        if(!ids.size)throw new Error('signals_unacknowledged');
+        if(journal&&!await journal.acknowledge([...ids]))throw new Error('journal_ack_failed');
+        S.monitoring.pending=S.monitoring.pending.filter(e=>!ids.has(e.client_event_id));
+        for(const id of ids)journaledLocalIds.delete(id);
+        sent+=ids.size;
+        S.monitoring.lastFlushAt=new Date().toISOString();S.monitoring.lastSyncError='';
+        if(reply.alert)handleMonitoringAlert(reply.alert);
+        if(reply.stage)S.stage.summary=reply.stage;
+        save();
+        if(ids.size<batch.length)break;
+      }
+      return sent>0;
+    }catch{
+      S.monitoring.lastSyncError='관찰 데이터 전송 대기 중';save();return false;
+    }
+  })();
+  try{return await monitoringFlushPromise}finally{monitoringFlushPromise=null}
 }
 async function syncMonitoring(){
   if(!monitoringEnabled()||!navigator.onLine)return false;if(!await startRemoteMonitoring())return false;
@@ -2049,8 +2095,8 @@ function monitoringTodaySnapshot(){
 }
 function collectionStateItems(){
   const d=ensureMonitoringDay(),locOn=S.consents.location,motionOn=S.consents.motion,usageOn=S.consents.usage;
-  const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?(d.locationInitialized?'수집 중':'위치 신호 대기'):'권한 확인 전';
-  const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?(d.motionInitialized?'수집 중':'센서 신호 대기'):'권한 확인 전';
+  const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?(d.locationInitialized?'오늘 위치 확인':'위치 신호 대기'):'권한 확인 전';
+  const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?(d.motionInitialized?'움직임 기록 있음':'센서 신호 대기'):'권한 확인 전';
   const voiceCount=(S.initial.voiceSamples||[]).filter(Boolean).length,usageSeen=!!observedToday('app_sessions')||d.appActiveMs>0;
   const movementValue=d.locationInitialized?Math.round(d.movementDistanceM).toLocaleString('ko-KR')+'m':'미수집';
   const radiusValue=d.locationInitialized?Math.round(d.locationRadiusM).toLocaleString('ko-KR')+'m':'미수집';
@@ -2062,7 +2108,7 @@ function collectionStateItems(){
     {icon:'🧭',label:'생활반경',state:locState,value:radiusValue},
     {icon:'🚪',label:'외출 신호',state:locState,value:outingValue},
     {icon:'🚶',label:'움직임·활동',state:motionState,value:motionValue},
-    {icon:'📱',label:'낌새 사용',state:usageOn?'수집 중':'동의 안 함',value:usageValue},
+    {icon:'📱',label:'낌새 사용',state:!usageOn?'동의 안 함':usageSeen?'오늘 기록 있음':'기록 대기',value:usageValue},
     {icon:'🎙️',label:'음성 샘플',state:S.consents.microphone?'사용자 실행 시 수집':'동의 안 함',value:voiceCount?voiceCount+'개':'미수집'}
   ];
 }
@@ -3484,7 +3530,7 @@ async function bootstrap(){
     else if(oauth?.accessToken){await establishKimseAuth(oauth);S.auth.lastError='';save();go(authNextRoute())}
   }catch(err){S.auth.lastError='소셜 로그인을 완료하지 못했습니다.';save();go('auth')}
   render();
-  if(monitoringEnabled()){queueInitialSignals();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();await syncProfessionalOutcomes();await syncExternalClinicalRecords();await syncInitialCognitiveBaseline();if(S.consents.notifications)await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();await syncMonitoring()}
+  if(monitoringEnabled()){await hydrateSignalJournal();queueInitialSignals();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();await syncProfessionalOutcomes();await syncExternalClinicalRecords();await syncInitialCognitiveBaseline();if(S.consents.notifications)await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();await syncMonitoring()}
 }
 bootstrap();
 })();
