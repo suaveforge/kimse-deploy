@@ -90,7 +90,7 @@ async function main(){
         const paths=await rows.evaluateAll(nodes=>nodes.map(node=>node.dataset.clinicalSourcePath));
         check(paths.every(path=>/^(previsit_summary|clinical_domains|family_feedback|external_clinical_records|risk_confounders)[.[]/.test(path)),
           'trace-canonical-path-'+country+'-'+item.id+'-'+n);
-        const getSource=(path)=>path.replace(/\\[(\\d+)\\]/g,'.$1').split('.')
+        const getSource=(path)=>path.replace(/\[(\d+)\]/g,'.$1').split('.')
           .reduce((value,key)=>value?.[key],report);
         check(paths.every(path=>getSource(path)!==undefined),
           'trace-resolves-to-real-canonical-field-'+country+'-'+item.id+'-'+n);
