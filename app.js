@@ -872,9 +872,13 @@ async function hydrateSignalJournal(){
 }
 function queueSignal(metric,value,unit='',source='pwa',metadata={}){
   const n=Number(value);if(!monitoringEnabled()||!Number.isFinite(n))return;
-  noteObserved(metric,n,unit,source);
-  const eventMetadata={...(metadata||{}),local_day:localDayKey()};
-  const event={client_event_id:signalId(),source,metric,value:n,unit:unit||null,metadata:eventMetadata,observed_at:new Date().toISOString()};
+  const observedTime=metadata?.observed_at&&Number.isFinite(Date.parse(metadata.observed_at))?new Date(metadata.observed_at):new Date();
+  const day=/^\d{4}-\d{2}-\d{2}$/.test(String(metadata?.local_day||''))?metadata.local_day:localDayKey();
+  if(day===localDayKey())noteObserved(metric,n,unit,source);
+  const eventMetadata={...(metadata||{}),local_day:day};
+  delete eventMetadata.observed_at;delete eventMetadata.client_event_id;
+  const id=String(metadata?.client_event_id||signalId());
+  const event={client_event_id:id,source,metric,value:n,unit:unit||null,metadata:eventMetadata,observed_at:observedTime.toISOString()};
   S.monitoring.pending.push(event);save();
   const journal=window.KIMSE_SIGNAL_JOURNAL;
   if(journal)void journal.enqueue(event).then(persisted=>{
@@ -1422,9 +1426,27 @@ async function collectNativeBridgeSignals(){
     const rows=await window.KIMSE_NATIVE.getDailySignals();
     if(Array.isArray(rows))for(const x of rows){
       if(x?.metric==='steps'&&Number.isFinite(Number(x.value))){
-        S.monitoring.liveSteps=Math.max(0,Math.round(Number(x.value)));S.monitoring.liveStepProvider=String(x.provider||'native-pedometer');S.monitoring.liveStepAt=new Date().toISOString();
+        S.monitoring.liveSteps=Math.max(0,Math.round(Number(x.value)));
+        S.monitoring.liveStepProvider=String(x.provider||'native-pedometer');
+        S.monitoring.liveStepAt=new Date().toISOString();
       }
       if(x&&x.metric&&Number.isFinite(Number(x.value)))queueSignal(x.metric,Number(x.value),x.unit||'','native',{provider:x.provider||'device'});
+    }
+    // iOS Core Motion can supply recent day totals on resume. This repairs
+    // previously unobserved dates only if iOS still retains them.
+    if(S.remote.subjectId&&S.consents.motion&&window.KIMSE_NATIVE.platform?.()==='ios'){
+      const days=await window.KIMSE_NATIVE.getRecentStepDays?.(7);
+      for(const row of Array.isArray(days)?days:[]){
+        const count=Math.max(0,Math.round(Number(row.steps)));
+        if(!Number.isFinite(count))continue;
+        queueSignal('steps',count,'count','native',{
+          provider:row.provider||'ios-core-motion',
+          historical:true,
+          local_day:row.day,
+          observed_at:row.observedAt,
+          client_event_id:'native-history-'+S.remote.subjectId+'-'+row.day+'-'+count
+        });
+      }
     }
     save();flushSignals();
   }catch{}
