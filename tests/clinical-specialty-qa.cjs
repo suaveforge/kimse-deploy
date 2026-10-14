@@ -304,13 +304,13 @@ async function main(){
   const historyFile='clinical-specialty-context-history.pdf';
   fs.writeFileSync('clinical-specialty-qa/'+historyFile,historyPdf);
   const allText=execFileSync('pdftotext',['-layout','clinical-specialty-qa/'+historyFile,'-'],
-    {encoding:'utf8'}).replace(/\\s+/g,'');
+    {encoding:'utf8'}).replace(/\s+/g,'');
   for(const path of paths)
     check(allText.includes(path),'history-pdf-original-path-'+path);
   for(const phrase of ['new_dose:0','2026-09-20','2026-10-11',
                         '상태ABSENT','상태UNKNOWN','상태NONE_REPORTED',
                         '의료진확인결과아님'])
-    check(allText.includes(phrase.replace(/\\s+/g,'')),'history-pdf-original-value-'+phrase);
+    check(allText.includes(phrase.replace(/\s+/g,'')),'history-pdf-original-value-'+phrase);
   check(JSON.stringify(history)===originalHistory,'history-source-never-mutated');
   await historyCtx.close();
  }finally{await browser.close();}
