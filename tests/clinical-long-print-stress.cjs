@@ -84,6 +84,10 @@ async function run(){
     for(const token of ['FAMILY_FIRST','FAMILY_LAST','LONG_NOTE_END','EXTERNAL_FIRST','EXTERNAL_LAST','EXTERNAL_PARITY_01','EXTERNAL_PARITY_17','PROFESSIONAL_FIRST','PROFESSIONAL_LAST','ZERO_SCORE_17']){
       ok(text.includes(token),'pdf-text-'+token);
     }
+    for(let i=1;i<=17;i++){
+      const label='EXTERNAL_PARITY_'+String(i).padStart(2,'0');
+      ok(text.includes(label),'pdf-all-seventeen-'+label);
+    }
     ok(text.includes('2026-10-05'),'pdf-registration-date-preserved');
     await ctx.close();
   }finally{await browser.close();}
