@@ -44,7 +44,7 @@ async function main(){
      captions:true,largeTouchTargets:true,colorIcons:true,screenReader:true,reduceMotion:false}};
  const browser=await chromium.launch({headless:true});
  try{
-  const ctx=await browser.newContext({viewport:{width:1440,height:950},serviceWorkers:'block'});
+  const ctx=await browser.newContext({viewport:{width:1440,height:950},locale:'ko-KR',serviceWorkers:'block'});
   await ctx.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),state);
   await ctx.route('https://api-kimse.suaveforge.com/**',route=>route.abort('failed'));
   const page=await ctx.newPage();
@@ -89,6 +89,10 @@ async function main(){
    const compact=extracted.replace(/\s+/g,'');
    check(compact.includes(item.needle.replace(/\s+/g,'')),'pdf-specialty-heading-'+item.id);
    check(compact.includes('정상소견으로해석하지않음'),'pdf-missing-does-not-become-normal-'+item.id);
+   check(!extracted.includes('Skip to content')&&!extracted.includes('본문으로 바로가기'),
+     'pdf-never-prints-accessibility-navigation-'+item.id);
+   check(!extracted.includes('Family View')&&!extracted.includes('Recent changes'),
+     'korean-pdf-does-not-contain-partially-translated-ui-'+item.id);
    await page.emulateMedia({media:'screen'});
   }
   await page.locator('#clinical-target-department').fill('');
