@@ -33,3 +33,7 @@ jobs:
             results=list(ex.map(check,range(50)))
           print("BULK_TRANSLATION_PROBE",dict(statuses=dict(collections.Counter(str(x[0]) for x in results)),elapsed_seconds=round(time.monotonic()-t,2)),flush=True)
           PY
+      - name: Probe the actual Node fetch translation runtime
+        shell: bash
+        run: |
+          node -e "(async()=>{const t=Date.now();const u=new URL('https://translate.googleapis.com/translate_a/single');u.search=new URLSearchParams({client:'gtx',sl:'ko',tl:'en',dt:'t',q:'관찰 근거'}).toString();try{const x=await fetch(u,{signal:AbortSignal.timeout(12000)}); console.log('NODE_FETCH_PROBE',x.status,Date.now()-t,JSON.stringify(await x.text()).slice(0,120))}catch(e){console.error('NODE_FETCH_FAILED',Date.now()-t,String(e));process.exit(1)}})()"
