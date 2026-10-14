@@ -9,7 +9,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: kimse-offline-english-catalog
+  group: kimse-offline-english-catalog-${{ github.run_id }}
   cancel-in-progress: true
 jobs:
   build:
