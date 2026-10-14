@@ -2873,7 +2873,8 @@ function clinicalSpecialtySourceTrace(report,id){
     });
   };
   const field=(path,value,source,date)=>{
-    if(known(value))add(path,[{value,date,source_type:source}],source);
+    // Scalar fields are not arrays: an invented [0] would break provenance.
+    if(known(value))rows.push({path,date:date||null,recorded:null,state:value,source});
   };
   const first=(groups)=>{
     const selected=groups.find(x=>arr(x.rows).length);
