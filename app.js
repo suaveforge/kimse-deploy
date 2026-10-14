@@ -3000,7 +3000,8 @@ function clinicalSpecialtyReview(report){
         +'<b class="clinical-specialty-rank">'+(i+1)+'</b><div><strong>'+esc(label)+'</strong><p>'
         +esc(collected?value:'자료 없음 · 정상 소견으로 해석하지 않음')
         +'</p><small>출처 · '+esc(origin)+'</small>'
-        +clinicalSpecialtySourceTrace(report,id)+'</div></li>';
+        +(collected?clinicalSpecialtySourceTrace(report,id)
+          :'<small class="clinical-specialty-source-empty">원자료 미수집 · 정상 소견으로 해석하지 않음</small>')+'</div></li>';
     }).join('')+'</ol></section>';
 }
 
