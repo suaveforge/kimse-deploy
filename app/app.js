@@ -2839,6 +2839,38 @@ function clinicalPrintableSourceRecords(report){
         ]))]),
       origin:r=>joined([r.institution||'기관 미입력',r.provenance||r.source_route||'출처 미입력',r.verification_status||'검증 여부 미입력'])}
   ];
+  // Individual context histories are Canonical source evidence, not a medical
+  // examination. Print actual rows only (zero, absence and unknown are distinct).
+  const contextDefinitions=[
+    {label:'복약 변경 이력',path:'risk_confounders.medication_change.events',rows:report?.risk_confounders?.medication_change?.events},
+    {label:'급성질환·감염·입원 이력',path:'risk_confounders.acute_illness_context.events',rows:report?.risk_confounders?.acute_illness_context?.events},
+    {label:'안전·지원 관련 이력',path:'clinical_domains.safety_support.context_events',rows:report?.clinical_domains?.safety_support?.context_events},
+    {label:'기분·행동 관련 이력',path:'clinical_domains.mood_behavior.context_events',rows:report?.clinical_domains?.mood_behavior?.context_events},
+    {label:'감각·운동 관련 이력',path:'clinical_domains.sensory_motor.context_events',rows:report?.clinical_domains?.sensory_motor?.context_events}
+  ];
+  const contextHistory=contextDefinitions.filter(group=>safe(group.rows).some(row=>row&&typeof row==='object'))
+    .map(group=>{
+      const data=safe(group.rows).map((row,i)=>({row,index:i})).filter(x=>x.row&&typeof x.row==='object');
+      return '<div class="clinical-print-source-group clinical-print-context-group"><h3>'
+        +esc(group.label)+' <span>('+data.length+'건 · 사용자 보고, 의료진 미검증)</span></h3><ol>'
+        +data.map(({row,index})=>{
+          const state=row.status===undefined||row.status===null||row.status===''?'UNKNOWN':String(row.status);
+          const when=row.occurred_at||row.observed_at||null;
+          const created=row.recorded_at||row.created_at||null;
+          const details=row.details&&typeof row.details==='object'&&!Array.isArray(row.details)
+            ?Object.entries(row.details).filter(([,value])=>value!==null&&value!==undefined&&value!=='')
+              .map(([key,value])=>key+': '+String(value)).join(' · '):'';
+          const label=joined([row.event_type||'사건 유형 미입력',
+            '상태 '+state+(state==='ABSENT'||state==='NONE_REPORTED'?' (사용자 부재 보고·정상 소견 아님)':''),
+            row.summary,details]);
+          return '<li data-clinical-context-source="'+esc(group.path+'['+index+']')+'">'
+            +'<strong>'+esc(stamp(when))+'</strong><span>'+esc(group.path+'['+index+']')+' · '+esc(label)+'</span>'
+            +'<small>출처: '+esc(row.reported_by||row.source||row.source_type||'사용자 기록')
+            +' · 의료진 확인 결과 아님</small>'
+            +(created&&stamp(created)!==stamp(when)?'<small>앱 등록일: '+esc(stamp(created))+'</small>':'')
+            +'</li>';
+        }).join('')+'</ol></div>';
+    }).join('');
   return '<section class="clinical-print-source-records" aria-label="출처별 진료 관련 원자료"><h2>출처별 기록 · 가족 진술과 의료검사 구분</h2>'
     +groups.map(group=>{
       const count=group.rows.length;
@@ -2851,7 +2883,7 @@ function clinicalPrintableSourceRecords(report){
       }).join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
-    }).join('')+'</section>';
+    }).join('')+contextHistory+'</section>';
 }
 
 // Read-only source references for specialty cards. These paths point to the
