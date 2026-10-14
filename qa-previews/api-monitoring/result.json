@@ -1,0 +1,39 @@
+{
+  "test_type": "ISOLATED_SYNTHETIC_ONLY",
+  "api": "https://api-kimse.suaveforge.com",
+  "write_to_production": true,
+  "checks": [
+    {
+      "name": "API_HEALTH",
+      "status": "PASS",
+      "storage": "sqlite"
+    },
+    {
+      "name": "QA_ACCOUNT_ISOLATED",
+      "status": "PASS"
+    },
+    {
+      "name": "MONITORING_STARTED",
+      "status": "PASS"
+    },
+    {
+      "name": "EVENTS_SAVED",
+      "status": "PASS",
+      "inserted": 10
+    },
+    {
+      "name": "READ_BACK_COVERAGE",
+      "status": "PASS",
+      "metrics": 10,
+      "sources_are_synthetic": true,
+      "observed_days": 1
+    },
+    {
+      "name": "BASELINE_NOT_FAKE_READY",
+      "status": "PASS",
+      "summary_status": "LEARNING"
+    }
+  ],
+  "status": "PASS",
+  "limitations": "Synthetic single-day ingestion proves server read/write only, not real phone sampling, actual user history or 14-day continuity."
+}
