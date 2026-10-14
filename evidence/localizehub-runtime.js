@@ -225,6 +225,12 @@ async function setLocale(locale){
       ]);
       sourceToTarget=translationMap(sourceBundle,targetBundle);
       if(next==='en'){
+        // Offline machine-translation drafts contain PUBLIC source text only.
+        // Never send live form values or health data to an external translator.
+        const autoGlossary=await fetchJSON('/kimse-en-auto.json?v=20261015-offline-full1').catch(()=>({}));
+        for(const [source,translation] of Object.entries(autoGlossary?.translations||{})){
+          if(normalize(source)&&normalize(translation)&&!/[가-힣]/.test(translation))sourceToTarget.set(normalize(source),String(translation));
+        }
         const verifiedGlossary=await fetchJSON('/kimse-en.json?v=20261015-screen-audit10');
         const entries=verifiedGlossary?.translations||{};
         for(const [k,v] of Object.entries(entries)){
