@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-15.en.8",
+  "schemaVersion": "2026-10-15.en.9",
   "locale": "en",
   "sourceLocale": "ko",
   "translations": {
@@ -611,7 +611,8 @@
     "공식 공개자료": "Public-source documents",
     "후보 임상 필드": "Candidate clinical fields",
     "모니터·태블릿": "Monitor and tablet",
-    "기록과 근거를 검증합니다": "Verifying records and their evidence"
+    "기록과 근거를 검증합니다": "Verifying records and their evidence",
+    "와": " and "
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
