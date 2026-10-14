@@ -91,7 +91,7 @@ async function run(){
     }
     // PDF text extractors legitimately insert line breaks in long assay names.
     // Compare a whitespace-normalized token without hiding a missing segment.
-    ok(text.replace(/\\s+/g,'').includes('SYNTHETIC-LC-MS-MS-METHOD'),
+    ok(text.replace(/\s+/g,'').includes('SYNTHETIC-LC-MS-MS-METHOD'),
       'pdf-entered-assay-metadata-preserved');
     for(let i=1;i<=17;i++){
       const label='EXTERNAL_PARITY_'+String(i).padStart(2,'0');
