@@ -210,11 +210,18 @@ var trust=`
   </div>
 </div>`;
 
+function evidenceLanguageSuffix(){
+  const query=new URLSearchParams(location.search).get('lang');
+  let stored='';
+  try{stored=localStorage.getItem('localizehub:p45:locale')||''}catch{}
+  const selected=String(query||stored||'').toLowerCase().split('-')[0];
+  return ['en','ko'].includes(selected)?'?lang='+encodeURIComponent(selected):'';
+}
 function pageHref(key){
-  if(key==='evidence')return './observation.html';
-  if(key==='clinical')return './clinical.html';
-  if(key==='rd')return './rd.html';
-  if(key==='trust')return './trust.html';
+  if(key==='evidence')return './observation.html'+evidenceLanguageSuffix();
+  if(key==='clinical')return './clinical.html'+evidenceLanguageSuffix();
+  if(key==='rd')return './rd.html'+evidenceLanguageSuffix();
+  if(key==='trust')return './trust.html'+evidenceLanguageSuffix();
   return './';
 }
 function iconClass(key){
