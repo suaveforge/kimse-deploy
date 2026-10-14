@@ -7,7 +7,7 @@ on:
       - 'kimse-en.json'
       - 'localizehub-runtime.js'
       - 'evidence/**'
-      - 'tests/localization-browser.test.cjs'
+      - 'tests/localization-browser.test.cjs'\n      - 'tests/localization-deep-navigation.test.cjs'
       - '.github/workflows/localization-qa.yml'
   workflow_dispatch:
 
@@ -34,7 +34,7 @@ jobs:
           sleep 2
           curl --fail --silent http://127.0.0.1:8765/ > /dev/null
       - name: Real Chromium language and English fallback QA
-        run: node tests/localization-browser.test.cjs
+        run: |\n          node tests/localization-browser.test.cjs\n          node tests/localization-deep-navigation.test.cjs
       - name: Preserve smoke-test screenshots
         if: always()
         uses: actions/upload-artifact@v4
