@@ -74,6 +74,29 @@ async function main(){
     const sel=page.locator('.clinical-specialty-review');
     const ids=await sel.locator('[data-specialty-field]').evaluateAll(nodes=>nodes.map(x=>x.dataset.specialtyField));
     check(JSON.stringify(ids)===JSON.stringify(item.keys),'order-'+country+'-'+item.id);
+    // Each recorded summary must be traceable to specific Canonical Dataset
+    // array rows/fields; never fabricate a link for an uncollected field.
+    const sourceCards=sel.locator('[data-specialty-field]');
+    for(let n=0;n<4;n++){
+      const card=sourceCards.nth(n);
+      const recorded=(await card.getAttribute('data-recorded'))==='true';
+      const trace=card.locator('details.clinical-specialty-trace');
+      if(recorded){
+        check(await trace.count()===1,'trace-details-'+country+'-'+item.id+'-'+n);
+        await trace.locator('summary').click();
+        check(await trace.getAttribute('open')!==null,'trace-keyboard-native-disclosure-'+country+'-'+item.id+'-'+n);
+        const rows=trace.locator('[data-clinical-source-path]');
+        check(await rows.count()>=1,'trace-concrete-source-rows-'+country+'-'+item.id+'-'+n);
+        const paths=await rows.evaluateAll(nodes=>nodes.map(node=>node.dataset.clinicalSourcePath));
+        check(paths.every(path=>/^(previsit_summary|clinical_domains|family_feedback|external_clinical_records|risk_confounders)[.[]/.test(path)),
+          'trace-canonical-path-'+country+'-'+item.id+'-'+n);
+        check((await card.innerText()).includes('출처'),'trace-origin-'+country+'-'+item.id+'-'+n);
+        await trace.locator('summary').click();
+      }else{
+        check(await trace.count()===0,'missing-record-no-fake-trace-'+country+'-'+item.id+'-'+n);
+        check((await card.innerText()).includes('원자료 미수집'),'missing-record-visible-'+country+'-'+item.id+'-'+n);
+      }
+    }
     const body=await sel.innerText();
     check(body.includes(item.needle)&&body.includes('자료 없음 · 정상 소견으로 해석하지 않음'),
       'record-and-missing-'+country+'-'+item.id);
@@ -97,6 +120,7 @@ async function main(){
    const extracted=execFileSync('pdftotext',['-layout','clinical-specialty-qa/'+file,'-'],{encoding:'utf8'});
    const compact=extracted.replace(/\s+/g,'');
    check(compact.includes(item.needle.replace(/\s+/g,'')),'pdf-specialty-heading-'+item.id);
+   check(compact.includes('원자료위치:')&&compact.includes('원자료'),'pdf-source-path-identifiers-'+item.id);
    check(compact.includes('정상소견으로해석하지않음'),'pdf-missing-does-not-become-normal-'+item.id);
    check(!extracted.includes('Skip to content')&&!extracted.includes('본문으로 바로가기'),
      'pdf-never-prints-accessibility-navigation-'+item.id);
