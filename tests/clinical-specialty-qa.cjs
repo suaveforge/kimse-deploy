@@ -113,6 +113,58 @@ async function main(){
   const dimensions=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
   check(dimensions.scroll<=dimensions.width+2,'mobile-no-overflow');
   await ctx.close();
+  // A user reporting *absence* of an event must not be printed as having
+  // experienced that event; conflicting or unverified records also remain
+  // clearly distinguished. Run through the actual production DOM and A4 PDF.
+  for(const [status,safetyText,medicineText,acuteText,moodText] of [
+    ['PRESENT','안전/지원 사건 보고 1건','복약 변경 보고 1건','급성질환/감염/입원 관련 보고 1건','기분·행동 변화 보고 1건'],
+    ['ABSENT','안전/지원 사건 없다고 보고 1건','복약 변경 없다고 보고 1건','급성질환/감염/입원 없다고 보고 1건','기분·행동 변화 없다고 보고 1건'],
+    ['UNKNOWN','상태 미확인 기록 1건','상태 미확인 기록 1건','상태 미확인 기록 1건','상태 미확인 기록 1건']
+  ]){
+    const contextReport=JSON.parse(JSON.stringify(report));
+    contextReport.clinical_domains.safety_support={context_events:[{status}]};
+    contextReport.clinical_domains.mood_behavior={context_events:[{status}]};
+    contextReport.risk_confounders.medication_change={events:[{status}]};
+    contextReport.risk_confounders.current_medications=[];
+    contextReport.risk_confounders.acute_illness_context={events:[{status}]};
+    const contextState={...state,clinicalReport:contextReport,professionalOutcomes:[]};
+    const testContext=await browser.newContext({viewport:{width:1440,height:950},locale:'ko-KR',serviceWorkers:'block'});
+    await testContext.addInitScript(initial=>localStorage.setItem('kimse.p0.state',JSON.stringify(initial)),contextState);
+    await testContext.route('https://api-kimse.suaveforge.com/**',req=>req.abort('failed'));
+    const p=await testContext.newPage();
+    await p.goto(BASE+'#/clinical-handoff',{waitUntil:'domcontentloaded',timeout:50000});
+    await p.waitForSelector('#clinical-target-department',{timeout:25000});
+    const verify=async(name,expected,label,field)=>{
+      await p.locator('#clinical-target-department').fill(name);
+      await p.locator('#clinical-target-department').dispatchEvent('change');
+      await p.waitForFunction(f=>!!document.querySelector('.clinical-specialty-review[data-specialty-focus="'+f+'"]'),
+        field==='safety'||field==='medication'?'GERIATRICS':field==='acute'?'PRIMARY_CARE':'PSYCHIATRY',
+        {timeout:12000});
+      const card=p.locator('[data-specialty-field="'+field+'"]');
+      check((await card.innerText()).includes(expected),'live-'+status+'-'+label);
+      check(await card.getAttribute('data-recorded')==='true','live-'+status+'-record-not-missing-'+label);
+    };
+    await verify('노인의학과',safetyText,'safety','safety');
+    await verify('노인의학과',medicineText,'medication','medication');
+    await verify('가정의학과',acuteText,'acute','acute');
+    await verify('정신건강의학과',moodText,'mood','mood');
+    if(status==='ABSENT'){
+      await p.locator('#clinical-target-department').fill('노인의학과');
+      await p.locator('#clinical-target-department').dispatchEvent('change');
+      await p.waitForFunction(()=>document.querySelector('.clinical-specialty-review')?.dataset.specialtyFocus==='GERIATRICS');
+      await p.emulateMedia({media:'print'});
+      const pdf=await p.pdf({format:'A4',printBackground:true,
+        margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
+      const file='clinical-specialty-explicit-absence.pdf';
+      fs.writeFileSync('clinical-specialty-qa/'+file,pdf);
+      const pdfText=execFileSync('pdftotext',['-layout','clinical-specialty-qa/'+file,'-'],{encoding:'utf8'})
+        .replace(/\s+/g,'');
+      check(pdfText.includes(safetyText.replace(/\s+/g,'')),'pdf-explicit-absence-not-event');
+      check(!pdfText.includes('안전/지원사건보고1건'),'pdf-absence-not-promoted-to-incident');
+      await p.emulateMedia({media:'screen'});
+    }
+    await testContext.close();
+  }
  }finally{await browser.close();}
  console.log('KIMSE_SPECIALTY_LIVE_24_CASES_4_A4_PDFS=PASS');
 }
