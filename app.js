@@ -1488,8 +1488,12 @@ function startPassiveCollectors(){
   if(!collectorsStarted){
     collectorsStarted=true;
     if(S.consents.usage)queueSignal('app_sessions',1,'count','pwa',{foreground:true});
-    collectNativeBridgeSignals();
+    void collectNativeBridgeSignals();
     collectorFlushTimer=setInterval(()=>{if(document.hidden)return;recordAppActive();flushMotionActivity();startLocationWatch();flushSignals()},60000);
+  }else if(window.KIMSE_NATIVE?.isNative?.()){
+    // App resumes without reinitializing collectors: re-read OS step history.
+    // Especially on iOS, Core Motion may contain steps accumulated while hidden.
+    void collectNativeBridgeSignals();
   }
   configureMotionCollector();
   configureNativeStepCollector();
