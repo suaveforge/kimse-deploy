@@ -6,6 +6,9 @@ const API='https://api-localizehub.suaveforge.com:18025';
 const DEFAULT_LOCALE='ko';
 const STORAGE_KEY=`localizehub:${PROJECT}:locale`;
 const ATTRS=['placeholder','title','aria-label','alt'];
+const CONSISTENT_LOCALES=['ko','en'];
+let controlsReady=false;
+let supportedLocales=CONSISTENT_LOCALES;
 const originalText=new WeakMap();
 const originalAttrs=new WeakMap();
 let activeLocale=DEFAULT_LOCALE;
@@ -143,12 +146,73 @@ function applyTranslations(root=document){
     }
   }finally{applying=false}
 }
+function preserveLocaleLinks(root=document){
+  const links=root.querySelectorAll?.('a[href]')||[];
+  for(const a of links){
+    const href=a.getAttribute('href')||'';
+    if(!href||href[0]==='#'||href.startsWith('mailto:')||href.startsWith('javascript:'))continue;
+    try{
+      const url=new URL(href,location.href);
+      if(url.origin!==location.origin)continue;
+      // Evidence and app links must carry the same explicit language across documents.
+      if(!url.pathname.startsWith('/evidence/')&&url.pathname!=='/'&&!url.pathname.startsWith('/app/'))continue;
+      if(url.searchParams.get('lang')===activeLocale)continue;
+      url.searchParams.set('lang',activeLocale);
+      a.setAttribute('href',url.pathname+url.search+url.hash);
+    }catch{}
+  }
+}
+function ensureLocaleControl(cfg){
+  // The legacy LocalizeHub switcher has its own selection state and may show
+  // Korean while ?lang=en is active; replace only its presentation with one
+  // deterministic control, keeping LocalizeHub bundles and project p45.
+  const wraps=[...document.querySelectorAll('.kimse-lang-wrap')];
+  if(!wraps.length||controlsReady)return;
+  supportedLocales=[...new Set((cfg?.supportedLocales||CONSISTENT_LOCALES).map(baseLocale))];
+  const options=CONSISTENT_LOCALES.filter(v=>supportedLocales.includes(v));
+  for(const wrap of wraps){
+    const legacy=wrap.querySelector('localize-switcher');
+    if(legacy)legacy.style.setProperty('display','none','important');
+    if(wrap.querySelector('[data-kimse-locale-select]'))continue;
+    const label=document.createElement('label');
+    label.setAttribute('aria-label','Language / 언어');
+    label.className='kimse-verified-language';
+    label.style.cssText='display:inline-flex;align-items:center;max-width:100%;font-size:14px;white-space:nowrap';
+    const sel=document.createElement('select');
+    sel.setAttribute('data-kimse-locale-select','');
+    sel.setAttribute('aria-label','Language / 언어');
+    sel.style.cssText='min-width:110px;max-width:100%;padding:8px 11px;font:inherit;border:1px solid #afc5db;border-radius:8px;background:#fff;color:#1b3652;cursor:pointer';
+    for(const code of options){
+      const opt=document.createElement('option');
+      opt.value=code;
+      opt.textContent=code==='en'?'English':'한국어';
+      sel.append(opt);
+    }
+    sel.value=activeLocale;
+    sel.addEventListener('change',()=>{
+      const next=sel.value;
+      localStorage.setItem(STORAGE_KEY,next);
+      const url=new URL(location.href);
+      url.searchParams.set('lang',next);
+      history.replaceState(history.state,'',url.pathname+url.search+url.hash);
+      setLocale(next);
+    });
+    label.append(sel);wrap.append(label);
+  }
+  controlsReady=true;
+}
+function syncLocaleControls(){
+  for(const sel of document.querySelectorAll('[data-kimse-locale-select]'))sel.value=activeLocale;
+}
 async function setLocale(locale){
   const next=baseLocale(locale)||DEFAULT_LOCALE;
   if(observer)observer.disconnect();
   restore(document);
   activeLocale=next;
+  // Persist explicit URL and UI choice across Evidence page navigation.
+  try{localStorage.setItem(STORAGE_KEY,next)}catch{}
   document.documentElement.lang=next;
+  syncLocaleControls();
   try{
     if(next!==DEFAULT_LOCALE){
       [sourceBundle,targetBundle]=await Promise.all([
@@ -173,12 +237,19 @@ async function setLocale(locale){
     sourceToTarget=new Map();
     englishParts=[];compositeCache.clear();
   }
+  preserveLocaleLinks(document);
   observe();
 }
 function observe(){
   if(observer)observer.disconnect();
   observer=new MutationObserver(records=>{
-    if(applying||activeLocale===DEFAULT_LOCALE||!sourceToTarget.size)return;
+    if(applying)return;
+    for(const record of records){
+      for(const node of record.addedNodes||[]){
+        if(node.nodeType===Node.ELEMENT_NODE)preserveLocaleLinks(node);
+      }
+    }
+    if(activeLocale===DEFAULT_LOCALE||!sourceToTarget.size)return;
     for(const r of records){
       if(r.type==='characterData'&&r.target?.parentElement){applyTranslations(r.target.parentElement);continue;}
       for(const node of r.addedNodes){
@@ -202,9 +273,18 @@ async function boot(){
     const cfg=await config().catch(()=>({defaultLocale:'ko',supportedLocales:['ko','en']}));
     setSwitcherVisibility(cfg);
     const locale=requestedLocale(cfg);
+    activeLocale=locale;
+    ensureLocaleControl(cfg);
     await setLocale(locale);
     document.addEventListener('localechange',e=>{
-      if(e.detail?.project===PROJECT&&e.detail?.locale)setLocale(e.detail.locale);
+      if(e.detail?.project===PROJECT&&e.detail?.locale){
+        const next=baseLocale(e.detail.locale);
+        if(CONSISTENT_LOCALES.includes(next)){
+          const url=new URL(location.href);url.searchParams.set('lang',next);
+          history.replaceState(history.state,'',url.pathname+url.search+url.hash);
+        }
+        setLocale(next);
+      }
     });
     window.KIMSE_LOCALIZEHUB={project:PROJECT,api:API,get locale(){return activeLocale},setLocale};
   }catch(error){
