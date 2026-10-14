@@ -251,6 +251,17 @@ jobs:
             check(pdfDocument.getPageCount()===1,'a4-summary-exactly-one-page',String(pdfDocument.getPageCount()));
             fs.writeFileSync(path.join(out,'clinical-handoff-a4.pdf'),pdf);
             await dp.emulateMedia({media:'screen'});
+            // The generic report must not show a specialty-specific medical plan.
+            check(await dp.locator('.clinical-specialty-review').count()===0,
+              'generic-report-stays-without-specialty-panel');
+            const specialtyOrders={
+              neurology:['trajectory','cognition','family','external'],
+              geriatrics:['function','family','safety','medication'],
+              psychiatry:['mood','family','function','medication'],
+              'primary-care':['trajectory','medication','acute','external']
+            };
+            // Every route is an editorial reordering of canonical source records.
+            // Clinical requirements, diagnoses and collected/missing status are untouched.
             // Unselected hospital + a recognized specialty must print a safe
             // patient-carried country/public-guidance panel, not an invented
             // hospital intake form. Exercise the actual live DOM and A4 PDF.
@@ -261,6 +272,36 @@ jobs:
               await dp.locator('#clinical-target-department').fill(department);
               await dp.locator('#clinical-target-department').press('Tab');
               await dp.waitForFunction(()=>document.querySelector('.clinical-visit-brief')?.textContent.includes('기관 미선택 · 병원별 공개 의뢰요건은 평가하지 않았습니다'),null,{timeout:12000});
+              const review=dp.locator('.clinical-specialty-review');
+              check(await review.count()===1,'specialty-has-source-grounded-review-'+specialty);
+              check(await review.locator('li').count()===4,'specialty-four-card-review-'+specialty);
+              const fields=await review.locator('li').evaluateAll(xs=>xs.map(x=>x.dataset.specialtyField));
+              check(JSON.stringify(fields)===JSON.stringify(specialtyOrders[specialty]),
+                'specialty-recorded-order-'+specialty,JSON.stringify(fields));
+              check((await review.innerText()).includes('병원·의료진의 승인 서식이나 필수 검사 목록이 아닙니다'),
+                'specialty-not-official-referral-'+specialty);
+              check(await review.locator('li[data-recorded="false"]').count()>=1,
+                'specialty-keeps-missing-markers-'+specialty);
+              if(specialty==='neurology'){
+                check((await review.innerText()).includes('2026-09-20') &&
+                  (await review.innerText()).includes('앱 반복과제 1회'),
+                  'neurology-references-real-canonical-dates-and-rechecks');
+              }
+              if(specialty==='geriatrics'){
+                check((await review.innerText()).includes('복잡한 일상기능에서 어려움') &&
+                  (await review.innerText()).includes('혈압약'),
+                  'geriatrics-references-function-and-medications');
+              }
+              if(specialty==='psychiatry'){
+                check((await review.innerText()).includes('기분·행동 보고 있음') &&
+                  (await review.innerText()).includes('가족 응답 1건'),
+                  'psychiatry-keeps-mood-and-informant-separate');
+              }
+              if(specialty==='primary-care'){
+                check((await review.innerText()).includes('급성질환·감염·입원') &&
+                  (await review.innerText()).includes('자료 없음 · 정상 소견으로 해석하지 않음'),
+                  'primary-care-highlights-acute-illness-missingness');
+              }
               check(await dp.locator('.clinical-national-priority ol li').count()===5,
                 'specialty-only-five-research-terms-'+specialty);
               check((await dp.locator('.clinical-visit-brief').getAttribute('data-provider-approved'))==='false',
@@ -282,6 +323,9 @@ jobs:
             await dp.locator('#clinical-target-department').press('Tab');
             check(await dp.locator('.clinical-visit-brief').count()===0,
               'no-hospital-no-specialty-keeps-basic-print-compact');
+            check(await dp.locator('.clinical-specialty-review').count()===0,
+              'no-hospital-no-specialty-clears-review');
+
             await dp.locator('#clinical-target-country').selectOption('GB');
             await dp.locator('#clinical-target-institution').selectOption('GB-DORSET-MAS');
             await dp.waitForFunction(()=>document.querySelector('.clinical-visit-brief')?.textContent.includes('Dorset'),null,{timeout:12000});
