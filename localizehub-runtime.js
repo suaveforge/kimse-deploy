@@ -58,6 +58,33 @@ function translationMap(source,target){
   }
   return map;
 }
+// Exact translations take priority; short standalone phrases support live table cells
+// containing counts, statuses and localized institution names in the same text node.
+let englishParts=[];
+const compositeCache=new Map();
+function translationFor(key){
+  if(sourceToTarget.has(key))return sourceToTarget.get(key);
+  if(activeLocale!=='en'||!/[가-힣]/.test(key))return null;
+  if(compositeCache.has(key))return compositeCache.get(key);
+  let out=key;
+  for(const pair of englishParts)out=out.replace(pair.pattern,pair.translation);
+  out=out.replace(/(\d+)\s*개 기관/g,'$1 institutions')
+    .replace(/(\d+)\s*곳/g,'$1 institutions')
+    .replace(/(\d+)\s*단계/g,'Stage $1')
+    .replace(/(\d+)\s*건/g,'$1 records');
+  const translated=out===key?null:out;
+  if(compositeCache.size>2000)compositeCache.clear();
+  compositeCache.set(key,translated);
+  return translated;
+}
+function compileEnglishParts(){
+  const escape=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\function rememberAttr(el,name,value){');
+  englishParts=[...sourceToTarget.entries()]
+    .filter(([source,target])=>source.length>=2&&source.length<=90&&/[가-힣]/.test(source)&&!/[\n\r]/.test(source)&&target)
+    .sort((a,b)=>b[0].length-a[0].length)
+    .map(([source,translation])=>({pattern:new RegExp('(?<![가-힣])'+escape(source)+'(?![가-힣])','g'),translation}));
+  compositeCache.clear();
+}
 function rememberAttr(el,name,value){
   let attrs=originalAttrs.get(el);
   if(!attrs){attrs={};originalAttrs.set(el,attrs)}
@@ -95,7 +122,7 @@ function applyTranslations(root=document){
     let n;
     while((n=walker.nextNode())){
       if(skipTextNode(n))continue;
-      const raw=n.nodeValue||'',key=normalize(raw),translated=sourceToTarget.get(key);
+      const raw=n.nodeValue||'',key=normalize(raw),translated=translationFor(key);
       if(!translated)continue;
       if(!originalText.has(n))originalText.set(n,raw);
       const leading=raw.match(/^\s*/)?.[0]||'';
@@ -107,7 +134,7 @@ function applyTranslations(root=document){
         if(el.closest('localize-switcher'))continue;
         for(const name of ATTRS){
           if(!el.hasAttribute(name))continue;
-          const raw=el.getAttribute(name),translated=sourceToTarget.get(normalize(raw));
+          const raw=el.getAttribute(name),translated=translationFor(normalize(raw));
           if(!translated)continue;
           rememberAttr(el,name,raw);
           el.setAttribute(name,translated);
@@ -136,6 +163,7 @@ async function setLocale(locale){
           if(normalize(k)&&normalize(v))sourceToTarget.set(normalize(k),String(v));
         }
       }
+      compileEnglishParts();
       applyTranslations(document);
     }else{
       sourceBundle={};targetBundle={};sourceToTarget=new Map();
@@ -143,6 +171,7 @@ async function setLocale(locale){
   }catch(error){
     console.warn('KIMSE LocalizeHub bundle unavailable:',error);
     sourceToTarget=new Map();
+    englishParts=[];compositeCache.clear();
   }
   observe();
 }
