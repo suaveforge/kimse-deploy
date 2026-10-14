@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261014-mobile-vertical-28';
+const CACHE = 'kimse-pwa-20261014-clinical-longprint-29';
 const CORE = [
   './',
   './index.html',

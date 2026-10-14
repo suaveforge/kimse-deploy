@@ -2701,9 +2701,14 @@ function clinicalCooccurrenceView(r){
 // It never treats an absent record as a normal examination or a user statement
 // as a verified clinician finding. Keep the whole record on the interactive view.
 function clinicalPrintableSourceRecords(report){
-  // The generic clinician briefing is intentionally a single A4 sheet.
-  // After a public hospital is selected, an accompanying source annex is printed.
-  if(!window.KIMSE_CLINICAL_SUBMISSION?.getSelection?.()?.institutionId)return '';
+  // Keep the unfiltered generic handout short; a recognized specialty alone
+  // must never hide the original patient/family/clinical record appendix.
+  const delivery=window.KIMSE_CLINICAL_SUBMISSION;
+  const chosen=delivery?.getSelection?.();
+  if(!chosen?.institutionId){
+    const specialty=delivery?.buildVisitBrief?.(report)?.countryClinicalPriority?.specialtyFocus;
+    if(!specialty||specialty==='UNSPECIFIED')return '';
+  }
   const safe=rows=>Array.isArray(rows)?rows:[];
   const stamp=value=>value?String(value).slice(0,10):'기록일 미입력';
   const joined=parts=>parts.filter(x=>x!==null&&x!==undefined&&x!=='').map(String).join(' · ');
@@ -2723,9 +2728,13 @@ function clinicalPrintableSourceRecords(report){
   return '<section class="clinical-print-source-records" aria-label="출처별 진료 관련 원자료"><h2>출처별 기록 · 가족 진술과 의료검사 구분</h2>'
     +groups.map(group=>{
       const count=group.rows.length;
-      const content=count?'<ol>'+group.rows.map(r=>'<li><strong>'+esc(stamp(group.date(r)))+'</strong>'
-        +'<span>'+esc(group.detail(r)||'상세 내용 미입력')+'</span><small>출처: '+esc(group.origin(r))+'</small>'
-        +(r.recorded_at&&stamp(r.recorded_at)!==stamp(group.date(r))?'<small>기록 등록일: '+esc(stamp(r.recorded_at))+'</small>':'')+'</li>').join('')+'</ol>'
+      const content=count?'<ol>'+group.rows.map(r=>{
+        const detail=group.detail(r)||'상세 내용 미입력';
+        const longRow=detail.length>650?' class="clinical-print-long-entry"':'';
+        return '<li'+longRow+'><strong>'+esc(stamp(group.date(r)))+'</strong>'
+        +'<span>'+esc(detail)+'</span><small>출처: '+esc(group.origin(r))+'</small>'
+        +(r.recorded_at&&stamp(r.recorded_at)!==stamp(group.date(r))?'<small>기록 등록일: '+esc(stamp(r.recorded_at))+'</small>':'')+'</li>';
+      }).join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
     }).join('')+'</section>';

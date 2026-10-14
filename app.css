@@ -1057,7 +1057,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .app-header,.bottom-nav,.app-footer,#live-status,.clinical-interactive{display:none!important}
   .page.screen-clinical-handoff{max-width:none!important;padding:0!important}
   .clinical-report-shell{display:block}
-  .clinical-print-page{border:0!important;border-radius:0!important;padding:0!important;gap:10px!important}
+  .clinical-print-page{display:block!important;border:0!important;border-radius:0!important;padding:0!important}
+  .clinical-print-page>.clinical-alert-summary,.clinical-print-page>.clinical-print-grid,.clinical-print-page>.clinical-visit-brief{margin-top:10px}
+  .clinical-print-page>.clinical-print-disclaimer{margin-top:10px}
   .clinical-report-heading{padding-bottom:9px}
   .clinical-report-heading h1{font-size:22px}
   .clinical-alert-summary{grid-template-columns:1.4fr .8fr;gap:10px}
@@ -1438,6 +1440,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  .clinical-print-source-group{break-inside:auto}
  .clinical-print-source-group h3{font-size:10pt;break-after:avoid}
  .clinical-print-source-group li{break-inside:avoid;page-break-inside:avoid;padding:4pt 0}
+ .clinical-print-source-group li.clinical-print-long-entry{break-inside:auto!important;page-break-inside:auto!important}
+ .clinical-print-source-records,.clinical-print-source-group ol{break-inside:auto;overflow:visible!important}
+ .clinical-print-source-group h3{break-after:avoid-page;page-break-after:avoid}
  .clinical-print-source-group li strong,.clinical-print-source-group li span{font-size:9pt}
  .clinical-print-source-group li small{font-size:8pt}
 }
