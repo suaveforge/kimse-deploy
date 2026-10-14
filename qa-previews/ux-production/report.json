@@ -1,0 +1,321 @@
+{
+  "url": "https://kimse.suaveforge.com",
+  "release": "20261014-mobile-vertical-28",
+  "screenCount": 52,
+  "results": [
+    {
+      "route": "demo-capture",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-demo-capture"
+    },
+    {
+      "route": "start",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-start"
+    },
+    {
+      "route": "role",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-role"
+    },
+    {
+      "route": "auth",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-auth"
+    },
+    {
+      "route": "onboarding-profile",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-onboarding-profile"
+    },
+    {
+      "route": "initial-check",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-initial-check senior-screen"
+    },
+    {
+      "route": "voice-check",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-voice-check senior-screen"
+    },
+    {
+      "route": "initial-result",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-initial-result"
+    },
+    {
+      "route": "cognitive-recheck",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-cognitive-recheck"
+    },
+    {
+      "route": "cognitive-recheck-result",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-cognitive-recheck-result"
+    },
+    {
+      "route": "consent",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-consent senior-screen"
+    },
+    {
+      "route": "evidence-proof",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow overview-page screen-evidence-proof"
+    },
+    {
+      "route": "research-engine",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow overview-page screen-research-engine senior-screen"
+    },
+    {
+      "route": "baseline",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow overview-page screen-baseline senior-screen"
+    },
+    {
+      "route": "brain-map",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow overview-page screen-brain-map senior-screen"
+    },
+    {
+      "route": "monitoring-status",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow overview-page screen-monitoring-status senior-screen"
+    },
+    {
+      "route": "collection-status",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-collection-status"
+    },
+    {
+      "route": "brain-trends",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow overview-page screen-brain-trends senior-screen"
+    },
+    {
+      "route": "account",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-account"
+    },
+    {
+      "route": "switch",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-switch"
+    },
+    {
+      "route": "home",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page   screen-home"
+    },
+    {
+      "route": "assessment-start",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-assessment-start",
+      "cta": 369.75
+    },
+    {
+      "route": "assessment",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-assessment"
+    },
+    {
+      "route": "result",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-result"
+    },
+    {
+      "route": "training",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page   screen-training"
+    },
+    {
+      "route": "training-play",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-training-play"
+    },
+    {
+      "route": "medication",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-medication"
+    },
+    {
+      "route": "medication-add",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-medication-add"
+    },
+    {
+      "route": "health",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page   screen-health"
+    },
+    {
+      "route": "health-detail",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-health-detail"
+    },
+    {
+      "route": "caregiver-home",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page  overview-page screen-caregiver-home senior-screen"
+    },
+    {
+      "route": "family-feedback",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-family-feedback"
+    },
+    {
+      "route": "care-schedule",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-care-schedule"
+    },
+    {
+      "route": "family",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-family"
+    },
+    {
+      "route": "family-add",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-family-add"
+    },
+    {
+      "route": "family-call",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-family-call"
+    },
+    {
+      "route": "call-room",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-call-room"
+    },
+    {
+      "route": "clinical-handoff",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page   screen-clinical-handoff"
+    },
+    {
+      "route": "medical-records",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-medical-records"
+    },
+    {
+      "route": "clinical-context-event",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-clinical-context-event"
+    },
+    {
+      "route": "medical-record-add",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-medical-record-add"
+    },
+    {
+      "route": "professional-outcome",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-professional-outcome"
+    },
+    {
+      "route": "report",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-report"
+    },
+    {
+      "route": "emergency",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-emergency"
+    },
+    {
+      "route": "alert-add",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-alert-add"
+    },
+    {
+      "route": "market",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-market"
+    },
+    {
+      "route": "market-detail",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-market-detail"
+    },
+    {
+      "route": "partnership",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-partnership"
+    },
+    {
+      "route": "plan",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-plan"
+    },
+    {
+      "route": "accessibility",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-accessibility"
+    },
+    {
+      "route": "admin-partners",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-admin-partners"
+    },
+    {
+      "route": "settings",
+      "w": 375,
+      "scrollW": 360,
+      "screen": "page narrow  screen-settings"
+    }
+  ],
+  "problems": []
+}
