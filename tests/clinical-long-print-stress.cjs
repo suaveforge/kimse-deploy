@@ -26,10 +26,13 @@ async function run(){
       'FAMILY_ROW_'+i
   }));
   report.external_clinical_records=Array.from({length:18},(_,i)=>({
-    performed_at:date(i),recorded_at:'2026-10-05',record_type:'LAB',
+    performed_at:date(i),recorded_at:'2026-10-05',record_type:i===17?'GENERAL_LAB':'LAB',
     title:i===0?'EXTERNAL_FIRST':i===17?'EXTERNAL_LAST':'EXTERNAL_ROW_'+i,
     institution:'SYNTHETIC TEST ONLY',source_route:'USER_UPLOAD',
-    items:[{name:'ZERO_TEST_'+i,value:0,unit:'points'}]
+    items:i===17?Array.from({length:17},(_,j)=>({
+      name:'EXTERNAL_PARITY_'+String(j+1).padStart(2,'0'),
+      value:j===0?0:j===16?17:null,unit:'points'
+    })):[{name:'ZERO_TEST_'+i,value:0,unit:'points'}]
   }));
   report.professional_outcomes=Array.from({length:18},(_,i)=>({
     evaluation_date:date(i),recorded_at:'2026-10-06',
@@ -57,6 +60,16 @@ async function run(){
     await page.locator('#clinical-target-department').press('Tab');
     await page.waitForFunction(()=>document.querySelectorAll('.clinical-print-source-group li').length===54,{timeout:30000});
     ok(await page.locator('.clinical-print-source-group li').count()===54,'54-complete-source-records');
+    const externalTags=page.locator('[data-clinical-external-item="true"]');
+    ok(await externalTags.count()===34,'screen-17-extra-items-not-truncated');
+    ok((await externalTags.nth(17).innerText()).includes('EXTERNAL_PARITY_01 · 0 points'),
+      'screen-first-result-is-measured-zero');
+    ok((await externalTags.nth(25).innerText()).includes('EXTERNAL_PARITY_09 · 검사값 미수집'),
+      'screen-missing-result-is-not-zero');
+    ok((await externalTags.nth(33).innerText()).includes('EXTERNAL_PARITY_17 · 17 points'),
+      'screen-last-result-is-present');
+    ok((await page.getByText('앱 등록일: 2026-10-05').count())>=1,
+      'screen-test-date-and-record-date-are-separated');
     ok(await page.locator('.clinical-print-long-entry').count()>=1,'long-single-record');
     ok(await page.locator('.clinical-visit-source a').count()===0,'no-fabricated-hospital');
     ok(await page.locator('.clinical-visit-brief').getAttribute('data-provider-approved')==='false','no-hospital-approval');
@@ -68,7 +81,7 @@ async function run(){
     ok(count>=4&&count<40,'multi-page-A4-'+count);
     const file='clinical-long-stress-a4.pdf';fs.writeFileSync(file,pdf);
     const text=execFileSync('pdftotext',['-layout',file,'-'],{encoding:'utf8'});
-    for(const token of ['FAMILY_FIRST','FAMILY_LAST','LONG_NOTE_END','EXTERNAL_FIRST','EXTERNAL_LAST','PROFESSIONAL_FIRST','PROFESSIONAL_LAST','ZERO_TEST_17','ZERO_SCORE_17']){
+    for(const token of ['FAMILY_FIRST','FAMILY_LAST','LONG_NOTE_END','EXTERNAL_FIRST','EXTERNAL_LAST','EXTERNAL_PARITY_01','EXTERNAL_PARITY_17','PROFESSIONAL_FIRST','PROFESSIONAL_LAST','ZERO_SCORE_17']){
       ok(text.includes(token),'pdf-text-'+token);
     }
     ok(text.includes('2026-10-05'),'pdf-registration-date-preserved');
