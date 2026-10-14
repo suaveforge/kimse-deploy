@@ -28,7 +28,7 @@ async function run() {
           const p=node.parentElement;
           if(p&&p.getClientRects().length&&!p.closest('script,style,noscript'))visibleText+=(node.nodeValue||'')+' ';
         }
-        return {lang:document.documentElement.lang,untranslatedHangulChars:(visibleText.match(/[가-힣]/g)||[]).length,bodyChars:visibleText.length,overflow:document.documentElement.scrollWidth>window.innerWidth+6};
+        return {lang:document.documentElement.lang,untranslatedHangulChars:(visibleText.match(/[가-힣]/g)||[]).length,bodyChars:visibleText.length,overflow:document.documentElement.scrollWidth>window.innerWidth+6,untranslatedExamples:[...new Set(visibleText.split(/[\n·|]/).map(t=>t.trim()).filter(t=>/[가-힣]/.test(t)))].slice(0,18).map(x=>x.slice(0,150))};
       });
       await page.screenshot({path:'/tmp/kimse-'+cases.indexOf(c)+'-mobile.png',fullPage:false});
       console.log(JSON.stringify({test:c.name,result:'PASS',...stats,pageErrors:errors.slice(0,4)}));
