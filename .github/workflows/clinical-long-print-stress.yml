@@ -1,0 +1,35 @@
+name: KIMSE Clinical Long A4 Source Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app.js'
+      - 'app.css'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'tests/clinical-long-print-stress.cjs'
+      - '.github/workflows/clinical-long-print-stress.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-long-a4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Chromium and PDF text extraction
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends poppler-utils fonts-noto-cjk
+          npm install playwright@1.56.1 pdf-lib --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Verify 54 synthetic observations survive A4 pagination
+        run: node tests/clinical-long-print-stress.cjs
+      - name: Keep QA-only PDF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-clinical-long-a4-synthetic
+          path: clinical-long-stress-a4.pdf
+          if-no-files-found: ignore
