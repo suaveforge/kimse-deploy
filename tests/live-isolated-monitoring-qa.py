@@ -37,7 +37,7 @@ def main():
       ('sleep_minutes',445,'min'),('voice_pause_ratio',0.12,'ratio'),
       ('call_count',1,'count')
     ]
-    events=[{'client_event_id':'qa-'+uuid.uuid4().hex,'source':'qa_synthetic','metric':metric,'value':value,'unit':unit,'observed_at':(now-datetime.timedelta(seconds=i)).isoformat(),'metadata':{'local_day':localday,'test_record':True,'source_label':'QA_SYNTHETIC_NOT_REAL_SENSOR'}} for i,(metric,value,unit) in enumerate(metrics)]
+    events=[{'client_event_id':'qa-'+uuid.uuid4().hex,'source':'qa_synthetic','metric':metric,'value':value,'unit':unit,'observed_at':now.isoformat(),'metadata':{'local_day':localday,'test_record':True,'source_label':'QA_SYNTHETIC_NOT_REAL_SENSOR'}} for i,(metric,value,unit) in enumerate(metrics)]
     status,ingest=call('/api/v1/subjects/'+sid+'/signals/batch','POST',{'account_id':aid,'events':events},token)
     assert status==200 and ingest.get('inserted')==len(events),(status,ingest.get('inserted'),len(events))
     result['checks'].append({'name':'EVENTS_SAVED','status':'PASS','inserted':ingest['inserted']})
