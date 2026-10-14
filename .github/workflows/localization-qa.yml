@@ -1,0 +1,45 @@
+name: KIMSE International English Localization QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'kimse-en.json'
+      - 'localizehub-runtime.js'
+      - 'evidence/**'
+      - 'tests/localization-browser.test.cjs'
+      - '.github/workflows/localization-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  english-browser:
+    name: English and Korean real-browser smoke tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Serve public app and Evidence at Pages paths
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/kimse-i18n-server.log 2>&1 &
+          sleep 2
+          curl --fail --silent http://127.0.0.1:8765/ > /dev/null
+      - name: Real Chromium language and English fallback QA
+        run: node tests/localization-browser.test.cjs
+      - name: Preserve smoke-test screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-international-english-smoke-qa
+          path: /tmp/kimse-*-mobile.png
+          retention-days: 7
+          if-no-files-found: ignore
