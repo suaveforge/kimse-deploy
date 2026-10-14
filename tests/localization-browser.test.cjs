@@ -35,7 +35,7 @@ async function run() {
           const view=window.innerWidth;
           const culprits=[...document.querySelectorAll('body *')].map(el=>{
             const b=el.getBoundingClientRect(),st=getComputedStyle(el);
-            return {tag:el.tagName,id:el.id,className:(typeof el.className==='string'?el.className:'').slice(0,75),right:Math.round(b.right),width:Math.round(b.width),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth};
+            return {tag:el.tagName,id:el.id,className:(typeof el.className==='string'?el.className:'').slice(0,75),right:Math.round(b.right),width:Math.round(b.width),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,parents:[el.parentElement,el.parentElement?.parentElement,el.parentElement?.parentElement?.parentElement].filter(Boolean).map(x=>(x.tagName.toLowerCase()+(x.className&&typeof x.className==='string'?'.'+x.className.slice(0,50):'')))};
           }).filter(x=>x.right>view+8&&x.width>0).slice(0,14);
           const frequency=new Map();const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
           while(n=w.nextNode()){const e=n.parentElement;if(!e||e.getClientRects().length===0)continue;const txt=(n.nodeValue||'').trim();if(/[가-힣]/.test(txt))frequency.set(txt,(frequency.get(txt)||0)+1)}
