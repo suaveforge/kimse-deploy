@@ -287,10 +287,10 @@ if(title&&desc){
 
 /* Legacy links on the menu route redirect to dedicated content pages. */
 if(PAGE_MODE==='menu'){
-  if(location.hash==='#clinical-handoff'||location.hash==='#clinical')location.replace('./clinical.html');
-  else if(location.hash==='#research-data-model'||location.hash==='#rd')location.replace('./rd.html');
-  else if(location.hash==='#trust-provenance'||location.hash==='#trust')location.replace('./trust.html');
-  else if((location.hash||'').indexOf('#evidence-src-')===0)location.replace('./observation.html'+location.hash);
+  if(location.hash==='#clinical-handoff'||location.hash==='#clinical')location.replace('./clinical.html'+location.search);
+  else if(location.hash==='#research-data-model'||location.hash==='#rd')location.replace('./rd.html'+location.search);
+  else if(location.hash==='#trust-provenance'||location.hash==='#trust')location.replace('./trust.html'+location.search);
+  else if((location.hash||'').indexOf('#evidence-src-')===0)location.replace('./observation.html'+location.search+location.hash);
 }
 
 document.querySelectorAll('.badge.bg-secondary-lt').forEach(function(e){if(e.textContent.indexOf('Updated 2026.09.23')>=0)e.textContent='Updated 2026.10.06 · Evidence Registry 18';});
