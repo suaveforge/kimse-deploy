@@ -1,0 +1,35 @@
+name: KIMSE Clinical Specialty Patient-Carried A4 QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/clinical-specialty-qa.cjs'
+      - '.github/workflows/clinical-specialty-qa.yml'
+      - 'app.js'
+      - 'app.css'
+      - 'clinical-submission.js'
+      - 'index.html'
+      - 'service-worker.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  four-specialties:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium, Noto fonts and PDF text extraction
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends poppler-utils fonts-noto-cjk
+          npm install playwright@1.56.1 pdf-lib --no-save --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Verify six countries, four specialties, four patient PDFs
+        run: node tests/clinical-specialty-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kimse-specialty-a4-synthetic
+          path: clinical-specialty-qa/*.pdf
+          if-no-files-found: ignore
