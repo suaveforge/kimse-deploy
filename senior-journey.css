@@ -1403,3 +1403,13 @@ body:has(.screen-home) .bottom-nav-inner{max-width:920px}
 .screen-market .app-footer,.screen-settings .app-footer{display:none}
 .screen-market>.d-flex .page-desc{font-size:16px;line-height:1.4;margin:0 0 7px}
 .screen-market .market-category-card strong{font-size:16px}
+
+/* 2026-10-14 mobile usability audit: keep a semantic h1 for assistive technology,
+   while avoiding duplicate on-screen headings already named by the app header. */
+:is(.screen-health,.screen-training,.screen-medication,.screen-medication-add,
+.screen-family,.screen-report,.screen-medical-records,.screen-emergency,
+.screen-partnership,.screen-plan,.screen-admin-partners) .page-title{
+ position:absolute!important;width:1px!important;height:1px!important;
+ padding:0!important;margin:-1px!important;overflow:hidden!important;
+ clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+}
