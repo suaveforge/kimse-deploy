@@ -317,7 +317,7 @@ jobs:
                   'geriatrics-references-function-and-medications');
               }
               if(specialty==='psychiatry'){
-                check((await review.innerText()).includes('기분·행동 보고 있음') &&
+                check((await review.innerText()).includes('기분·행동 사용자 진술: 평소와 비슷') &&
                   (await review.innerText()).includes('가족 응답 1건'),
                   'psychiatry-keeps-mood-and-informant-separate');
               }
