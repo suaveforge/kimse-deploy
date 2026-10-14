@@ -67,8 +67,8 @@ async function main(){
  const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'kimse-public-translation-'));
  const input=path.join(tmp,'source.json'),answer=path.join(tmp,'translated.json');
  fs.writeFileSync(input,JSON.stringify(todo),'utf8');
- const process=spawnSync('python3',[path.join(__dirname,'translate-public-catalog.py'),input,answer],{stdio:'inherit',timeout:1000*60*17});
- if(process.status!==0||!fs.existsSync(answer))throw Error('Offline Python translation did not finish: status '+process.status);
+ const subprocess=spawnSync('python3',[path.join(__dirname,'translate-public-catalog.py'),input,answer],{stdio:'inherit',timeout:1000*60*17});
+ if(subprocess.status!==0||!fs.existsSync(answer))throw Error('Offline Python translation did not finish: status '+subprocess.status);
  const translated=JSON.parse(fs.readFileSync(answer,'utf8'));
  const result={...existing,...translated.translations};
  const ok=Object.keys(translated.translations||{}).length,fail=(translated.failures||[]).length,errors=translated.failures||[];
