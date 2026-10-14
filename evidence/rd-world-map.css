@@ -139,3 +139,7 @@
 .kimse-progress-tools select,.kimse-progress-tools input{box-sizing:border-box;min-width:0;max-width:100%}
 .kimse-progress-metric span{overflow-wrap:anywhere;word-break:normal}
 .kimse-atlas-progress-head h3{overflow-wrap:anywhere}
+
+/* International English copy can be longer than Korean: contain stat labels on phones. */
+.kimse-atlas-stat,.kimse-atlas-stat strong,.kimse-atlas-stat small{min-width:0;max-width:100%;overflow-wrap:anywhere}
+@media(max-width:700px){.kimse-atlas-stat strong,.kimse-atlas-stat small{word-break:normal;white-space:normal}.kimse-atlas-progress-number,.kimse-progress-number{min-width:0}}
