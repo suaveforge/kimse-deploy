@@ -16,3 +16,20 @@ jobs:
         run: |
           set -Eeuo pipefail
           curl --silent --show-error --fail --location             --connect-timeout 7 --max-time 15             -w '\nTIME_TOTAL=%{time_total} HTTP=%{http_code}\n'             --get --data-urlencode 'client=gtx' --data-urlencode 'sl=ko'             --data-urlencode 'tl=en' --data-urlencode 'dt=t'             --data-urlencode 'q=관찰 근거'             'https://translate.googleapis.com/translate_a/single'
+      - name: Measure 50-request public UI translation success
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request, urllib.parse, json, concurrent.futures, time, collections
+          words=["관찰 근거","개인 기준 변화","의료진 리포트","사용자 동의","보호자 관찰","다양한 변화","데이터 품질","결측 사유","수면과 활동","연구용 정보"]*5
+          def check(i):
+            q=urllib.parse.urlencode(dict(client="gtx",sl="ko",tl="en",dt="t",q=words[i]+str(i)))
+            try:
+              with urllib.request.urlopen("https://translate.googleapis.com/translate_a/single?"+q,timeout=8) as a:
+                return (a.status,len(a.read()))
+            except Exception as e:return (str(e)[:90],0)
+          t=time.monotonic()
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
+            results=list(ex.map(check,range(50)))
+          print("BULK_TRANSLATION_PROBE",dict(statuses=dict(collections.Counter(str(x[0]) for x in results)),elapsed_seconds=round(time.monotonic()-t,2)),flush=True)
+          PY
