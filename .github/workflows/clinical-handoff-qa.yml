@@ -251,6 +251,37 @@ jobs:
             check(pdfDocument.getPageCount()===1,'a4-summary-exactly-one-page',String(pdfDocument.getPageCount()));
             fs.writeFileSync(path.join(out,'clinical-handoff-a4.pdf'),pdf);
             await dp.emulateMedia({media:'screen'});
+            // Unselected hospital + a recognized specialty must print a safe
+            // patient-carried country/public-guidance panel, not an invented
+            // hospital intake form. Exercise the actual live DOM and A4 PDF.
+            for(const [specialty,department] of [
+              ['neurology','신경과'],['geriatrics','노인의학과'],
+              ['psychiatry','정신건강의학과'],['primary-care','가정의학과']
+            ]){
+              await dp.locator('#clinical-target-department').fill(department);
+              await dp.locator('#clinical-target-department').press('Tab');
+              await dp.waitForFunction(()=>document.querySelector('.clinical-visit-brief')?.textContent.includes('기관 미선택 · 병원별 공개 의뢰요건은 평가하지 않았습니다'),null,{timeout:12000});
+              check(await dp.locator('.clinical-national-priority ol li').count()===5,
+                'specialty-only-five-research-terms-'+specialty);
+              check((await dp.locator('.clinical-visit-brief').getAttribute('data-provider-approved'))==='false',
+                'specialty-only-not-provider-approved-'+specialty);
+              check((await dp.locator('.clinical-visit-brief').getAttribute('data-transport-authorized'))==='false',
+                'specialty-only-no-electronic-transport-'+specialty);
+              check(await dp.locator('.clinical-visit-source a').count()===0,
+                'specialty-only-no-fabricated-provider-'+specialty);
+              await dp.emulateMedia({media:'print'});
+              const specialtyPdf=await dp.pdf({format:'A4',printBackground:true,
+                margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
+              const specialtyPages=(await PDFDocument.load(specialtyPdf)).getPageCount();
+              check(specialtyPdf.length>10000&&specialtyPages>=1&&specialtyPages<=3,
+                'specialty-only-a4-pdf-'+specialty,String(specialtyPages));
+              fs.writeFileSync(path.join(out,'clinical-handoff-'+specialty+'-no-hospital-a4.pdf'),specialtyPdf);
+              await dp.emulateMedia({media:'screen'});
+            }
+            await dp.locator('#clinical-target-department').fill('');
+            await dp.locator('#clinical-target-department').press('Tab');
+            check(await dp.locator('.clinical-visit-brief').count()===0,
+              'no-hospital-no-specialty-keeps-basic-print-compact');
             await dp.locator('#clinical-target-country').selectOption('GB');
             await dp.locator('#clinical-target-institution').selectOption('GB-DORSET-MAS');
             await dp.waitForFunction(()=>document.querySelector('.clinical-visit-brief')?.textContent.includes('Dorset'),null,{timeout:12000});
