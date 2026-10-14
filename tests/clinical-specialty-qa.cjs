@@ -242,6 +242,77 @@ async function main(){
     }
     await context.close();
   }
+
+  // Cross-output clinical source preservation: exactly the same synthetic
+  // nested events are rendered in the actual patient-carried browser and A4.
+  const history=JSON.parse(JSON.stringify(report));
+  history.risk_confounders={
+    medication_change:{events:[
+      {status:'PRESENT',event_type:'MEDICATION_CHANGE',occurred_at:'2026-09-20',
+       recorded_at:'2026-10-11',reported_by:'CAREGIVER',
+       summary:'SYNTHETIC-MED-CHANGE',details:{new_dose:0}},
+      {status:'ABSENT',event_type:'MEDICATION_CHANGE',occurred_at:'2026-09-21',summary:'SYNTHETIC-MED-ABSENT'}
+    ]},
+    acute_illness_context:{events:[
+      {status:'UNKNOWN',event_type:'ACUTE_ILLNESS',occurred_at:'2026-09-22',summary:'SYNTHETIC-ACUTE-UNKNOWN'},
+      {status:'NONE_REPORTED',event_type:'ACUTE_ILLNESS',occurred_at:'2026-09-23',summary:'SYNTHETIC-ACUTE-NONE'}
+    ]},
+    current_medications:[]
+  };
+  history.clinical_domains={
+    ...history.clinical_domains,
+    safety_support:{context_events:[
+      {status:'PRESENT',event_type:'FALL',occurred_at:'2026-09-24',summary:'SYNTHETIC-SAFETY'}]},
+    mood_behavior:{context_events:[
+      {status:'ABSENT',event_type:'MOOD_CHANGE',occurred_at:'2026-09-25',summary:'SYNTHETIC-MOOD'}]},
+    sensory_motor:{context_events:[
+      {status:'UNKNOWN',event_type:'SENSORY_CHANGE',occurred_at:'2026-09-26',summary:'SYNTHETIC-SENSORY'}]}
+  };
+  const originalHistory=JSON.stringify(history);
+  const historyCtx=await browser.newContext({viewport:{width:1440,height:950},locale:'ko-KR',serviceWorkers:'block'});
+  await historyCtx.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),
+    {...state,clinicalReport:history,professionalOutcomes:[]});
+  await historyCtx.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
+  const hp=await historyCtx.newPage();
+  await hp.goto(BASE+'#/clinical-handoff',{waitUntil:'domcontentloaded',timeout:50000});
+  await hp.locator('#clinical-target-department').fill('노인의학과');
+  await hp.locator('#clinical-target-department').dispatchEvent('change');
+  await hp.waitForFunction(()=>document.querySelector('.clinical-specialty-review')?.dataset.specialtyFocus==='GERIATRICS',
+    null,{timeout:12000});
+  const paths=[
+    'risk_confounders.medication_change.events[0]',
+    'risk_confounders.medication_change.events[1]',
+    'risk_confounders.acute_illness_context.events[0]',
+    'risk_confounders.acute_illness_context.events[1]',
+    'clinical_domains.safety_support.context_events[0]',
+    'clinical_domains.mood_behavior.context_events[0]',
+    'clinical_domains.sensory_motor.context_events[0]'
+  ];
+  const originalRows=hp.locator('.clinical-print-context-group li[data-clinical-context-source]');
+  check(await originalRows.count()===7,'history-screen-7-source-records');
+  const actualPaths=await originalRows.evaluateAll(nodes=>nodes.map(x=>x.dataset.clinicalContextSource));
+  check(JSON.stringify(actualPaths)===JSON.stringify(paths),'history-screen-canonical-paths');
+  const contextBody=await hp.locator('.clinical-print-source-records').innerText();
+  check(contextBody.includes('new_dose: 0')&&contextBody.includes('2026-10-11')&&
+    contextBody.includes('상태 ABSENT')&&contextBody.includes('상태 UNKNOWN')&&
+    contextBody.includes('상태 NONE_REPORTED'),'history-screen-zero-status-and-dates');
+  check((await hp.locator('.clinical-visit-brief').getAttribute('data-provider-approved'))==='false',
+    'history-no-medical-provider-approval');
+  await hp.emulateMedia({media:'print'});
+  const historyPdf=await hp.pdf({format:'A4',printBackground:true,
+    margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
+  const historyFile='clinical-specialty-context-history.pdf';
+  fs.writeFileSync('clinical-specialty-qa/'+historyFile,historyPdf);
+  const allText=execFileSync('pdftotext',['-layout','clinical-specialty-qa/'+historyFile,'-'],
+    {encoding:'utf8'}).replace(/\\s+/g,'');
+  for(const path of paths)
+    check(allText.includes(path),'history-pdf-original-path-'+path);
+  for(const phrase of ['new_dose:0','2026-09-20','2026-10-11',
+                        '상태ABSENT','상태UNKNOWN','상태NONE_REPORTED',
+                        '의료진확인결과아님'])
+    check(allText.includes(phrase.replace(/\\s+/g,'')),'history-pdf-original-value-'+phrase);
+  check(JSON.stringify(history)===originalHistory,'history-source-never-mutated');
+  await historyCtx.close();
  }finally{await browser.close();}
  console.log('KIMSE_SPECIALTY_LIVE_24_CASES_4_A4_PDFS=PASS');
 }
