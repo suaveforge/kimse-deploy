@@ -867,7 +867,10 @@ async function hydrateSignalJournal(){
   const journal=window.KIMSE_SIGNAL_JOURNAL;
   if(!journal)return false;
   const done=await journal.migrate(S.monitoring.pending);
-  if(done&&S.monitoring.pending.length>120){S.monitoring.pending=S.monitoring.pending.slice(-120);save()}
+  if(done){
+    for(const event of S.monitoring.pending)journaledLocalIds.add(event.client_event_id);
+    if(S.monitoring.pending.length>120){S.monitoring.pending=S.monitoring.pending.slice(-120);save()}
+  }
   return done;
 }
 function queueSignal(metric,value,unit='',source='pwa',metadata={}){
