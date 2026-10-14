@@ -146,3 +146,6 @@
 
 /* English stage cards: flex children may otherwise retain long-word intrinsic width. */
 @media(max-width:700px){.kimse-progress-number{box-sizing:border-box;width:100%;max-width:100%;min-width:0}.kimse-progress-number strong,.kimse-progress-number small,.kimse-progress-number-value{box-sizing:border-box;min-width:0;max-width:100%;overflow-wrap:anywhere;white-space:normal;text-align:center}}
+
+/* R&D outreach group counts must wrap in English instead of widening the mobile viewport. */
+@media(max-width:767.98px){body[data-evidence-page="rd"] details summary .text-nowrap{white-space:normal!important;overflow-wrap:anywhere;min-width:0;max-width:42%;flex:0 1 auto;text-align:right}}
