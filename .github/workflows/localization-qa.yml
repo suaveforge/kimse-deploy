@@ -34,7 +34,9 @@ jobs:
           sleep 2
           curl --fail --silent http://127.0.0.1:8765/ > /dev/null
       - name: Real Chromium language and English fallback QA
-        run: |\n          node tests/localization-browser.test.cjs\n          node tests/localization-deep-navigation.test.cjs
+        run: |
+          node tests/localization-browser.test.cjs
+          node tests/localization-deep-navigation.test.cjs
       - name: Preserve smoke-test screenshots
         if: always()
         uses: actions/upload-artifact@v4
