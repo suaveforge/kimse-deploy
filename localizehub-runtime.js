@@ -78,7 +78,7 @@ function translationFor(key){
   return translated;
 }
 function compileEnglishParts(){
-  const escape=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\function rememberAttr(el,name,value){');
+  const escape=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   englishParts=[...sourceToTarget.entries()]
     .filter(([source,target])=>source.length>=2&&source.length<=90&&/[가-힣]/.test(source)&&!/[\n\r]/.test(source)&&target)
     .sort((a,b)=>b[0].length-a[0].length)
