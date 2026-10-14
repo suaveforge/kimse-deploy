@@ -1446,3 +1446,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  .clinical-print-source-group li strong,.clinical-print-source-group li span{font-size:9pt}
  .clinical-print-source-group li small{font-size:8pt}
 }
+
+/* Unverified method/equipment belongs to the submitted test result, not a diagnosis. */
+.clinical-professional-tags .clinical-assay-note{
+ display:block;max-width:100%;margin-top:4px;font-size:11px;
+ line-height:1.45;color:#526673;font-weight:500;
+ white-space:normal;overflow-wrap:anywhere
+}
+@media print{
+ .clinical-professional-tags .clinical-assay-note{font-size:8pt;break-inside:auto}
+}
