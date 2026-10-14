@@ -32,10 +32,10 @@ async function run(){
     assert.equal(new URL(result.url).searchParams.get('lang'),'en');
     if(result.hangulFirstElements>0)violations.push(dest+': '+result.hangulFirstElements+' Korean heading/intro characters');
   }
-  for(const route of ['start','role','auth','research-engine','assessment-start','training']){
+  for(const route of ['start','role','auth','research-engine','evidence-proof','assessment-start','assessment','result','training','training-play','onboarding-profile','initial-check','health','settings','medical-records','monitoring-status','collection-status','brain-map','brain-trends','family']){
     await page.goto(base+'/?lang=en#/'+route,{waitUntil:'domcontentloaded'}); // replace below to ensure actual route
     await page.waitForFunction(()=>document.documentElement.lang==='en',{timeout:20000});
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(350);
     const status=await page.evaluate(()=>{
       let body=(document.querySelector('#main')?.innerText||document.body.innerText||'');
       return {route:location.hash,lang:document.documentElement.lang,hangul:(body.match(/[가-힣]/g)||[]).length,examples:body.split('\n').map(x=>x.trim()).filter(x=>/[가-힣]/.test(x)).slice(0,15),overflow:document.documentElement.scrollWidth>window.innerWidth+12};
