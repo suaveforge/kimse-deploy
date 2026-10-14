@@ -1,6 +1,6 @@
 {
   "schemaVersion": "2026-10-13.map.6",
-  "asOf": "2026-10-13",
+  "asOf": "2026-10-14",
   "displayPolicy": "Institution outreach stages show only evidence-supported message delivery, statutory FOI acknowledgements and research-method responses; none indicates institutional partnership, clinical validation, purchasing interest or a paid contract. Approved unsubmitted web forms remain uncontacted. No private sender addresses or Gmail IDs are included.",
   "mapSource": "Natural Earth 110m geography via world-atlas topojson",
   "total": 92,
@@ -3490,8 +3490,8 @@
       "authority": "연구 영향력",
       "stage": "RESEARCH_METHODS_RESPONSE_RECEIVED",
       "stageLabel": "연구방법 답변 수신",
-      "sourceURL": "https://tilda.tcd.ie/research/research-themes/neuro-cognitive/",
-      "sourceScope": "National longitudinal aging study with repeated neurocognitive research and official data access procedure. Cognitive aging study, not proof of a data-purchasing programme.",
+      "sourceURL": "https://tilda.tcd.ie/data/resource-hub/scale-docs/index.html",
+      "sourceScope": "TILDA confirmed public cognitive measures, proxy interviews from Wave 2, one-time HCAP informant interviews (n=982), and Wave 7 verbal-fluency missingness 0.18% (n=9). Methodological information only; no KIMSE clinical validation, dataset access, partnership or buyer intent.",
       "city": "Dublin",
       "cityCoordinate": [
         -6.26,
@@ -3506,7 +3506,7 @@
         "order": 60,
         "stageCode": "RESEARCH_METHODS_RESPONSE_RECEIVED",
         "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
-        "asOf": "2026-10-13",
+        "asOf": "2026-10-14",
         "contactStatus": "SUBSTANTIVE_RESPONSE_RECEIVED",
         "formalFOIRef": null,
         "formalResponseDeadline": null,
@@ -3515,7 +3515,7 @@
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "회신의 측정·조화 조건 검토; 데이터 구매나 협력 확정 아님",
+        "nextAction": "TILDA 공개 인지검사·수면(MCTQ)·활동(IPAQ)·가족관찰·결측 처리 규격 대조 완료. 실제 공동연구·데이터 구매·계약은 확인되지 않음. 후속 문의는 별도 승인 필요.",
         "formURL": null,
         "formSubmitted": false,
         "requestSent": true
@@ -4976,7 +4976,7 @@
   "untouchedCountryAreaCount": 225,
   "masterPolicy": "ISO 3166-1 249 official country/territory codes are planned-screening master only, not all researched. Institution records currently cover 24 geographically assigned codes.",
   "authorityScale": "KIMSE internal contextual research-influence band A/B/C, determined from published institutional type and research evidence only. Not an independent ranking, endorsement, scientific validity grade, or partnership validation.",
-  "updated": "2026-10-13",
+  "updated": "2026-10-14",
   "progressStages": [
     {
       "code": "CANDIDATE_REVIEW_SCHEDULED",
