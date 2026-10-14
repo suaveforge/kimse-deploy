@@ -7,6 +7,7 @@ const OUTPUT=path.join(ROOT,'kimse-en-auto.json');
 const curated=JSON.parse(fs.readFileSync(path.join(ROOT,'kimse-en.json'),'utf8')).translations;
 const ko=/[가-힣]/,str=t=>String(t||'').replace(/\s+/g,' ').trim();
 const wanted=new Set();
+const publicPagePriority=new Set();
 function add(t){
  const s=str(t).replace(/^["']+|["']+$/g,'');
  if(!ko.test(s)||s.length<2||s.length>900||/data:|https?:\/\/|[{};=]{3,}/.test(s)||/(?:function\s*\(|=>|return\s+|let\s+|const\s+)/.test(s))return;
@@ -46,7 +47,7 @@ async function extractBrowser(){
        }
       return result;
     });
-    texts.forEach(add);
+    texts.forEach(t=>{add(t);publicPagePriority.add(str(t));});
     console.log('EXTRACT_PAGE',dest,texts.length,'unique',wanted.size);
    }catch(e){console.warn('EXTRACT_PAGE_WARN',dest,String(e).slice(0,180))}
    await context.close();
@@ -73,7 +74,7 @@ async function main(){
  for(const f of files)if(fs.existsSync(path.join(ROOT,f)))extractSource(f);
  await extractBrowser();
  const existing=fs.existsSync(OUTPUT)?JSON.parse(fs.readFileSync(OUTPUT,'utf8')).translations:{};
- const candidates=[...wanted].filter(x=>!(x in curated)&&!(x in existing)).sort((a,b)=>b.length-a.length);
+ const candidates=[...wanted].filter(x=>!(x in curated)&&!(x in existing)).sort((a,b)=>Number(publicPagePriority.has(b))-Number(publicPagePriority.has(a))||a.length-b.length);
  const max=Number(process.env.MAX_TRANSLATIONS||'2200'),todo=candidates.slice(0,max);
  console.log('EXTRACTION_SUMMARY',JSON.stringify({unique:wanted.size,curated:Object.keys(curated).length,existing:Object.keys(existing).length,toTranslate:candidates.length,max}));
  let cursor=0,ok=0,fail=0;const errors=[],result={...existing};
