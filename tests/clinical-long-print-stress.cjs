@@ -89,7 +89,9 @@ async function run(){
     for(const token of ['FAMILY_FIRST','FAMILY_LAST','LONG_NOTE_END','EXTERNAL_FIRST','EXTERNAL_LAST','EXTERNAL_PARITY_01','EXTERNAL_PARITY_17','PROFESSIONAL_FIRST','PROFESSIONAL_LAST','ZERO_SCORE_17']){
       ok(text.includes(token),'pdf-text-'+token);
     }
-    ok(text.includes('SYNTHETIC-LC-MS-MS-METHOD'),
+    // PDF text extractors legitimately insert line breaks in long assay names.
+    // Compare a whitespace-normalized token without hiding a missing segment.
+    ok(text.replace(/\\s+/g,'').includes('SYNTHETIC-LC-MS-MS-METHOD'),
       'pdf-entered-assay-metadata-preserved');
     for(let i=1;i<=17;i++){
       const label='EXTERNAL_PARITY_'+String(i).padStart(2,'0');
