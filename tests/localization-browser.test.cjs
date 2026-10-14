@@ -18,7 +18,7 @@ async function run() {
       const page=await context.newPage();
       if(c.saved)await page.addInitScript(v=>localStorage.setItem('localizehub:p45:locale',v),c.saved);
       if(c.abortHub)await page.route('**/api-localizehub.suaveforge.com:18025/**',route=>route.abort());
-      const errors=[];page.on('pageerror',error=>errors.push(String(error)));
+      const errors=[];page.on('pageerror',error=>errors.push(error.stack||String(error)));
       await page.goto(base+c.path,{waitUntil:'domcontentloaded',timeout:35000});
       const expectedLanguage=c.expectedLanguage||'en';
       await page.waitForFunction(args=>document.documentElement.lang===args.language&&document.body.innerText.includes(args.text),{language:expectedLanguage,text:c.expect},{timeout:30000});
@@ -68,6 +68,7 @@ async function run() {
       await page.waitForTimeout(1000);
       const state=await page.evaluate(()=>({url:location.href,lang:document.documentElement.lang,selector:document.querySelector('[data-kimse-locale-select]')?.value,hangul:(document.body.innerText.match(/[가-힣]/g)||[]).length}));
       if(state.selector!=='en')throw new Error(name+' selected language reset: '+JSON.stringify(state));
+      if(!new URL(state.url).searchParams.get('lang'))throw new Error(name+' explicit English URL parameter lost: '+state.url);
       if(state.hangul>0)console.warn('UNTRANSLATED_DEEP_PAGE',name,state.hangul);
       console.log('DEEP_LINK_LOCALE',JSON.stringify({name,...state}));
     }
