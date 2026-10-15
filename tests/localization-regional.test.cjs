@@ -105,7 +105,7 @@ function verifyLocalizedVoiceContract(){
   const spoken=[];const N={textContent:''};
   const speechSynthesis={cancel:()=>{},speak:u=>spoken.push({lang:u.lang,text:u.text})};
   class Utterance { constructor(text){this.text=text;this.lang='';} }
-  const window={KIMSE_LOCALIZEHUB:{locale:locale==='ko-KR'?'ko':'en',translate:()=>translation}};
+  const window={speechSynthesis,KIMSE_LOCALIZEHUB:{locale:locale==='ko-KR'?'ko':'en',translate:()=>translation}};
   const S={a11y:{voiceGuidance:true}};
   const say=new Function('S','N','window','speechSynthesis','SpeechSynthesisUtterance','kimseDisplayLocale','setTimeout',voiceLine+';return say;')(
    S,N,window,speechSynthesis,Utterance,()=>locale,fn=>fn());
