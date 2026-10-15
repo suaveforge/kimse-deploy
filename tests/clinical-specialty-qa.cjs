@@ -280,7 +280,15 @@ async function main(){
     },
     function_independence:{
       self_status:'INDEPENDENT',self_observed_at:'2026-09-22',
-      informant_status:'IADL_ASSISTANCE',informant_observed_at:'2026-09-24',agreement:'DISAGREE'
+      informant_status:'IADL_ASSISTANCE',informant_observed_at:'2026-09-24',agreement:'DISAGREE',
+      latest_functional_answers:{events:'often',finances:'some',travel:'no'},
+      functional_change_from_personal_baseline:{
+        events:{baseline:'no',current:'often',changed:true},
+        finances:{baseline:null,current:'some',changed:false},
+        travel:{baseline:'some',current:'no',changed:false}
+      },
+      functional_observed_at:'2026-10-11T12:30:00Z',
+      functional_source_type:'kimse_self_observation_task'
     },
     safety_support:{context_events:[
       {status:'PRESENT',event_type:'FALL',occurred_at:'2026-09-24',summary:'SYNTHETIC-SAFETY'}]},
@@ -339,6 +347,21 @@ async function main(){
   check(reportBody.join(' ').includes('DISAGREE')&&reportBody.join(' ').includes('IADL_ASSISTANCE')
     &&reportBody.join(' ').includes('2026-09-23'),
     'reported-domain-screen-disagreement-date-and-status');
+  const functionalRows=hp.locator('.clinical-print-functional-group li[data-clinical-functional-source]');
+  check(await functionalRows.count()===3,'functional-screen-3-raw-item-rows');
+  for(const key of ['events','finances','travel']){
+    const itemPath='clinical_domains.function_independence.latest_functional_answers.'+key;
+    check(await functionalRows.locator('[data-clinical-functional-source="'+itemPath+'"]').count()===1,
+      'functional-screen-canonical-source-'+key);
+    check(await hp.locator('[data-clinical-functional-screen="'+itemPath+'"]').count()>=1,
+      'functional-detail-screen-source-'+key);
+  }
+  const functionalBody=await hp.locator('.clinical-print-functional-group').innerText();
+  check(functionalBody.includes('응답 often')&&functionalBody.includes('개인 기준선 no')&&
+    functionalBody.includes('원본 변경 플래그 true')&&
+    functionalBody.includes('개인 기준선 미수집')&&functionalBody.includes('2026-10-11')&&
+    functionalBody.includes('임상 FAQ 검사 아님'),
+    'functional-screen-raw-baseline-date-provenance');
   const contextBody=await hp.locator('.clinical-print-source-records').innerText();
   check(contextBody.includes('new_dose: 0')&&contextBody.includes('2026-10-11')&&
     contextBody.includes('상태 ABSENT')&&contextBody.includes('상태 UNKNOWN')&&
@@ -378,6 +401,17 @@ async function main(){
   for(const phrase of ['2026-09-21','2026-09-22','2026-09-23','2026-09-24',
                        '상태PRESENT','상태ABSENT','IADL_ASSISTANCE','DISAGREE'])
     check(allText.includes(phrase.replace(/\s+/g,'')),'reported-domain-pdf-state-'+phrase);
+  for(const key of ['events','finances','travel']){
+    check(allText.includes('clinical_domains.function_independence.latest_functional_answers.'+key),
+      'functional-pdf-raw-answer-source-'+key);
+    check(allText.includes('clinical_domains.function_independence.functional_change_from_personal_baseline.'+key),
+      'functional-pdf-baseline-source-'+key);
+  }
+  for(const token of ['응답often','응답some','응답no','개인기준선no',
+                      '개인기준선미수집','원본변경플래그true','원본변경플래그false',
+                      '2026-10-11','의료진기능검사·진단아님']){
+    check(allText.includes(token),'functional-pdf-raw-field-'+token);
+  }
   check(JSON.stringify(history)===originalHistory,'history-source-never-mutated');
   await historyCtx.close();
  }finally{await browser.close();}
