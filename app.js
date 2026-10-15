@@ -235,7 +235,19 @@ const notice=(h,p)=>`<div class="notice"><strong>${h}</strong>${p}</div>`;
 const row=(h,s='',right='')=>`<div class="list-row"><span><strong>${h}</strong>${s?`<small>${s}</small>`:''}</span>${right}</div>`;
 const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
 const safeUrl=v=>{try{const u=new URL(String(v||''));return /^https?:$/.test(u.protocol)?u.href:''}catch{return ''}};
-const fmtDate=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?String(v||''):d.toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})};
+// Regional display formatting; locale selection remains owned by LocalizeHub p45.
+function kimseDisplayLocale(){
+  let explicit='';
+  try{explicit=new URLSearchParams(location.search).get('lang')||localStorage.getItem('localizehub:p45:locale')||''}catch{}
+  const requested=String(explicit).toLowerCase().replace('_','-');
+  if(requested==='ko'||requested.startsWith('ko-'))return 'ko-KR';
+  if(requested==='en-us')return 'en-US';
+  if(requested==='en-gb')return 'en-GB';
+  const browser=(navigator.languages||[navigator.language||'ko-KR']).find(x=>/^en-(US|GB)$/i.test(x))||navigator.language||'';
+  if(requested==='en'||(!explicit&&/^en(?:-|$)/i.test(browser)))return /^en-GB$/i.test(browser)?'en-GB':'en-US';
+  return 'ko-KR';
+}
+const fmtDate=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?String(v||''):d.toLocaleString(kimseDisplayLocale(),{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})};
 const PARTNER_TYPE_LABEL={PRODUCT:'상품 입점',SERVICE:'서비스 제휴',AD:'광고/콘텐츠 제휴',COOPERATION:'공동사업/기관 협력'};
 const PARTNER_STATUS_LABEL={RECEIVED:'신규',REVIEWING:'검토중',CONTACTED:'회신완료',HOLD:'보류',CLOSED:'종료'};
 
@@ -843,13 +855,17 @@ function syncAppStatusIcon(){
 function formatMonitoringValue(metric,value){
   if(value===null||value===undefined||value==='')return '-';
   const n=Number(value);if(!Number.isFinite(n))return '-';
-  if(metric==='sleep_minutes'){const m=Math.max(0,Math.round(n));return Math.floor(m/60)+'시간 '+(m%60)+'분'}
-  if(metric==='steps')return Math.round(n).toLocaleString('ko-KR')+'보';
+  const locale=kimseDisplayLocale(),en=locale!=='ko-KR';
+  if(metric==='sleep_minutes'){const m=Math.max(0,Math.round(n));return en?Math.floor(m/60)+' hr '+(m%60)+' min':Math.floor(m/60)+'시간 '+(m%60)+'분'}
+  if(metric==='steps')return Math.round(n).toLocaleString(locale)+(en?' steps':'보');
   if(metric==='voice_pause_ratio')return Math.round(n*100)+'%';
-  if(metric==='location_radius_m'||metric==='movement_distance_m')return n>=1000?(n/1000).toFixed(1)+'km':Math.round(n)+'m';
-  if(metric==='motion_active_minutes'||metric==='app_active_minutes'||metric==='call_duration_min')return Math.round(n)+'분';
-  if(metric==='task_response_ms')return Math.round(n)+'ms';
-  return Number.isInteger(n)?n.toLocaleString('ko-KR'):String(Math.round(n*100)/100);
+  if(metric==='location_radius_m'||metric==='movement_distance_m'){
+    if(locale==='en-US')return n>=1609.344?(n/1609.344).toFixed(1)+' mi':Math.round(n*3.28084)+' ft';
+    return n>=1000?(n/1000).toFixed(1)+' km':Math.round(n)+(en?' m':'m');
+  }
+  if(metric==='motion_active_minutes'||metric==='app_active_minutes'||metric==='call_duration_min')return Math.round(n)+(en?' min':'분');
+  if(metric==='task_response_ms')return Math.round(n)+' ms';
+  return Number.isInteger(n)?n.toLocaleString(locale):String(Math.round(n*100)/100);
 }
 const signalId=()=>window.crypto&&crypto.randomUUID?crypto.randomUUID():'sig-'+Date.now()+'-'+Math.random().toString(36).slice(2);
 const monitoringEnabled=()=>!!(S.onboarding.completed&&S.consents.service&&S.consents.privacy&&S.consents.health);
