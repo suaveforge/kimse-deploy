@@ -1,0 +1,26 @@
+{
+  "name": "KIMSE | Daily Change Tracking",
+  "short_name": "KIMSE",
+  "description": "Review everyday changes in sleep, speech, movement and routines. KIMSE does not diagnose dementia.",
+  "lang": "en",
+  "start_url": "./?lang=en#/start",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4fcf8",
+  "theme_color": "#0f4553",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon-maskable-source.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
