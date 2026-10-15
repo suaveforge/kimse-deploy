@@ -254,6 +254,8 @@ async function main(){
      summary:'SYNTHETIC-OTHER-ZERO',details:{reported_quantity:0}}
   ];
   history.risk_confounders={
+    current_sleep_user_record:'3시간 30분',
+    sleep_disturbance_context:'frequent',
     medication_change:{events:[
       {status:'PRESENT',event_type:'MEDICATION_CHANGE',occurred_at:'2026-09-20',
        recorded_at:'2026-10-11',reported_by:'CAREGIVER',
@@ -362,6 +364,16 @@ async function main(){
     functionalBody.includes('개인 기준선 미수집')&&functionalBody.includes('2026-10-11')&&
     functionalBody.includes('임상 FAQ 검사 아님'),
     'functional-screen-raw-baseline-date-provenance');
+  const sleepRows=hp.locator('.clinical-print-sleep-group li[data-clinical-sleep-source]');
+  check(await sleepRows.count()===2,'sleep-screen-2-independent-canonical-rows');
+  for(const key of ['current_sleep_user_record','sleep_disturbance_context']){
+    check(await hp.locator('.clinical-print-sleep-group li[data-clinical-sleep-source="risk_confounders.'+key+'"]').count()===1,
+      'sleep-screen-raw-source-'+key);
+  }
+  const sleepBody=await hp.locator('.clinical-print-sleep-group').innerText();
+  check(sleepBody.includes('3시간 30분')&&sleepBody.includes('frequent')
+    &&sleepBody.includes('USER_ENTERED')&&sleepBody.includes('원래 관찰일 미수집'),
+    'sleep-screen-raw-values-and-user-provenance');
   const contextBody=await hp.locator('.clinical-print-source-records').innerText();
   check(contextBody.includes('new_dose: 0')&&contextBody.includes('2026-10-11')&&
     contextBody.includes('상태 ABSENT')&&contextBody.includes('상태 UNKNOWN')&&
@@ -412,6 +424,10 @@ async function main(){
                       '2026-10-11','의료진기능검사·진단아님']){
     check(allText.includes(token),'functional-pdf-raw-field-'+token);
   }
+  for(const key of ['current_sleep_user_record','sleep_disturbance_context'])
+    check(allText.includes('risk_confounders.'+key),'sleep-pdf-canonical-source-'+key);
+  for(const phrase of ['3시간30분','frequent','USER_ENTERED','원래관찰일미수집','의료진확인·기기측정아님'])
+    check(allText.includes(phrase),'sleep-pdf-raw-value-'+phrase);
   check(JSON.stringify(history)===originalHistory,'history-source-never-mutated');
   await historyCtx.close();
  }finally{await browser.close();}
