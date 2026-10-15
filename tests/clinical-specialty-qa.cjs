@@ -351,7 +351,7 @@ async function main(){
   check(await functionalRows.count()===3,'functional-screen-3-raw-item-rows');
   for(const key of ['events','finances','travel']){
     const itemPath='clinical_domains.function_independence.latest_functional_answers.'+key;
-    check(await functionalRows.locator('[data-clinical-functional-source="'+itemPath+'"]').count()===1,
+    check(await hp.locator('.clinical-print-functional-group li[data-clinical-functional-source="'+itemPath+'"]').count()===1,
       'functional-screen-canonical-source-'+key);
     check(await hp.locator('[data-clinical-functional-screen="'+itemPath+'"]').count()>=1,
       'functional-detail-screen-source-'+key);
