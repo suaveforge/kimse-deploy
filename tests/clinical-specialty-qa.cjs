@@ -254,6 +254,9 @@ async function main(){
      summary:'SYNTHETIC-OTHER-ZERO',details:{reported_quantity:0}}
   ];
   history.risk_confounders={
+    conditions_context:'SYNTHETIC-RISK-CONTEXT-SELF-REPORT',
+    validated_risk_context:{birthYear:'1948',sex:'UNKNOWN',education:0,activity:false,
+      living:'alone',socialSupport:'none',socialActivity:0},
     current_sleep_user_record:'3시간 30분',
     sleep_disturbance_context:'frequent',
     medication_change:{events:[
