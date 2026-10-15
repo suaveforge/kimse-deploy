@@ -67,6 +67,7 @@ async function run(){
     if(status.overflow){
       const overflow=await page.evaluate(()=>({
         viewport:window.innerWidth,body:document.documentElement.scrollWidth,
+        bigger:[...document.querySelectorAll('#app *')].filter(el=>el.clientWidth>0&&el.scrollWidth>el.clientWidth+7&&getComputedStyle(el).overflowX==='visible').slice(0,20).map(el=>({tag:el.tagName,cls:typeof el.className==='string'?el.className.slice(0,90):'',cw:el.clientWidth,sw:el.scrollWidth,right:Math.round(el.getBoundingClientRect().right),text:el.innerText?.slice(0,90)})),
         offenders:[...document.querySelectorAll('#app *')].filter(el=>{
           const b=el.getBoundingClientRect();
           if(b.right<=window.innerWidth+8||!b.width)return false;
