@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261015-real-app-video-ui-consistency';
+const CACHE = 'kimse-pwa-20261015-i18n-regional-archive-1';
 const CORE = [
   './',
   './index.html',
