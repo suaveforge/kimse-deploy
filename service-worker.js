@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261014-clinical-event-context-35';
+const CACHE = 'kimse-pwa-20261015-english-and-jssip-browser';
 const CORE = [
   './',
   './index.html',
@@ -14,6 +14,10 @@ const CORE = [
   './authhub.js',
   './push.js',
   './call-transport.js',
+  './jssip.browser.js',
+  './kimse-en.json',
+  './kimse-en-auto.json',
+  './localizehub-runtime.js',
   './accessibility-enhancements.js',
   './premium-ux.js',
   './govtech-p0.js',
