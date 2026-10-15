@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-15.en.16",
+  "schemaVersion": "2026-10-15.en.17",
   "locale": "en",
   "sourceLocale": "ko",
   "translations": {
@@ -886,8 +886,17 @@
     "상태명·아이콘·증감 방향을 함께 표시합니다.": "Show the status label, icon and direction of change together.",
     "그래프의 핵심 변화는 글로도 제공해요": "Key changes in the chart are also described in text.",
     "주요 변화와 눈에 띄는 날을 텍스트로 함께 확인할 수 있습니다.": "You can review important changes and notable days in text.",
-    "주요 버튼과 상황 요약을 화면 읽기 기능에서 확인할 수 있어요": "Screen readers can access important buttons and status summaries.",
-    "보이는 정보와 같은 의미가 접근성 트리에도 남도록 구성합니다.": "The accessibility tree preserves the meaning of the displayed information."
+    "주요 버튼과 상황 요약을 화면 읽기 기능에서 확인할 수 있어요": "A screen reader can access key buttons and status summaries.",
+    "보이는 정보와 같은 의미가 접근성 트리에도 남도록 구성합니다.": "The accessibility tree preserves the meaning of the displayed information.",
+    "주요 버튼과": "Key buttons and",
+    "상황 요약을": "status summaries",
+    "화면 읽기 기능에서 확인할 수 있어요": "can be accessed through the screen reader.",
+    "상황": "status",
+    "요약을": "summary",
+    "화면 읽기 기능": "screen reader",
+    "기능에서 확인할 수 있어요": "can be accessed.",
+    "말하기 1 · 최근 이야기": "Speaking task 1 · Recent events",
+    "말하기 1": "Speaking task 1"
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
