@@ -30,6 +30,12 @@ async function run() {
         }
         return {lang:document.documentElement.lang,untranslatedHangulChars:(visibleText.match(/[가-힣]/g)||[]).length,bodyChars:visibleText.length,overflow:document.documentElement.scrollWidth>window.innerWidth+6,scrollWidth:document.documentElement.scrollWidth,viewport:window.innerWidth,untranslatedExamples:[...new Set(visibleText.split(/[\n·|]/).map(t=>t.trim()).filter(t=>/[가-힣]/.test(t)))].slice(0,18).map(x=>x.slice(0,150))};
       });
+      if(expectedLanguage==='en'&&stats.untranslatedHangulChars!==0)throw new Error(c.name+' still shows '+stats.untranslatedHangulChars+' Korean characters');
+      if(stats.overflow)throw new Error(c.name+' has '+(stats.scrollWidth-stats.viewport)+'px horizontal viewport overflow');
+      if(c.path.includes('#/start')){
+        await page.waitForFunction(()=>typeof window.JsSIP?.UA==='function'&&typeof window.JsSIP?.WebSocketInterface==='function',{timeout:15000});
+        if(errors.some(x=>/require is not defined|JsSIP|JSSIP_UNAVAILABLE/.test(x)))throw new Error('Broken JsSIP browser load: '+errors.join(' | '));
+      }
       if(c.path.startsWith('/evidence/rd')&&expectedLanguage==='en'){
         const more=await page.evaluate(()=>{
           const view=window.innerWidth;
