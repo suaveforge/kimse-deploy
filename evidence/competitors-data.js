@@ -6,7 +6,7 @@ window.KIMSE_COMPETITOR_RECORDS=[
     "kind": "인지훈련·평가",
     "tag": "경쟁",
     "brand": "#f19d15",
-    "logo": null,
+    "logo": "https://brainacademy.xyz/favicon.png",
     "one": "반복적인 인지훈련·인지활동 프로그램",
     "desc": "인지훈련과 반복 참여를 중심으로 하는 국내 디지털 인지중재 서비스입니다. 낌새와 달리 공개 제품 소개의 주된 기능이 생활 데이터의 비대면 장기 관찰은 아닙니다.",
     "strengths": [
@@ -100,7 +100,8 @@ window.KIMSE_COMPETITOR_RECORDS=[
         "https://www.carepredict.com/",
         "공식 제품"
       ]
-    ]
+    ],
+    "wordmark": "https://cdn.prod.website-files.com/6874f50a2259916478701d7c/68925ea2f6b39ef2106d497b_CarePredict_Horizontal%20Logo%201.svg"
   },
   {
     "id": "superbrain",
@@ -199,7 +200,8 @@ window.KIMSE_COMPETITOR_RECORDS=[
         "https://justchecking.co.uk/professionals/dementia/",
         "공식 제품"
       ]
-    ]
+    ],
+    "wordmark": "https://justchecking.co.uk/wp-content/uploads/2024/03/Just-Checking-Logo-700x281.png"
   },
   {
     "id": "linus",
@@ -245,7 +247,8 @@ window.KIMSE_COMPETITOR_RECORDS=[
         "https://linushealth.com/our-assessments",
         "공식 제품"
       ]
-    ]
+    ],
+    "wordmark": "https://linushealth.com/hubfs/raw_assets/public/LinusHealth/images/theme/linus-health-logo-icon.svg"
   },
   {
     "id": "sensi",
@@ -297,7 +300,8 @@ window.KIMSE_COMPETITOR_RECORDS=[
         "https://www.sensi.ai/",
         "공식 제품"
       ]
-    ]
+    ],
+    "wordmark": "https://www.sensi.ai/wp-content/uploads/2024/06/logo_sensi.svg"
   },
   {
     "id": "apple",
@@ -341,7 +345,7 @@ window.KIMSE_COMPETITOR_RECORDS=[
     "sources": [
       [
         "Apple 건강 앱 사용 설명",
-        "https://support.apple.com/guide/iphone/track-your-health-and-fitness-iphb3c23fd9/ios",
+        "https://support.apple.com/en-euro/guide/iphone/iph5ede58c3d/ios",
         "제조사 지원"
       ],
       [
@@ -447,7 +451,8 @@ window.KIMSE_COMPETITOR_RECORDS=[
         "https://neurotrack.com/",
         "공식 제품"
       ]
-    ]
+    ],
+    "wordmark": "https://neurotrack.com/hubfs/nt-logo.svg"
   },
   {
     "id": "today",
