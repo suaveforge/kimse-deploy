@@ -231,7 +231,7 @@ async function setLocale(locale){
         for(const [source,translation] of Object.entries(autoGlossary?.translations||{})){
           if(normalize(source)&&normalize(translation)&&!/[가-힣]/.test(translation))sourceToTarget.set(normalize(source),String(translation));
         }
-        const verifiedGlossary=await fetchJSON('/kimse-en.json?v=20261015-screen-audit10');
+        const verifiedGlossary=await fetchJSON('/kimse-en.json?v=20261015-archive-locale-1');
         const entries=verifiedGlossary?.translations||{};
         for(const [k,v] of Object.entries(entries)){
           if(normalize(k)&&normalize(v))sourceToTarget.set(normalize(k),String(v));
