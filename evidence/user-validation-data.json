@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2026-10-15.1",
+  "updated": "2026-10-15",
+  "page": "사용자 검증",
+  "publicationRule": "공개 동의·출처 검증이 완료된 실제 기록만 게시. 예시·AI 생성·시뮬레이션 응답 제외. 공개 파일에 개인 정보 원본 저장 금지.",
+  "types": [
+    "demand",
+    "voc",
+    "usage",
+    "field"
+  ],
+  "records": []
+}
