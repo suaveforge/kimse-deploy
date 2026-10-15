@@ -9,7 +9,7 @@ async function run(){
   page.on('pageerror',e=>errors.push(e.message));
   const base='http://127.0.0.1:8765';
   await page.goto(base+'/evidence/?lang=en',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelector('[data-kimse-locale-select]')?.value==='en');
+  await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelector('[data-kimse-locale-select]')?.value==='en'&&window.KIMSE_LOCALIZEHUB?.locale==='en');
   const destinations=['observation.html','clinical.html','rd.html','trust.html','competitors.html'];
   const violations=[];
   for(const dest of destinations){
@@ -19,7 +19,7 @@ async function run(){
     await page.waitForFunction(path=>!![...document.querySelectorAll('.kimse-primary-choice')].find(a=>a.getAttribute('href').includes(path)&&a.getAttribute('href').includes('lang=en')),dest,{timeout:20000});
     await anchor.click();
     await page.waitForURL(u=>u.pathname.endsWith(dest),{timeout:20000});
-    await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelector('[data-kimse-locale-select]')?.value==='en');
+    await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelector('[data-kimse-locale-select]')?.value==='en'&&window.KIMSE_LOCALIZEHUB?.locale==='en');
     await page.waitForTimeout(700);
     const result=await page.evaluate(()=>{
       const visible=[...document.querySelectorAll('h1,h2,.page-pretitle,p')].filter(el=>el.getClientRects().length>0).slice(0,18).map(el=>el.textContent.trim());
@@ -55,7 +55,7 @@ async function run(){
   }
   for(const route of ['start','role','auth','research-engine','evidence-proof','assessment-start','assessment','result','training','training-play','onboarding-profile','initial-check','health','settings','medical-records','monitoring-status','collection-status','brain-map','brain-trends','family','consent','baseline','account','switch','home','medication','report','emergency','market','partnership','plan','accessibility','demo-capture','voice-check','initial-result','cognitive-recheck','cognitive-recheck-result','medication-add','health-detail','caregiver-home','family-feedback','care-schedule','family-add','clinical-handoff','clinical-context-event','medical-record-add','professional-outcome','alert-add','market-detail','admin-partners']){
     await page.goto(base+'/?lang=en#/'+route,{waitUntil:'domcontentloaded'}); // replace below to ensure actual route
-    await page.waitForFunction(()=>document.documentElement.lang==='en',{timeout:20000});
+    await page.waitForFunction(()=>document.documentElement.lang==='en'&&window.KIMSE_LOCALIZEHUB?.locale==='en',{timeout:30000});
     await page.waitForTimeout(350);
     const status=await page.evaluate(()=>{
       let body=(document.querySelector('#main')?.innerText||document.body.innerText||'');
