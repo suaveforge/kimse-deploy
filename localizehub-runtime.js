@@ -190,7 +190,12 @@ function updateLocalizedMetadata(){
     if(el)el.setAttribute('content',value);
   }
   const locale=document.querySelector('meta[property="og:locale"]');
-  if(locale)locale.setAttribute('content',english?(documentLocaleParameter()==='en-GB'?'en_GB':'en_US'):'ko_KR');
+  if(locale){
+    const explicit=documentLocaleParameter();
+    const browserRegion=(navigator.languages||[navigator.language]).find(x=>/^en-(US|GB)$/i.test(x))||navigator.language||'';
+    const region=explicit==='en-GB'?'en_GB':explicit==='en-US'?'en_US':/^en-GB$/i.test(browserRegion)?'en_GB':'en_US';
+    locale.setAttribute('content',english?region:'ko_KR');
+  }
   if(path==='/'||path==='/index.html'){
     const manifest=document.querySelector('link[rel="manifest"]');
     const target=english?'./manifest-en.webmanifest':'./manifest.webmanifest';
