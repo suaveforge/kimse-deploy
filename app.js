@@ -2887,11 +2887,16 @@ function clinicalPrintableSourceRecords(report){
     {label:'급성질환·감염·입원 이력',path:'risk_confounders.acute_illness_context.events',rows:report?.risk_confounders?.acute_illness_context?.events},
     {label:'안전·지원 관련 이력',path:'clinical_domains.safety_support.context_events',rows:report?.clinical_domains?.safety_support?.context_events},
     {label:'기분·행동 관련 이력',path:'clinical_domains.mood_behavior.context_events',rows:report?.clinical_domains?.mood_behavior?.context_events},
-    {label:'감각·운동 관련 이력',path:'clinical_domains.sensory_motor.context_events',rows:report?.clinical_domains?.sensory_motor?.context_events}
+    {label:'감각·운동 관련 이력',path:'clinical_domains.sensory_motor.context_events',rows:report?.clinical_domains?.sensory_motor?.context_events},
+    // Preserve uncategorized clinical events without inventing a nested source path.
+    {label:'기타 사용자 보고 이력',path:'clinical_context_events',rows:report?.clinical_context_events,
+     includes:row=>row.event_type==='OTHER'}
   ];
-  const contextHistory=contextDefinitions.filter(group=>safe(group.rows).some(row=>row&&typeof row==='object'))
+  const contextHistory=contextDefinitions.filter(group=>safe(group.rows).some(row=>row&&typeof row==='object'
+      &&(!group.includes||group.includes(row))))
     .map(group=>{
-      const data=safe(group.rows).map((row,i)=>({row,index:i})).filter(x=>x.row&&typeof x.row==='object');
+      const data=safe(group.rows).map((row,i)=>({row,index:i})).filter(x=>x.row
+        &&typeof x.row==='object'&&(!group.includes||group.includes(x.row)));
       return '<div class="clinical-print-source-group clinical-print-context-group"><h3>'
         +esc(group.label)+' <span>('+data.length+'건 · 사용자 보고, 의료진 미검증)</span></h3><ol>'
         +data.map(({row,index})=>{

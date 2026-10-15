@@ -246,6 +246,13 @@ async function main(){
   // Cross-output clinical source preservation: exactly the same synthetic
   // nested events are rendered in the actual patient-carried browser and A4.
   const history=JSON.parse(JSON.stringify(report));
+  history.clinical_context_events=[
+    {id:'SYN-OTHER-1',event_type:'OTHER',status:'NONE_REPORTED',
+     occurred_at:'2026-09-27',recorded_at:'2026-10-12',summary:'SYNTHETIC-OTHER-NONE'},
+    {id:'SYN-OTHER-2',event_type:'OTHER',status:'PRESENT',
+     occurred_at:'2026-09-28',recorded_at:'2026-10-13',
+     summary:'SYNTHETIC-OTHER-ZERO',details:{reported_quantity:0}}
+  ];
   history.risk_confounders={
     medication_change:{events:[
       {status:'PRESENT',event_type:'MEDICATION_CHANGE',occurred_at:'2026-09-20',
@@ -300,10 +307,12 @@ async function main(){
     'risk_confounders.acute_illness_context.events[1]',
     'clinical_domains.safety_support.context_events[0]',
     'clinical_domains.mood_behavior.context_events[0]',
-    'clinical_domains.sensory_motor.context_events[0]'
+    'clinical_domains.sensory_motor.context_events[0]',
+    'clinical_context_events[0]',
+    'clinical_context_events[1]'
   ];
   const originalRows=hp.locator('.clinical-print-context-group li[data-clinical-context-source]');
-  check(await originalRows.count()===7,'history-screen-7-source-records');
+  check(await originalRows.count()===9,'history-screen-9-source-records-including-other');
   const actualPaths=await originalRows.evaluateAll(nodes=>nodes.map(x=>x.dataset.clinicalContextSource));
   check(JSON.stringify(actualPaths)===JSON.stringify(paths),'history-screen-canonical-paths');
   const medSourceRows=hp.locator('.clinical-print-medication-group li[data-clinical-medication-source]');
@@ -333,7 +342,11 @@ async function main(){
   const contextBody=await hp.locator('.clinical-print-source-records').innerText();
   check(contextBody.includes('new_dose: 0')&&contextBody.includes('2026-10-11')&&
     contextBody.includes('상태 ABSENT')&&contextBody.includes('상태 UNKNOWN')&&
-    contextBody.includes('상태 NONE_REPORTED'),'history-screen-zero-status-and-dates');
+    contextBody.includes('상태 NONE_REPORTED')&&
+    contextBody.includes('SYNTHETIC-OTHER-NONE')&&
+    contextBody.includes('SYNTHETIC-OTHER-ZERO')&&
+    contextBody.includes('reported_quantity: 0')&&
+    contextBody.includes('2026-10-13'),'history-screen-zero-status-and-dates');
   check((await hp.locator('.clinical-visit-brief').getAttribute('data-provider-approved'))==='false',
     'history-no-medical-provider-approval');
   await hp.emulateMedia({media:'print'});
@@ -347,7 +360,8 @@ async function main(){
     check(allText.includes(path),'history-pdf-original-path-'+path);
   for(const phrase of ['new_dose:0','2026-09-20','2026-10-11',
                         '상태ABSENT','상태UNKNOWN','상태NONE_REPORTED',
-                        '의료진확인결과아님'])
+                        '의료진확인결과아님','SYNTHETIC-OTHER-NONE',
+                        'SYNTHETIC-OTHER-ZERO','reported_quantity:0','2026-10-13'])
     check(allText.includes(phrase.replace(/\s+/g,'')),'history-pdf-original-value-'+phrase);
   for(let i=0;i<5;i++)
     check(allText.includes('risk_confounders.current_medications['+i+']'),
