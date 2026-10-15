@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-15.en.12",
+  "schemaVersion": "2026-10-15.en.13",
   "locale": "en",
   "sourceLocale": "ko",
   "translations": {
@@ -792,7 +792,26 @@
     "기능의 변화": "functional changes",
     "전체 기능의 변화 추이": "Trends in overall functioning",
     "기능의": "functional",
-    "의 변화": " change in functioning"
+    "의 변화": " change in functioning",
+    "경쟁사": "Competitors",
+    "경쟁사 연구": "Competitor research",
+    "경쟁사 research": "Competitor research",
+    "경쟁사 탐색 도구": "Competitor search controls",
+    "경쟁사 검색": "Search competitors",
+    "선택 비교": "Compare selected",
+    "경쟁사·서비스 비교": "Compare competitors and services",
+    "전체 근거": "All evidence",
+    "서비스·기능·기업 검색": "Search services, features or companies",
+    "서비스 유형": "Service category",
+    "경쟁": "Competitor",
+    "증거 관리 원칙": "Evidence management principles",
+    "출처 등급": "Source classification",
+    "수치 단위": "Measurement units",
+    "연동 검증": "Integration verification",
+    "비공개": "Not disclosed",
+    "읽는 법": "How to read this comparison",
+    "선택한 서비스의 상세 근거": "Supporting evidence for the selected service",
+    "서비스 비교": "Service comparison"
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
