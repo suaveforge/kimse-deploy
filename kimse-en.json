@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-15.en.11",
+  "schemaVersion": "2026-10-15.en.12",
   "locale": "en",
   "sourceLocale": "ko",
   "translations": {
@@ -730,7 +730,7 @@
     "초기 과제 시작": "Start initial tasks",
     "인지 기능 지도 요약.": "Cognitive domain map summary.",
     "날짜별 변화": "Changes over time",
-    "전체 기능의 변화": "Changes in overall function",
+    "전체 기능의 변화": "Changes in overall functioning",
     "날짜별 변화를 이어서 보고, 평소보다 크게 달라진 날은 따로 표시합니다.": "Review daily trends; unusually large changes are highlighted separately.",
     "최근 7일": "Last 7 days",
     "최근 30일": "Last 30 days",
@@ -787,7 +787,12 @@
     "기능": "Function",
     "변화": "Change",
     "서버 기록": "Server records",
-    "서버 기록·수집 안내": "Server records and collection guidance"
+    "서버 기록·수집 안내": "Server records and collection guidance",
+    "전체 기능의": "Overall functional",
+    "기능의 변화": "functional changes",
+    "전체 기능의 변화 추이": "Trends in overall functioning",
+    "기능의": "functional",
+    "의 변화": " change in functioning"
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
