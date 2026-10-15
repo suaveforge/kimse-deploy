@@ -267,6 +267,14 @@ async function main(){
   };
   history.clinical_domains={
     ...history.clinical_domains,
+    subjective_change:{
+      self:'PRESENT',self_observed_at:'2026-09-21',
+      informant:'ABSENT',informant_observed_at:'2026-09-23',agreement:'DISAGREE'
+    },
+    function_independence:{
+      self_status:'INDEPENDENT',self_observed_at:'2026-09-22',
+      informant_status:'IADL_ASSISTANCE',informant_observed_at:'2026-09-24',agreement:'DISAGREE'
+    },
     safety_support:{context_events:[
       {status:'PRESENT',event_type:'FALL',occurred_at:'2026-09-24',summary:'SYNTHETIC-SAFETY'}]},
     mood_behavior:{context_events:[
@@ -307,6 +315,21 @@ async function main(){
   check(medBody.includes('00:00')&&medBody.includes('SYNTHETIC-ONLY-USER-INSTRUCTION')
     &&medBody.includes('사용 여부 미확인')&&medBody.includes('중단했다고 보고'),
     'medication-screen-fields-and-status');
+  const domainRows=hp.locator('.clinical-print-reported-domain li[data-clinical-reported-domain]');
+  check(await domainRows.count()===4,'reported-domain-screen-four-source-rows');
+  const reportPaths=[
+    'clinical_domains.subjective_change.self',
+    'clinical_domains.subjective_change.informant',
+    'clinical_domains.function_independence.self_status',
+    'clinical_domains.function_independence.informant_status'
+  ];
+  const actualReportPaths=await domainRows.evaluateAll(nodes=>nodes.map(x=>x.dataset.clinicalReportedDomain));
+  check(JSON.stringify(actualReportPaths)===JSON.stringify(reportPaths),
+    'reported-domain-screen-exact-canonical-paths');
+  const reportBody=await hp.locator('.clinical-print-reported-domain').allInnerTexts();
+  check(reportBody.join(' ').includes('DISAGREE')&&reportBody.join(' ').includes('IADL_ASSISTANCE')
+    &&reportBody.join(' ').includes('2026-09-23'),
+    'reported-domain-screen-disagreement-date-and-status');
   const contextBody=await hp.locator('.clinical-print-source-records').innerText();
   check(contextBody.includes('new_dose: 0')&&contextBody.includes('2026-10-11')&&
     contextBody.includes('상태 ABSENT')&&contextBody.includes('상태 UNKNOWN')&&
@@ -332,6 +355,15 @@ async function main(){
   for(const phrase of ['SYNTHETIC-ONLY-USER-INSTRUCTION','00:00','20:00',
                        '사용여부미확인','중단했다고보고','처방확인아님'])
     check(allText.includes(phrase.replace(/\s+/g,'')),'medication-pdf-field-'+phrase);
+  for(const path of [
+    'clinical_domains.subjective_change.self',
+    'clinical_domains.subjective_change.informant',
+    'clinical_domains.function_independence.self_status',
+    'clinical_domains.function_independence.informant_status'
+  ])check(allText.includes(path),'reported-domain-pdf-canonical-path-'+path);
+  for(const phrase of ['2026-09-21','2026-09-22','2026-09-23','2026-09-24',
+                       '상태PRESENT','상태ABSENT','IADL_ASSISTANCE','DISAGREE'])
+    check(allText.includes(phrase.replace(/\s+/g,'')),'reported-domain-pdf-state-'+phrase);
   check(JSON.stringify(history)===originalHistory,'history-source-never-mutated');
   await historyCtx.close();
  }finally{await browser.close();}
