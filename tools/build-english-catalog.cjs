@@ -27,7 +27,7 @@ function extractSource(file){
 async function extractBrowser(){
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
-  const pages=['/','/evidence/','/evidence/observation.html','/evidence/clinical.html','/evidence/rd.html','/evidence/trust.html'];
+  const pages=['/','/evidence/','/evidence/observation.html','/evidence/clinical.html','/evidence/rd.html','/evidence/trust.html','/evidence/competitors.html'];
   for(const dest of pages){
    const context=await browser.newContext({locale:'ko-KR',viewport:{width:1440,height:1000}});
    const page=await context.newPage();
@@ -57,7 +57,7 @@ async function extractBrowser(){
 const {spawnSync}=require('node:child_process');
 const os=require('node:os');
 async function main(){
- const files=['index.html','app.js','evidence/index.html','evidence/observation.html','evidence/clinical.html','evidence/rd.html','evidence/trust.html','evidence/evidence-application-tabs.js','evidence/rd-world-map.js','evidence/evidence-authority.js','evidence/evidence-model-render.js','evidence/evidence-pagination.js'];
+ const files=['index.html','app.js','evidence/index.html','evidence/observation.html','evidence/clinical.html','evidence/rd.html','evidence/trust.html','evidence/evidence-application-tabs.js','evidence/rd-world-map.js','evidence/evidence-authority.js','evidence/evidence-model-render.js','evidence/evidence-pagination.js','evidence/competitors.html','evidence/competitors.js','evidence/competitors-data.js'];
  for(const f of files)if(fs.existsSync(path.join(ROOT,f)))extractSource(f);
  await extractBrowser();
  const existing=fs.existsSync(OUTPUT)?JSON.parse(fs.readFileSync(OUTPUT,'utf8')).translations:{};
