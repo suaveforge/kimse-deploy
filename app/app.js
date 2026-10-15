@@ -2901,6 +2901,41 @@ function clinicalPrintableSourceRecords(report){
           +'<span>'+esc(sourcePath+' · '+fields)+'</span>'
           +'<small>출처: 사용자 복약 기록 · 의료진·처방 확인 아님</small></li>';
       }).join('')+'</ol></div>':'';
+  // A4 carries each patient/informant domain report independently, including
+  // its exact source path and an explicit missing value where uncollected.
+  const domainGroups=[
+    {name:'본인·가족이 느낀 변화',path:'clinical_domains.subjective_change',
+     data:report?.clinical_domains?.subjective_change,
+     fields:[['self','self_observed_at','본인 보고'],
+             ['informant','informant_observed_at','가족·보호자 보고']]},
+    {name:'일상기능·독립성',path:'clinical_domains.function_independence',
+     data:report?.clinical_domains?.function_independence,
+     fields:[['self_status','self_observed_at','본인 보고'],
+             ['informant_status','informant_observed_at','가족·보호자 보고']]}
+  ];
+  const domainSourceAnnex=domainGroups.filter(group=>group.data&&typeof group.data==='object'
+    &&group.fields.some(([field])=>group.data[field]!==null
+      &&group.data[field]!==undefined&&group.data[field]!=='')).map(group=>{
+    const original=group.data,agreement=original.agreement;
+    return '<div class="clinical-print-source-group clinical-print-reported-domain">'
+      +'<h3>'+esc(group.name)+' <span>(사용자 진술 · 의료진 미검증)</span></h3><ol>'
+      +group.fields.map(([field,dateKey,label])=>{
+        const value=original[field],missing=value===null||value===undefined||value==='';
+        const sourcePath=group.path+'.'+field;
+        const state=missing?'미수집 · 정상 소견 아님':String(value)
+          +(value==='ABSENT'?' (변화 없다는 사용자 보고 · 정상 소견 아님)'
+            :value==='UNKNOWN'?' (판단 미확인)': ' (사용자 진술 · 객관 진찰 아님)');
+        const observed=original[dateKey];
+        return '<li data-clinical-reported-domain="'+esc(sourcePath)+'">'
+          +'<strong>'+esc(label)+'</strong><span>'+esc(sourcePath+' · 상태 '+state)
+          +' · 관찰일 '+esc(observed?stamp(observed):'미입력')+'</span>'
+          +'<small>출처: '+esc(label)+' · 의료진 확진·검사 아님</small></li>';
+      }).join('')+'</ol>'
+      +(agreement!==null&&agreement!==undefined&&agreement!==''
+        ?'<p>본인·가족 보고 비교: '+esc(String(agreement))
+          +' · '+esc(group.path+'.agreement')+' · 의학적 일치도 판정 아님</p>':'')
+      +'</div>';
+  }).join('');
   return '<section class="clinical-print-source-records" aria-label="출처별 진료 관련 원자료"><h2>출처별 기록 · 가족 진술과 의료검사 구분</h2>'
     +groups.map(group=>{
       const count=group.rows.length;
@@ -2913,7 +2948,7 @@ function clinicalPrintableSourceRecords(report){
       }).join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
-    }).join('')+medicationSnapshot+contextHistory+'</section>';
+    }).join('')+domainSourceAnnex+medicationSnapshot+contextHistory+'</section>';
 }
 
 // Read-only source references for specialty cards. These paths point to the
