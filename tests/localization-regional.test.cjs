@@ -37,7 +37,7 @@ function verifyRegionalFormatters(){
 
 async function verifyBrowserLocales(){
  const browser=await chromium.launch({headless:true});
- const base='http://127.0.0.1:8765';
+ const base=process.env.KIMSE_TEST_BASE||'http://127.0.0.1:8765';
  const cases=[
   {name:'US',locale:'en-US',expected:'en',urls:['/#/start','/evidence/','/evidence/observation.html','/evidence/clinical.html','/evidence/rd.html','/evidence/trust.html','/evidence/competitors.html']},
   {name:'UK',locale:'en-GB',expected:'en',urls:['/#/start','/evidence/','/evidence/observation.html','/evidence/clinical.html','/evidence/rd.html','/evidence/trust.html','/evidence/competitors.html']},
