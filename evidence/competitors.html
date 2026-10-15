@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko" data-bs-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="낌새 Evidence · 경쟁사 서비스, 공개 실적, 데이터 연동 가능성 조사">
+<title>경쟁사 연구 · KIMSE Evidence</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.5.1/dist/css/tabler.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.49.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="./competitors.css?v=20261015-1">
+</head>
+<body>
+<div class="page">
+<header class="navbar navbar-expand-md d-print-none">
+ <div class="container-xl competitor-nav">
+  <div class="navbar-brand"><a href="./" class="text-reset text-decoration-none fw-bold">낌새</a><span class="badge bg-azure-lt ms-2">Evidence Registry</span></div>
+  <div class="ms-auto d-flex align-items-center gap-3">
+   <a href="./" class="text-secondary text-decoration-none">전체 근거</a>
+   <div class="kimse-lang-wrap"><localize-switcher project="p45" type="compact" flags="true" label-mode="native" size="sm"></localize-switcher></div>
+  </div>
+ </div>
+</header>
+<div class="page-wrapper"><main class="page-body">
+<div class="container-xl">
+<div class="competitor-header">
+ <div class="text-uppercase competitor-kicker">KIMSE EVIDENCE / COMPETITOR INTELLIGENCE</div>
+ <h1 class="competitor-title">경쟁사 연구</h1>
+ <p class="competitor-lead">치매·인지관리, 생활관찰, 건강관리 서비스의 기능과 공개 실적을 원문 기준으로 비교합니다. 경쟁 대상이면서 향후 데이터 연계·협력 후보인 서비스도 함께 기록합니다.</p>
+ <div class="competitor-principle"><strong>읽는 법</strong> · 다운로드는 이용자 수가 아니며, 시설 수는 개인 사용자 수가 아닙니다. 장점·제약은 공개 자료에 근거한 낌새의 분석이며, 직접 연동 가능 여부는 별도 검증합니다.</div>
+</div>
+<div class="competitor-toolbar" aria-label="경쟁사 탐색 도구">
+ <label class="competitor-search"><i class="ti ti-search"></i><input type="search" id="competitor-search" placeholder="서비스·기능·기업 검색" autocomplete="off" aria-label="경쟁사 검색"></label>
+ <div class="competitor-filters" id="competitor-filters" role="group" aria-label="서비스 유형"></div>
+ <div class="competitor-toolbar-side"><span id="competitor-count" aria-live="polite"></span><button type="button" id="competitor-compare" class="btn btn-outline-primary btn-sm">선택 비교 <b id="competitor-selected-count">0</b></button></div>
+</div>
+<div class="competitor-layout">
+ <div><div id="competitor-list" class="competitor-list" aria-label="기업 및 제품 목록"></div><p class="competitor-small mt-3">공개 정보 정리: 2026년 10월 15일. 숫자와 접근 정책은 변경될 수 있습니다. 원문·확인일과 함께 지속 업데이트합니다.</p></div>
+ <section id="competitor-detail" class="competitor-detail" aria-live="polite" aria-label="선택한 서비스의 상세 근거"></section>
+</div>
+<div id="competitor-compare-panel" class="competitor-comparison" hidden></div>
+<section class="competitor-notes">
+ <h2>증거 관리 원칙</h2>
+ <div class="competitor-note-grid">
+  <div><b>출처 등급</b><p>공공기관·앱스토어·공식 제품문서·기업 자체 발표를 구분합니다. 업체 자체 숫자는 '업체 발표'로 명시합니다.</p></div>
+  <div><b>수치 단위</b><p>설치 수·월간 이용자·누적 사용자·고객기관 수·매출·계약을 합쳐 계산하지 않습니다. 정보가 없으면 '비공개'로 남깁니다.</p></div>
+  <div><b>연동 검증</b><p>기기가 데이터를 생성하는 사실, 제3자 앱이 읽을 권한, 낌새가 실제로 읽은 결과를 서로 구분합니다.</p></div>
+ </div>
+</section>
+</div>
+</main></div></div>
+<script src="./competitors-data.js?v=20261015-1"></script>
+<script src="./competitors.js?v=20261015-1"></script>
+<script src="https://localizehub.suaveforge.com/widget.js"></script>
+<script src="./localizehub-runtime.js?v=20261015-full-language-nav-1"></script>
+</body></html>
