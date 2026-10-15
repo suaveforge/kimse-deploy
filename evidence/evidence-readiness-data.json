@@ -1,0 +1,270 @@
+{
+  "schemaVersion": "2026-10-15.1",
+  "reviewedAt": "2026-10-15",
+  "scope": "Evidence 자료 충족도에 관한 내부 점검. 임상 유효성·출시 승인·투자 유치 가능성을 인증하지 않음.",
+  "scoreRules": {
+    "met": 20,
+    "partial": 10,
+    "missing": 0
+  },
+  "summary": {
+    "publicKeys": [
+      "evidence",
+      "collection",
+      "clinical",
+      "rd",
+      "trust",
+      "competitors"
+    ],
+    "investment": {
+      "publicWeight": 0.65,
+      "userWeight": 0.35
+    },
+    "disclaimer": "여섯 영역은 증빙 준비도를 뜻하며 제품 출시 여부는 개인정보 보호, 안전성, 법률·운영 요건과 별도로 확인해야 함. 투자 준비도도 성공 확률이나 투자 가능 여부가 아님."
+  },
+  "categories": [
+    {
+      "key": "evidence",
+      "title": "관찰 근거",
+      "checks": [
+        {
+          "label": "핵심 관찰 항목별 연구·지침 원문 연결",
+          "status": "met",
+          "why": "관찰 근거 페이지에 원문 출처와 분야별 근거 정리",
+          "link": "./observation.html"
+        },
+        {
+          "label": "활성 위험요인 모델과 근거 연결",
+          "status": "met",
+          "why": "활성 CAIDE 모델 및 원래 점수 규칙과 출처 명시",
+          "link": "./evidence-model.json"
+        },
+        {
+          "label": "생활변화 관찰 신호와 자료 출처 매핑",
+          "status": "met",
+          "why": "수면·이동·언어·인지 등 추적 신호별 근거 표시",
+          "link": "./evidence-model.json"
+        },
+        {
+          "label": "진단 점수와 자체 관찰지표의 한계 구분",
+          "status": "met",
+          "why": "자체 과제·임상 cutoff·비고정 가중치 구분",
+          "link": "./evidence-model.json"
+        },
+        {
+          "label": "낌새의 종단 관찰 예측성능 외부 검증",
+          "status": "missing",
+          "why": "전향적 코호트와 의료평가 대조 결과 미확인"
+        }
+      ]
+    },
+    {
+      "key": "collection",
+      "title": "데이터 수집·작동 원리",
+      "checks": [
+        {
+          "label": "수집 신호·기기·경로 공개",
+          "status": "met",
+          "why": "기기 조합과 항목별 수집방식 문서화",
+          "link": "./collection.html"
+        },
+        {
+          "label": "권한·결측·백그라운드 제약 표시",
+          "status": "met",
+          "why": "기기 허용·동의·앱 전경 수집과 장기 제약을 명시",
+          "link": "./collection.html"
+        },
+        {
+          "label": "앱의 실측 신호 수집 작동",
+          "status": "partial",
+          "why": "걸음·전경 GPS 등의 코드 존재; 전체 기기·OS 실측 결과는 미확인",
+          "link": "./collection.html"
+        },
+        {
+          "label": "28일 실사용 원사이클 데이터 확보",
+          "status": "missing",
+          "why": "동의된 참여자의 28일 유효 데이터·결측 집계 증빙 미확인"
+        },
+        {
+          "label": "전경·백그라운드 장기 수집 안정성 검증",
+          "status": "missing",
+          "why": "권한·배터리·OS 재시작을 포함한 실단말 검증 없음"
+        }
+      ]
+    },
+    {
+      "key": "clinical",
+      "title": "의료 리포트",
+      "checks": [
+        {
+          "label": "진료 전달용 공통 데이터 필드 정의",
+          "status": "met",
+          "why": "Clinical Handoff 데이터셋 스키마 공개",
+          "link": "./clinical.html"
+        },
+        {
+          "label": "열람·인쇄·PDF 표현 구조",
+          "status": "met",
+          "why": "의료 리포트 화면 및 출력 설계·구현 코드 구비",
+          "link": "./clinical.html"
+        },
+        {
+          "label": "사용자·가족·전문가 기록의 출처 구분",
+          "status": "met",
+          "why": "소스 구분 및 Provenance 계약 존재",
+          "link": "./clinical.html"
+        },
+        {
+          "label": "FHIR 등 병원 전달 후보 형식 구현",
+          "status": "partial",
+          "why": "FHIR 후보·구조 사전검사는 있으나 기관 연동 승인은 없음",
+          "link": "./clinical.html"
+        },
+        {
+          "label": "의료진 사용성 평가·기관 수신 확인",
+          "status": "missing",
+          "why": "의료진 검수·수신증빙 확보되지 않음"
+        }
+      ]
+    },
+    {
+      "key": "rd",
+      "title": "연구·기관 R&D",
+      "checks": [
+        {
+          "label": "공통 종단 연구 데이터 모델 정의",
+          "status": "met",
+          "why": "연구 데이터 스키마와 필드·설계 원칙 존재",
+          "link": "./rd.html"
+        },
+        {
+          "label": "품질·출처·동의·버전 기준",
+          "status": "met",
+          "why": "재현 가능한 자료 생산을 위한 필드 정리",
+          "link": "./rd.html"
+        },
+        {
+          "label": "외부 연구·거래 사례 출처 구분",
+          "status": "met",
+          "why": "계약·지원금·논문과 낌새 실적을 분리해 제시",
+          "link": "./rd.html"
+        },
+        {
+          "label": "동일 코호트 실자료로 재현 검증",
+          "status": "missing",
+          "why": "낌새 실측 코호트 품질·반복분석 실증 미확인"
+        },
+        {
+          "label": "연구기관 공동검증·MOU·실증 성과",
+          "status": "missing",
+          "why": "실제 협약·공동연구 승인 기록 미확인"
+        }
+      ]
+    },
+    {
+      "key": "trust",
+      "title": "데이터 신뢰·검증",
+      "checks": [
+        {
+          "label": "동의·출처·변경이력 신뢰모델 정의",
+          "status": "met",
+          "why": "원본 외부보관 및 무결성·동의·시점 모델 설명",
+          "link": "./trust.html"
+        },
+        {
+          "label": "앱에서 동의와 데이터 출처 구분 구현",
+          "status": "partial",
+          "why": "동의·출처 필드와 처리 코드 있으나 전체 시나리오 검증 부족",
+          "link": "./trust.html"
+        },
+        {
+          "label": "변경·접근·제공 이력의 운영 검증",
+          "status": "partial",
+          "why": "기록 구조는 있으나 접근·제공 사례 전수 재현 검증 미확인",
+          "link": "./trust.html"
+        },
+        {
+          "label": "실데이터 블록체인 앵커 증빙",
+          "status": "missing",
+          "why": "온체인 거래·검증번호·원본 대조 결과 미확인"
+        },
+        {
+          "label": "제3자 독립 검증·보안/규제 검수",
+          "status": "missing",
+          "why": "실서비스 독립 검증 완료 근거 미확인"
+        }
+      ]
+    },
+    {
+      "key": "competitors",
+      "title": "경쟁사 연구",
+      "checks": [
+        {
+          "label": "경쟁·인접 서비스와 1차 출처 등록",
+          "status": "met",
+          "why": "공식 앱·기업 자료를 포함한 11개 서비스 목록",
+          "link": "./competitors.html"
+        },
+        {
+          "label": "사용자군·기능·경쟁 범위 구분",
+          "status": "met",
+          "why": "서비스별 목적·장점·제약을 설명",
+          "link": "./competitors.html"
+        },
+        {
+          "label": "대상 서비스 선택 비교 제공",
+          "status": "met",
+          "why": "복수 서비스 기능·공개 규모 비교 UI 제공",
+          "link": "./competitors.html"
+        },
+        {
+          "label": "데이터 접근·제휴 조건의 확인 상태 구분",
+          "status": "met",
+          "why": "오늘건강·채움건강 등 수신과 외부 제공을 구분",
+          "link": "./competitors.html"
+        },
+        {
+          "label": "전체 경쟁사 규모·계약·이용자 독립 교차검증",
+          "status": "missing",
+          "why": "다수 업체의 이용 규모·발주 원문은 여전히 미확인"
+        }
+      ]
+    },
+    {
+      "key": "users",
+      "title": "사용자 검증",
+      "checks": [
+        {
+          "label": "실제 응답의 사용 전 수요 조사 공개",
+          "status": "missing",
+          "why": "원본·모집 조건·유효 응답이 검증된 설문 미등록",
+          "link": "./user-validation.html"
+        },
+        {
+          "label": "제품 사용 후 VOC 출처 확보",
+          "status": "missing",
+          "why": "실사용·시연 여부 확인된 후기가 미등록",
+          "link": "./user-validation.html"
+        },
+        {
+          "label": "동의 기반 이용 지속률·결측 집계",
+          "status": "missing",
+          "why": "실사용자의 이용일·이탈·재방문 집계 미등록",
+          "link": "./user-validation.html"
+        },
+        {
+          "label": "전문인력·현장 평가 검증",
+          "status": "missing",
+          "why": "방문간호사·돌봄·의료진의 검증된 평가 미등록",
+          "link": "./user-validation.html"
+        },
+        {
+          "label": "개선 전후 비교·반복 사용 근거",
+          "status": "missing",
+          "why": "동일 참여자의 반복 사용 또는 사용성 개선 측정 없음",
+          "link": "./user-validation.html"
+        }
+      ]
+    }
+  ]
+}
