@@ -19,7 +19,7 @@ function metric(r){return r.stats.map(([title,value,note])=>'<div class="competi
 function textLi(v){return '<ul class="ps-3 mb-0">'+v.map(s=>'<li>'+escape(s)+'</li>').join('')+'</ul>';}
 function renderDetail(){
  const r=find(active)||records[0];active=r.id;
- detail.innerHTML='<div class="competitor-brand-header">'+logo(r,'competitor-detail-logo')+'<div><h2 class="competitor-brand-name" style="color:'+escape(r.brand)+'">'+escape(r.name)+'</h2><div class="competitor-subline">'+escape(r.owner)+'</div><div class="mt-2">'+chip(r.kind,true)+chip(r.tag)+'</div></div></div>'+
+ detail.innerHTML='<div class="competitor-brand-header">'+logo(r,'competitor-detail-logo')+'<div>'+(r.wordmark?'<img class="competitor-wordmark" src="'+escape(r.wordmark)+'" alt="'+escape(r.name)+' 공식 워드마크" onerror="this.hidden=true">':'')+'<h2 class="competitor-brand-name'+(r.wordmark?' competitor-secondary-name':'')+'" style="color:'+escape(r.brand)+'">'+escape(r.name)+'</h2><div class="competitor-subline">'+escape(r.owner)+'</div><div class="mt-2">'+chip(r.kind,true)+chip(r.tag)+'</div></div></div>'+
  '<p class="competitor-statement">'+escape(r.one)+'</p><p class="text-secondary" style="font-size:14px;line-height:1.7">'+escape(r.desc)+'</p>'+
  '<div class="competitor-section"><h3>규모 · 공개 숫자</h3><div class="competitor-stats">'+metric(r)+'</div><p class="competitor-small mt-2">숫자는 성격·단위가 다릅니다. 기관 수와 앱 설치 수, 실제 사용자 수를 합산하지 않습니다.</p></div>'+
  '<div class="competitor-section competitor-dual"><div><h3>강점 · 공개 제품 기반</h3>'+textLi(r.strengths)+'</div><div><h3>제약 · 추가 검증 대상</h3>'+textLi(r.limits)+'</div></div>'+
