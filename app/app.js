@@ -2673,7 +2673,12 @@ function clinicalContextSummary(r){
     ['현재 청력 맥락',labelValue('hearing',x.sensory_impairment_context)],
     ['감각·운동 변화 이력',eventText(sensoryEvents)],
     ['기저질환/기타 맥락',x.conditions_context],
-    ['현재 복약',meds.length?meds.map(m=>m.name).filter(Boolean).join(', '):null],
+    ['현재 복약',meds.length?meds.map(m=>[
+      m.name||'약명 미입력',
+      m.scheduled_time!=null&&String(m.scheduled_time).trim()?'입력 복용시각 '+m.scheduled_time:null,
+      m.instructions!=null&&String(m.instructions).trim()?'입력 메모 '+m.instructions:null,
+      m.active===true?'사용 중이라고 보고':m.active===false?'중단했다고 보고':'사용 여부 미확인'
+    ].filter(Boolean).join(' · ')).join(' / '):null],
     ['복약 변경 · 사용자 맥락',medicationEventText(medEvents)],
     ['복약 변경 · 결과문서',documentText(medDocs)],
     ['급성 질환·감염·입원',eventText(acuteEvents)]
@@ -2690,7 +2695,8 @@ function clinicalPrintContextFacts(r){
     const status=CLINICAL_CONTEXT_STATUS_LABELS[row.status]||row.status||'기록',kind=MEDICATION_CHANGE_KIND_LABELS[row.details?.change_kind]||row.details?.change_kind||'',name=row.details?.medication_name||row.details?.new_medication_name||'';
     return (String(row.occurred_at||'').slice(0,10)||'날짜 미상')+' · '+status+(kind?' · '+kind:'')+(name?' · '+name:'')+(row.summary?' · '+row.summary:'');
   };
-  const currentMeds=meds.map(m=>m.name).filter(Boolean).slice(0,4).join(', ');
+  const currentMeds=meds.map(m=>m.name||'약명 미입력').slice(0,4).join(', ')
+    +(meds.length>4?' 외 '+(meds.length-4)+'건 · 개별 원자료 부록 참조':'');
   const medDoc=latest(medDocs),medChange=latest(medEvents)?fmtMedication(latest(medEvents)):(medDoc?((String(medDoc.performed_at||'').slice(0,10)||'날짜 미상')+' · '+(medDoc.title||'복약 변경')+' · 결과문서 기반'):'미수집');
   return '<div class="clinical-source-summary"><p><b>현재 복약</b> · '+esc(currentMeds||'미수집')+'</p><p><b>복약 변경</b> · '+esc(medChange)+'</p><p><b>급성질환·감염·입원</b> · '+esc(fmt(latest(acute)))+'</p><p><b>기분·행동 변화</b> · '+esc(fmt(latest(moodEvents)))+'</p><p><b>감각·운동 변화</b> · '+esc(fmt(latest(sensoryEvents)))+'</p><p><b>안전사건</b> · '+esc(fmt(latest(safety)))+'</p><p><b>전문/외부 기록</b> · '+esc(String((r?.professional_outcomes||[]).length))+' / '+esc(String((r?.external_clinical_records||[]).length))+'건</p><p><b>자료 없음</b> · 정상 소견으로 간주하지 않음</p></div>';
 }
@@ -2871,6 +2877,30 @@ function clinicalPrintableSourceRecords(report){
             +'</li>';
         }).join('')+'</ol></div>';
     }).join('');
+  // Print every current medication snapshot separately: never silently truncate
+  // the four-name summary, invent prescription details, or merge change history.
+  const currentMedications=safe(report?.risk_confounders?.current_medications);
+  const medicationSnapshot=currentMedications.length
+    ?'<div class="clinical-print-source-group clinical-print-medication-group"><h3>현재 복약 목록 <span>('
+      +currentMedications.length+'건 · 사용자 입력, 처방 확인 아님)</span></h3><ol>'
+      +currentMedications.map((med,index)=>{
+        const item=med&&typeof med==='object'?med:{};
+        const status=item.active===true?'사용 중이라고 보고'
+          :item.active===false?'중단했다고 보고':'사용 여부 미확인';
+        const fields=joined([
+          item.name||'약명 미입력',
+          '사용 상태 '+status,
+          item.scheduled_time!=null&&String(item.scheduled_time).trim()
+            ?'입력 복용시각 '+item.scheduled_time:null,
+          item.instructions!=null&&String(item.instructions).trim()
+            ?'입력 메모 '+item.instructions:null
+        ]);
+        const sourcePath='risk_confounders.current_medications['+index+']';
+        return '<li data-clinical-medication-source="'+esc(sourcePath)+'">'
+          +'<strong>'+esc(item.recorded_at||item.created_at?stamp(item.recorded_at||item.created_at):'등록일 미수집')+'</strong>'
+          +'<span>'+esc(sourcePath+' · '+fields)+'</span>'
+          +'<small>출처: 사용자 복약 기록 · 의료진·처방 확인 아님</small></li>';
+      }).join('')+'</ol></div>':'';
   return '<section class="clinical-print-source-records" aria-label="출처별 진료 관련 원자료"><h2>출처별 기록 · 가족 진술과 의료검사 구분</h2>'
     +groups.map(group=>{
       const count=group.rows.length;
@@ -2883,7 +2913,7 @@ function clinicalPrintableSourceRecords(report){
       }).join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
-    }).join('')+contextHistory+'</section>';
+    }).join('')+medicationSnapshot+contextHistory+'</section>';
 }
 
 // Read-only source references for specialty cards. These paths point to the
