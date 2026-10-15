@@ -1167,6 +1167,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .clinical-domain-card-body dl>div{display:grid;grid-template-columns:minmax(90px,.8fr) minmax(0,1.4fr);gap:10px;align-items:start}
 .clinical-domain-card-body dt{font-size:12px;color:var(--kimse-muted)}
 .clinical-domain-card-body dd{margin:0;font-size:13px;font-weight:800;line-height:1.4;overflow-wrap:anywhere}
+.clinical-cognition-raw-details{margin-top:12px;max-width:100%;min-width:0;overflow-wrap:anywhere}
+.clinical-cognition-raw-details summary{cursor:pointer;font-size:12px;font-weight:700}
+.clinical-cognition-raw-details ol{margin:8px 0 0;padding-left:18px;min-width:0}
+.clinical-cognition-raw-details li{font-size:11px;line-height:1.55;padding:7px 0;border-bottom:1px solid var(--kimse-border);overflow-wrap:anywhere;word-break:break-word}
+.clinical-cognition-raw-details li span{display:block;white-space:normal;font-weight:400;overflow-wrap:anywhere}
+
 .clinical-domain-source{font-size:11px;color:var(--kimse-muted);border-top:1px solid #edf1f5;margin-top:10px;padding-top:8px}
 .clinical-professional-row.expanded{align-items:flex-start}
 .clinical-professional-row.expanded>div{min-width:0;flex:1}
