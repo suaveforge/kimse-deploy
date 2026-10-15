@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-15.en.10",
+  "schemaVersion": "2026-10-15.en.11",
   "locale": "en",
   "sourceLocale": "ko",
   "translations": {
@@ -730,7 +730,7 @@
     "초기 과제 시작": "Start initial tasks",
     "인지 기능 지도 요약.": "Cognitive domain map summary.",
     "날짜별 변화": "Changes over time",
-    "전체 기능의 변화": "Changes across all domains",
+    "전체 기능의 변화": "Changes in overall function",
     "날짜별 변화를 이어서 보고, 평소보다 크게 달라진 날은 따로 표시합니다.": "Review daily trends; unusually large changes are highlighted separately.",
     "최근 7일": "Last 7 days",
     "최근 30일": "Last 30 days",
@@ -763,7 +763,31 @@
     "기록된 정보": "Recorded information",
     "자세히": "Details",
     "없음": "None",
-    "치매 진단을 대신하지 않습니다.": "Not a substitute for dementia diagnosis."
+    "치매 진단을 대신하지 않습니다.": "Not a substitute for dementia diagnosis.",
+    "개": "institutions",
+    "요약": "Summary",
+    "최근 변화 요약": "Summary of recent changes",
+    "최근 변화 요약.": "Summary of recent changes.",
+    "이미 받은 결과가 있다면 새 검사 없이도 지금부터 연결할 수 있습니다.": "Existing test results can be added without a new examination.",
+    "서버 기록·수집 안내 자세히": "Details about server records and data collection",
+    "서버": "Server",
+    "수집 안내": "Data collection guidance",
+    "수집": "Collection",
+    "안내": "Guidance",
+    "전체 기능 변화 추이": "Overall functional change trends",
+    "전체 기능": "Overall function",
+    "기록이 쌓이면 변화 흐름을 보여드립니다.": "A trend will appear once sufficient observations are recorded.",
+    "기록이 쌓이면": "Once enough observations are recorded",
+    "변화 흐름을 보여드립니다.": "we will show the pattern of change.",
+    "흐름을 보여드립니다.": "we will show the trend.",
+    "기능 변화 그래프 요약.": "Summary of functional change trends.",
+    "기능 변화 그래프 요약": "Summary of functional change trends",
+    "기능 변화 그래프": "Functional change chart",
+    "변화 그래프 요약": "Trend chart summary",
+    "기능": "Function",
+    "변화": "Change",
+    "서버 기록": "Server records",
+    "서버 기록·수집 안내": "Server records and collection guidance"
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
