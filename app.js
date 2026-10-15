@@ -2719,7 +2719,22 @@ function clinicalContextSummary(r){
     ['복약 변경 · 결과문서',documentText(medDocs)],
     ['급성 질환·감염·입원',eventText(acuteEvents)]
   ];
-  return '<div class="clinical-context-grid">'+items.map(([label,value])=>'<div class="clinical-context-item"><span>'+esc(label)+'</span><strong>'+esc(value||'미수집')+'</strong></div>').join('')+'</div><p class="clinical-microcopy">미수집은 정상 소견이 아닙니다. 현재 기분 메모와 기분·행동 변화 이력, 현재 청력 맥락과 감각·운동 변화 이력, 현재 복약과 복약 변경, 급성 질환·입원을 서로 다른 축으로 보존합니다.</p>';
+  const background=x.validated_risk_context&&typeof x.validated_risk_context==='object'
+    &&!Array.isArray(x.validated_risk_context)?x.validated_risk_context:{};
+  const backgroundValue=v=>v&&typeof v==='object'?JSON.stringify(v):String(v);
+  const fieldRows=[
+    ...(x.conditions_context!==undefined&&x.conditions_context!==null&&x.conditions_context!==''
+      ?[['risk_confounders.conditions_context',x.conditions_context,'사용자 입력 기저질환 설명']]:[]),
+    ...Object.entries(background).filter(([,v])=>v!==null&&v!==undefined&&v!=='')
+      .map(([key,v])=>['risk_confounders.validated_risk_context.'+key,v,'사용자 프로필 '+key])
+  ];
+  const originalProfileDetails=fieldRows.length
+    ?'<details class="clinical-cognition-raw-details clinical-risk-profile-details">'
+      +'<summary>기저질환 설명·프로필 원자료 '+fieldRows.length+'항목 (자가보고·미검증)</summary><ol>'
+      +fieldRows.map(([path,value,label])=>'<li data-clinical-risk-screen="'+esc(path)+'"><strong>'
+        +esc(label)+'</strong><span>'+esc(path+' · '+backgroundValue(value))+'</span></li>').join('')
+      +'</ol><small>원 입력일 미수집 · 출처: 사용자 프로필 · 의료진 확인·진단·검증 위험점수 아님</small></details>':'';
+  return '<div class="clinical-context-grid">'+items.map(([label,value])=>'<div class="clinical-context-item"><span>'+esc(label)+'</span><strong>'+esc(value||'미수집')+'</strong></div>').join('')+'</div><p class="clinical-microcopy">미수집은 정상 소견이 아닙니다. 현재 기분 메모와 기분·행동 변화 이력, 현재 청력 맥락과 감각·운동 변화 이력, 현재 복약과 복약 변경, 급성 질환·입원을 서로 다른 축으로 보존합니다.</p>'+originalProfileDetails;
 }
 function clinicalPrintContextFacts(r){
   const x=r?.risk_confounders||{},d=r?.clinical_domains||{},s=d.safety_support||{},m=d.mood_behavior||{},sm=d.sensory_motor||{},meds=Array.isArray(x.current_medications)?x.current_medications:[],medEvents=Array.isArray(x.medication_change?.events)?x.medication_change.events:[],medDocs=Array.isArray(x.medication_change?.external_records)?x.medication_change.external_records:[],acute=Array.isArray(x.acute_illness_context?.events)?x.acute_illness_context.events:[],moodEvents=Array.isArray(m.context_events)?m.context_events:[],sensoryEvents=Array.isArray(sm.context_events)?sm.context_events:[],safety=Array.isArray(s.context_events)?s.context_events:[],latest=rows=>rows?.[0]||null,fmt=(row,fallback='미수집')=>{
@@ -3033,6 +3048,25 @@ function clinicalPrintableSourceRecords(report){
         +'<small>원본 경로: '+esc('risk_confounders.'+key)
         +' · 출처: USER_ENTERED · 원래 관찰일 미수집 · 진단 아님</small></li>').join('')
       +'</ol></div>':'';
+  // Each original profile input is a patient statement, never a validated risk score.
+  const risk=report?.risk_confounders||{};
+  const background=risk.validated_risk_context&&typeof risk.validated_risk_context==='object'
+    &&!Array.isArray(risk.validated_risk_context)?risk.validated_risk_context:{};
+  const userRiskRows=[
+    ...(risk.conditions_context!==undefined&&risk.conditions_context!==null&&risk.conditions_context!==''
+       ?[['risk_confounders.conditions_context',risk.conditions_context,'기저질환·기타 사용자 입력']]:[]),
+    ...Object.entries(background).filter(([,v])=>v!==null&&v!==undefined&&v!=='')
+       .map(([key,value])=>['risk_confounders.validated_risk_context.'+key,value,'사용자 프로필 '+key])
+  ];
+  const riskSourceAnnex=userRiskRows.length
+    ?'<div class="clinical-print-source-group clinical-print-user-risk-group"><h3>'
+      +'기저질환 설명·프로필 원자료 <span>('+userRiskRows.length+'항목 · 미검증 사용자 입력)</span></h3><ol>'
+      +userRiskRows.map(([path,value,label])=>{
+        const raw=value&&typeof value==='object'?JSON.stringify(value):String(value);
+        return '<li data-clinical-user-risk-source="'+esc(path)+'"><strong>'+esc(label)+'</strong>'
+          +'<span>'+esc(path+' · '+raw)+'</span><small>원 관찰일 미수집 · 출처: USER_ENTERED'
+          +' · 의료진 확인·기저질환 확진·검증된 위험점수 아님</small></li>';
+      }).join('')+'</ol></div>':'';
   // Preserve each KIMSE cognitive source record, including nested baseline comparisons.
   const cog=report?.clinical_domains?.cognition||{};
   const cognitionAnnex=[
@@ -3067,7 +3101,7 @@ function clinicalPrintableSourceRecords(report){
       }).join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
-    }).join('') +domainSourceAnnex+functionalAnnex+sleepAnnex+cognitionAnnex+medicationSnapshot+contextHistory+'</section>';
+    }).join('') +domainSourceAnnex+functionalAnnex+sleepAnnex+riskSourceAnnex+cognitionAnnex+medicationSnapshot+contextHistory+'</section>';
 }
 
 // Read-only source references for specialty cards. These paths point to the

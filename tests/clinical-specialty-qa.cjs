@@ -254,6 +254,9 @@ async function main(){
      summary:'SYNTHETIC-OTHER-ZERO',details:{reported_quantity:0}}
   ];
   history.risk_confounders={
+    conditions_context:'SYNTHETIC-RISK-CONTEXT-SELF-REPORT',
+    validated_risk_context:{birthYear:'1948',sex:'UNKNOWN',education:0,activity:false,
+      living:'alone',socialSupport:'none',socialActivity:0},
     current_sleep_user_record:'3시간 30분',
     sleep_disturbance_context:'frequent',
     medication_change:{events:[
@@ -378,6 +381,24 @@ async function main(){
     functionalBody.includes('개인 기준선 미수집')&&functionalBody.includes('2026-10-11')&&
     functionalBody.includes('임상 FAQ 검사 아님'),
     'functional-screen-raw-baseline-date-provenance');
+  const userRiskRows=hp.locator('.clinical-print-user-risk-group li[data-clinical-user-risk-source]');
+  check(await userRiskRows.count()===8,'risk-screen-8-original-rows');
+  for(const path of ['risk_confounders.conditions_context',
+    ...['birthYear','sex','education','activity','living','socialSupport','socialActivity']
+     .map(key=>'risk_confounders.validated_risk_context.'+key)])
+    check(await hp.locator('.clinical-print-user-risk-group li[data-clinical-user-risk-source="'+path+'"]').count()===1,
+      'risk-screen-original-source-'+path);
+  const originalRiskValues=await hp.locator('.clinical-print-user-risk-group').innerText();
+  check(originalRiskValues.includes('SYNTHETIC-RISK-CONTEXT-SELF-REPORT')&&
+    originalRiskValues.includes('education · 0')&&originalRiskValues.includes('activity · false')&&
+    originalRiskValues.includes('socialActivity · 0')&&originalRiskValues.includes('UNKNOWN')&&
+    originalRiskValues.includes('USER_ENTERED'),'risk-screen-values-not-inferred');
+  const backgroundDetails=hp.locator('details.clinical-risk-profile-details');
+  check(await backgroundDetails.count()===1,'risk-screen-disclosure');
+  await backgroundDetails.locator('summary').click();
+  check(await backgroundDetails.locator('li[data-clinical-risk-screen]').count()===8,
+    'risk-screen-expanded-8-original-values');
+  await backgroundDetails.locator('summary').click();
   const sleepRows=hp.locator('.clinical-print-sleep-group li[data-clinical-sleep-source]');
   check(await sleepRows.count()===2,'sleep-screen-2-independent-canonical-rows');
   for(const key of ['current_sleep_user_record','sleep_disturbance_context']){
@@ -456,6 +477,14 @@ async function main(){
                       '2026-10-11','의료진기능검사·진단아님']){
     check(allText.includes(token),'functional-pdf-raw-field-'+token);
   }
+  for(const path of ['risk_confounders.conditions_context',
+    ...['birthYear','sex','education','activity','living','socialSupport','socialActivity']
+     .map(key=>'risk_confounders.validated_risk_context.'+key)])
+    check(allText.includes(path),'risk-pdf-canonical-source-'+path);
+  for(const token of ['SYNTHETIC-RISK-CONTEXT-SELF-REPORT',
+    'education·0','activity·false','socialActivity·0','UNKNOWN','USER_ENTERED',
+    '의료진확인·기저질환확진·검증된위험점수아님'])
+    check(allText.includes(token),'risk-pdf-source-value-'+token);
   for(const key of ['current_sleep_user_record','sleep_disturbance_context'])
     check(allText.includes('risk_confounders.'+key),'sleep-pdf-canonical-source-'+key);
   for(const phrase of ['3시간30분','frequent','USER_ENTERED','원래관찰일미수집','의료진확인·기기측정아님'])
