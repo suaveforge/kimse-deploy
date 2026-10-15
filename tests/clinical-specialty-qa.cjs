@@ -257,7 +257,13 @@ async function main(){
       {status:'UNKNOWN',event_type:'ACUTE_ILLNESS',occurred_at:'2026-09-22',summary:'SYNTHETIC-ACUTE-UNKNOWN'},
       {status:'NONE_REPORTED',event_type:'ACUTE_ILLNESS',occurred_at:'2026-09-23',summary:'SYNTHETIC-ACUTE-NONE'}
     ]},
-    current_medications:[]
+    current_medications:[
+      {id:'SYN-MED-1',name:'SYNTHETIC-AM',scheduled_time:'00:00',instructions:'SYNTHETIC-ONLY-USER-INSTRUCTION',active:true},
+      {id:'SYN-MED-2',name:'SYNTHETIC-PM',scheduled_time:'20:00',instructions:'STOPPED-USER-REPORT',active:false},
+      {id:'SYN-MED-3',name:'SYNTHETIC-UNKNOWN',scheduled_time:null,instructions:'',active:null},
+      {id:'SYN-MED-4',name:'SYNTHETIC-04',active:true},
+      {id:'SYN-MED-5',name:'SYNTHETIC-05',active:false}
+    ]
   };
   history.clinical_domains={
     ...history.clinical_domains,
@@ -292,6 +298,15 @@ async function main(){
   check(await originalRows.count()===7,'history-screen-7-source-records');
   const actualPaths=await originalRows.evaluateAll(nodes=>nodes.map(x=>x.dataset.clinicalContextSource));
   check(JSON.stringify(actualPaths)===JSON.stringify(paths),'history-screen-canonical-paths');
+  const medSourceRows=hp.locator('.clinical-print-medication-group li[data-clinical-medication-source]');
+  check(await medSourceRows.count()===5,'medication-screen-untruncated-5-records');
+  const medPaths=await medSourceRows.evaluateAll(nodes=>nodes.map(x=>x.dataset.clinicalMedicationSource));
+  check(medPaths.every((value,i)=>value==='risk_confounders.current_medications['+i+']'),
+    'medication-screen-canonical-paths');
+  const medBody=await hp.locator('.clinical-print-medication-group').innerText();
+  check(medBody.includes('00:00')&&medBody.includes('SYNTHETIC-ONLY-USER-INSTRUCTION')
+    &&medBody.includes('사용 여부 미확인')&&medBody.includes('중단했다고 보고'),
+    'medication-screen-fields-and-status');
   const contextBody=await hp.locator('.clinical-print-source-records').innerText();
   check(contextBody.includes('new_dose: 0')&&contextBody.includes('2026-10-11')&&
     contextBody.includes('상태 ABSENT')&&contextBody.includes('상태 UNKNOWN')&&
@@ -311,6 +326,12 @@ async function main(){
                         '상태ABSENT','상태UNKNOWN','상태NONE_REPORTED',
                         '의료진확인결과아님'])
     check(allText.includes(phrase.replace(/\s+/g,'')),'history-pdf-original-value-'+phrase);
+  for(let i=0;i<5;i++)
+    check(allText.includes('risk_confounders.current_medications['+i+']'),
+      'medication-pdf-original-path-'+i);
+  for(const phrase of ['SYNTHETIC-ONLY-USER-INSTRUCTION','00:00','20:00',
+                       '사용여부미확인','중단했다고보고','처방확인아님'])
+    check(allText.includes(phrase.replace(/\s+/g,'')),'medication-pdf-field-'+phrase);
   check(JSON.stringify(history)===originalHistory,'history-source-never-mutated');
   await historyCtx.close();
  }finally{await browser.close();}
