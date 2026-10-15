@@ -1,0 +1,647 @@
+{
+  "schema_version": 1,
+  "source_review_date": "2026-10-12",
+  "status": "OFFICIAL_PUBLIC_RESEARCH_NOT_KIMSE_AUTHORIZED",
+  "verified_receivers": 0,
+  "source_freshness": "Index/crawl snapshot; current document revision and hospital acceptance not attested",
+  "group_count": 91,
+  "entries": {
+    "KR-SNUH-OUTPATIENT-01": {
+      "pointer": "131",
+      "provider": "KR-SNUH-OUTPATIENT",
+      "verified_url": "https://www.snuh.org/content/Q005001003.do",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "KR-SNUH-OUTPATIENT-02": {
+      "pointer": "154",
+      "provider": "KR-SNUH-OUTPATIENT",
+      "verified_url": "https://www.snuh.org/content/Q005001003.do",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "KR-SNUH-OUTPATIENT-03": {
+      "pointer": "147",
+      "provider": "KR-SNUH-OUTPATIENT",
+      "verified_url": "https://www.snuh.org/content/Q005001003.do",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "KR-SNUH-OUTPATIENT-04": {
+      "pointer": "133",
+      "provider": "KR-SNUH-OUTPATIENT",
+      "verified_url": "https://www.snuh.org/content/Q005001003.do",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "KR-AMC-NEURO-MEMORY-01": {
+      "pointer": "219",
+      "provider": "KR-AMC-NEURO-MEMORY",
+      "verified_url": "https://amcmg.amc.seoul.kr/asan/staff/base/staffBaseInfoDetail.do?drEmpId=d011eCtGRkxaS0dVSmY2TnJ4d1NKQT09&searchHpCd=D030",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "KR-AMC-NEURO-MEMORY-02": {
+      "pointer": "222",
+      "provider": "KR-AMC-NEURO-MEMORY",
+      "verified_url": "https://amcmg.amc.seoul.kr/asan/staff/base/staffBaseInfoDetail.do?drEmpId=d011eCtGRkxaS0dVSmY2TnJ4d1NKQT09&searchHpCd=D030",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-01": {
+      "pointer": "234",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-02": {
+      "pointer": "253",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-03": {
+      "pointer": "259",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-04": {
+      "pointer": "442",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-05": {
+      "pointer": "438-440",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-06": {
+      "pointer": "444-449",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-07": {
+      "pointer": "451",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-08": {
+      "pointer": "224,270",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-09": {
+      "pointer": "463",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-10": {
+      "pointer": "414-420",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-11": {
+      "pointer": "421",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-12": {
+      "pointer": "423",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-13": {
+      "pointer": "425",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-14": {
+      "pointer": "431-433",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-15": {
+      "pointer": "457",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-16": {
+      "pointer": "459-461",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-17": {
+      "pointer": "466-468",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-18": {
+      "pointer": "472",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-DORSET-MAS-19": {
+      "pointer": "474",
+      "provider": "GB-DORSET-MAS",
+      "verified_url": "https://www.dorsethealthcare.nhs.uk/our-services-and-sites/mental-health-and-learning-disabilities/memory-assessment/referral-form-gps-and-other-professionals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-CNTW-MAMS-01": {
+      "pointer": "118",
+      "provider": "GB-CNTW-MAMS",
+      "verified_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-CNTW-MAMS-02": {
+      "pointer": "119",
+      "provider": "GB-CNTW-MAMS",
+      "verified_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-CNTW-MAMS-03": {
+      "pointer": "76-85",
+      "provider": "GB-CNTW-MAMS",
+      "verified_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-CNTW-MAMS-04": {
+      "pointer": "120-121",
+      "provider": "GB-CNTW-MAMS",
+      "verified_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-CNTW-MAMS-05": {
+      "pointer": "122-123",
+      "provider": "GB-CNTW-MAMS",
+      "verified_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-CNTW-MAMS-06": {
+      "pointer": "124",
+      "provider": "GB-CNTW-MAMS",
+      "verified_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-CNTW-MAMS-07": {
+      "pointer": "125",
+      "provider": "GB-CNTW-MAMS",
+      "verified_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-CNTW-MAMS-08": {
+      "pointer": "126-127",
+      "provider": "GB-CNTW-MAMS",
+      "verified_url": "https://www.cntw.nhs.uk/resources/memory-assessment-and-management-service-mams-referrer-leaflet",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-LEEDS-MAS-01": {
+      "pointer": "245-247",
+      "provider": "GB-LEEDS-MAS",
+      "verified_url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-LEEDS-MAS-02": {
+      "pointer": "248",
+      "provider": "GB-LEEDS-MAS",
+      "verified_url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-LEEDS-MAS-03": {
+      "pointer": "250-251",
+      "provider": "GB-LEEDS-MAS",
+      "verified_url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-LEEDS-MAS-04": {
+      "pointer": "252",
+      "provider": "GB-LEEDS-MAS",
+      "verified_url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-LEEDS-MAS-05": {
+      "pointer": "253",
+      "provider": "GB-LEEDS-MAS",
+      "verified_url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-LEEDS-MAS-06": {
+      "pointer": "249,264",
+      "provider": "GB-LEEDS-MAS",
+      "verified_url": "https://www.leedsandyorkpft.nhs.uk/our-services/older-peoples-community-services/memory-assessment-service/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-NORTHUMBRIA-01": {
+      "pointer": "349",
+      "provider": "GB-NORTHUMBRIA",
+      "verified_url": "https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-NORTHUMBRIA-02": {
+      "pointer": "350",
+      "provider": "GB-NORTHUMBRIA",
+      "verified_url": "https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-NORTHUMBRIA-03": {
+      "pointer": "351",
+      "provider": "GB-NORTHUMBRIA",
+      "verified_url": "https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-NORTHUMBRIA-04": {
+      "pointer": "352",
+      "provider": "GB-NORTHUMBRIA",
+      "verified_url": "https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "GB-NORTHUMBRIA-05": {
+      "pointer": "353-355",
+      "provider": "GB-NORTHUMBRIA",
+      "verified_url": "https://www.northumbria.nhs.uk/our-services/elderly-care/mental-health-services-older-people/memory-clinic-north-tyneside",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-MAYO-NEURO-01": {
+      "pointer": "293-301",
+      "provider": "US-MAYO-NEURO",
+      "verified_url": "https://www.mayoclinic.org/medical-professionals/neurology-neurosurgery/referrals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-MAYO-NEURO-02": {
+      "pointer": "299",
+      "provider": "US-MAYO-NEURO",
+      "verified_url": "https://www.mayoclinic.org/medical-professionals/neurology-neurosurgery/referrals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-MAYO-NEURO-03": {
+      "pointer": "300",
+      "provider": "US-MAYO-NEURO",
+      "verified_url": "https://www.mayoclinic.org/medical-professionals/neurology-neurosurgery/referrals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-MAYO-NEURO-04": {
+      "pointer": "278-286",
+      "provider": "US-MAYO-NEURO",
+      "verified_url": "https://www.mayoclinic.org/medical-professionals/neurology-neurosurgery/referrals",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "UHN-01": {
+      "pointer": "P1:14-20",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 1
+    },
+    "UHN-02": {
+      "pointer": "P1:21-24",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 1
+    },
+    "UHN-03": {
+      "pointer": "P1:24-28",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 1
+    },
+    "UHN-04": {
+      "pointer": "P1:29-33",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 1
+    },
+    "UHN-05": {
+      "pointer": "P2:40",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 2
+    },
+    "UHN-06": {
+      "pointer": "P2:41",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 2
+    },
+    "UHN-07": {
+      "pointer": "P2:44",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 2
+    },
+    "UHN-08": {
+      "pointer": "P2:45",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 2
+    },
+    "UHN-09": {
+      "pointer": "P2:46-49",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 2
+    },
+    "UHN-10": {
+      "pointer": "P2:47",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 2
+    },
+    "UHN-11": {
+      "pointer": "P2:49-51",
+      "provider": "CA-UHN-MEMORY-FORM",
+      "verified_url": "https://www.uhn.ca/UHNReferrals/Memory_Clinic_Referral_Form.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 2
+    },
+    "AU-HKH-01": {
+      "pointer": "123,149",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-02": {
+      "pointer": "172-173",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-03": {
+      "pointer": "169-171",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-04": {
+      "pointer": "174-177",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-05": {
+      "pointer": "153-161",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-06": {
+      "pointer": "162",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-07": {
+      "pointer": "163",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-08": {
+      "pointer": "131",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-09": {
+      "pointer": "177",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "AU-HKH-10": {
+      "pointer": "129-140",
+      "provider": "AU-NSW-HORNSBY-MEMORY",
+      "verified_url": "https://www.nslhd.health.nsw.gov.au/Services/Pages/MemClin-HKH.aspx",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "JP-KYORIN-01": {
+      "pointer": "80-86",
+      "provider": "JP-KYORIN-SUGINAMI-MEMORY",
+      "verified_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "JP-KYORIN-02": {
+      "pointer": "88",
+      "provider": "JP-KYORIN-SUGINAMI-MEMORY",
+      "verified_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "JP-KYORIN-03": {
+      "pointer": "88",
+      "provider": "JP-KYORIN-SUGINAMI-MEMORY",
+      "verified_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "JP-KYORIN-04": {
+      "pointer": "88",
+      "provider": "JP-KYORIN-SUGINAMI-MEMORY",
+      "verified_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "JP-KYORIN-05": {
+      "pointer": "90-96",
+      "provider": "JP-KYORIN-SUGINAMI-MEMORY",
+      "verified_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "JP-KYORIN-06": {
+      "pointer": "102-106",
+      "provider": "JP-KYORIN-SUGINAMI-MEMORY",
+      "verified_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "JP-KYORIN-07": {
+      "pointer": "114-116",
+      "provider": "JP-KYORIN-SUGINAMI-MEMORY",
+      "verified_url": "https://www.kyorin-u.ac.jp/hospital/suginami/clinic/monowasure/",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-01": {
+      "pointer": "281",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-02": {
+      "pointer": "288-291",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-03": {
+      "pointer": "294-296",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-04": {
+      "pointer": "P1:2-4",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/-/media/Project/EH/Emory/ui/pdfs/cognitive-neurology/Referral-Form-2022.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 1
+    },
+    "US-EMORY-CN-05": {
+      "pointer": "P1:5-9",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-06": {
+      "pointer": "P1:10-17",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/-/media/Project/EH/Emory/ui/pdfs/cognitive-neurology/Referral-Form-2022.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 1
+    },
+    "US-EMORY-CN-07": {
+      "pointer": "289-295",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-08": {
+      "pointer": "289-295",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-09": {
+      "pointer": "289-295",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-10": {
+      "pointer": "295",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-11": {
+      "pointer": "295",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-12": {
+      "pointer": "295",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-13": {
+      "pointer": "296-306",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    },
+    "US-EMORY-CN-14": {
+      "pointer": "P1:34-53",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/-/media/Project/EH/Emory/ui/pdfs/cognitive-neurology/Referral-Form-2022.pdf",
+      "locator_type": "PDF_PAGE",
+      "page": 1
+    },
+    "US-EMORY-CN-15": {
+      "pointer": "296-307;P1:27-33",
+      "provider": "US-EMORY-COGNITIVE-NEUROLOGY",
+      "verified_url": "https://www.emoryhealthcare.org/services/neuro/Programs/cognitive-neurology-program/refer-a-patient",
+      "locator_type": "HTML_SECTION",
+      "page": null
+    }
+  }
+}

@@ -1,0 +1,1415 @@
+/* KIMSE Quiet Signal · Senior Journey Design System v1
+ * Curated, accessible one-action-per-screen components.
+ * Tokens apply only to four first-run routes. Data and clinical scoring stay in app.js.
+ */
+:root{
+  --ks-cream:#f9fbf8;
+  --ks-sheet:#ffffff;
+  --ks-ink:#153b38;
+  --ks-secondary:#586d68;
+  --ks-accent:#127965;
+  --ks-accent-deep:#09614f;
+  --ks-light:#e8f5ee;
+  --ks-border:#dceae3;
+  --ks-focus:#126cbe;
+  --ks-radius:22px;
+  --ks-shadow:0 8px 24px rgba(19,66,53,.045),0 1px 5px rgba(19,66,53,.035);
+}
+#app:has(.screen-onboarding-profile),#app:has(.screen-initial-check),
+#app:has(.screen-voice-check),#app:has(.screen-initial-result){background:var(--ks-cream)}
+#app:has(.screen-onboarding-profile) .app-header,#app:has(.screen-initial-check) .app-header,
+#app:has(.screen-voice-check) .app-header,#app:has(.screen-initial-result) .app-header{
+  background:rgba(249,251,248,.98);border-bottom:1px solid #e8eee9;box-shadow:none;
+}
+#app:has(.screen-onboarding-profile) .app-header-inner>strong,#app:has(.screen-initial-check) .app-header-inner>strong,
+#app:has(.screen-voice-check) .app-header-inner>strong,#app:has(.screen-initial-result) .app-header-inner>strong{
+  color:var(--ks-ink);font-weight:760;font-size:19px;letter-spacing:-.035em;
+}
+#app:has(.screen-onboarding-profile) .app-header .icon-button,
+#app:has(.screen-initial-check) .app-header .icon-button,
+#app:has(.screen-voice-check) .app-header .icon-button,
+#app:has(.screen-initial-result) .app-header .icon-button{
+  border:1px solid #e3eee8;border-radius:17px;background:#fff;
+}
+.page.screen-onboarding-profile,.page.screen-initial-check,.page.screen-voice-check,.page.screen-initial-result{
+  box-sizing:border-box;display:flex;flex-direction:column;max-width:700px!important;
+  width:100%;min-height:calc(100dvh - 74px);padding:clamp(26px,5vh,44px) clamp(18px,5vw,40px) 24px!important;
+  margin:0 auto!important;color:var(--ks-ink);background:transparent;
+}
+#main.screen-onboarding-profile:focus,#main.screen-initial-check:focus,
+#main.screen-voice-check:focus,#main.screen-initial-result:focus{outline:none!important;box-shadow:none!important}
+.page.screen-onboarding-profile>.app-footer,.page.screen-initial-check>.app-footer,
+.page.screen-voice-check>.app-footer,.page.screen-initial-result>.app-footer{
+  max-width:560px;width:100%;flex:none;margin:24px auto 0!important;padding:16px 0 4px!important;
+  border-top:1px solid #e8efea;font-size:12px!important;line-height:1.5!important;
+  color:#586d62!important;text-align:center;
+}
+.kimse-journey{
+  box-sizing:border-box;display:flex!important;flex-direction:column!important;flex:1 0 auto;
+  width:100%;max-width:550px!important;margin:0 auto!important;color:var(--ks-ink);
+}
+.kimse-journey-top{flex:none;margin:0 0 clamp(30px,4.8vh,44px)}
+.kimse-journey-eyebrow{display:flex;align-items:center;gap:11px;color:#3f6559;font-size:15px;line-height:1.4;font-weight:720;letter-spacing:-.03em}
+.kimse-journey-brandmark{display:flex;align-items:flex-end;justify-content:center;gap:3px;width:31px;height:31px;padding:8px 7px;
+ border-radius:11px;background:#e2f2e9;flex:none}
+.kimse-journey-brandmark i{display:block;width:4px;border-radius:10px;background:#137863}
+.kimse-journey-brandmark i:nth-child(1){height:8px;opacity:.64}
+.kimse-journey-brandmark i:nth-child(2){height:15px}
+.kimse-journey-brandmark i:nth-child(3){height:11px;opacity:.78}
+.kimse-journey-count{margin-left:auto;min-width:58px;white-space:nowrap;text-align:right;
+ font-size:17px;font-weight:820;color:var(--ks-accent);font-variant-numeric:tabular-nums}
+.kimse-journey-count em{font-weight:550;color:#a0ada7;font-size:14px;font-style:normal;padding:0 3px}
+.kimse-journey-track{width:100%;height:7px;margin:13px 0 10px!important;border-radius:99px;background:#e4eee7!important;overflow:hidden}
+.kimse-journey-track span{display:block;height:100%;border-radius:99px;background:var(--ks-accent);transition:width .24s ease}
+.kimse-journey-subtitle{font-size:14px;font-weight:660;line-height:1.45;color:#536d5d;letter-spacing:-.015em}
+.kimse-journey-prompt{flex:none;margin:0 0 28px}
+.kimse-journey .kimse-wizard-title,.kimse-journey .kimse-initial-title,.kimse-journey .kimse-flow-title{
+  max-width:100%;font-size:clamp(30px,5.2vw,40px)!important;line-height:1.32!important;
+  font-weight:830!important;letter-spacing:-.056em!important;color:var(--ks-ink)!important;
+  margin:0 0 14px!important;word-break:keep-all;overflow-wrap:break-word;
+}
+.kimse-journey .kimse-wizard-hint,.kimse-journey .kimse-initial-hint,.kimse-journey .kimse-flow-hint{
+  font-size:18px!important;line-height:1.58!important;letter-spacing:-.028em!important;font-weight:500!important;
+  color:var(--ks-secondary)!important;margin:0!important;word-break:keep-all;
+}
+.kimse-journey-overline{color:var(--ks-accent);font-size:15px;font-weight:800;line-height:1.45;margin:0 0 12px;letter-spacing:-.035em}
+.screen-onboarding-profile .kimse-wizard-choices,.screen-initial-check .kimse-initial-answer-list{
+  flex:none;display:grid;grid-template-columns:minmax(0,1fr);gap:12px!important;margin:0 0 24px!important
+}
+.kimse-journey .kimse-wizard-choice,.kimse-journey .kimse-initial-answer{
+  display:flex;align-items:center;justify-content:space-between;min-width:0;width:100%;
+  min-height:88px!important;padding:19px 20px!important;gap:14px!important;
+  border-radius:var(--ks-radius)!important;border:1px solid var(--ks-border)!important;
+  background:var(--ks-sheet)!important;color:var(--ks-ink)!important;
+  box-shadow:var(--ks-shadow)!important;text-align:left;
+  transition:background .16s ease,border-color .16s ease,transform .16s ease,box-shadow .16s ease!important;
+  outline-offset:3px;
+}
+.kimse-journey .kimse-wizard-choice-label,.kimse-journey .kimse-initial-answer>span:first-child{
+  font-size:21px!important;line-height:1.4!important;font-weight:720!important;letter-spacing:-.038em!important;
+  color:var(--ks-ink)!important;word-break:keep-all;
+}
+.kimse-journey .kimse-wizard-choice-check,.kimse-journey .kimse-initial-choice-mark{
+  display:flex;align-items:center;justify-content:center;width:29px;height:29px;flex:none;
+  border:1.5px solid #c5d6ce!important;border-radius:50%;color:transparent;
+  font-size:19px;font-weight:800;background:#fff;
+}
+.kimse-journey .kimse-wizard-choice[aria-pressed="true"],.kimse-journey .kimse-initial-answer[aria-pressed="true"]{
+  border-color:var(--ks-accent)!important;background:#ecf8f1!important;
+  box-shadow:0 0 0 1px var(--ks-accent),0 6px 19px rgba(18,121,101,.07)!important;
+}
+.kimse-journey .kimse-wizard-choice[aria-pressed="true"] .kimse-wizard-choice-check,
+.kimse-journey .kimse-initial-answer[aria-pressed="true"] .kimse-initial-choice-mark{
+  border-color:var(--ks-accent)!important;color:#fff;background:var(--ks-accent)!important;
+}
+.kimse-journey .kimse-initial-answer:disabled{cursor:default;opacity:1}
+.kimse-journey .kimse-initial-answer.is-confirming{transform:scale(.987)}
+@media(hover:hover){
+ .kimse-journey .kimse-wizard-choice:hover:not([aria-pressed="true"]),
+ .kimse-journey .kimse-initial-answer:hover:not([aria-pressed="true"]){
+  border-color:#b5d3c3!important;background:#fdfefd!important;
+  box-shadow:0 7px 20px rgba(17,98,71,.07)!important;
+ }
+}
+.screen-onboarding-profile .kimse-wizard-actions{display:grid;grid-template-columns:minmax(98px,1fr) minmax(0,2.1fr);gap:12px;margin-top:auto!important;padding-top:22px}
+.screen-onboarding-profile #profile-form{display:flex;flex:1;flex-direction:column;min-height:0}
+.kimse-journey .kimse-wizard-next,.kimse-journey .kimse-initial-cta,.kimse-journey .kimse-flow-primary{
+  display:flex!important;align-items:center;justify-content:center;gap:12px;
+  width:100%;min-height:78px!important;padding:15px 20px!important;margin:0!important;
+  background:var(--ks-accent)!important;border:1px solid var(--ks-accent)!important;
+  border-radius:20px!important;color:#fff!important;
+  font-size:21px!important;font-weight:820!important;line-height:1.4!important;letter-spacing:-.04em;
+  box-shadow:0 7px 16px rgba(18,121,101,.14)!important;white-space:normal;word-break:keep-all;
+}
+.kimse-journey .kimse-flow-primary span{font-size:23px;font-weight:500;margin-left:auto}
+.kimse-journey .kimse-flow-primary.is-danger{background:#a9383c!important;border-color:#a9383c!important;box-shadow:none!important}
+.kimse-journey .kimse-wizard-next:disabled,.kimse-journey .kimse-flow-primary:disabled{
+  opacity:1!important;background:#dceae2!important;border-color:#dceae2!important;
+  color:#57786e!important;box-shadow:none!important;
+}
+.kimse-journey .kimse-wizard-previous,.kimse-journey .kimse-initial-prev,
+.kimse-journey .kimse-flow-back{
+  display:flex;align-items:center;justify-content:center;min-height:76px!important;padding:15px 18px!important;
+  border-radius:20px!important;border:1px solid #dfe9e3!important;background:#f0f5f1!important;
+  color:#3e6658!important;font-size:18px!important;font-weight:750!important;box-shadow:none!important;
+}
+.kimse-journey .kimse-wizard-previous:disabled{opacity:.35!important;cursor:not-allowed}
+.kimse-journey .kimse-wizard-reassurance{margin:16px 0 0!important;color:#506b5e!important;font-size:15px!important;line-height:1.5}
+.kimse-journey .kimse-wizard-field{margin:0 0 24px!important}
+.kimse-journey .kimse-wizard-field>label,.kimse-journey .kimse-initial-recall-field>label{
+ display:block;font-size:17px!important;font-weight:750!important;color:#426d5d!important;margin:0 0 11px!important
+}
+.kimse-journey .kimse-wizard-input-wrap input,.kimse-journey .kimse-initial-recall-field textarea{
+ display:block;width:100%;min-height:86px!important;border:1.5px solid #bdcfc4!important;
+ border-radius:20px!important;background:#fff!important;color:var(--ks-ink)!important;
+ padding:19px 20px!important;font-size:27px!important;line-height:1.45;
+ box-shadow:var(--ks-shadow)!important;
+}
+.kimse-journey .kimse-wizard-input-wrap input::placeholder,.kimse-journey .kimse-initial-recall-field textarea::placeholder{color:#879c91}
+.kimse-journey .kimse-initial-recall-field{margin:0 0 22px!important}
+.kimse-journey .kimse-initial-recall-field textarea{min-height:127px!important;font-size:24px!important;resize:vertical}
+.kimse-journey .kimse-initial-recall-field p{color:#718378;font-size:15px!important;margin-top:11px}
+.screen-initial-check .kimse-initial-answer-list.kimse-initial-number-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+.screen-initial-check .kimse-initial-number-list .kimse-initial-answer{justify-content:center;min-height:102px!important;position:relative;padding:16px!important}
+.screen-initial-check .kimse-initial-number-list .kimse-initial-answer>span:first-child{
+ font-size:35px!important;font-variant-numeric:tabular-nums;font-weight:820!important;text-align:center!important
+}
+.screen-initial-check .kimse-initial-number-list .kimse-initial-choice-mark{position:absolute;top:11px;right:11px;width:24px;height:24px;font-size:15px;opacity:0}
+.screen-initial-check .kimse-initial-number-list .kimse-initial-answer[aria-pressed="true"] .kimse-initial-choice-mark{opacity:1}
+.kimse-journey .kimse-initial-memory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px!important;margin:0 0 28px!important}
+.kimse-journey .kimse-initial-memory strong{
+ min-height:112px!important;display:flex;align-items:center;justify-content:center;
+ background:#eaf7ed!important;color:#146a51!important;border:1px solid #c9e9d9!important;
+ border-radius:20px!important;font-size:clamp(26px,6vw,37px)!important;font-weight:850!important;
+ box-shadow:0 4px 12px rgba(17,98,71,.05);
+}
+.kimse-journey .kimse-initial-cta{margin-top:auto!important;flex:none}
+.kimse-journey .kimse-initial-footer{margin:0!important;padding:16px 0 0!important;min-height:0!important}
+.kimse-journey .kimse-initial-footer:empty{display:none}
+.kimse-journey .kimse-initial-prev{max-width:170px;min-height:60px!important}
+.kimse-journey .kimse-initial-footer-note{display:none}
+.kimse-journey .kimse-flow-actions{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:24px}
+.kimse-journey .kimse-flow-quiet{
+ display:flex;justify-content:center;align-items:center;width:100%;min-height:52px;padding:12px 16px;
+ border:none;background:transparent;color:var(--ks-accent-deep);font-size:17px;font-weight:720;
+ text-decoration:underline;text-underline-offset:5px;
+}
+.kimse-journey .kimse-flow-secondary{display:flex;justify-content:space-between;align-items:center;gap:15px;margin:15px 0 0}
+.kimse-journey .kimse-flow-back{min-height:58px!important;padding:11px 17px!important;font-size:17px!important}
+.kimse-journey .kimse-flow-back:disabled{opacity:.5;cursor:not-allowed}
+.kimse-journey .kimse-flow-skip{display:flex;align-items:center;justify-content:center;
+ min-height:58px;padding:11px 10px;border:none;background:transparent;
+ color:#59756a;font-size:16px;font-weight:730;text-decoration:underline;text-underline-offset:4px}
+.kimse-journey .kimse-flow-privacy{font-size:15px;line-height:1.6;color:#4e685a;margin:25px 0 0;word-break:keep-all}
+.kimse-voice-task-label{font-size:15px;font-weight:780;color:#3d7e69;letter-spacing:-.035em}
+.kimse-voice-prompt{
+ position:relative;overflow:hidden;margin:0 0 20px;min-height:192px;padding:25px 27px 58px;
+ border:1px solid #cce3d3;border-radius:27px;background:linear-gradient(145deg,#f2faf4 5%,#e8f4ee 100%);
+}
+.kimse-voice-prompt p{position:relative;z-index:1;font-size:24px;font-weight:760;line-height:1.45;
+ letter-spacing:-.044em;color:#184d3c;margin:15px 0 0;word-break:keep-all}
+.kimse-voice-orbit{position:absolute;bottom:-5px;right:19px;display:flex;align-items:flex-end;gap:7px;height:52px;opacity:.27}
+.kimse-voice-orbit i{display:block;width:9px;border-radius:8px;background:#4d987b}
+.kimse-voice-orbit i:nth-child(1){height:19px}.kimse-voice-orbit i:nth-child(2){height:38px}
+.kimse-voice-orbit i:nth-child(3){height:25px}.kimse-voice-orbit i:nth-child(4){height:45px}
+.kimse-voice-state{display:flex;align-items:center;gap:11px;min-height:46px;font-size:17px;line-height:1.45;
+ color:#537263;font-weight:650;margin:0 0 14px}
+.kimse-voice-state.is-complete{color:#13745a}.kimse-voice-state.is-complete>span{display:flex;align-items:center;justify-content:center;
+ width:26px;height:26px;border-radius:50%;color:#fff;background:#16815d;font-weight:800}
+.kimse-voice-state.is-recording{color:#a43f3b}
+.kimse-voice-pulse{display:inline-block;width:15px;height:15px;border-radius:50%;background:#cc4e43;
+ box-shadow:0 0 0 5px rgba(204,78,67,.12);animation:ks-pulse 1.45s ease-in-out infinite}
+@keyframes ks-pulse{50%{box-shadow:0 0 0 10px rgba(204,78,67,.04)}}
+.kimse-flow-warning{padding:12px 15px;border-radius:12px;background:#fff3ea;color:#943d2e;font-size:16px;line-height:1.45}
+.kimse-complete-journey{padding-top:clamp(10px,4vh,35px)}
+.kimse-complete-mark{display:flex;align-items:center;justify-content:center;width:85px;height:85px;
+ border-radius:30px;background:#e2f4e7;margin:0 0 26px}
+.kimse-complete-mark span{display:flex;align-items:center;justify-content:center;width:55px;height:55px;
+ border-radius:50%;background:#147b61;color:#fff;font-size:35px;font-weight:800}
+.kimse-complete-journey .kimse-flow-title{font-size:clamp(34px,5.4vw,44px)!important;margin-bottom:18px!important}
+.kimse-complete-journey>.kimse-flow-hint{margin:0 0 30px!important}
+.kimse-summary-sheet{padding:8px 22px 4px;border:1px solid var(--ks-border);border-radius:25px;
+ background:#fff;box-shadow:var(--ks-shadow);margin:8px 0 20px}
+.kimse-summary-sheet h2{font-size:21px;font-weight:800;letter-spacing:-.035em;color:var(--ks-ink);
+ margin:18px 0 10px}
+.kimse-summary-row{display:flex;align-items:flex-start;justify-content:space-between;gap:13px;
+ padding:18px 0;border-top:1px solid #edf2ef;min-width:0}
+.kimse-summary-row>div{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+.kimse-summary-row strong{font-size:18px;font-weight:760;color:var(--ks-ink);letter-spacing:-.035em}
+.kimse-summary-row small{font-size:15px;color:#536e60;line-height:1.45}
+.kimse-summary-row b{font-size:17px;line-height:1.45;color:#1b7257;font-weight:780;text-align:right;
+ max-width:47%;word-break:keep-all}
+.kimse-complete-message{display:flex;flex-direction:column;gap:10px;border-radius:22px;
+ background:#eff7ed;padding:23px 24px;margin:3px 0 7px}
+.kimse-complete-message strong{font-size:18px;color:#1a6147;font-weight:810}
+.kimse-complete-message span{font-size:16px;color:#436652;line-height:1.6;word-break:keep-all}
+.kimse-complete-more{margin-top:11px}
+.kimse-journey button:focus:not(:focus-visible){outline:none!important}
+.kimse-journey button:focus-visible,.kimse-journey input:focus-visible,
+.kimse-journey textarea:focus-visible{outline:3px solid var(--ks-focus)!important;outline-offset:4px!important}
+@media(max-width:360px){
+ .page.screen-onboarding-profile,.page.screen-initial-check,.page.screen-voice-check,.page.screen-initial-result{padding-left:16px!important;padding-right:16px!important}
+ .kimse-journey .kimse-wizard-title,.kimse-journey .kimse-initial-title,
+ .kimse-journey .kimse-flow-title{font-size:28px!important}
+ .kimse-journey .kimse-wizard-choice-label,.kimse-journey .kimse-initial-answer>span:first-child{font-size:19px!important}
+ .kimse-journey .kimse-wizard-choice,.kimse-journey .kimse-initial-answer{min-height:81px!important;padding:16px 16px!important}
+ .screen-initial-check .kimse-initial-number-list .kimse-initial-answer>span:first-child{font-size:32px!important}
+ .kimse-voice-prompt p{font-size:21px}
+ .kimse-voice-prompt{padding:21px 22px 56px}
+ .kimse-journey .kimse-wizard-actions{grid-template-columns:minmax(87px,1fr) minmax(0,2.2fr)}
+ .kimse-journey .kimse-wizard-previous,.kimse-journey .kimse-wizard-next{padding-inline:10px!important}
+}
+.large-text .kimse-journey .kimse-wizard-title,.large-text .kimse-journey .kimse-initial-title,
+.large-text .kimse-journey .kimse-flow-title{font-size:clamp(35px,6vw,46px)!important}
+.large-text .kimse-journey .kimse-wizard-choice-label,.large-text .kimse-journey .kimse-initial-answer>span:first-child{font-size:25px!important}
+.large-text .kimse-journey .kimse-wizard-choice,.large-text .kimse-journey .kimse-initial-answer{min-height:100px!important}
+.large-text .kimse-journey .kimse-flow-hint,.large-text .kimse-journey .kimse-initial-hint,
+.large-text .kimse-journey .kimse-wizard-hint{font-size:22px!important}
+.large-text .kimse-voice-prompt p{font-size:28px}
+.high-contrast .kimse-journey .kimse-wizard-title,.high-contrast .kimse-journey .kimse-initial-title,
+.high-contrast .kimse-journey .kimse-flow-title,.high-contrast .kimse-journey .kimse-wizard-choice-label,
+.high-contrast .kimse-journey .kimse-initial-answer>span:first-child{color:#111!important}
+.high-contrast .kimse-journey .kimse-wizard-choice,.high-contrast .kimse-journey .kimse-initial-answer{
+ border:3px solid #111!important;background:#fff!important;box-shadow:none!important}
+.high-contrast .kimse-journey .kimse-wizard-choice[aria-pressed="true"],
+.high-contrast .kimse-journey .kimse-initial-answer[aria-pressed="true"]{
+ border:3px solid #111!important;background:#ffefae!important;box-shadow:0 0 0 2px #111!important}
+.high-contrast .kimse-journey .kimse-wizard-choice-check,
+.high-contrast .kimse-journey .kimse-initial-choice-mark{border:2px solid #111!important}
+.high-contrast .kimse-journey .kimse-wizard-choice[aria-pressed="true"] .kimse-wizard-choice-check,
+.high-contrast .kimse-journey .kimse-initial-answer[aria-pressed="true"] .kimse-initial-choice-mark{
+ background:#111!important;color:#fff!important}
+.high-contrast .kimse-journey .kimse-wizard-next,
+.high-contrast .kimse-journey .kimse-initial-cta,
+.high-contrast .kimse-journey .kimse-flow-primary{background:#111!important;border:3px solid #111!important;color:#fff!important}
+.high-contrast .kimse-journey .kimse-wizard-previous,.high-contrast .kimse-journey .kimse-flow-back,
+.high-contrast .kimse-journey .kimse-initial-prev{background:#fff!important;color:#111!important;border:3px solid #111!important}
+.high-contrast .kimse-journey .kimse-initial-memory strong,.high-contrast .kimse-voice-prompt,
+.high-contrast .kimse-summary-sheet{border:3px solid #111!important;background:#fff!important;color:#111!important}
+.high-contrast .kimse-voice-prompt p,.high-contrast .kimse-voice-task-label{color:#111!important}
+.high-contrast .kimse-journey .kimse-wizard-input-wrap input,
+.high-contrast .kimse-journey .kimse-initial-recall-field textarea{border:3px solid #111!important;color:#111!important}
+@media(prefers-reduced-motion:reduce){
+ .kimse-journey .kimse-wizard-choice,.kimse-journey .kimse-initial-answer,.kimse-journey-track span,
+ .kimse-voice-pulse{animation:none!important;transition:none!important;transform:none!important}
+}
+
+
+/* Senior birth year: choose by decade and year, no keyboard or precision wheel. */
+.screen-onboarding-profile .kimse-birth-picker{display:flex;flex-direction:column;gap:19px;min-width:0;width:100%}
+.screen-onboarding-profile .kimse-birth-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+.screen-onboarding-profile .kimse-birth-option{appearance:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;position:relative;min-width:0;width:100%;min-height:100px;padding:14px 9px;border:1.5px solid #d5e8db;border-radius:20px;background:#fff;color:#174b3b;box-shadow:var(--ks-shadow);font-weight:800;text-align:center;letter-spacing:-.025em;transition:background .15s,border-color .15s,transform .15s}
+.screen-onboarding-profile .kimse-birth-decade strong{font-size:24px;line-height:1.3;color:#183e35;white-space:nowrap}
+.screen-onboarding-profile .kimse-birth-decade small{font-size:14px;line-height:1.4;color:#557063;font-weight:630;white-space:nowrap}
+.screen-onboarding-profile .kimse-birth-year{min-height:88px;flex-direction:row;padding:13px 18px;justify-content:center}
+.screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:28px;line-height:1.35;white-space:nowrap;color:#183e35;font-weight:820;font-variant-numeric:tabular-nums}
+.screen-onboarding-profile .kimse-birth-check{position:absolute;right:10px;top:10px;display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#137b61;color:#fff;font-size:15px;opacity:0}
+.screen-onboarding-profile .kimse-birth-year[aria-pressed="true"]{background:#ecf7ef;border-color:#127965;box-shadow:0 0 0 1px #127965}
+.screen-onboarding-profile .kimse-birth-year[aria-pressed="true"] .kimse-birth-check{opacity:1}
+.screen-onboarding-profile .kimse-birth-range-actions{display:flex;justify-content:space-between;gap:12px}
+.screen-onboarding-profile .kimse-birth-range,.screen-onboarding-profile .kimse-birth-change{display:flex;align-items:center;justify-content:center;min-height:66px;padding:12px 20px;border-radius:17px;border:1px solid #cfe0d6;background:#f0f6f1;color:#235d47;font-size:18px;font-weight:750;line-height:1.4}
+.screen-onboarding-profile .kimse-birth-range{flex:1;min-width:0}
+.screen-onboarding-profile .kimse-birth-change{width:100%;margin:5px auto 0}
+.screen-onboarding-profile .kimse-birth-actions{display:none!important}
+.screen-onboarding-profile .kimse-birth-option:focus-visible,.screen-onboarding-profile .kimse-birth-range:focus-visible,.screen-onboarding-profile .kimse-birth-change:focus-visible{outline:3px solid var(--ks-focus);outline-offset:3px}
+@media(hover:hover){.screen-onboarding-profile .kimse-birth-option:hover:not([aria-pressed="true"]){background:#f7fcf8;border-color:#8eb8a4}}
+@media(max-width:360px){.screen-onboarding-profile .kimse-birth-grid{gap:10px}.screen-onboarding-profile .kimse-birth-decade strong{font-size:21px}.screen-onboarding-profile .kimse-birth-decade small{font-size:13px}.screen-onboarding-profile .kimse-birth-option{min-height:92px;padding-inline:6px}.screen-onboarding-profile .kimse-birth-year{min-height:82px}.screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:25px}.screen-onboarding-profile .kimse-birth-range,.screen-onboarding-profile .kimse-birth-change{font-size:17px;padding-inline:12px}}
+.large-text .screen-onboarding-profile .kimse-birth-option{min-height:105px}
+.large-text .screen-onboarding-profile .kimse-birth-decade strong{font-size:27px}
+.large-text .screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:31px}
+.large-text .screen-onboarding-profile .kimse-birth-range,.large-text .screen-onboarding-profile .kimse-birth-change{font-size:20px}
+.high-contrast .screen-onboarding-profile .kimse-birth-option{background:#fff;color:#111;border:3px solid #111;box-shadow:none}
+.high-contrast .screen-onboarding-profile .kimse-birth-decade strong,.high-contrast .screen-onboarding-profile .kimse-birth-decade small,.high-contrast .screen-onboarding-profile .kimse-birth-year>span:first-child{color:#111}
+.high-contrast .screen-onboarding-profile .kimse-birth-year[aria-pressed="true"]{background:#ffefae;border-color:#111;box-shadow:0 0 0 2px #111}
+.high-contrast .screen-onboarding-profile .kimse-birth-range,.high-contrast .screen-onboarding-profile .kimse-birth-change{background:#fff;color:#111;border:3px solid #111}
+@media(prefers-reduced-motion:reduce){.screen-onboarding-profile .kimse-birth-option{transition:none!important;transform:none!important}}
+
+/* Year grid has one forward action; choosing another decade already provides the back action. */
+.screen-onboarding-profile .kimse-birth-year-actions{grid-template-columns:minmax(0,1fr)!important}
+
+
+/* Tap the year once: no redundant confirmation and no oversized two-column blocks. */
+.screen-onboarding-profile .kimse-birth-picker{gap:12px}
+.screen-onboarding-profile .kimse-birth-decade-grid,
+.screen-onboarding-profile .kimse-birth-year-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{
+  min-height:65px!important;padding:9px 5px!important;border-radius:15px!important;
+  border-width:1.5px!important;box-shadow:0 1px 5px rgba(17,88,65,.04)!important;
+}
+.screen-onboarding-profile .kimse-birth-decade strong{font-size:19px!important;line-height:1.25;font-weight:800}
+.screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:21px!important;line-height:1.3}
+.screen-onboarding-profile .kimse-birth-year{flex-direction:row;justify-content:center}
+.screen-onboarding-profile .kimse-birth-change{width:100%;min-height:55px;margin:0;padding:10px 12px;font-size:17px}
+.screen-onboarding-profile .kimse-birth-range-actions{display:none!important}
+.screen-onboarding-profile .kimse-birth-year-actions{display:none!important}
+.large-text .screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{min-height:80px!important}
+.large-text .screen-onboarding-profile .kimse-birth-decade strong{font-size:22px!important}
+.large-text .screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:24px!important}
+.high-contrast .screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{
+ border:3px solid #111!important;box-shadow:none!important;background:#fff!important;
+}
+@media(max-width:360px){
+ .screen-onboarding-profile .kimse-birth-decade-grid,.screen-onboarding-profile .kimse-birth-year-grid{gap:8px}
+ .screen-onboarding-profile .kimse-birth-decade strong{font-size:17px!important}
+ .screen-onboarding-profile .kimse-birth-year>span:first-child{font-size:18px!important}
+ .screen-onboarding-profile .kimse-birth-picker .kimse-birth-option{min-height:60px!important;padding:7px 3px!important}
+}
+
+
+/* One-tap senior choices: navigation is implicit; only back remains secondary. */
+.screen-onboarding-profile .kimse-autonext-actions{display:flex!important;justify-content:flex-start!important;grid-template-columns:1fr!important;margin-top:auto!important;padding-top:6px!important}
+.screen-onboarding-profile .kimse-autonext-actions .kimse-wizard-previous{min-height:58px!important;width:160px!important;max-width:100%!important;font-size:18px!important;padding:11px 18px!important;background:transparent!important}
+.screen-onboarding-profile .kimse-sleep-picker{display:flex;flex-direction:column;gap:12px;min-width:0}
+.screen-onboarding-profile .kimse-sleep-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.screen-onboarding-profile .kimse-sleep-option{display:flex;align-items:center;justify-content:center;min-width:0;min-height:72px;padding:12px 5px;border-radius:17px;border:1.5px solid #d5e5da;background:#fff;color:#184737;box-shadow:0 1px 5px rgba(17,88,65,.045);font-size:19px;font-weight:760;letter-spacing:-.025em;white-space:normal;word-break:keep-all}
+.screen-onboarding-profile .kimse-sleep-option[aria-pressed="true"]{background:#eaf6ee;border-color:#127965;box-shadow:0 0 0 1px #127965}
+.screen-onboarding-profile .kimse-sleep-other{display:flex;align-items:center;justify-content:center;min-height:56px;padding:12px 18px;background:#f0f6f1;border:1px solid #cfe0d6;border-radius:16px;color:#236349;font-size:17px;font-weight:750}
+.screen-onboarding-profile .kimse-sleep-option:focus-visible,.screen-onboarding-profile .kimse-sleep-other:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.screen-onboarding-profile .kimse-sleep-other-input{margin-top:4px!important}
+.large-text .screen-onboarding-profile .kimse-sleep-option{min-height:85px;font-size:22px}
+.high-contrast .screen-onboarding-profile .kimse-sleep-option,.high-contrast .screen-onboarding-profile .kimse-sleep-other{border:3px solid #111;background:#fff;color:#111;box-shadow:none}
+.high-contrast .screen-onboarding-profile .kimse-sleep-option[aria-pressed="true"]{background:#ffefae;border-color:#111}
+@media(max-width:360px){.screen-onboarding-profile .kimse-sleep-options{gap:8px}.screen-onboarding-profile .kimse-sleep-option{min-height:66px;font-size:17px;padding-inline:3px}}
+
+
+/* Senior direct choices for assessment, repeat check and caregiver feedback. */
+.screen-assessment .answer-grid,.screen-cognitive-recheck .answer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.screen-assessment .answer-grid .answer,.screen-cognitive-recheck .answer-grid .answer{
+  min-height:82px;padding:16px 13px;border-radius:18px;border:1.5px solid #d5e6da;
+  background:#fff;font-size:20px;font-weight:730;letter-spacing:-.035em;color:#193f37;
+  line-height:1.38;word-break:keep-all;overflow-wrap:break-word;box-shadow:0 2px 8px rgba(23,76,53,.045);
+}
+.screen-assessment .answer-grid .answer[aria-pressed="true"]{background:#e8f5ec;border-color:#127965}
+.screen-assessment .kimse-answer-back,.screen-cognitive-recheck .kimse-answer-back{
+  display:flex;align-items:center;justify-content:center;min-height:60px;margin:18px 0 0;
+  padding:12px 19px;border:1px solid #d2e5da;border-radius:15px;background:#f1f7f3;
+  font-size:18px;font-weight:730;color:#245b47;
+}
+.screen-cognitive-recheck .kimse-answer-back{margin:4px 0 18px}
+.screen-cognitive-recheck #recheck-recall-input{min-height:70px;font-size:21px;border-radius:16px}
+.screen-cognitive-recheck #save-cognitive-recheck{min-height:70px;font-size:20px}
+.screen-family-feedback .kimse-feedback-question{
+  display:block;font-size:21px;font-weight:810;line-height:1.42;color:#153e35;margin:0 0 16px;word-break:keep-all;
+}
+.screen-family-feedback .kimse-feedback-choices{display:grid;grid-template-columns:1fr;gap:11px}
+.screen-family-feedback .kimse-feedback-choice{display:flex;align-items:center;justify-content:flex-start;text-align:left;
+  width:100%;min-height:73px;padding:15px 20px;border-radius:18px;border:1.5px solid #d4e4da;background:#fff;
+  color:#163f35;font-size:20px;font-weight:730;line-height:1.4;word-break:keep-all;
+}
+.screen-family-feedback .kimse-feedback-choice[aria-pressed="true"]{border-color:#127965;background:#e9f6ee;
+  box-shadow:inset 0 0 0 1px #127965}
+.screen-family-feedback .kimse-feedback-choice[aria-pressed="true"]::after{content:"✓";margin-left:auto;color:#13775f;font-size:21px;padding-left:11px}
+.screen-family-feedback #family-feedback-note{font-size:19px;min-height:95px;border-radius:17px}
+.screen-family-feedback button[type="submit"]{min-height:72px;font-size:20px}
+.screen-care-schedule #schedule-date{display:block;width:100%;min-height:74px;padding:12px 15px;
+  border:1px solid #bad5c6;border-radius:16px;font-size:20px;color:#173f35;background:#fff}
+.screen-care-schedule #add-schedule{min-height:70px;font-size:20px}
+.high-contrast .screen-family-feedback .kimse-feedback-choice,.high-contrast .screen-assessment .answer-grid .answer,
+.high-contrast .screen-cognitive-recheck .answer-grid .answer{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-family-feedback .kimse-feedback-choice[aria-pressed="true"]{background:#ffefae;border-color:#111}
+.large-text .screen-family-feedback .kimse-feedback-choice,.large-text .screen-assessment .answer-grid .answer,
+.large-text .screen-cognitive-recheck .answer-grid .answer{min-height:91px;font-size:24px}
+@media(max-width:360px){.screen-assessment .answer-grid,.screen-cognitive-recheck .answer-grid{gap:9px}
+ .screen-assessment .answer-grid .answer,.screen-cognitive-recheck .answer-grid .answer{font-size:18px;padding-inline:8px}
+ .screen-family-feedback .kimse-feedback-choice{font-size:18px;padding-inline:15px}}
+
+
+/* Preserve consent granularity while lowering first-run cognitive load. */
+.screen-consent .kimse-consent-options,.screen-professional-outcome .kimse-optional-section{
+  border:1px solid #cfdfd6;border-radius:18px;background:#fff;padding:0;margin:18px 0 22px;overflow:visible;
+}
+.screen-consent .kimse-consent-options>summary,.screen-professional-outcome .kimse-optional-section>summary{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:78px;
+  padding:17px 19px;cursor:pointer;list-style:none;color:#174a3a;font-size:19px;font-weight:770;
+  line-height:1.4;word-break:keep-all;
+}
+.screen-consent .kimse-consent-options>summary{flex-wrap:wrap}
+.screen-consent .kimse-consent-options>summary span{font-size:15px;font-weight:550;color:#4e6a5d;flex:1 0 100%}
+.screen-consent .kimse-consent-options>summary::-webkit-details-marker,
+.screen-professional-outcome .kimse-optional-section>summary::-webkit-details-marker{display:none}
+.screen-consent .kimse-consent-options>summary::after,
+.screen-professional-outcome .kimse-optional-section>summary::after{content:"▾";font-size:22px;color:#127965;margin-left:auto}
+.screen-consent .kimse-consent-options[open]>summary::after,
+.screen-professional-outcome .kimse-optional-section[open]>summary::after{content:"▴"}
+.screen-consent .kimse-consent-options[open]>summary,
+.screen-professional-outcome .kimse-optional-section[open]>summary{border-bottom:1px solid #dce7df}
+.screen-consent .kimse-consent-options .section-title,.screen-consent .kimse-consent-options-hint{margin:18px 17px 12px}
+.screen-consent .kimse-consent-options-hint{font-size:16px;line-height:1.5;color:#425e52}
+.screen-consent .kimse-consent-options .consent-panel,.screen-professional-outcome .kimse-optional-section>.field,
+.screen-professional-outcome .kimse-optional-section>.consent-row{margin:12px 17px}
+.screen-consent .consent-row{display:flex;align-items:center;gap:13px;min-height:77px;padding:16px 13px}
+.screen-consent .consent-row input{min-width:27px;min-height:27px;flex-shrink:0}
+.screen-professional-outcome .kimse-optional-section{padding-bottom:12px}
+.screen-professional-outcome #professional-outcome-form>.field{margin:0 0 18px}
+.screen-consent .form-stack>button[type="submit"],.screen-professional-outcome button[type="submit"]{min-height:76px;font-size:20px}
+.screen-consent .kimse-consent-options>summary:focus-visible,
+.screen-professional-outcome .kimse-optional-section>summary:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-consent .kimse-consent-options,.high-contrast .screen-professional-outcome .kimse-optional-section{
+  border:3px solid #111;background:#fff;color:#111}
+
+
+/* Audit-driven shared touch minimums: 64px is the floor for KIMSE senior controls.
+   These size corrections do not change data or navigation behavior. */
+.page .btn-kimse:not(.compact-btn){min-height:68px!important}
+.page .btn-kimse.compact-btn{min-height:64px!important}
+.screen-brain-map .brain-domain-tabs button,.screen-brain-map .brain-view-switch button,
+.screen-brain-trends .compact-range button,.screen-brain-trends .trend-domain-tabs button{
+  min-height:64px!important;padding-block:12px!important;
+}
+.screen-monitoring-status .monitoring-detail-link{min-height:64px!important;padding:14px 11px!important}
+.screen-start .kimse-entry-login-link,.screen-auth .auth-switch-link{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:64px!important;padding:12px 14px!important;
+}
+.screen-voice-check .kimse-flow-back,.screen-voice-check .kimse-flow-skip,
+.screen-initial-check .kimse-initial-prev,.screen-initial-result .kimse-flow-quiet{min-height:64px!important}
+.screen-market .compact-btn{min-height:64px!important}
+
+/* Remaining three controls detected by the 52-route >=64px audit. */
+.screen-onboarding-profile .kimse-sleep-other{min-height:66px!important}
+.screen-onboarding-profile .kimse-autonext-actions .kimse-wizard-previous{min-height:66px!important}
+.screen-cognitive-recheck .kimse-answer-back{min-height:66px!important}
+
+
+/* Senior health recording: direct, one-tap sleep durations. */
+.screen-health-detail .kimse-health-sleep-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:25px 0}
+.screen-health-detail .kimse-health-sleep-option{min-width:0;min-height:78px;padding:15px 12px;border:1.5px solid #cde3d8;background:#fff;border-radius:19px;color:#164f40;font-size:22px;line-height:1.4;font-weight:760;box-shadow:0 2px 8px rgba(15,85,59,.045)}
+.screen-health-detail .kimse-health-sleep-option:focus-visible{outline:3px solid #126cbe;outline-offset:4px}
+.screen-health-detail .kimse-health-manual{border:1px solid #d6e7dc;border-radius:18px;padding:17px 18px;background:#f6faf7}
+.screen-health-detail .kimse-health-manual>summary{cursor:pointer;min-height:43px;font-size:18px;font-weight:720;color:#265d4a}
+.screen-health-detail .kimse-health-manual .field{margin:16px 0}
+.screen-health-detail .kimse-health-manual input,.screen-health-detail .kimse-health-manual textarea{font-size:21px;min-height:65px}
+.large-text .screen-health-detail .kimse-health-sleep-option{font-size:25px;min-height:88px}
+.high-contrast .screen-health-detail .kimse-health-sleep-option{border:3px solid #111;background:#fff;color:#111;box-shadow:none}
+@media(max-width:360px){.screen-health-detail .kimse-health-sleep-option{font-size:20px;min-height:76px;padding:12px 7px}}
+
+/* Senior-wide minimum touch targets in compact legacy controls. Preserve horizontal scrolling instead of shrinking labels. */
+.page .brain-domain-tabs button,.page .trend-domain-tabs button{
+  min-height:64px!important;min-width:72px!important;padding:13px 17px!important;
+  font-size:16px!important;line-height:1.4!important;letter-spacing:-.025em!important;white-space:nowrap;
+}
+.page .brain-domain-tabs,.page .trend-domain-tabs{gap:9px!important;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.page .brain-domain-tabs button,.page .trend-domain-tabs button{scroll-snap-align:start}
+.page .btn-kimse.compact-btn{min-height:64px!important;padding:14px 16px!important;font-size:16px!important;white-space:normal}
+.bottom-nav .nav-item{min-height:68px!important;font-size:14px!important}
+@media(max-width:360px){.page .brain-domain-tabs button,.page .trend-domain-tabs button{min-height:64px!important;font-size:15px!important;padding-inline:14px!important}}
+
+/* Family call frequency: show all three straightforward choices without dropdown. */
+.screen-family-call .kimse-call-intervals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;margin-top:10px}
+.screen-family-call .kimse-call-intervals button{min-width:0;min-height:74px;padding:12px 8px;border:1.5px solid #d1e2d8;border-radius:17px;background:#fff;color:#1c5848;font-size:19px;line-height:1.35;font-weight:750}
+.screen-family-call .kimse-call-intervals button[aria-pressed="true"]{border:2px solid #117965;background:#e9f6ef;box-shadow:0 0 0 1px #117965}
+.screen-family-call .kimse-call-intervals button:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.large-text .screen-family-call .kimse-call-intervals button{min-height:88px;font-size:22px}
+.high-contrast .screen-family-call .kimse-call-intervals button{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-family-call .kimse-call-intervals button[aria-pressed="true"]{background:#ffefaa;box-shadow:0 0 0 2px #111}
+@media(max-width:360px){.screen-family-call .kimse-call-intervals button{font-size:17px;padding:10px 5px}}
+
+/* Senior sleep picker: hour, then minute, each a direct action. */
+.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(4,minmax(0,1fr))}
+.screen-onboarding-profile .kimse-sleep-current{font-size:16px;color:#4f685d;margin:0}
+.screen-onboarding-profile .kimse-sleep-current strong{color:#184737;font-weight:800}
+.screen-onboarding-profile .kimse-sleep-instruction{font-size:19px;line-height:1.5;font-weight:720;color:#184737;margin:0}
+.screen-onboarding-profile .kimse-sleep-change-hour{min-height:66px;width:100%;border-radius:16px;border:1px solid #cfe0d6;background:#f0f6f1;color:#236349;font-size:18px;font-weight:750;padding:13px 20px}
+.screen-onboarding-profile .kimse-sleep-change-hour:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-onboarding-profile .kimse-sleep-change-hour{border:3px solid #111;background:#fff;color:#111}
+@media(max-width:360px){.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.screen-onboarding-profile .kimse-sleep-option{transition:none!important}}
+
+/* Guided caregiver feedback: one question at a time, large targets, explicit back. */
+.screen-family-feedback .kimse-feedback-stage[hidden]{display:none!important}
+.screen-family-feedback .kimse-feedback-stage{display:flex;flex-direction:column;gap:19px;min-width:0}
+.screen-family-feedback .kimse-feedback-count{font-size:16px;font-weight:800;color:#166b55}
+.screen-family-feedback .kimse-feedback-question{font-size:clamp(22px,5.1vw,28px);line-height:1.37;color:#183e35;font-weight:820;letter-spacing:-.025em;margin:0}
+.screen-family-feedback .kimse-feedback-question:focus{outline:none}
+.screen-family-feedback .kimse-feedback-question:focus-visible{outline:3px solid #126cbe;outline-offset:4px}
+.screen-family-feedback .kimse-feedback-choices{gap:12px}
+.screen-family-feedback .kimse-feedback-choice{min-height:76px!important;font-size:19px}
+.screen-family-feedback .kimse-feedback-back{min-height:66px;width:100%;border:1px solid #cfe0d6;background:#f0f6f1;border-radius:16px;padding:12px 17px;color:#236349;font-size:18px;font-weight:750;text-align:center}
+.screen-family-feedback .kimse-feedback-back:focus-visible,.screen-family-feedback .kimse-feedback-context>summary:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.screen-family-feedback .kimse-feedback-summary{margin-bottom:25px}
+.screen-family-feedback .kimse-feedback-context{border-top:1px solid #d9e6dc;padding-top:12px;margin-top:15px}
+.screen-family-feedback .kimse-feedback-context>summary{cursor:pointer;min-height:66px;display:flex;align-items:center;color:#236349;font-size:17px;font-weight:750}
+.screen-family-feedback .kimse-feedback-context>.list{margin-block:12px}
+.high-contrast .screen-family-feedback .kimse-feedback-back{background:#fff;border:3px solid #111;color:#111}
+.large-text .screen-family-feedback .kimse-feedback-question{font-size:29px}
+@media(prefers-reduced-motion:reduce){.screen-family-feedback .kimse-feedback-stage{transition:none!important}}
+
+/* Reflow after direct screenshot inspection. Main receives programmatic focus; only interactive controls retain visible focus. */
+#main:focus,#main:focus-visible{outline:none!important;box-shadow:none!important}
+.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+.screen-onboarding-profile .kimse-sleep-more{display:flex;align-items:center;justify-content:center;width:100%;min-height:66px;border-radius:16px;border:1px solid #cfe0d6;background:#f0f6f1;color:#236349;font-size:18px;font-weight:750;padding:12px 16px}
+.screen-onboarding-profile .kimse-sleep-more:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-onboarding-profile .kimse-sleep-more{border:3px solid #111;background:#fff;color:#111}
+@media(max-width:360px){.screen-onboarding-profile .kimse-sleep-hour-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Professional result entry: essential fields first; explain value on demand. */
+.screen-professional-outcome .kimse-professional-benefits{margin:10px 0 22px;border:1px solid #cfe0d6;border-radius:17px;background:#f4faf6;overflow:visible}
+.screen-professional-outcome .kimse-professional-benefits>summary{cursor:pointer;min-height:68px;padding:14px 18px;display:flex;align-items:center;color:#236349;font-weight:760;font-size:18px;line-height:1.45}
+.screen-professional-outcome .kimse-professional-benefits>summary:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.screen-professional-outcome .kimse-professional-benefits .summary-card{margin:0 12px 12px}
+.screen-professional-outcome .kimse-professional-benefits .list-row{white-space:nowrap;column-gap:14px}
+.screen-professional-outcome .kimse-professional-benefits .list-row>span{white-space:normal;flex:1 1 0;min-width:0}
+.high-contrast .screen-professional-outcome .kimse-professional-benefits{border:3px solid #111;background:#fff}
+
+/* Health inputs: keep exact measurements numeric without sacrificing accessible touch targets. */
+.screen-health-detail .kimse-health-edit{display:flex;flex-direction:column;gap:22px}
+.screen-health-detail .kimse-health-measure{display:flex;flex-direction:column;gap:12px}
+.screen-health-detail .kimse-health-measure>label{color:#183e35;font-size:21px;font-weight:790}
+.screen-health-detail .kimse-health-stepper{display:flex;align-items:stretch;width:100%;min-width:0;gap:8px}
+.screen-health-detail .kimse-health-stepper>button{flex:0 0 66px;min-width:66px;min-height:76px;border:1.5px solid #b9d9c9;border-radius:16px;background:#eff7f1;color:#166c52;font-size:32px;font-weight:740;touch-action:manipulation}
+.screen-health-detail .kimse-health-stepper>input{min-width:0;flex:1 1 0;min-height:76px;padding:12px 4px;text-align:center;border:1.5px solid #b9d9c9;border-radius:16px;background:#fff;color:#183e35;font-size:25px;font-weight:780;font-variant-numeric:tabular-nums;appearance:textfield;-moz-appearance:textfield}
+.screen-health-detail .kimse-health-stepper>input::-webkit-inner-spin-button,.screen-health-detail .kimse-health-stepper>input::-webkit-outer-spin-button{appearance:none;margin:0}
+.screen-health-detail .kimse-health-unit{display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#486b59;min-width:32px}
+.screen-health-detail .kimse-health-use-live{min-height:70px;padding:12px 18px;border:1.5px solid #a9d0b8;background:#ecf7ef;color:#12674b;border-radius:17px;font-size:18px;font-weight:750;text-align:left}
+.screen-health-detail .kimse-health-stepper>button:focus-visible,.screen-health-detail .kimse-health-stepper>input:focus-visible,.screen-health-detail .kimse-health-use-live:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-health-detail .kimse-health-stepper>button,.high-contrast .screen-health-detail .kimse-health-stepper>input,.high-contrast .screen-health-detail .kimse-health-use-live{background:#fff;color:#111;border:3px solid #111}
+.large-text .screen-health-detail .kimse-health-measure>label{font-size:24px}
+@media(max-width:360px){.screen-health-detail .kimse-health-stepper{gap:5px}.screen-health-detail .kimse-health-stepper>button{flex-basis:58px;min-width:58px}.screen-health-detail .kimse-health-stepper>input{font-size:22px}.screen-health-detail .kimse-health-unit{min-width:28px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.screen-health-detail .kimse-health-stepper>button{transition:none!important}}
+
+/* Care schedule: quick activity labels and separate, native date/time pickers. */
+.screen-care-schedule .kimse-care-schedule-form{gap:19px}
+.screen-care-schedule .kimse-schedule-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 16px}
+.screen-care-schedule .kimse-schedule-quick>button{min-width:0;min-height:70px;padding:12px 9px;border:1.5px solid #cfe0d6;border-radius:17px;background:#fff;color:#1d4c3b;font-size:18px;line-height:1.4;font-weight:760;word-break:keep-all}
+.screen-care-schedule .kimse-schedule-quick>button[aria-pressed="true"]{background:#e9f6ee;border-color:#127965}
+.screen-care-schedule #schedule-date,.screen-care-schedule #schedule-time{width:100%;min-height:74px;padding:14px 16px;border-radius:16px;border:1.5px solid #cfe0d6;background:#fff;color:#183e35;font-size:21px;font-weight:700}
+.screen-care-schedule .kimse-schedule-quick>button:focus-visible,.screen-care-schedule #schedule-date:focus-visible,.screen-care-schedule #schedule-time:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.large-text .screen-care-schedule .kimse-schedule-quick>button{min-height:80px;font-size:21px}
+.high-contrast .screen-care-schedule .kimse-schedule-quick>button,.high-contrast .screen-care-schedule #schedule-date,.high-contrast .screen-care-schedule #schedule-time{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-care-schedule .kimse-schedule-quick>button[aria-pressed="true"]{background:#ffefae}
+@media(max-width:360px){.screen-care-schedule .kimse-schedule-quick{grid-template-columns:1fr}}
+
+/* Optional documentation belongs after the three essential medical-record inputs. */
+.screen-medical-record-add .kimse-medical-extras{margin:6px 0 12px;border:1.5px solid #cfdfd4;border-radius:18px;background:#f3faf5;overflow:visible}
+.screen-medical-record-add .kimse-medical-extras>summary{display:flex;align-items:center;min-height:68px;padding:14px 18px;color:#1c6349;font-weight:760;font-size:18px;line-height:1.45;cursor:pointer}
+.screen-medical-record-add .kimse-medical-extras[open]>summary{border-bottom:1px solid #d5e6dc}
+.screen-medical-record-add .kimse-medical-extras-content{display:flex;flex-direction:column;gap:16px;padding:16px}
+.screen-medical-record-add .kimse-medical-extras>summary:focus-visible{outline:3px solid #126cbe;outline-offset:4px}
+.high-contrast .screen-medical-record-add .kimse-medical-extras{border:3px solid #111;background:#fff;color:#111}
+.large-text .screen-medical-record-add .kimse-medical-extras>summary{font-size:21px}
+@media(prefers-reduced-motion:reduce){.screen-medical-record-add .kimse-medical-extras{transition:none!important}}
+
+/* KIMSE Senior UX P2: action-first home and progressive clinical details. */
+.screen-home .kimse-home-primary-heading{font-size:22px;line-height:1.4;font-weight:830;color:#204d3d;margin:22px 0 12px;letter-spacing:-.025em}
+.screen-home .kimse-home-actions{margin-top:4px}
+.screen-home .kimse-home-secondary{margin-top:22px;border:1.5px solid #d6e6dc;border-radius:18px;background:#f6faf7;overflow:visible}
+.screen-home .kimse-home-secondary>summary{min-height:72px;padding:16px 18px;display:flex;align-items:center;color:#235943;font-size:18px;font-weight:780;line-height:1.4;cursor:pointer}
+.screen-home .kimse-home-secondary-content{padding:4px 12px 12px;display:grid;gap:14px}
+.screen-home .kimse-home-secondary-content .summary-card{margin:0}
+.screen-home .kimse-home-secondary-content .brain-home-card{width:100%;min-height:76px}
+.screen-home .kimse-home-secondary>summary:focus-visible,.screen-professional-outcome .kimse-professional-institution>summary:focus-visible,.screen-clinical-context-event .kimse-context-notes>summary:focus-visible{outline:3px solid #126cbe;outline-offset:4px}
+.screen-professional-outcome .kimse-professional-institution,.screen-clinical-context-event .kimse-context-notes{border:1.5px solid #cedfd5;border-radius:18px;background:#f4faf6;margin:3px 0 13px;overflow:visible}
+.screen-professional-outcome .kimse-professional-institution>summary,.screen-clinical-context-event .kimse-context-notes>summary{display:flex;align-items:center;min-height:70px;padding:14px 18px;font-size:18px;line-height:1.5;font-weight:760;color:#245d46;cursor:pointer}
+.screen-professional-outcome .kimse-professional-institution-content,.screen-clinical-context-event .kimse-context-notes-content{display:flex;flex-direction:column;gap:18px;padding:16px}
+.screen-professional-outcome .kimse-professional-institution-content>details{margin:0}
+.screen-professional-outcome .kimse-professional-benefits{margin-top:22px}
+.high-contrast .screen-home .kimse-home-secondary,.high-contrast .screen-professional-outcome .kimse-professional-institution,.high-contrast .screen-clinical-context-event .kimse-context-notes{border:3px solid #111;background:#fff;color:#111}
+.large-text .screen-home .kimse-home-primary-heading{font-size:26px}
+.large-text .screen-home .kimse-home-secondary>summary,.large-text .screen-professional-outcome .kimse-professional-institution>summary,.large-text .screen-clinical-context-event .kimse-context-notes>summary{font-size:22px;min-height:80px}
+@media(prefers-reduced-motion:reduce){.screen-home .kimse-home-secondary,.screen-professional-outcome .kimse-professional-institution,.screen-clinical-context-event .kimse-context-notes{transition:none!important}}
+
+/* Senior family calls: active calls and scheduled actions precede history. */
+.screen-family-call .kimse-call-current,.screen-family-call .kimse-call-registered,.screen-family-call .kimse-call-setup{margin-block:20px}
+.screen-family-call .kimse-call-current .list,.screen-family-call .kimse-call-registered .list{display:grid;gap:12px}
+.screen-family-call .kimse-call-registered .list-row{flex-wrap:wrap;gap:12px;min-height:76px}
+.screen-family-call .kimse-call-registered [data-create-call]{min-height:66px;min-width:130px;white-space:normal}
+.screen-family-call .kimse-call-field-label{display:block;color:#1c4b3a;font-size:20px;font-weight:790;margin-bottom:12px}
+.screen-family-call .kimse-call-caregiver-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.screen-family-call .kimse-call-caregiver-option{min-height:78px;padding:12px 10px;border-radius:18px;border:1.5px solid #c6dfd2;background:#fff;color:#234d3e;font-size:19px;font-weight:780;text-align:center;word-break:keep-all}
+.screen-family-call .kimse-call-caregiver-option span{display:block;color:#587263;font-size:15px;font-weight:580;margin-top:5px}
+.screen-family-call .kimse-call-caregiver-option[aria-pressed=true]{background:#e7f5eb;border:2px solid #157862}
+.screen-family-call .kimse-call-intervals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.screen-family-call .kimse-call-intervals button{min-width:0;min-height:76px;font-size:18px;font-weight:750;padding:10px 5px}
+.screen-family-call #call-first-due{min-height:76px;width:100%;font-size:20px;border-radius:16px;padding:12px}
+.screen-family-call .kimse-call-history{margin-top:24px;background:#f5faf6;border:1.5px solid #d1e2d7;border-radius:18px;overflow:visible}
+.screen-family-call .kimse-call-history>summary{display:flex;align-items:center;min-height:76px;padding:15px 18px;color:#275e49;font-size:18px;font-weight:760;cursor:pointer}
+.screen-family-call .kimse-call-history>.list{padding:4px 12px 15px}
+.screen-family-call .kimse-call-history>summary:focus-visible,.screen-family-call .kimse-call-caregiver-option:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.high-contrast .screen-family-call .kimse-call-caregiver-option,.high-contrast .screen-family-call .kimse-call-history{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-family-call .kimse-call-caregiver-option[aria-pressed=true]{background:#ffed9a}
+.large-text .screen-family-call .kimse-call-caregiver-option,.large-text .screen-family-call .kimse-call-history>summary{font-size:22px}
+@media(max-width:360px){.screen-family-call .kimse-call-caregiver-options{grid-template-columns:1fr}.screen-family-call .kimse-call-intervals{gap:6px}}
+@media(prefers-reduced-motion:reduce){.screen-family-call .kimse-call-history,.screen-family-call .kimse-call-caregiver-option{transition:none!important}}
+
+/* KIMSE P2 clinical input priority and reliable keyboard skip navigation. */
+.skip-link:focus:not(:focus-visible){top:-80px}
+.skip-link:focus-visible{top:12px}
+#main{scroll-margin-top:85px}
+.screen-professional-outcome .kimse-professional-step{display:flex;flex-direction:column;gap:3px;margin:0 0 12px;padding:16px 18px;border-radius:16px;background:#eaf6ef;border:1.5px solid #cbe2d1;color:#204f3a}
+.screen-professional-outcome .kimse-professional-step strong{font-size:21px;font-weight:800;line-height:1.45}
+.screen-professional-outcome .kimse-professional-step small{font-size:16px;line-height:1.45;color:#3d6252}
+.screen-professional-outcome #professional-outcome-form>.field label{font-size:20px;font-weight:780}
+.screen-professional-outcome .kimse-clinical-accuracy-note{font-size:17px;line-height:1.6;color:#315c49;padding:10px 14px;margin:0;background:#f1f8f3;border-radius:12px}
+.screen-professional-outcome .kimse-clinical-accuracy-note strong{color:#165d43}
+.screen-consent .kimse-consent-options>summary strong{display:block;font-size:20px;line-height:1.4}
+.screen-consent .kimse-consent-options>summary em{display:inline-block;vertical-align:middle;margin-left:7px;border-radius:12px;padding:4px 9px;background:#e6f5ed;color:#185f46;font-style:normal;font-size:15px;font-weight:760}
+.screen-consent .kimse-consent-options>summary span{font-size:16px;line-height:1.5}
+.high-contrast .screen-professional-outcome .kimse-professional-step,.high-contrast .screen-professional-outcome .kimse-clinical-accuracy-note{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-consent .kimse-consent-options>summary em{border:2px solid #111;color:#111;background:#fff}
+.large-text .screen-professional-outcome .kimse-professional-step strong,.large-text .screen-consent .kimse-consent-options>summary strong{font-size:25px}
+.large-text .screen-professional-outcome .kimse-clinical-accuracy-note{font-size:20px}
+
+/* P2 senior clinical result: early save, clear relative date choices, shortened first view. */
+.screen-professional-outcome .page-title{font-size:clamp(26px,7.5vw,32px);line-height:1.26;letter-spacing:-.035em;margin:8px 0 8px}
+.screen-professional-outcome>.page-desc{font-size:17px;line-height:1.47;margin:0 0 12px}
+.screen-professional-outcome #professional-outcome-form{gap:12px}
+.screen-professional-outcome #professional-outcome-form>.field{margin:0}
+.screen-professional-outcome .kimse-professional-step{padding:9px 13px;margin:0;min-height:50px;justify-content:center}
+.screen-professional-outcome .kimse-professional-step strong{font-size:18px}
+.screen-professional-outcome #professional-outcome-form>.field label{margin-bottom:6px;font-size:19px}
+.screen-professional-outcome #professional-outcome-form>.field>input,
+.screen-professional-outcome #professional-outcome-form>.field>select{min-height:64px;font-size:18px}
+.screen-professional-outcome .kimse-professional-date-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 5px}
+.screen-professional-outcome .kimse-professional-date-shortcuts button{border:1.5px solid #bad3c6;background:#fff;color:#235743;border-radius:14px;min-height:64px;font-size:19px;font-weight:780}
+.screen-professional-outcome .kimse-professional-date-shortcuts button[aria-pressed="true"]{border:2.5px solid #08755b;background:#e3f4ea;color:#104b38}
+.screen-professional-outcome .kimse-professional-date-shortcuts button:focus-visible{outline:3px solid #1155cc;outline-offset:3px}
+.screen-professional-outcome .kimse-professional-early-save{margin:1px 0 3px}
+.screen-professional-outcome .kimse-professional-early-save>button{min-height:76px;font-size:20px;font-weight:800}
+.screen-professional-outcome #professional-outcome-form>.kimse-optional-section{margin:7px 0}
+.screen-professional-outcome .kimse-clinical-accuracy-note{font-size:16px;padding:8px 12px;line-height:1.45}
+.large-text .screen-professional-outcome .kimse-professional-step strong{font-size:23px}
+.large-text .screen-professional-outcome .kimse-professional-date-shortcuts button{font-size:22px;min-height:78px}
+.high-contrast .screen-professional-outcome .kimse-professional-date-shortcuts button{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .screen-professional-outcome .kimse-professional-date-shortcuts button[aria-pressed=true]{background:#ffe98c}
+
+/* P2 first-screen completion: prevent duplicate instructions from pushing save offscreen. */
+.screen-professional-outcome .page-title{margin:6px 0 5px}
+.screen-professional-outcome>.page-desc{margin:0 0 8px}
+.screen-professional-outcome #professional-outcome-form{gap:10px}
+.screen-professional-outcome #professional-outcome-form>.field>small{font-size:15px;line-height:1.35}
+
+/* KIMSE senior follow-up 2026-10-10: preserve >=64px touch targets */
+@media (min-width:361px) and (max-width:600px){
+.screen-care-schedule .kimse-schedule-quick{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:4px 0 7px}
+.screen-care-schedule .kimse-schedule-quick>button{min-height:66px;padding:8px 3px;font-size:16px;line-height:1.25}
+}
+.screen-care-schedule .page-title{margin-bottom:6px}
+.screen-care-schedule .page-desc{margin-bottom:12px;line-height:1.4}
+.screen-care-schedule .section-title{margin:11px 0 8px}
+.screen-care-schedule .kimse-care-schedule-form{gap:12px}
+.screen-care-schedule #schedule-date,.screen-care-schedule #schedule-time{min-height:66px;padding-block:10px}
+.screen-care-schedule .kimse-schedule-quick>button[aria-pressed=true]{box-shadow:inset 0 0 0 1px #127965}
+.screen-clinical-context-event .page-title{font-size:clamp(25px,6vw,32px);line-height:1.26;margin:6px 0 9px}
+.screen-clinical-context-event .page-desc{font-size:17px;line-height:1.5;margin-bottom:13px}
+.screen-clinical-context-event #clinical-context-event-form{gap:13px}
+.screen-clinical-context-event #clinical-context-event-form>.field>label{font-size:18px;font-weight:760;line-height:1.5}
+.screen-consent .consent-row strong{font-size:19px;line-height:1.4}
+.screen-consent .consent-row small{font-size:16px;line-height:1.5;color:#425d54}
+.screen-consent .consent-row{padding:14px 13px}
+.screen-brain-map .brain-domain-tabs button:focus-visible,.screen-brain-map .brain-view-switch button:focus-visible,.screen-brain-trends .compact-range button:focus-visible,.screen-brain-trends .trend-domain-tabs button:focus-visible{outline:3px solid #1155cc;outline-offset:3px}
+.screen-brain-map .brain-domain-tabs button[aria-pressed=true],.screen-brain-map .brain-view-switch button[aria-pressed=true],.screen-brain-trends .compact-range button[aria-pressed=true],.screen-brain-trends .trend-domain-tabs button[aria-pressed=true]{font-weight:800}
+.high-contrast .screen-brain-map button[aria-pressed=true],.high-contrast .screen-brain-trends button[aria-pressed=true]{outline:2px solid #111;outline-offset:-2px}
+
+
+/* KIMSE senior question provenance: optional disclosure, not a new scoring input. */
+.screen-onboarding-profile .kimse-question-source,.screen-initial-check .kimse-question-source{
+  width:100%;margin:12px 0 14px;border:1px solid #cfdfd5;border-radius:16px;background:#f3f8f5;color:#184c3c;overflow:visible
+}
+.screen-onboarding-profile .kimse-question-source>summary,.screen-initial-check .kimse-question-source>summary{
+  display:flex;align-items:center;min-height:66px;padding:12px 18px;cursor:pointer;
+  font-size:17px;font-weight:750;line-height:1.45;word-break:keep-all
+}
+.screen-onboarding-profile .kimse-question-source>summary:focus-visible,.screen-initial-check .kimse-question-source>summary:focus-visible{
+  outline:3px solid #1155cc;outline-offset:3px
+}
+.kimse-question-source-body{padding:2px 18px 18px;font-size:16px;line-height:1.55;overflow-wrap:anywhere}
+.kimse-question-source-body strong{display:block;margin:5px 0;color:#70411b}
+.kimse-question-source-body p{margin:9px 0}
+.kimse-question-source-body a{display:inline-flex;align-items:center;min-height:64px;color:#105a78;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.screen-voice-check .kimse-voice-recovery{
+  margin:14px 0;padding:18px;border:2px solid #ab493b;border-radius:18px;background:#fff5f0;color:#60271f;
+  font-size:17px;line-height:1.55;overflow-wrap:anywhere
+}
+.screen-voice-check .kimse-voice-recovery strong{display:block;font-size:20px}
+.screen-voice-check .kimse-voice-recovery p{margin:8px 0}
+.screen-voice-check .kimse-voice-recovery ol{margin:12px 0 0;padding-left:25px}
+.screen-voice-check .kimse-voice-recovery li+li{margin-top:8px}
+.screen-voice-check .kimse-voice-rec-help{font-size:18px;line-height:1.5;color:#245a48;font-weight:720;margin:8px 0 15px}
+.large-text .kimse-question-source>summary{font-size:22px!important;min-height:76px!important}
+.large-text .kimse-question-source-body,.large-text .screen-voice-check .kimse-voice-recovery{font-size:20px}
+.high-contrast .kimse-question-source,.high-contrast .screen-voice-check .kimse-voice-recovery{border:3px solid #111;background:#fff;color:#111}
+.high-contrast .kimse-question-source-body strong,.high-contrast .screen-voice-check .kimse-voice-rec-help{color:#111}
+
+
+/* Make recorder failures recoverable without scrolling past the prompt. */
+.screen-voice-check .kimse-voice-recovery{margin:10px 0 15px;padding:15px 17px}
+.screen-voice-check .kimse-voice-recovery p{font-size:17px;line-height:1.5}
+.screen-voice-check .kimse-voice-retry{
+  display:block;width:100%;min-height:70px;margin:12px 0 9px;border:2px solid #126b55;border-radius:16px;
+  background:#117965;color:#fff;font-size:20px;font-weight:820;padding:14px 16px;line-height:1.4
+}
+.screen-voice-check .kimse-voice-recovery>details>summary{
+  display:flex;align-items:center;min-height:64px;font-size:17px;line-height:1.4;cursor:pointer;
+  color:#642c23;font-weight:750;text-decoration:underline;text-underline-offset:3px
+}
+.screen-voice-check .kimse-voice-retry:focus-visible,.screen-voice-check .kimse-voice-recovery>details>summary:focus-visible{
+  outline:3px solid #1155cc;outline-offset:3px
+}
+.large-text .screen-voice-check .kimse-voice-retry{min-height:80px;font-size:23px}
+.high-contrast .screen-voice-check .kimse-voice-retry{border:3px solid #111;background:#111;color:#fff}
+.high-contrast .screen-voice-check .kimse-voice-recovery>details>summary{color:#111}
+
+
+/* Home: true 24-hour circular clock + separate 14-day elapsed-time summary. */
+.screen-home .baseline-home-card{
+  grid-template-columns:minmax(0,1fr) 112px;column-gap:13px;row-gap:12px;
+  padding:19px 18px 16px;border-color:#cbded4;background:linear-gradient(145deg,#f0faf5,#eff5fc)
+}
+.screen-home .baseline-home-copy{min-width:0;grid-column:1;grid-row:1;align-self:center}
+.screen-home .baseline-home-copy h3{margin:8px 0 6px;font-size:clamp(18px,4.5vw,21px);line-height:1.36;word-break:keep-all}
+.screen-home .baseline-home-copy p{font-size:14px;line-height:1.5;word-break:keep-all}
+.screen-home .baseline-daily-meter{
+  grid-column:2;grid-row:1;width:112px;height:112px;position:relative;
+  display:grid;place-items:center;flex-shrink:0
+}
+.screen-home .baseline-daily-ring{width:112px;height:112px;display:block;overflow:visible;transform:rotate(-90deg)}
+.screen-home .baseline-ring-track,.screen-home .baseline-ring-progress{
+  fill:none;stroke-width:10;stroke-linecap:round
+}
+.screen-home .baseline-ring-track{stroke:#d5e4df}
+.screen-home .baseline-ring-progress{stroke:#168b6a;transition:stroke-dasharray .45s ease}
+.screen-home .baseline-ring-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  text-align:center;pointer-events:none
+}
+.screen-home .baseline-ring-center strong{font-size:20px;line-height:1.13;color:#123e31;font-weight:850;letter-spacing:-.04em}
+.screen-home .baseline-ring-center small{font-size:12px;line-height:1.3;color:#506d62;font-weight:750}
+.screen-home .baseline-time-details{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px 14px;flex-wrap:wrap;
+  border-top:1px solid #d7e6df;padding:12px 1px 0;color:#375e51
+}
+.screen-home .baseline-time-details>span{font-size:15px;font-weight:750}
+.screen-home .baseline-time-details b{font-size:20px;font-weight:900;color:#126e55;margin-left:5px}
+.screen-home .baseline-time-details>small{font-size:14px;font-weight:730;color:#47665d}
+.screen-home .baseline-two-week{grid-column:1/-1;min-width:0;display:grid;gap:8px;margin:0}
+.screen-home .baseline-two-week-label{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.screen-home .baseline-two-week-label span{color:#4b6b60;font-size:14px;font-weight:730}
+.screen-home .baseline-two-week-label strong{color:#124936;font-size:15px;font-weight:850;font-variant-numeric:tabular-nums}
+.screen-home .baseline-two-week-steps{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px}
+.screen-home .baseline-two-week-steps>i{display:block;min-width:0;height:7px;border-radius:999px;background:#d7e6df}
+.screen-home .baseline-two-week-steps>i.is-finished{background:#178c6d}
+.screen-home .baseline-two-week-steps>i.is-current{background:#8ecdb5}
+.screen-home .baseline-two-week>small{font-size:12px;line-height:1.45;color:#58736a}
+.screen-home .baseline-home-card>.btn-kimse{grid-column:1/-1;margin:2px 0 0;min-height:66px;border-radius:16px;font-weight:800}
+@media(max-width:360px){
+  .screen-home .baseline-home-card{grid-template-columns:minmax(0,1fr) 96px;column-gap:10px;padding:16px 13px}
+  .screen-home .baseline-daily-meter,.screen-home .baseline-daily-ring{width:96px;height:96px}
+  .screen-home .baseline-ring-center strong{font-size:18px}
+  .screen-home .baseline-time-details{align-items:flex-start;flex-direction:column;gap:2px}
+}
+.large-text .screen-home .baseline-home-card{grid-template-columns:minmax(0,1fr) 112px}
+.large-text .screen-home .baseline-home-copy h3{font-size:23px}
+/* Keep enlarged text and the 24h ring legible on narrow phones. */
+@media(max-width:400px){
+  .large-text .screen-home .baseline-home-card{grid-template-columns:minmax(0,1fr)}
+  .large-text .screen-home .baseline-home-copy{grid-column:1;grid-row:1}
+  .large-text .screen-home .baseline-daily-meter{grid-column:1;grid-row:2;justify-self:center}
+}
+.large-text .screen-home .baseline-time-details>small{font-size:17px}
+.high-contrast .screen-home .baseline-ring-track{stroke:#ccc}
+.high-contrast .screen-home .baseline-ring-progress{stroke:#02573f}
+.high-contrast .screen-home .baseline-two-week-steps>i.is-finished{background:#024e39}
+@media(prefers-reduced-motion:reduce){.screen-home .baseline-ring-progress{transition:none}}
+
+/* KIMSE health-first layout v2: daily recording before occasional clinical tasks. */
+.bottom-nav{background:#fff!important;backdrop-filter:none!important;box-shadow:0 -6px 24px rgba(12,43,52,.08)}
+.page:has(+ .bottom-nav){padding-bottom:calc(118px + env(safe-area-inset-bottom))}
+.screen-health .page-desc{margin-bottom:20px}
+.screen-health .kimse-health-section-title{font-size:21px;font-weight:850;line-height:1.3;color:#143e34;margin:0 0 13px}
+.screen-health .kimse-health-daily,
+.screen-health .kimse-health-mood,
+.screen-health .kimse-health-clinical{min-width:0;margin:0 0 25px}
+.screen-health .kimse-health-main-list{gap:10px}
+.screen-health .kimse-health-main-list>.list-row{width:100%;min-height:78px;text-align:left;gap:12px;padding:14px 16px}
+.screen-health .kimse-health-main-list>.list-row>span:first-child{min-width:0;flex:1}
+.screen-health .kimse-health-main-list>.list-row strong{font-size:18px}
+.screen-health .kimse-health-main-list>.list-row small{font-size:14px;line-height:1.4}
+.screen-health .kimse-health-value{display:inline-flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0;flex:0 1 auto;color:#135742}
+.screen-health .kimse-health-value strong{font-size:18px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.screen-health .kimse-health-mood{padding:19px 16px 17px;border:1px solid #dbe6e2;border-radius:22px;background:#f6faf8}
+.screen-health .kimse-health-mood-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.screen-health .kimse-health-mood-options .answer{min-width:0;min-height:96px;padding:12px 5px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:16px;font-weight:800;line-height:1.35;word-break:keep-all}
+.screen-health .kimse-health-mood-options .emoji{display:block;font-size:32px;line-height:1.1}
+.screen-health .kimse-health-clinical{padding-top:4px}
+.screen-health .kimse-health-clinical .list-row{min-height:78px;text-align:left}
+.screen-health .kimse-health-live{border-radius:17px;padding:13px 16px;margin-bottom:12px;background:#ecf8f2;border:1px solid #cce9dc;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.screen-health .kimse-health-live>span{font-size:15px;font-weight:750;color:#225442}
+.screen-health .kimse-health-live>strong{font-size:24px;font-weight:900;color:#116747}
+.screen-health .kimse-health-live>small{font-size:13px;color:#477362}
+@media(max-width:360px){
+ .screen-health .kimse-health-value strong{font-size:16px}
+ .screen-health .kimse-health-main-list>.list-row{padding-inline:12px}
+ .screen-health .kimse-health-mood-options .answer{font-size:15px}
+}
+.large-text .screen-health .kimse-health-main-list>.list-row{flex-wrap:wrap}
+.large-text .screen-health .kimse-health-value{margin-left:auto}
+.large-text .screen-health .kimse-health-mood-options .answer{font-size:17px}
+.high-contrast .screen-health .kimse-health-mood{border-color:#444;background:#fff}
+.high-contrast .bottom-nav{background:#fff!important;border-top:2px solid #333}
+
+/* Caregiver home: first actionable status, then concise evidence summary. */
+.screen-caregiver-home .kimse-caregiver-primary{width:100%;margin:16px 0 18px;text-align:left;min-height:98px}
+.screen-caregiver-home .kimse-caregiver-idle{padding:17px 19px;margin:16px 0 18px;border:1px solid #c9e2d9;background:#eef8f3;border-radius:20px}
+.screen-caregiver-home .kimse-caregiver-idle strong{display:block;color:#104a39;font-size:19px;font-weight:850}
+.screen-caregiver-home .kimse-caregiver-idle p{margin:5px 0 0;font-size:16px;line-height:1.45;color:#416458}
+.screen-caregiver-home .kimse-caregiver-overview{padding:19px 18px;margin:0 0 22px;background:#fff;border:1px solid #dbe4e7;border-radius:22px;min-width:0}
+.screen-caregiver-home .kimse-caregiver-stage-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.screen-caregiver-home .kimse-caregiver-stage-heading h2{font-size:18px;font-weight:850;margin:0;color:#244f46}
+.screen-caregiver-home .kimse-caregiver-overview>h3{font-size:22px;line-height:1.35;margin:14px 0 8px;color:#102d3b;word-break:keep-all}
+.screen-caregiver-home .kimse-caregiver-overview>p{font-size:16px;line-height:1.55;color:#526a73;margin:0 0 12px}
+.screen-caregiver-home .kimse-caregiver-details{margin:0;border-top:1px solid #e3e8e8;padding-top:12px}
+.screen-caregiver-home .kimse-caregiver-details>summary{cursor:pointer;color:#11654e;font-size:16px;font-weight:800;min-height:48px;display:list-item;align-content:center}
+.screen-caregiver-home .kimse-caregiver-detail-content{display:grid;gap:10px;padding:8px 0}
+.screen-caregiver-home .kimse-caregiver-detail-content>div{border:1px solid #e1eae7;border-radius:15px;padding:12px 14px;background:#f8fbfa}
+.screen-caregiver-home .kimse-caregiver-detail-content strong{font-size:16px;color:#263d44}
+.screen-caregiver-home .kimse-caregiver-detail-content p{font-size:15px;line-height:1.5;margin:4px 0 0}
+.screen-caregiver-home .kimse-caregiver-quick{margin-bottom:24px}
+.screen-caregiver-home .kimse-caregiver-quick .card-grid{margin-top:12px}
+@media(max-width:360px){.screen-caregiver-home .kimse-caregiver-overview{padding:16px 14px}}
+.large-text .screen-caregiver-home .kimse-caregiver-stage-heading h2{font-size:20px}
+.large-text .screen-caregiver-home .kimse-caregiver-overview>p,
+.large-text .screen-caregiver-home .kimse-caregiver-idle p{font-size:19px}
+.high-contrast .screen-caregiver-home .kimse-caregiver-idle{background:#fff;border:2px solid #444}
+
+/* KIMSE UX clarity pass 2026-10-12: senior-readable hierarchy without changing scoring. */
+.screen-assessment-start .page-title{font-size:clamp(26px,6.5vw,32px);line-height:1.27;letter-spacing:-.035em;word-break:keep-all;margin:5px 0 14px}
+.screen-assessment-start .page-desc{font-size:17px;line-height:1.58;color:#3b5d53;margin-bottom:16px;word-break:keep-all}
+.screen-assessment-start .context-chip{display:block;width:100%;margin:0 0 15px;padding:12px 14px;font-size:14px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;background:#eaf6f0;color:#285c4e;border-radius:14px}
+.screen-assessment-start .list-row{align-items:flex-start;padding:15px 16px;gap:9px;min-width:0}
+.screen-assessment-start .list-row strong{font-size:17px;line-height:1.45}
+.screen-assessment-start .list-row small{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.screen-assessment-start .notice{font-size:16px;line-height:1.55;padding:17px}
+.screen-assessment-start #begin{margin-top:8px}
+.screen-brain-map .page-title{font-size:clamp(25px,6.3vw,30px);line-height:1.28;word-break:keep-all}
+.screen-brain-map .page-desc{font-size:16px;line-height:1.55;color:#416259;word-break:keep-all;margin-bottom:14px}
+.screen-brain-map .brain-domain-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important;overflow:visible!important;scroll-snap-type:none!important;margin:12px 0 16px!important}
+.screen-brain-map .brain-domain-tabs>button{min-width:0!important;white-space:normal!important;min-height:64px!important;line-height:1.35!important;display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 9px!important;font-size:16px!important;border-radius:15px}
+.screen-brain-map .brain-domain-tabs>button span{font-size:20px;margin:0}
+.screen-brain-map .brain-domain-tabs>button:nth-child(5):last-child{grid-column:1/-1}
+.screen-brain-map .brain-focus-summary{margin:14px 0 12px;padding:16px;border-radius:16px;grid-template-columns:minmax(0,1fr) auto;gap:9px;background:#eef7f2;border:1px solid #d4e9de}
+.screen-brain-map .brain-focus-summary strong{font-size:19px;line-height:1.4;color:#173e33;word-break:keep-all}
+.screen-brain-map .brain-focus-summary>span{font-size:14px;line-height:1.35;color:#37584d;text-align:right}
+.screen-brain-map .brain-focus-summary small{font-size:15px;line-height:1.6;color:#3d5d52;word-break:keep-all}
+.screen-brain-map .brain-view-switch{gap:9px;margin-top:14px}
+.screen-brain-map .brain-view-switch button{font-size:16px!important;min-width:95px;border:1px solid #d1e0d8}
+.screen-brain-map .screen-footnote{font-size:14px;line-height:1.6;color:#546e62;word-break:keep-all}
+.screen-settings .page-title{margin-bottom:12px}
+.screen-settings .page-desc{font-size:16px;line-height:1.55}
+.screen-settings .kimse-settings-section{margin:22px 0 0}
+.screen-settings .kimse-settings-section h2{font-size:18px;line-height:1.4;font-weight:850;color:#174e3b;margin:0 0 10px;padding:0 3px}
+.screen-settings .settings-quick{display:grid;grid-template-columns:minmax(0,1fr);gap:11px;margin:20px 0 14px}
+.screen-settings .settings-quick a{display:grid;gap:8px;min-width:0;min-height:92px;padding:19px;border:1px solid #cbded6;background:#eef7f2;color:#174635;border-radius:18px;text-decoration:none}
+.screen-settings .settings-quick a+ a{background:#fff;border-color:#dbe4ed;color:#193c53}
+.screen-settings .settings-quick a strong{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:19px;line-height:1.4;word-break:keep-all}
+.screen-settings .settings-quick a span{font-size:16px;line-height:1.5;color:#35594b;word-break:keep-all}
+.screen-settings .settings-consent-summary{display:grid;gap:4px}
+.screen-settings .settings-consent-summary>span{display:block}
+.screen-settings .settings-consent-summary b{font-weight:850;white-space:nowrap}
+.screen-settings .settings-quick a+ a span{color:#4e6173}
+.screen-settings .settings-quick a:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.large-text .screen-settings .settings-quick a strong{font-size:22px}
+.large-text .screen-settings .settings-quick a span{font-size:19px}
+.high-contrast .screen-settings .settings-quick a{background:#fff;color:#000;border:2px solid #111}
+.high-contrast .screen-settings .settings-quick a span{color:#111}
+
+.screen-settings .kimse-settings-section .list{gap:8px}
+.screen-settings .kimse-settings-section .list-row{min-height:66px;padding:14px 16px;font-size:16px;line-height:1.45;word-break:keep-all}
+.screen-settings .kimse-settings-section .list-row:focus-visible{outline:3px solid #126cbe;outline-offset:3px}
+.screen-home .baseline-two-week>small{font-size:14px;line-height:1.5;color:#3f6658}
+.screen-home .baseline-ring-center small{font-size:13px}
+.large-text .screen-brain-map .brain-domain-tabs>button{font-size:19px!important}
+.large-text .screen-brain-map .brain-focus-summary small,.large-text .screen-brain-map .screen-footnote{font-size:18px}
+.large-text .screen-assessment-start .context-chip{font-size:17px}
+.high-contrast .screen-brain-map .brain-focus-summary,.high-contrast .screen-assessment-start .context-chip{background:#fff;color:#111;border:2px solid #222}
+.high-contrast .screen-settings .kimse-settings-section h2{color:#000}
+@media(max-width:360px){
+  .screen-brain-map .brain-domain-tabs>button{font-size:15px!important;padding:10px 7px!important}
+  .screen-brain-map .brain-focus-summary{grid-template-columns:minmax(0,1fr);gap:5px}
+  .screen-brain-map .brain-focus-summary>span{text-align:left}
+  .screen-assessment-start .page-title{font-size:25px}
+}
+
+/* 200% zoom / 220px equivalent: preserve single-column controls without sideways scroll. */
+@media(max-width:260px){
+  .screen-brain-map .brain-domain-tabs{grid-template-columns:minmax(0,1fr)!important;gap:7px!important}
+  .screen-brain-map .brain-domain-tabs>button:nth-child(5):last-child{grid-column:auto}
+  .screen-brain-map .brain-domain-tabs>button{min-width:0!important;max-width:100%;overflow-wrap:anywhere}
+  .screen-brain-map .brain-view-switch{display:grid;grid-template-columns:minmax(0,1fr);gap:7px}
+  .screen-brain-map .brain-view-switch button{min-width:0!important;max-width:100%}
+  .screen-brain-map .brain-focus-summary{padding:12px;min-width:0;overflow-wrap:anywhere}
+  .screen-brain-map .page-title{font-size:22px;overflow-wrap:anywhere}
+}
+
+/* Brain map integration: prevent premium enhancement from squeezing senior copy. */
+.screen-assessment-start .list-row{white-space:nowrap}
+.screen-assessment-start .list-row>span{white-space:normal;min-width:0;flex:1 1 auto}
+.screen-brain-map .brain-map-stage{min-width:0;padding:16px 15px 18px}
+.screen-brain-map .brain-stage-kicker{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:7px!important;align-items:start}
+.screen-brain-map .brain-stage-kicker>span{grid-column:1;min-width:0}
+.screen-brain-map .brain-stage-kicker>strong{grid-column:1;display:block;min-width:0;max-width:100%;font-size:19px;line-height:1.4;overflow-wrap:anywhere}
+.screen-brain-map .brain-stage-kicker .brain-stage-status{grid-column:1;justify-self:start;max-width:100%;font-size:14px;white-space:normal;line-height:1.35}
+.screen-brain-map .brain-focus-summary{display:grid!important;grid-template-columns:minmax(0,1fr)!important;align-items:start!important;gap:8px!important;padding:17px 15px!important;margin-top:12px!important;min-width:0}
+.screen-brain-map .brain-focus-summary>div{min-width:0;grid-column:1;overflow-wrap:anywhere}
+.screen-brain-map .brain-focus-summary div small{font-size:15px!important;line-height:1.5!important}
+.screen-brain-map .brain-focus-summary div strong{font-size:19px!important;line-height:1.45!important;word-break:keep-all}
+.screen-brain-map .brain-focus-summary>span{grid-column:1;justify-self:start;padding:5px 10px;font-size:15px!important;line-height:1.4}
+.screen-brain-map .brain-focus-summary p{grid-column:1!important;font-size:16px!important;line-height:1.6!important;margin:0!important;color:#355b50!important;word-break:keep-all;overflow-wrap:anywhere}
+.screen-brain-map .brain-visual{display:block;width:100%!important;max-width:100%;height:auto!important;max-height:none!important;aspect-ratio:360/250}
+.screen-brain-map .brain-map-controls{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}
+.screen-brain-map .brain-map-controls .brain-view-switch{width:100%;min-width:0}
+.large-text .screen-brain-map .brain-focus-summary p{font-size:18px!important}
+.high-contrast .screen-brain-map .brain-focus-summary{background:#fff!important;border:2px solid #333!important}
+.high-contrast .screen-brain-map .brain-focus-summary p{color:#111!important}
+@media(max-width:360px){
+ .screen-brain-map .brain-map-stage{padding:13px 12px 16px}
+ .screen-brain-map .brain-focus-summary{padding:14px 12px!important}
+ .screen-brain-map .brain-focus-summary div strong{font-size:18px!important}
+}
+
+/* 2026-10-12: Keep clinical reference labels readable at senior text scale. */
+.screen-assessment-start .list-row{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 12px;white-space:normal}
+.screen-assessment-start .list-row>span{flex:1 1 175px;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.screen-assessment-start .list-row>strong,.screen-assessment-start .list-row>small{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.screen-assessment-start .context-chip{display:inline-flex;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+@media(max-width:360px){
+  .screen-assessment-start .list-row{flex-direction:column;align-items:stretch;gap:6px}
+  .screen-assessment-start .list-row>span{flex-basis:auto;width:100%}
+}
+.large-text .screen-assessment-start .list-row{line-height:1.6}
+.high-contrast .screen-assessment-start .list-row{color:#111}
+
+/* 2026-10-12 senior editorial polish: prevent hanging Korean syllables
+   and keep source attribution readable without three narrow columns. */
+@media(max-width:480px){
+  .screen-evidence-proof .page-title{
+    font-size:clamp(26px,7.1vw,31px)!important;
+    line-height:1.28!important;letter-spacing:-.035em;
+    word-break:keep-all;overflow-wrap:break-word
+  }
+  .screen-research-engine .page-title{
+    font-size:clamp(26px,7.1vw,31px)!important;
+    line-height:1.28!important;letter-spacing:-.035em;
+    word-break:keep-all;overflow-wrap:break-word
+  }
+  .screen-assessment .page-title{
+    font-size:clamp(27px,7.5vw,32px)!important;
+    line-height:1.3!important;word-break:keep-all;overflow-wrap:break-word
+  }
+  .screen-research-engine .research-source-stack{
+    grid-template-columns:minmax(0,1fr);gap:9px
+  }
+  .screen-research-engine .research-source{
+    display:grid;grid-template-columns:32px minmax(0,1fr);
+    align-items:center;gap:12px;min-height:70px;padding:12px 17px
+  }
+  .screen-research-engine .research-source i{font-size:28px}
+  .screen-research-engine .research-source small{
+    font-size:16px;line-height:1.35;word-break:keep-all
+  }
+  .screen-research-engine .research-source strong{
+    font-size:18px;line-height:1.34;word-break:keep-all;
+    overflow-wrap:break-word
+  }
+  .screen-research-engine .research-review-gate{
+    grid-template-columns:30px minmax(0,1fr);align-items:center;gap:7px 11px
+  }
+  .screen-research-engine .research-review-gate strong{
+    font-size:17px;line-height:1.4;word-break:keep-all
+  }
+  .screen-research-engine .research-review-gate span{
+    grid-column:2;justify-self:start;white-space:normal
+  }
+  .screen-research-engine .research-personal-note{
+    text-align:left;line-height:1.55;font-weight:650
+  }
+  .screen-evidence-proof .evidence-story-card{
+    grid-template-columns:minmax(0,1fr);gap:10px;padding:16px
+  }
+  .screen-evidence-proof .evidence-story-stat{
+    flex-direction:row;flex-wrap:wrap;justify-content:flex-start;
+    width:max-content;max-width:100%;gap:7px 12px;align-items:baseline
+  }
+  .screen-evidence-proof .evidence-story-stat strong,
+  .screen-evidence-proof .evidence-story-stat span{white-space:nowrap;word-break:keep-all;margin-top:0}
+  .screen-evidence-proof .evidence-story-card p{
+    font-size:16px;line-height:1.5;word-break:keep-all
+  }
+  .screen-evidence-proof .evidence-story-card small{
+    font-size:14px;line-height:1.4;overflow-wrap:anywhere
+  }
+}
+@media(max-width:360px){
+  .screen-evidence-proof .evidence-story-card{
+    grid-template-columns:minmax(0,1fr);gap:11px;padding:15px
+  }
+  .screen-evidence-proof .evidence-story-stat{padding:10px 8px}
+  .screen-research-engine .research-source{padding:11px 14px}
+}
+.large-text .screen-research-engine .research-source-stack{
+  grid-template-columns:minmax(0,1fr)
+}
+.large-text .screen-research-engine .research-source strong{font-size:20px}
+.large-text .screen-research-engine .research-source small{font-size:17px}
+.large-text .screen-research-engine .research-review-gate{
+  grid-template-columns:30px minmax(0,1fr)
+}
+.large-text .screen-research-engine .research-review-gate span{
+  grid-column:2;justify-self:start
+}
+.large-text .screen-evidence-proof .evidence-story-card p{font-size:18px}
+.high-contrast .screen-research-engine .research-source{
+  background:#fff;border:2px solid #333
+}
+
+/* 2026-10-12 senior polish round 2: comfortable 320px source cards.
+   Never strand a Korean suffix or squeeze citations beside a stat tile. */
+.screen-evidence-proof .page-desc{
+  word-break:keep-all;overflow-wrap:break-word;line-height:1.52!important
+}
+@media(max-width:260px){
+  .screen-research-engine .research-factor-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:5px;
+    align-items:start;
+    margin-top:15px;
+  }
+  .screen-research-engine .research-factor-row em{
+    justify-self:stretch;
+    width:100%;
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:16px;
+    line-height:1.45;
+    text-align:left;
+    word-break:keep-all;
+    overflow-wrap:normal;
+  }
+  .screen-research-engine .research-source{
+    grid-template-columns:minmax(0,1fr);
+    gap:5px;
+  }
+  .screen-research-engine .research-source i{justify-self:start}
+  .screen-research-engine .research-review-gate{
+    grid-template-columns:minmax(0,1fr);
+  }
+  .screen-research-engine .research-review-gate span{grid-column:1}
+}
+@media(max-width:360px){
+  .screen-evidence-proof .page-desc{font-size:17px!important}
+  .screen-evidence-proof .evidence-story-card{
+    display:grid;grid-template-columns:minmax(0,1fr);gap:11px;padding:15px
+  }
+  .screen-evidence-proof .evidence-story-stat{
+    flex-direction:row;flex-wrap:wrap;align-items:baseline;
+    justify-content:flex-start;gap:6px 10px;
+    min-height:0;width:max-content;max-width:100%;padding:10px 14px
+  }
+  .screen-evidence-proof .evidence-story-stat strong{font-size:25px}
+  .screen-evidence-proof .evidence-story-stat span{margin-top:0}
+  .screen-evidence-proof .evidence-story-card>div:last-child>strong{
+    font-size:19px;line-height:1.34;word-break:keep-all
+  }
+  .screen-evidence-proof .evidence-story-conclusion{
+    grid-template-columns:29px minmax(0,1fr);gap:9px;padding:13px
+  }
+  .screen-evidence-proof .evidence-story-conclusion strong{
+    font-size:16px;line-height:1.5;word-break:keep-all
+  }
+}
+@media(min-width:361px) and (max-width:420px){
+  .large-text .screen-evidence-proof .evidence-story-card{
+    grid-template-columns:minmax(0,1fr);gap:10px
+  }
+  .large-text .screen-evidence-proof .evidence-story-stat{
+    flex-direction:row;align-items:baseline;gap:8px;
+    min-height:0;width:max-content;max-width:100%
+  }
+  .large-text .screen-evidence-proof .evidence-story-stat span{margin-top:0}
+}
+
+
+/* KIMSE HOME 2026-10-13. One-page, icon-first. Replace prior prototype rules, no global override. */
+.screen-home.page{max-width:920px;width:100%;margin:0 auto;padding-top:18px}
+.screen-home .kh2-welcome{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 15px}
+.screen-home .kh2-welcome h1{font-size:clamp(23px,3vw,30px);line-height:1.3;font-weight:850;letter-spacing:-.035em;margin:0;color:#173f34;word-break:keep-all}
+.screen-home .kh2-welcome>button{min-width:48px;min-height:48px;display:grid;place-items:center;background:#fff;border:1px solid #d6e3df;border-radius:14px;color:#255e4e;flex-shrink:0}
+.screen-home .kh2-welcome>button i{font-size:24px}
+.screen-home .kh2-overview{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:13px;align-items:stretch}
+.screen-home .kh2-status,.screen-home .kh2-progress{min-width:0;min-height:126px;padding:18px;border-radius:20px;border:1px solid #d6e6df;text-decoration:none;box-shadow:0 4px 14px rgba(21,67,53,.04)}
+.screen-home .kh2-status{display:grid;grid-template-columns:52px minmax(0,1fr) 20px;align-items:center;gap:15px;background:linear-gradient(115deg,#eaf7f0,#f6fbf7);color:#183b34}
+.screen-home .kh2-status-icon{width:52px;height:52px;display:grid;place-items:center;border-radius:16px;background:#d3eee0;color:#12745a}
+.screen-home .kh2-status-icon i{font-size:28px}
+.screen-home .kh2-status-content{min-width:0;display:grid;gap:3px}
+.screen-home .kh2-status-content>small{font-size:14px;line-height:1.35;color:#2e6152;font-weight:850}
+.screen-home .kh2-status-content>strong{display:block;font-size:22px;line-height:1.31;font-weight:900;letter-spacing:-.02em;word-break:keep-all;overflow-wrap:break-word}
+.screen-home .kh2-status-content>span{font-size:15px;line-height:1.45;color:#48685d;word-break:keep-all}
+.screen-home .kh2-arrow{color:#376b5a;justify-self:end}
+.screen-home .kh2-arrow i{font-size:22px}
+.screen-home .kh2-progress{display:grid;align-content:center;gap:10px;background:#fff;color:#1b4238}
+.screen-home .kh2-progress-head{display:flex;gap:7px;justify-content:space-between;align-items:center}
+.screen-home .kh2-progress-head>span{display:inline-flex;align-items:center;gap:7px;font-size:16px;white-space:nowrap}
+.screen-home .kh2-progress-head>span i{font-size:22px;color:#147e63}
+.screen-home .kh2-progress-head b{font-size:22px;line-height:1.35;white-space:nowrap;letter-spacing:-.025em}
+.screen-home .kh2-progress-head b small{font-size:14px;color:#536f62;font-weight:750}
+.screen-home .kh2-track{width:100%;height:11px;border-radius:99px;background:#dce9e3;overflow:hidden}
+.screen-home .kh2-track>i{display:block;background:#168f70;height:100%;border-radius:99px}
+.screen-home .kh2-progress-note{display:flex;align-items:center;justify-content:space-between;gap:7px;color:#496960;font-size:13px;font-weight:720;line-height:1.4;word-break:keep-all}
+.screen-home .kh2-progress-note i{font-size:16px;flex-shrink:0}
+.screen-home .kh2-tools{margin:17px 0 0}
+.screen-home .kh2-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.screen-home .kh2-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:110px;padding:12px 7px;border:1px solid #dce4e1;border-radius:18px;text-align:center;color:#173e35;text-decoration:none;box-shadow:none}
+.screen-home .kh2-action .icon{display:grid;place-items:center;font-size:31px;line-height:1.1;min-height:39px;width:auto;height:auto;padding:0;background:transparent;box-shadow:none}
+.screen-home .kh2-action strong{font-size:17px;line-height:1.33;letter-spacing:-.015em;word-break:keep-all}
+.screen-home .kh2-family{display:flex;align-items:center;gap:10px;min-height:54px;padding:10px 15px;margin:14px 0 0;border:1px solid #dbe7e1;border-radius:14px;background:#fff;color:#2b594b;font-size:16px;font-weight:800;text-decoration:none}
+.screen-home .kh2-family>i:first-child{font-size:23px}
+.screen-home .kh2-family>span{flex:1}
+.screen-home .kh2-family>i:last-child{font-size:19px}
+.screen-home a:focus-visible,.screen-home button:focus-visible{outline:3px solid #1272ba;outline-offset:3px}
+body:has(.screen-home) .bottom-nav-inner{max-width:920px}
+.screen-home .app-footer{display:none}
+@media(min-width:801px){
+ .screen-home.page{padding-bottom:18px}
+ body:has(.screen-home) .bottom-nav{position:static;inset:auto;transform:none;width:calc(100% - 36px);max-width:920px;margin:8px auto 18px;border-radius:15px}
+}
+@media(max-width:800px){
+ .screen-home.page{padding:14px 15px calc(92px + env(safe-area-inset-bottom))}
+ .screen-home .kh2-welcome{margin-bottom:11px}
+ .screen-home .kh2-welcome h1{font-size:25px}
+ .screen-home .kh2-overview{grid-template-columns:minmax(0,1fr);gap:10px}
+ .screen-home .kh2-status{min-height:110px;padding:13px 14px;gap:11px;grid-template-columns:45px minmax(0,1fr) 17px;border-radius:17px}
+ .screen-home .kh2-status-icon{width:45px;height:45px;border-radius:13px}
+ .screen-home .kh2-status-icon i{font-size:25px}
+ .screen-home .kh2-status-content>strong{font-size:21px}
+ .screen-home .kh2-status-content>span{font-size:15px}
+ .screen-home .kh2-progress{min-height:91px;padding:13px 15px;border-radius:17px;gap:7px}
+ .screen-home .kh2-progress-head b{font-size:19px}
+ .screen-home .kh2-tools{margin-top:13px}
+ .screen-home .kh2-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .screen-home .kh2-action{min-height:93px;gap:5px;padding:10px 7px;border-radius:15px}
+ .screen-home .kh2-action .icon{font-size:29px;min-height:35px}
+ .screen-home .kh2-action strong{font-size:17px}
+ .screen-home .kh2-family{min-height:49px;margin-top:11px}
+}
+@media(max-width:360px){
+ /* Keep four original tools above the fixed navigation on narrow phones.
+    Secondary explanations remain available on the destination screen. */
+ .screen-home.page{padding-top:9px}
+ .screen-home .kh2-welcome{margin-bottom:7px}
+ .screen-home .kh2-overview{gap:8px}
+ .screen-home .kh2-status{min-height:76px;padding:10px 12px;gap:9px;grid-template-columns:40px minmax(0,1fr) 15px}
+ .screen-home .kh2-status-icon{width:40px;height:40px}
+ .screen-home .kh2-status-content>span{display:none}
+ .screen-home .kh2-progress{min-height:78px;padding:10px 12px;gap:6px}
+ .screen-home .kh2-progress-head>span{font-size:15px}
+ .screen-home .kh2-progress-head b{font-size:19px}
+ .screen-home .kh2-track{height:9px}
+ .screen-home .kh2-tools{margin-top:9px}
+ .screen-home .kh2-actions{gap:8px}
+ .screen-home .kh2-action{min-height:85px;padding:8px 6px}
+ .screen-home .kh2-family{display:none}
+}
+@media(max-width:340px){
+ .screen-home.page{padding-left:11px;padding-right:11px}
+ .screen-home .kh2-welcome h1{font-size:22px}
+ .screen-home .kh2-status-content>strong{font-size:19px}
+ .screen-home .kh2-progress-note{font-size:12px}
+}
+@media(max-width:440px){
+ .large-text .screen-home .kh2-status-content>strong{font-size:24px}
+ .large-text .screen-home .kh2-action strong{font-size:20px}
+ .large-text .screen-home .kh2-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .large-text .screen-home .kh2-status-content>span{font-size:17px}
+}
+.high-contrast .screen-home .kh2-status,.high-contrast .screen-home .kh2-progress,.high-contrast .screen-home .kh2-action,.high-contrast .screen-home .kh2-family{background:#fff;color:#000;border:2px solid #111;box-shadow:none}
+.high-contrast .screen-home .kh2-status-content>small,.high-contrast .screen-home .kh2-status-content>span,.high-contrast .screen-home .kh2-progress-note{color:#111}
+
+/* KIMSE compact status / observation / daily actions - 2026.10.13 */
+.screen-collection-status.page{padding-top:14px;max-width:560px}
+.screen-collection-status .kimse-collection-heading{margin:0 0 13px}
+.screen-collection-status .kimse-collection-heading .page-title{font-size:clamp(23px,5.5vw,29px);line-height:1.2;margin:0 0 3px;color:#173f34}
+.screen-collection-status .kimse-collection-heading>p{font-size:15px;line-height:1.4;color:#4b665d;margin:0}
+.screen-collection-status .kimse-collection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.screen-collection-status .kimse-collection-tile{min-width:0;min-height:95px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;padding:10px 12px;border:1px solid #dae7e1;background:#fff;border-radius:15px;color:#1c4036}
+.screen-collection-status .kimse-collection-label{display:flex;align-items:center;gap:5px;min-width:0;width:100%}
+.screen-collection-status .kimse-collection-label>span{font-size:21px;line-height:1.15;flex:none}
+.screen-collection-status .kimse-collection-label>strong{font-size:15px;line-height:1.3;white-space:normal;word-break:keep-all}
+.screen-collection-status .kimse-collection-tile>b{font-size:19px;line-height:1.25;font-weight:850;white-space:normal;overflow-wrap:anywhere}
+.screen-collection-status .kimse-collection-tile>small{font-size:13px;line-height:1.28;color:#47645c}
+.screen-collection-status .kimse-collection-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.screen-collection-status .kimse-collection-actions .btn-kimse{min-height:51px;padding:10px 7px;font-size:16px}
+.screen-collection-status .kimse-collection-more{margin-top:12px;background:#fff;border:1px solid #dae7e1;border-radius:14px;padding:0 13px 13px;color:#24493c}
+.screen-collection-status .kimse-collection-more>summary{font-weight:800;font-size:15px;line-height:1.35;cursor:pointer;min-height:47px;display:flex;align-items:center}
+.screen-collection-status .kimse-collection-history{padding-top:11px;border-top:1px solid #e6eee9;margin:0 0 13px}
+.screen-collection-status .kimse-collection-history h2{font-size:18px;line-height:1.35;margin:0 0 6px;color:#1e493c}
+.screen-collection-status .kimse-collection-history p,.screen-collection-status .kimse-collection-more>p{font-size:15px;line-height:1.48}
+.screen-collection-status .kimse-collection-history .list-row{min-height:58px;padding:10px 12px}
+.screen-baseline .kimse-baseline-more{margin:12px 0;padding:0 13px;border:1px solid #dae7e1;border-radius:14px;background:#fff}
+.screen-baseline .kimse-baseline-more>summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:800}
+@media(max-width:440px){
+ .screen-collection-status.page{padding:11px 12px 20px}
+ .screen-collection-status .kimse-collection-heading{margin-bottom:10px}
+ .screen-collection-status .kimse-collection-grid{gap:8px}
+ .screen-collection-status .kimse-collection-tile{min-height:91px;padding:9px 10px}
+ .screen-baseline.page{padding-top:13px}
+ .screen-baseline .page-title{font-size:26px;line-height:1.2}
+ .screen-baseline .page-desc{margin-bottom:12px;font-size:15px}
+ .screen-baseline .baseline-calendar-page{margin-top:8px;margin-bottom:10px}
+ .screen-baseline .baseline-calendar-icon{height:78px;width:90px;margin:8px auto 7px;transform:scale(.8);transform-origin:50% 50%}
+ .screen-baseline .baseline-day-signals{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0 11px 12px}
+ .screen-baseline .baseline-calendar-progress{padding-bottom:10px}
+ .screen-baseline .hero-actions{margin-top:13px}
+ /* High-priority task screens: preserve 18px labels and touch targets while removing vertical overhead. */
+ .screen-training.page,.screen-medication.page,.screen-health.page,.screen-report.page,.screen-settings.page{padding-top:14px}
+ .screen-training .page-title,.screen-medication .page-title,.screen-health .page-title,.screen-report .page-title,.screen-settings .page-title{font-size:26px;margin:0 0 6px;line-height:1.26}
+ .screen-training .page-desc,.screen-medication .page-desc,.screen-health .page-desc,.screen-report .page-desc,.screen-settings .page-desc{font-size:16px;line-height:1.42;margin-bottom:13px}
+ .screen-training .list,.screen-medication .list,.screen-health .list,.screen-settings .list{gap:8px}
+ .screen-training .list-row,.screen-medication .list-row,.screen-health .list-row,.screen-settings .list-row{min-height:62px;padding:11px 13px;border-radius:14px}
+ .screen-training .list-row strong,.screen-medication .list-row strong,.screen-health .list-row strong,.screen-settings .list-row{font-size:17px}
+}
+.large-text .screen-collection-status .kimse-collection-label>strong{font-size:18px}
+.large-text .screen-collection-status .kimse-collection-tile>b{font-size:22px}
+.large-text .screen-collection-status .kimse-collection-tile>small{font-size:15px}
+.high-contrast .screen-collection-status .kimse-collection-tile,.high-contrast .screen-collection-status .kimse-collection-more{background:#fff;color:#000;border:2px solid #111}
+.high-contrast .screen-collection-status .kimse-collection-tile>small{color:#111}
+
+/* Genuine pending-observation state: no invented stable label, no decorative journey. */
+.screen-monitoring-status .kimse-monitoring-insufficient{margin:6px 0 15px;padding:18px 17px;border:1px solid #dae7e1;border-radius:20px;background:#eff8f2;color:#173e33}
+.screen-monitoring-status .kimse-monitoring-insufficient h1{font-size:clamp(25px,6vw,31px);line-height:1.22;margin:0 0 7px;color:#173e33}
+.screen-monitoring-status .kimse-monitoring-insufficient>p{font-size:16px;line-height:1.44;margin:0 0 13px;color:#3a6655}
+.screen-monitoring-status .kimse-monitoring-current{padding:11px 13px;background:#fff;border-radius:12px;display:flex;flex-direction:column;gap:4px}
+.screen-monitoring-status .kimse-monitoring-current>span{font-size:14px;color:#396459;font-weight:750}
+.screen-monitoring-status .kimse-monitoring-current>strong{font-size:20px;line-height:1.35;font-weight:850;word-break:keep-all}
+.screen-monitoring-status .kimse-monitoring-collect{min-height:53px;font-size:17px}
+.screen-monitoring-status .kimse-monitoring-insufficient-more{margin-top:14px;padding:0 13px 13px;border:1px solid #d7e5dd;border-radius:14px;background:#fff}
+.screen-monitoring-status .kimse-monitoring-insufficient-more>summary{min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:820;cursor:pointer}
+.screen-monitoring-status .kimse-monitoring-insufficient-more p{font-size:15px;line-height:1.5;margin:12px 0}
+.screen-monitoring-status .kimse-monitoring-insufficient-more>a{min-height:43px;display:flex;align-items:center;border-top:1px solid #e6efe9;color:#14634b;font-size:16px;font-weight:780}
+@media(max-width:440px){
+ .screen-monitoring-status.page:has(.kimse-monitoring-insufficient){padding:14px 14px 22px}
+ .screen-monitoring-status .kimse-monitoring-insufficient{padding:15px}
+}
+.large-text .screen-monitoring-status .kimse-monitoring-current>strong{font-size:24px}
+.high-contrast .screen-monitoring-status .kimse-monitoring-insufficient,.high-contrast .screen-monitoring-status .kimse-monitoring-current{background:#fff;color:#000;border:2px solid #111}
+
+/* KIMSE 2026-10-13: second-pass mobile density, scoped to reviewed screens. */
+.screen-medical-records.page{padding-top:14px}
+.screen-medical-records .page-title{font-size:clamp(24px,6vw,29px);line-height:1.2;margin:0 0 7px}
+.screen-medical-records .page-desc{font-size:16px;line-height:1.43;margin:0 0 12px}
+.screen-medical-records .kimse-medical-record-actions{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:9px;margin:0 0 12px}
+.screen-medical-records .kimse-medical-record-actions>.btn-kimse{min-width:0;min-height:57px;padding:10px 8px;font-size:16px;text-align:center;word-break:keep-all}
+.screen-medical-records .kimse-medical-record-guide{margin:8px 0 15px;border:1px solid #d6e4de;border-radius:15px;background:#fff;padding:0 13px 12px}
+.screen-medical-records .kimse-medical-record-guide>summary{font-size:16px;line-height:1.4;min-height:48px;font-weight:800;display:flex;align-items:center;cursor:pointer;color:#184739}
+.screen-medical-records .kimse-medical-record-guide .summary-card{margin:8px 0 12px;padding:13px}
+.screen-medical-records .kimse-medical-record-guide .list-row{min-height:62px;padding:10px}
+.screen-medical-records .kimse-medical-record-guide .notice{margin-top:10px;font-size:15px;line-height:1.4}
+.screen-medical-records .section-title{margin-top:13px;margin-bottom:10px}
+.screen-medical-records .list-row{min-height:65px}
+@media(max-width:370px){
+ .screen-medical-records.page{padding:12px 11px 25px}
+ .screen-medical-records .kimse-medical-record-actions>.btn-kimse{font-size:15px;min-height:58px}
+}
+
+/* The prompt remains readable, but the microphone action is not buried after empty space. */
+@media(max-width:460px){
+ .screen-voice-check.page{padding-top:10px}
+ .screen-voice-check .kimse-journey-top{margin-bottom:12px}
+ .screen-voice-check .kimse-journey-prompt{margin-bottom:11px}
+ .screen-voice-check .kimse-flow-title{font-size:28px!important;line-height:1.2!important;margin-bottom:5px!important}
+ .screen-voice-check .kimse-flow-hint{font-size:16px!important;line-height:1.38!important}
+ .screen-voice-check .kimse-voice-prompt{min-height:134px;padding:15px 17px 20px;margin:0 0 10px;border-radius:19px}
+ .screen-voice-check .kimse-voice-prompt p{font-size:21px;line-height:1.35;margin-top:7px}
+ .screen-voice-check .kimse-voice-orbit{height:32px;opacity:.18}
+ .screen-voice-check .kimse-voice-state{min-height:35px;margin-bottom:3px}
+ .screen-voice-check .kimse-flow-actions{padding-top:8px;margin-top:0}
+ .screen-voice-check .kimse-flow-primary{min-height:60px!important;padding:10px 14px!important;font-size:19px!important}
+ .screen-voice-check .kimse-flow-secondary{margin-top:7px}
+}
+/* Switch controls communicate on/off; explanatory text remains visible without another state paragraph. */
+@media(max-width:460px){
+ .screen-accessibility.page{padding:13px 12px 24px}
+ .screen-accessibility .accessibility-hero{grid-template-columns:44px minmax(0,1fr);gap:10px;margin-bottom:10px}
+ .screen-accessibility .accessibility-hero-icon{width:44px;height:44px;border-radius:13px}
+ .screen-accessibility .accessibility-hero-icon i{font-size:25px}
+ .screen-accessibility .accessibility-hero .page-title{font-size:27px!important;line-height:1.17!important;margin:2px 0 4px!important}
+ .screen-accessibility .accessibility-hero .page-desc{font-size:15px!important;line-height:1.32!important}
+ .screen-accessibility .accessibility-control-card{padding:0 13px!important;border-radius:16px!important}
+ .screen-accessibility .accessibility-card-head{padding:12px 0 9px}
+ .screen-accessibility .a11y-setting-row{min-height:65px!important;padding:7px 0!important}
+ .screen-accessibility .a11y-setting-row label strong{font-size:17px!important;line-height:1.28!important}
+ .screen-accessibility .a11y-setting-row label small{font-size:14px!important;line-height:1.27!important;margin-top:2px!important}
+ .screen-accessibility .accessibility-guidance{font-size:14px;line-height:1.4;margin:11px 0}
+ .screen-accessibility .a11y-setting-row .a11y-setting-state{display:none!important}
+}
+.large-text .screen-accessibility .a11y-setting-row{min-height:82px!important}
+.large-text .screen-accessibility .a11y-setting-row label strong{font-size:19px!important}
+.large-text .screen-accessibility .a11y-setting-row label small{font-size:16px!important}
+
+/* Caregiver without sharing consent: one compact expandable reminder instead of a large duplicate card. */
+.screen-caregiver-home .gov-care-summary.gov-care-compact{padding:0 13px 11px;border-radius:14px;margin:9px 0 12px;background:#fff}
+.screen-caregiver-home .gov-care-compact>summary{min-height:49px;display:flex;align-items:center;cursor:pointer;font-size:16px;line-height:1.4;font-weight:850;color:#1b5344}
+.screen-caregiver-home .gov-care-compact>p{font-size:15px;line-height:1.45;margin:2px 0 0}
+@media(max-width:440px){
+ .screen-caregiver-home.page{padding-top:12px}
+ .screen-caregiver-home .page-title{font-size:27px;line-height:1.21;margin-bottom:9px}
+ .screen-caregiver-home .kimse-caregiver-overview{padding:14px 13px;margin-bottom:13px;border-radius:17px}
+ .screen-caregiver-home .kimse-caregiver-overview>h3{font-size:20px;line-height:1.35;margin:8px 0 5px}
+ .screen-caregiver-home .kimse-caregiver-overview>p{font-size:15px;line-height:1.38;margin-bottom:8px}
+ .screen-caregiver-home .kimse-caregiver-quick .card-grid{gap:8px;margin-top:8px}
+ .screen-caregiver-home .kimse-caregiver-quick .action-card{min-height:88px;padding:10px;border-radius:15px}
+ .screen-caregiver-home .kimse-caregiver-quick .action-card strong{font-size:16px;line-height:1.35}
+}
+.high-contrast .screen-medical-records .kimse-medical-record-guide,.high-contrast .screen-caregiver-home .gov-care-compact{border:2px solid #000;background:#fff;color:#000}
+
+@media(max-width:360px){
+ .screen-caregiver-home.page{padding-top:8px}
+ .screen-caregiver-home .context-chip.caregiver{font-size:12px;padding:4px 7px;margin-bottom:4px}
+ .screen-caregiver-home .page-title{font-size:25px;line-height:1.16;margin:3px 0 7px}
+ .screen-caregiver-home .gov-care-compact{margin:5px 0 8px!important}
+ .screen-caregiver-home .gov-care-compact>summary{min-height:43px}
+ .screen-caregiver-home .kimse-caregiver-pending{padding:10px!important;margin:0 0 7px!important}
+ .screen-caregiver-home .kimse-caregiver-pending>h3{margin:5px 0!important;font-size:19px;line-height:1.25}
+ .screen-caregiver-home .kimse-caregiver-pending .kimse-caregiver-details>summary{min-height:42px}
+ .screen-caregiver-home .kimse-caregiver-quick{margin-bottom:12px}
+ .screen-caregiver-home .kimse-caregiver-quick .kimse-health-section-title{margin:4px 0 4px;font-size:18px}
+}
+
+.screen-medical-records .list-row>span:first-child{min-width:0;flex:1}
+.screen-medical-records .kimse-medical-stat-value{white-space:nowrap;flex:0 0 auto;font-size:16px;font-weight:850;color:#173f34;margin-left:auto}
+.high-contrast .screen-medical-records .kimse-medical-stat-value{color:#000}
+
+/* Narrow-screen functional hierarchy: categories before catalog; secondary settings by request. */
+.screen-market.page{padding-top:13px}
+.screen-market>.d-flex .page-title{font-size:26px;line-height:1.26;margin:0 0 3px}
+.screen-market>.d-flex .page-desc{font-size:15px;line-height:1.35;margin-bottom:6px}
+.screen-market .market-category-section{margin-top:9px}
+.screen-market .market-category-section .section-title{font-size:19px;margin:0}
+.screen-market .market-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.screen-market .market-category-card{min-height:66px;padding:8px 11px;border-radius:14px;display:grid;grid-template-columns:33px minmax(0,1fr) auto;align-items:center;gap:7px}
+.screen-market .market-category-icon{height:33px;width:33px;border-radius:10px;font-size:22px}
+.screen-market .market-category-card strong{font-size:15px;line-height:1.25;word-break:normal;overflow-wrap:anywhere;min-width:0;max-width:100%;white-space:normal}
+.screen-market .market-category-card small{font-size:12px;white-space:nowrap}
+.screen-market .market-search-box{margin-top:12px;gap:8px}
+.screen-market .market-search-box .field{margin:0}
+.screen-market .market-search-box .btn-kimse{min-height:49px;padding:9px 14px}
+.screen-market .market-results-head{margin-top:14px}
+.screen-market .market-results-head .page-desc{margin-bottom:0;font-size:15px}
+.screen-market .market-list{gap:8px}
+.screen-market .market-item{padding:11px;grid-template-columns:40px minmax(0,1fr) auto;gap:9px;border-radius:14px}
+.screen-market .market-item-icon{width:40px;height:40px;border-radius:12px;font-size:24px}
+.screen-market .market-item strong{font-size:16px}
+.screen-market .kimse-market-disclosure{margin:16px 0;padding:0 12px 12px;background:#fff;border:1px solid #dce5df;border-radius:14px}
+.screen-market .kimse-market-disclosure>summary{min-height:49px;display:flex;align-items:center;font-size:16px;font-weight:800;cursor:pointer}
+.screen-market .kimse-market-disclosure .partner-cta{margin-top:12px}
+.screen-settings .settings-quick{margin-top:10px}
+.screen-settings .settings-quick a{min-height:75px;padding:13px 15px;gap:4px;border-radius:14px}
+.screen-settings .settings-quick a strong{font-size:18px;line-height:1.3}
+.screen-settings .settings-quick a span{font-size:15px;line-height:1.35}
+.screen-settings .kimse-settings-section{margin-top:14px}
+.screen-settings .kimse-settings-more{margin-top:16px;padding:0 12px 13px;background:#fff;border:1px solid #dce5df;border-radius:14px}
+.screen-settings .kimse-settings-more>summary{min-height:50px;display:flex;align-items:center;font-size:17px;font-weight:820;cursor:pointer}
+.screen-settings .kimse-settings-more .kimse-settings-section{margin-top:12px}
+.large-text .screen-market .market-category-card strong{font-size:18px}
+.large-text .screen-market .market-category-card{min-height:74px}
+.high-contrast .screen-settings .kimse-settings-more,.high-contrast .screen-market .kimse-market-disclosure{border:2px solid #111}
+@media(max-width:350px){
+ .screen-market .market-category-card{grid-template-columns:32px minmax(0,1fr);gap:5px}
+ .screen-market .market-category-card small{grid-column:2}
+ .screen-market .market-category-card strong{font-size:15px}
+}
+
+/* Main header already names these screens: retain an accessible h1 without duplicate visual title. */
+.screen-market .page-title,.screen-settings .page-title{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.screen-market .app-footer,.screen-settings .app-footer{display:none}
+.screen-market>.d-flex .page-desc{font-size:16px;line-height:1.4;margin:0 0 7px}
+.screen-market .market-category-card strong{font-size:16px}
+
+/* 2026-10-14 mobile usability audit: keep a semantic h1 for assistive technology,
+   while avoiding duplicate on-screen headings already named by the app header. */
+:is(.screen-health,.screen-training,.screen-medication,.screen-medication-add,
+.screen-family,.screen-report,.screen-medical-records,.screen-emergency,
+.screen-partnership,.screen-plan,.screen-admin-partners) .page-title{
+ position:absolute!important;width:1px!important;height:1px!important;
+ padding:0!important;margin:-1px!important;overflow:hidden!important;
+ clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+}
