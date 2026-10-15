@@ -30,7 +30,7 @@ try{
  await page.waitForTimeout(400);
  await fs.promises.mkdir('artifacts/monitoring-first-screen',{recursive:true});
  for(const mode of ['mobile','capture']){
-   await page.evaluate(mode=>{document.documentElement.classList.toggle('capture-frame-mode',mode==='capture')},mode);
+   await page.evaluate(mode=>{document.documentElement.classList.toggle('capture-frame-mode',mode==='capture');document.documentElement.classList.toggle('real-app-capture-running',mode==='capture')},mode);
    await page.waitForTimeout(220);
    const data=await page.evaluate(()=>{
       const g=sel=>document.querySelector(sel);
