@@ -60,7 +60,14 @@ function enhanceMonitoring(screen){
   const next=make('section','kimse-one-screen-next');
   const label=make('span','kimse-one-screen-next-label');label.textContent='지금 할 일';
   const advice=make('strong','kimse-one-screen-advice');
-  advice.textContent=clean(action?.querySelector('small')?.textContent)||(key==='stable'?'생활 기록을 계속 남겨주세요.':'가족이나 전문가와 최근 기록을 확인하세요.');
+  const stageAdvice=clean(action?.querySelector('small')?.textContent);
+  const genericAdvice='기록을 계속 쌓아 평소와 달라지는 흐름이 있는지 확인하세요.';
+  const monitoringAdvice=clean(level.querySelector('h2')?.textContent);
+  // If a WATCH+ monitoring result has only the generic stage advice, show the
+  // actual monitoring result's action rather than contradicting the warning.
+  advice.textContent=key!=='stable'&&(!stageAdvice||stageAdvice===genericAdvice)
+    ?(monitoringAdvice||'가족과 최근 기록을 확인하세요.')
+    :(stageAdvice||(key==='stable'?'생활 기록을 계속 남겨주세요.':'가족과 최근 기록을 확인하세요.'));
   const links=make('div','kimse-one-screen-links');
   const report=make('a','kimse-one-screen-primary');report.href='#/consultation-report';report.textContent='상담용 요약 보기';
   const collection=make('a','kimse-one-screen-secondary');collection.href='#/collection-status';collection.textContent='수집 기록';
