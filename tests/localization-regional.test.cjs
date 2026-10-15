@@ -28,7 +28,7 @@ function verifyRegionalFormatters(){
  assert.match(gb.date,/15\/10\/2026/);
  assert.equal(us.distance,'1.6 mi');
  assert.equal(gb.distance,'2.5 km');
- assert.equal(ko.distance,'2.5 km');
+ assert.equal(ko.distance,'2.5km');
  assert.equal(us.steps,'1,234 steps');
  assert.equal(gb.steps,'1,234 steps');
  const override=check('en-GB','en-US','en-US');
