@@ -477,6 +477,14 @@ async function main(){
                       '2026-10-11','의료진기능검사·진단아님']){
     check(allText.includes(token),'functional-pdf-raw-field-'+token);
   }
+  for(const path of ['risk_confounders.conditions_context',
+    ...['birthYear','sex','education','activity','living','socialSupport','socialActivity']
+     .map(key=>'risk_confounders.validated_risk_context.'+key)])
+    check(allText.includes(path),'risk-pdf-canonical-source-'+path);
+  for(const token of ['SYNTHETIC-RISK-CONTEXT-SELF-REPORT',
+    'education·0','activity·false','socialActivity·0','UNKNOWN','USER_ENTERED',
+    '의료진확인·기저질환확진·검증된위험점수아님'])
+    check(allText.includes(token),'risk-pdf-source-value-'+token);
   for(const key of ['current_sleep_user_record','sleep_disturbance_context'])
     check(allText.includes('risk_confounders.'+key),'sleep-pdf-canonical-source-'+key);
   for(const phrase of ['3시간30분','frequent','USER_ENTERED','원래관찰일미수집','의료진확인·기기측정아님'])
