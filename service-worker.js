@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261015-monitoring-one-screen-3';
+const CACHE = 'kimse-pwa-20261016-watch-action-1';
 const CORE = [
   './',
   './index.html',
