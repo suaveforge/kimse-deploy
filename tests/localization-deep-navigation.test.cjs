@@ -51,6 +51,7 @@ async function run(){
     assert.equal(result.selector,'en');
     assert.equal(new URL(result.url).searchParams.get('lang'),'en');
     if(result.hangulFirstElements>0)violations.push(dest+': '+result.hangulFirstElements+' Korean heading/intro characters');
+    if(result.overflow)violations.push(dest+': mobile horizontal page overflow');
   }
   for(const route of ['start','role','auth','research-engine','evidence-proof','assessment-start','assessment','result','training','training-play','onboarding-profile','initial-check','health','settings','medical-records','monitoring-status','collection-status','brain-map','brain-trends','family','consent','baseline','account','switch','home','medication','report','emergency','market','partnership','plan','accessibility','demo-capture','voice-check','initial-result','cognitive-recheck','cognitive-recheck-result','medication-add','health-detail','caregiver-home','family-feedback','care-schedule','family-add','clinical-handoff','clinical-context-event','medical-record-add','professional-outcome','alert-add','market-detail','admin-partners']){
     await page.goto(base+'/?lang=en#/'+route,{waitUntil:'domcontentloaded'}); // replace below to ensure actual route
@@ -63,8 +64,22 @@ async function run(){
     if(status.route!=='#/'+route)console.log('APP_ROUTE_UNAVAILABLE_WITHOUT_SIGNIN',JSON.stringify({requested:route,actual:status.route}));
     console.log('APP_ROUTE_QA',JSON.stringify(status));
     if(status.hangul>0)violations.push('App '+route+': '+status.hangul+' Korean characters');
+    if(status.overflow){
+      const overflow=await page.evaluate(()=>({
+        viewport:window.innerWidth,body:document.documentElement.scrollWidth,
+        offenders:[...document.querySelectorAll('#app *')].filter(el=>{
+          const b=el.getBoundingClientRect();
+          if(b.right<=window.innerWidth+8||!b.width)return false;
+          for(let p=el.parentElement;p;p=p.parentElement)if(['auto','hidden','scroll','clip'].includes(getComputedStyle(p).overflowX))return false;
+          return true;
+        }).slice(0,14).map(el=>({tag:el.tagName,cls:typeof el.className==='string'?el.className.slice(0,80):'',right:Math.round(el.getBoundingClientRect().right),text:el.textContent?.slice(0,65)}))
+      }));
+      console.log('APP_MOBILE_OVERFLOW',JSON.stringify({route,...overflow}));
+      violations.push('App '+route+': mobile horizontal page overflow');
+    }
   }
   console.log('NAV_QA_PAGE_ERRORS',JSON.stringify(errors.slice(0,12)));
+  if(errors.some(e=>/require is not defined|JSSIP_UNAVAILABLE/.test(e)))violations.push('App library: JsSIP browser execution error');
   assert.deepEqual(violations,[], 'Remaining untranslated English-visible screens');
   await context.close();
  }finally{await browser.close()}
