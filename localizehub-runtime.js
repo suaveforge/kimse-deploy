@@ -150,7 +150,28 @@ function applyTranslations(root=document){
     }
   }finally{applying=false}
 }
+function documentLocaleParameter(){
+  // Keep an explicitly chosen country variant in URLs; translation bundle stays base 'en'.
+  const param=new URL(location.href).searchParams.get('lang')||'';
+  return activeLocale==='en'&&/^en[-_](US|GB)$/i.test(param)?'en-'+param.split(/[-_]/)[1].toUpperCase():activeLocale;
+}
+function updateLocalizedMetadata(){
+  if(location.pathname!=='/'&&location.pathname!=='/index.html')return;
+  const english=activeLocale==='en';
+  const title=english?'KIMSE | Everyday Cognitive Change Tracking':'낌새(KIMSE) | 일상 속 인지 변화 관찰';
+  const summary=english
+    ?'KIMSE helps you review changes in everyday sleep, movement, speech and routines. It does not diagnose dementia.'
+    :'낌새는 수면·이동·말하기 등 일상생활의 변화를 관찰하도록 돕습니다. 치매 진단을 대신하지 않습니다.';
+  document.title=title;
+  for(const [selector,value] of [['meta[name="description"]',summary],['meta[property="og:title"]',title],['meta[property="og:description"]',summary]]){
+    const el=document.querySelector(selector);
+    if(el)el.setAttribute('content',value);
+  }
+  const locale=document.querySelector('meta[property="og:locale"]');
+  if(locale)locale.setAttribute('content',english?(documentLocaleParameter()==='en-GB'?'en_GB':'en_US'):'ko_KR');
+}
 function preserveLocaleLinks(root=document){
+  const param=documentLocaleParameter();
   const links=[...(root.matches?.('a[href]')?[root]:[]),...(root.querySelectorAll?.('a[href]')||[])];
   for(const a of links){
     const href=a.getAttribute('href')||'';
@@ -160,8 +181,8 @@ function preserveLocaleLinks(root=document){
       if(url.origin!==location.origin)continue;
       // Evidence and app links must carry the same explicit language across documents.
       if(!url.pathname.startsWith('/evidence/')&&url.pathname!=='/'&&!url.pathname.startsWith('/app/'))continue;
-      if(url.searchParams.get('lang')===activeLocale)continue;
-      url.searchParams.set('lang',activeLocale);
+      if(url.searchParams.get('lang')===param)continue;
+      url.searchParams.set('lang',param);
       a.setAttribute('href',url.pathname+url.search+url.hash);
     }catch{}
   }
@@ -247,6 +268,7 @@ async function setLocale(locale){
     sourceToTarget=new Map();
     englishParts=[];compositeCache.clear();
   }
+  updateLocalizedMetadata();
   preserveLocaleLinks(document);
   observe();
 }
@@ -289,7 +311,7 @@ async function boot(){
     // The embedded legacy widget can emit its default ko locale during every
     // document load. Only the verified explicit selector controls language.
     // Do not let a widget initialization event silently reset ?lang=en.
-    window.KIMSE_LOCALIZEHUB={project:PROJECT,api:API,get locale(){return activeLocale},setLocale};
+    window.KIMSE_LOCALIZEHUB={project:PROJECT,api:API,get locale(){return activeLocale},get localeParameter(){return documentLocaleParameter()},translate:text=>translationFor(normalize(text))||String(text||''),setLocale};
   }catch(error){
     console.warn('KIMSE LocalizeHub unavailable:',error);
     document.documentElement.lang=DEFAULT_LOCALE;
