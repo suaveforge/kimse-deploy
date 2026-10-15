@@ -191,6 +191,11 @@ function updateLocalizedMetadata(){
   }
   const locale=document.querySelector('meta[property="og:locale"]');
   if(locale)locale.setAttribute('content',english?(documentLocaleParameter()==='en-GB'?'en_GB':'en_US'):'ko_KR');
+  if(path==='/'||path==='/index.html'){
+    const manifest=document.querySelector('link[rel="manifest"]');
+    const target=english?'./manifest-en.webmanifest':'./manifest.webmanifest';
+    if(manifest&&manifest.getAttribute('href')!==target)manifest.setAttribute('href',target);
+  }
 }
 function preserveLocaleLinks(root=document){
   const param=documentLocaleParameter();
