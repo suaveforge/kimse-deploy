@@ -51,7 +51,7 @@ async function run(){
     assert.equal(new URL(result.url).searchParams.get('lang'),'en');
     if(result.hangulFirstElements>0)violations.push(dest+': '+result.hangulFirstElements+' Korean heading/intro characters');
   }
-  for(const route of ['start','role','auth','research-engine','evidence-proof','assessment-start','assessment','result','training','training-play','onboarding-profile','initial-check','health','settings','medical-records','monitoring-status','collection-status','brain-map','brain-trends','family']){
+  for(const route of ['start','role','auth','research-engine','evidence-proof','assessment-start','assessment','result','training','training-play','onboarding-profile','initial-check','health','settings','medical-records','monitoring-status','collection-status','brain-map','brain-trends','family','consent','baseline','account','switch','home','medication','report','emergency','market','partnership','plan','accessibility','demo-capture','voice-check','initial-result','cognitive-recheck','cognitive-recheck-result','medication-add','health-detail','caregiver-home','family-feedback','care-schedule','family-add','clinical-handoff','clinical-context-event','medical-record-add','professional-outcome','alert-add','market-detail','admin-partners']){
     await page.goto(base+'/?lang=en#/'+route,{waitUntil:'domcontentloaded'}); // replace below to ensure actual route
     await page.waitForFunction(()=>document.documentElement.lang==='en',{timeout:20000});
     await page.waitForTimeout(350);
@@ -59,6 +59,7 @@ async function run(){
       let body=(document.querySelector('#main')?.innerText||document.body.innerText||'');
       return {route:location.hash,lang:document.documentElement.lang,hangul:(body.match(/[가-힣]/g)||[]).length,examples:body.split('\n').map(x=>x.trim()).filter(x=>/[가-힣]/.test(x)).slice(0,15),overflow:document.documentElement.scrollWidth>window.innerWidth+12};
     });
+    if(status.route!=='#/'+route)console.log('APP_ROUTE_UNAVAILABLE_WITHOUT_SIGNIN',JSON.stringify({requested:route,actual:status.route}));
     console.log('APP_ROUTE_QA',JSON.stringify(status));
     if(status.hangul>0)violations.push('App '+route+': '+status.hangul+' Korean characters');
   }
