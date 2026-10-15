@@ -10,7 +10,7 @@ async function run(){
   const base='http://127.0.0.1:8765';
   await page.goto(base+'/evidence/?lang=en',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelector('[data-kimse-locale-select]')?.value==='en');
-  const destinations=['observation.html','clinical.html','rd.html','trust.html'];
+  const destinations=['observation.html','clinical.html','rd.html','trust.html','competitors.html'];
   const violations=[];
   for(const dest of destinations){
     await page.goto(base+'/evidence/?lang=en',{waitUntil:'domcontentloaded'});
