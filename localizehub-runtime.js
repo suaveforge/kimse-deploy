@@ -156,12 +156,34 @@ function documentLocaleParameter(){
   return activeLocale==='en'&&/^en[-_](US|GB)$/i.test(param)?'en-'+param.split(/[-_]/)[1].toUpperCase():activeLocale;
 }
 function updateLocalizedMetadata(){
-  if(location.pathname!=='/'&&location.pathname!=='/index.html')return;
+  const path=location.pathname;
+  const pages={
+    '/':['KIMSE | Everyday Cognitive Change Tracking','낌새(KIMSE) | 일상 속 인지 변화 관찰',
+      'KIMSE helps users review changes in sleep, speech, movement and daily routines. It does not diagnose dementia.',
+      '낌새는 수면·이동·말하기 등 일상생활의 변화를 관찰하도록 돕습니다. 치매 진단을 대신하지 않습니다.'],
+    '/evidence/':['KIMSE Evidence | Sources and Methods','낌새 · Evidence Registry',
+      'Explore sources and methods behind KIMSE research, clinical handoff design, data provenance and competitor review.',
+      '낌새의 관찰 근거·의료 전달·연구·데이터 신뢰 구조를 확인합니다.'],
+    '/evidence/observation.html':['What KIMSE Observes | Research Evidence','낌새 · 관찰 근거',
+      'Review research on sleep, movement, speech and cognition. Published findings are not KIMSE diagnostic accuracy.',
+      '관찰 신호의 연구 출처와 한계를 설명합니다. 연구 결과는 낌새 자체 진단 정확도가 아닙니다.'],
+    '/evidence/clinical.html':['Clinical Handoff Design | KIMSE Evidence','낌새 · 의료 리포트',
+      'How KIMSE prepares observations for clinician review without replacing clinical evaluation or diagnosis.',
+      '낌새의 관찰 기록을 의료진이 검토할 수 있도록 정리하는 설계입니다. 진단을 대신하지 않습니다.'],
+    '/evidence/rd.html':['Research Data Model | KIMSE Evidence','낌새 · 연구·기관 R&D',
+      'Explore the proposed longitudinal research data model, consent context and validation requirements.',
+      '기관 공동연구와 검증을 위한 종단 데이터 구조 및 동의·품질 원칙을 설명합니다.'],
+    '/evidence/trust.html':['Data Quality and Provenance | KIMSE Evidence','낌새 · 데이터 신뢰·검증',
+      'Explore the proposed data integrity, consent history and provenance approach. No regulatory approval is implied.',
+      '데이터 무결성·동의·접근 이력과 신뢰 구조를 설명합니다. 규제 승인을 의미하지 않습니다.'],
+    '/evidence/competitors.html':['Competitor Research | KIMSE Evidence','경쟁사 연구 · KIMSE Evidence',
+      'Compare publicly documented digital cognitive care and monitoring products and their integration limitations.',
+      '인지관리·생활관찰 서비스의 공개 실적과 데이터 연동 가능성을 비교합니다.']
+  };
+  const item=pages[path]||pages[path==='/index.html'?'/':path==='/evidence/index.html'?'/evidence/':''];
+  if(!item)return;
   const english=activeLocale==='en';
-  const title=english?'KIMSE | Everyday Cognitive Change Tracking':'낌새(KIMSE) | 일상 속 인지 변화 관찰';
-  const summary=english
-    ?'KIMSE helps you review changes in everyday sleep, movement, speech and routines. It does not diagnose dementia.'
-    :'낌새는 수면·이동·말하기 등 일상생활의 변화를 관찰하도록 돕습니다. 치매 진단을 대신하지 않습니다.';
+  const title=item[english?0:1],summary=item[english?2:3];
   document.title=title;
   for(const [selector,value] of [['meta[name="description"]',summary],['meta[property="og:title"]',title],['meta[property="og:description"]',summary]]){
     const el=document.querySelector(selector);
