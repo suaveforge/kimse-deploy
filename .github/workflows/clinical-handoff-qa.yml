@@ -367,7 +367,13 @@ jobs:
             await dp.emulateMedia({media:'print'});
             const hospitalPdf=await dp.pdf({format:'A4',printBackground:true,margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
             const hospitalPageCount=(await PDFDocument.load(hospitalPdf)).getPageCount();
-            check(hospitalPageCount>=1&&hospitalPageCount<=3,'uk-targeted-a4-print-pages',String(hospitalPageCount));
+            // The independent self/informant evidence annex may legitimately add a fourth A4 page.
+            // Do not remove original records solely to keep an obsolete three-page bound.
+            check((await dp.locator('.clinical-print-reported-domain').innerText()).includes('clinical_domains.subjective_change.self'),
+              'uk-hospital-printed-original-self-report-path');
+            check((await dp.locator('.clinical-print-reported-domain').innerText()).includes('clinical_domains.subjective_change.informant'),
+              'uk-hospital-printed-original-informant-path');
+            check(hospitalPageCount>=1&&hospitalPageCount<=4,'uk-targeted-a4-print-pages',String(hospitalPageCount));
             fs.writeFileSync(path.join(out,'clinical-handoff-uk-public-hospital-a4.pdf'),hospitalPdf);
             const evidencePage=await ctx.newPage();
             await evidencePage.goto(BASE+'evidence/clinical.html',{waitUntil:'domcontentloaded',timeout:30000});
