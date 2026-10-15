@@ -2760,7 +2760,7 @@ function clinicalDomainReview(r){
   if(d.function_independence){
     const fx=d.function_independence,answers=fx.latest_functional_answers||{},cmp=fx.functional_change_from_personal_baseline||{};
     const flabel={no:'평소와 비슷',some:'가끔 어려움',often:'자주 어려움'};
-    const frow=(key,label)=>{const cur=answers[key];if(!cur)return '';const before=cmp[key]?.baseline,changed=cmp[key]?.changed===true;return '<div><dt>'+esc(label)+'</dt><dd>'+esc(before&&before!==cur?(flabel[before]||before)+' → '+(flabel[cur]||cur):(flabel[cur]||cur))+(changed?' <span class="clinical-inline-change">변화</span>':'')+'</dd></div>'};
+    const frow=(key,label)=>{const cur=answers[key];if(cur===undefined||cur===null||cur==='')return '';const before=cmp[key]?.baseline,changed=cmp[key]?.changed===true;return '<div data-clinical-functional-screen="'+esc('clinical_domains.function_independence.latest_functional_answers.'+key)+'"><dt>'+esc(label)+'</dt><dd>'+esc(before&&before!==cur?(flabel[before]||before)+' → '+(flabel[cur]||cur):(flabel[cur]||cur))+(changed?' <span class="clinical-inline-change">개인 응답 변화 · 진단 아님</span>':'')+'</dd></div>'};
     const detail=frow('events','약속·최근 일')+frow('finances','계산·청구서·돈 관리')+frow('travel','익숙한 곳 외출·이동');
     const fa=({AGREE:'일치',DISAGREE:'불일치',INSUFFICIENT:'비교 자료 부족'})[fx.agreement]||'비교 자료 부족';
     const selfDate=fx.self_observed_at?String(fx.self_observed_at).slice(0,10):'',informantDate=fx.informant_observed_at?String(fx.informant_observed_at).slice(0,10):'';
@@ -2976,6 +2976,33 @@ function clinicalPrintableSourceRecords(report){
           +' · '+esc(group.path+'.agreement')+' · 의학적 일치도 판정 아님</p>':'')
       +'</div>';
   }).join('');
+  // Preserve all three original KIMSE functional self-observation answers
+  // separately from patient/informant status. These are not clinical FAQ scores.
+  const functionDomain=report?.clinical_domains?.function_independence||{};
+  const rawFunctional=functionDomain.latest_functional_answers||{};
+  const functionComparisons=functionDomain.functional_change_from_personal_baseline||{};
+  const functionItems=[['events','약속·최근 일'],['finances','계산·청구서·돈 관리'],['travel','익숙한 곳 외출·이동']]
+    .filter(([key])=>rawFunctional[key]!==null&&rawFunctional[key]!==undefined&&rawFunctional[key]!=='');
+  const functionalAnnex=functionItems.length
+    ?'<div class="clinical-print-source-group clinical-print-functional-group">'
+      +'<h3>일상기능 자가관찰 문항 <span>('+functionItems.length+'건 · KIMSE 본인 응답, 임상 FAQ 검사 아님)</span></h3><ol>'
+      +functionItems.map(([key,label])=>{
+        const row=functionComparisons[key];
+        const path='clinical_domains.function_independence.latest_functional_answers.'+key;
+        const comparePath='clinical_domains.function_independence.functional_change_from_personal_baseline.'+key;
+        const fields=[path+' · 응답 '+String(rawFunctional[key])];
+        if(row&&typeof row==='object'){
+          fields.push(comparePath);
+          fields.push('개인 기준선 '+(row.baseline===null||row.baseline===undefined||row.baseline===''?'미수집':String(row.baseline)));
+          fields.push('비교 현재값 '+(row.current===null||row.current===undefined||row.current===''?'미수집':String(row.current)));
+          if(typeof row.changed==='boolean')fields.push('원본 변경 플래그 '+String(row.changed)+' (임상 악화 의미 아님)');
+        }
+        const observed=functionDomain.functional_observed_at;
+        return '<li data-clinical-functional-source="'+esc(path)+'">'
+          +'<strong>'+esc(label)+'</strong><span>'+esc(fields.join(' · '))+'</span>'
+          +'<small>관찰일: '+esc(observed?stamp(observed):'미수집')
+          +' · 출처: KIMSE 본인 자가관찰 과제 · 의료진 기능검사·진단 아님</small></li>';
+      }).join('')+'</ol></div>':'';
   return '<section class="clinical-print-source-records" aria-label="출처별 진료 관련 원자료"><h2>출처별 기록 · 가족 진술과 의료검사 구분</h2>'
     +groups.map(group=>{
       const count=group.rows.length;
@@ -2988,7 +3015,7 @@ function clinicalPrintableSourceRecords(report){
       }).join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
-    }).join('')+domainSourceAnnex+medicationSnapshot+contextHistory+'</section>';
+    }).join('')+domainSourceAnnex+functionalAnnex+medicationSnapshot+contextHistory+'</section>';
 }
 
 // Read-only source references for specialty cards. These paths point to the
