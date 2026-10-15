@@ -65,6 +65,7 @@ st.textContent=[
 '@media(max-width:380px){.kimse-primary-choice[data-readiness-key] .readiness-card-trigger .kimse-primary-en{display:none}.kimse-primary-choice[data-readiness-key] .readiness-card-trigger .kimse-primary-icon{margin-bottom:5px}.kimse-primary-choice[data-readiness-key] .readiness-number{margin-top:5px}}',
 '@media(prefers-reduced-motion:reduce){.readiness-total .bar,.kimse-primary-choice[data-readiness-key] .readiness-fill{transition:none}}'
 ].join('');
+st.textContent += '.kimse-primary-choice[data-readiness-key] .readiness-tap-hint{display:block;margin-top:7px;color:#12695f;font-size:11px;font-weight:700;line-height:1.1}@media(max-width:575.98px){.kimse-primary-choice[data-readiness-key] .readiness-card-trigger .kimse-primary-icon{display:none!important}.kimse-primary-choice[data-readiness-key] .readiness-tap-hint{font-size:9.5px;margin-top:3px}}';
 document.head.append(st);
 function el(tag,txt,cls){const e=document.createElement(tag);if(txt!==null&&txt!==undefined)e.textContent=txt;if(cls)e.className=cls;return e;}
 const summary=el('section',null,'readiness-summary');summary.setAttribute('aria-label','근거 충족도 요약');
@@ -123,7 +124,7 @@ function build(data){
   const fill=el('span',null,'readiness-fill'+(score===0?' is-zero':''));fill.setAttribute('aria-hidden','true');fill.style.height='0%';
   card.prepend(fill);
   const ok=c.checks.filter(x=>x.status==='met').length,remaining=c.checks.length-ok;
-  button.append(el('strong',score+'%','readiness-number'),el('span','확인 '+ok+'개 · 남은 '+remaining+'개','readiness-count'));
+  button.append(el('strong',score+'%','readiness-number'),el('span','확인 '+ok+'개 · 남은 '+remaining+'개','readiness-count'),el('span','눌러서 확인 ↓','readiness-tap-hint'));
   button.setAttribute('aria-label',c.title+' 근거 충족도 '+score+'퍼센트 · 눌러서 검증 항목 보기');
   button.addEventListener('click',()=>renderInspect(c.key,true));
   requestAnimationFrame(()=>{fill.style.height=score+'%';});
