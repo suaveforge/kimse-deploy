@@ -388,6 +388,12 @@ async function main(){
   check(sleepBody.includes('3시간 30분')&&sleepBody.includes('frequent')
     &&sleepBody.includes('USER_ENTERED')&&sleepBody.includes('원래 관찰일 미수집'),
     'sleep-screen-raw-values-and-user-provenance');
+  const cognitiveDetail=hp.locator('details.clinical-cognition-raw-details');
+  check(await cognitiveDetail.count()===1,'cognition-screen-accessible-raw-disclosure');
+  await cognitiveDetail.locator('summary').click();
+  check(await cognitiveDetail.locator('li[data-clinical-cognition-screen]').count()===4,
+    'cognition-screen-four-raw-rows-on-expand');
+  await cognitiveDetail.locator('summary').click();
   const cogRows=hp.locator('.clinical-print-cognition-group li[data-clinical-cognition-source]');
   check(await cogRows.count()===4,'cognition-screen-four-raw-source-records');
   for(const key of ['repeatable_task_sessions','recent_kimse_assessments'])
