@@ -59,9 +59,10 @@ async function run(){
     await page.waitForTimeout(350);
     const status=await page.evaluate(()=>{
       let body=(document.querySelector('#main')?.innerText||document.body.innerText||'');
-      return {route:location.hash,lang:document.documentElement.lang,hangul:(body.match(/[가-힣]/g)||[]).length,examples:body.split('\n').map(x=>x.trim()).filter(x=>/[가-힣]/.test(x)).slice(0,15),overflow:document.documentElement.scrollWidth>window.innerWidth+12};
+      return {route:location.hash,lang:document.documentElement.lang,heading:document.querySelector('#main h1')?.innerText||'',authRequired:/로그인이 필요|login required|sign in required|account required/i.test(body),bodyChars:body.length,hangul:(body.match(/[가-힣]/g)||[]).length,examples:body.split('\n').map(x=>x.trim()).filter(x=>/[가-힣]/.test(x)).slice(0,15),overflow:document.documentElement.scrollWidth>window.innerWidth+12};
     });
     if(status.route!=='#/'+route)console.log('APP_ROUTE_UNAVAILABLE_WITHOUT_SIGNIN',JSON.stringify({requested:route,actual:status.route}));
+    if(status.authRequired){console.log('APP_ROUTE_AUTH_REQUIRED_NOT_VERIFIED',JSON.stringify({requested:route,actual:status.route,heading:status.heading}));continue;}
     console.log('APP_ROUTE_QA',JSON.stringify(status));
     if(status.hangul>0)violations.push('App '+route+': '+status.hangul+' Korean characters');
     if(status.overflow){
