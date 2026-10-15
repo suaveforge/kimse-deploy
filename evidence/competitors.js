@@ -17,13 +17,25 @@ function renderList(){
 }
 function metric(r){return r.stats.map(([title,value,note])=>'<div class="competitor-stat"><span>'+escape(title)+'</span><strong>'+escape(value)+'</strong><small>'+escape(note)+'</small></div>').join('');}
 function textLi(v){return '<ul class="ps-3 mb-0">'+v.map(s=>'<li>'+escape(s)+'</li>').join('')+'</ul>';}
+
+function publicHealthEvidence(r){
+ if(!r.competition||!r.usage)return '<div class="competitor-section"><h3>낌새와의 관계</h3><p class="mb-2">'+chip(r.relationship,true)+'</p><h4 style="font-size:13px;margin-top:14px">데이터 활용 관점</h4><p style="font-size:13px;line-height:1.65">'+escape(r.data)+'</p><p class="competitor-small">현재 접근 상태: '+escape(r.access)+' · 낌새가 실제 수집 완료한 것과 구분</p></div>';
+ const c=r.competition,u=r.usage,k=r.publicCase;
+ const fields=[['이용 대상',u.audience],['운영·상담',u.operations],['외부 데이터 수신',u.receive],['원천 기기 데이터',u.device],['해당 앱의 기록 반출',u.export],['기관 협의',u.institution]];
+ const stats=(k.stats||[]).length?'<div class="competitor-case-stats">'+k.stats.map(([label,value])=>'<div class="competitor-case-stat"><strong>'+escape(value)+'</strong><span>'+escape(label)+'</span></div>').join('')+'</div>':'';
+ const flow='<div class="competitor-case-flow">'+k.flow.map((v,i)=>'<span>'+escape(v)+'</span>'+(i+1<k.flow.length?'<b aria-hidden="true">→</b>':'')).join('')+'</div>';
+ return '<div class="competitor-section"><h3>경쟁 관점</h3>'+chip(r.relationship,true)+'<h4>겹치는 기능</h4>'+textLi(c.overlap)+'<h4>낌새가 맡는 영역</h4><p>'+escape(c.distinction)+'</p><h4>사업 측면</h4><p>'+escape(c.risk)+'</p></div>'+
+ '<div class="competitor-section competitor-usage"><h3>이용 · 데이터 연계</h3><dl class="competitor-access-grid">'+fields.map(([label,val])=>'<div class="competitor-access-row"><dt>'+escape(label)+'</dt><dd>'+escape(val)+'</dd></div>').join('')+'</dl><p class="competitor-access-status"><strong>접근 상태</strong> · '+escape(u.status)+'</p><h4>추가 확인할 내용</h4>'+textLi(u.questions)+'</div>'+
+ '<div class="competitor-section competitor-public-case"><h3>'+escape(k.title)+'</h3>'+stats+flow+'<p>'+escape(k.description)+'</p><p class="competitor-small">'+escape(k.note)+'</p><a class="competitor-case-source" href="'+escape(k.sourceUrl)+'" target="_blank" rel="noopener noreferrer">'+escape(k.sourceLabel)+' ↗</a></div>';
+}
+
 function renderDetail(){
  const r=find(active)||records[0];active=r.id;
  detail.innerHTML='<div class="competitor-brand-header">'+logo(r,'competitor-detail-logo')+'<div>'+(r.wordmark?'<img class="competitor-wordmark" src="'+escape(r.wordmark)+'" alt="'+escape(r.name)+' 공식 워드마크" onerror="this.hidden=true">':'')+'<h2 class="competitor-brand-name'+(r.wordmark?' competitor-secondary-name':'')+'" style="color:'+escape(r.brand)+'">'+escape(r.name)+'</h2><div class="competitor-subline">'+escape(r.owner)+'</div><div class="mt-2">'+chip(r.kind,true)+chip(r.tag)+'</div></div></div>'+
  '<p class="competitor-statement">'+escape(r.one)+'</p><p class="text-secondary" style="font-size:14px;line-height:1.7">'+escape(r.desc)+'</p>'+
  '<div class="competitor-section"><h3>규모 · 공개 숫자</h3><div class="competitor-stats">'+metric(r)+'</div><p class="competitor-small mt-2">숫자는 성격·단위가 다릅니다. 기관 수와 앱 설치 수, 실제 사용자 수를 합산하지 않습니다.</p></div>'+
  '<div class="competitor-section competitor-dual"><div><h3>강점 · 공개 제품 기반</h3>'+textLi(r.strengths)+'</div><div><h3>제약 · 추가 검증 대상</h3>'+textLi(r.limits)+'</div></div>'+
- '<div class="competitor-section"><h3>낌새와의 관계</h3><p class="mb-2">'+chip(r.relationship,true)+'</p><h4 style="font-size:13px;margin-top:14px">데이터 활용 관점</h4><p style="font-size:13px;line-height:1.65">'+escape(r.data)+'</p><p class="competitor-small">현재 접근 상태: '+escape(r.access)+' · 낌새가 실제 수집 완료한 것과 구분</p></div>'+
+ publicHealthEvidence(r)+
  '<div class="competitor-section"><h3>원문 · 확인 출처</h3>'+r.sources.map(([title,url,type])=>'<div class="competitor-source"><span>'+escape(title)+' <em>('+escape(type)+')</em></span><a href="'+escape(url)+'" target="_blank" rel="noopener noreferrer">열기 ↗</a></div>').join('')+
  '<p class="competitor-small mt-3">마지막 조사: '+escape(window.KIMSE_COMPETITOR_LAST_REVIEWED)+' · 공식 사업자 주장, 공공기관 원문, 스토어 표시는 서로 다른 증거 수준으로 취급합니다.</p></div>';
 }
@@ -33,6 +45,14 @@ function renderComparison(){
  if(compareIds.length<2){comparePanel.hidden=true;return;}
  const choices=compareIds.map(find).filter(Boolean);
  const fields=[["한눈에",r=>r.one],["분야",r=>r.kind],["공개 규모",r=>r.stats.map(x=>x[0]+' '+x[1]).join(' / ')],["강점",r=>r.strengths.join(' · ')],["공개 자료상 한계",r=>r.limits.join(' · ')],["낌새 데이터 연계",r=>r.access]];
+ if(choices.some(r=>r.competition&&r.usage))fields.push(
+  ["겹치는 기능",r=>r.competition?.overlap?.join(' · ')||r.relationship],
+  ["이용 대상",r=>r.usage?.audience||"서비스별 확인"],
+  ["외부 건강데이터 수신",r=>r.usage?.receive||"자료 확인 필요"],
+  ["원천 기기·공통데이터",r=>r.usage?.device||r.data],
+  ["앱 기록 반출",r=>r.usage?.export||"공개 경로 미확인"],
+  ["기관 협의",r=>r.usage?.institution||"별도 확인"]);
+
  comparePanel.hidden=false;
  comparePanel.innerHTML='<div class="d-flex justify-content-between align-items-center gap-3"><h2>선택한 경쟁사 비교</h2><button type="button" id="competitor-compare-close" class="btn btn-sm btn-outline-secondary">닫기</button></div><p class="competitor-small">동일한 측정 단위로 보정하지 않은 원문 기반 정성 비교입니다.</p><table><thead><tr><th scope="col">비교 항목</th>'+choices.map(r=>'<th scope="col">'+escape(r.name)+'</th>').join('')+'</tr></thead><tbody>'+fields.map(([label,get])=>'<tr><td>'+escape(label)+'</td>'+choices.map(r=>'<td>'+escape(get(r))+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
  comparePanel.scrollIntoView({behavior:'smooth',block:'start'});
