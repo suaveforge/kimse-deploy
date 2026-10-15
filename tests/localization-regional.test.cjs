@@ -53,7 +53,7 @@ async function verifyBrowserLocales(){
    page.on('pageerror',error=>errors.push(String(error)));
    for(const target of test.urls){
     await page.goto(base+target,{waitUntil:'domcontentloaded',timeout:35000});
-    await page.waitForFunction(expected=>document.documentElement.lang===expected&&window.KIMSE_LOCALIZEHUB?.locale===expected&&document.querySelector('[data-kimse-locale-select]')?.value===expected,test.expected,{timeout:30000});
+    await page.waitForFunction(args=>document.documentElement.lang===args.expected&&window.KIMSE_LOCALIZEHUB?.locale===args.expected&&(!args.evidence||document.querySelector('[data-kimse-locale-select]')?.value===args.expected),{expected:test.expected,evidence:target.startsWith('/evidence/')},{timeout:30000});
     await page.waitForTimeout(400);
     const state=await page.evaluate(()=>{
      const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n,count=0;
