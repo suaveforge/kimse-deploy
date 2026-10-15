@@ -15,93 +15,63 @@ function statusKey(card){
   return ['stable','warning','danger','serious','urgent'].find(k=>card?.classList.contains('level-'+k))||'stable';
 }
 function enhanceMonitoring(screen){
-  if(screen.querySelector('.kimse-monitoring-insufficient'))return;
+  // One actual mobile screen. The complete original server result stays in details.
+  if(screen.querySelector('.kimse-monitoring-one-screen,.kimse-monitoring-insufficient'))return;
   const level=screen.querySelector('.monitoring-level-card');
-  const eyebrow=screen.querySelector('.eyebrow');
-  const title=screen.querySelector('.page-title');
-  const desc=screen.querySelector('.page-desc');
-  if(!title||!desc)return;
-  const titleRow=make('div','monitoring-title-row');
-  const titleCopy=make('div','monitoring-title-copy');
-  titleCopy.append(title,desc);
-  titleRow.append(titleCopy);
-  if(level){
-    const chip=make('span','monitoring-period-chip','14일 기준');
-    if(eyebrow)eyebrow.append(chip);else titleRow.append(chip);
+  if(!level)return;
+  const cards=[...screen.querySelectorAll('.result-change')];
+  const key=statusKey(level);
+  const statusText={stable:'평소 흐름',warning:'변화 확인',danger:'상담 준비',serious:'빠른 확인',urgent:'즉시 확인'}[key];
+  const overview=make('section','kimse-monitoring-one-screen');
+  overview.setAttribute('aria-label','최근 생활 변화 한눈에 보기');
+  const meta=make('div','kimse-one-screen-meta');
+  const kicker=make('span','kimse-one-screen-kicker');
+  kicker.textContent='최근 변화 · 14일 기준 비교';
+  const badge=make('span','kimse-one-screen-badge level-'+key);
+  badge.textContent=statusText;
+  meta.append(kicker,badge);
+  const heading=make('h1','page-title kimse-one-screen-headline');
+  heading.textContent=cards.length>1?'생활 변화 '+cards.length+'가지가 보여요':cards.length===1?'평소와 달라진 기록이 있어요':'최근 기록을 확인했어요';
+  const intro=make('p','kimse-one-screen-intro');
+  intro.textContent='평소 기록과 비교한 결과이며, 진단 결과는 아닙니다.';
+  overview.append(meta,heading,intro);
+  if(cards.length){
+    const list=make('div','kimse-one-screen-signals');
+    list.setAttribute('role','list');
+    cards.slice(0,3).forEach(card=>{
+      const tile=make('div','kimse-one-screen-signal');
+      tile.setAttribute('role','listitem');
+      const original=clean(card.querySelector('.result-change-label strong')?.textContent);
+      const label=make('span','kimse-one-screen-name');
+      label.textContent=({'수면시간':'수면','걸음수':'걸음','말할 때 멈춤':'말하기 멈춤'}[original]||original||'관찰 신호');
+      const raw=clean(card.querySelector('b')?.textContent);
+      const delta=make('strong','kimse-one-screen-delta');
+      delta.textContent=raw.match(/[+−-]?\s*\d+(?:\.\d+)?\s*%/)?.[0]?.replace(/\s/g,'')||raw;
+      tile.append(label,delta);
+      tile.setAttribute('aria-label',label.textContent+' '+delta.textContent);
+      list.append(tile);
+    });
+    overview.append(list);
+    if(cards.length>3){const more=make('small','kimse-one-screen-more');more.textContent='다른 변화 '+(cards.length-3)+'개는 상세 기록에서 확인할 수 있어요.';overview.append(more)}
+  }else{
+    const empty=make('div','kimse-one-screen-empty');empty.textContent='현재 표시할 변화 신호가 없습니다.';overview.append(empty);
   }
-  eyebrow?.after(titleRow);
+  const action=[...screen.querySelectorAll('.observation-stage-card .list-row')].find(x=>clean(x.querySelector('strong')?.textContent)==='지금 할 일');
+  const next=make('section','kimse-one-screen-next');
+  const label=make('span','kimse-one-screen-next-label');label.textContent='지금 할 일';
+  const advice=make('strong','kimse-one-screen-advice');
+  advice.textContent=clean(action?.querySelector('small')?.textContent)||(key==='stable'?'생활 기록을 계속 남겨주세요.':'가족이나 전문가와 최근 기록을 확인하세요.');
+  const links=make('div','kimse-one-screen-links');
+  const report=make('a','kimse-one-screen-primary');report.href='#/consultation-report';report.textContent='상담용 요약 보기';
+  const collection=make('a','kimse-one-screen-secondary');collection.href='#/collection-status';collection.textContent='수집 기록';
+  links.append(report,collection);
+  next.append(label,advice,links);overview.append(next);
 
-  const journey=make('section','monitoring-journey');
-  journey.setAttribute('aria-label','최근 변화 해석 순서');
-  titleRow.after(journey);
-
-  const changeCards=[...screen.querySelectorAll('.result-change')];
-  const baseline=changeCards.length?changeCards.map(card=>{
-    const label=clean(card.querySelector('.result-change-label strong')?.textContent);
-    const raw=clean(card.querySelector('small span')?.textContent).replace(/^14일 평균\s*/,'');
-    return label&&raw?label+' '+raw:'';
-  }).filter(Boolean).join(' · '):'14일 동안 쌓인 생활 기록을 기준으로 비교합니다.';
-  const baselineBand=make('div','monitoring-baseline-band',
-    '<span class="journey-index">01</span><div class="journey-copy"><small>14일의 평소</small><strong>나의 생활 기준선</strong></div><p>'+baseline+'</p>');
-  journey.append(baselineBand);
-
-  const grid=screen.querySelector('.result-change-grid');
-  const stable=screen.querySelector('.monitoring-stable-note');
-  const pattern=make('section','monitoring-pattern-panel');
-  const patternHead=make('div','monitoring-pattern-head',
-    '<div><span class="journey-index">02</span><span><small>오늘의 변화</small><strong>'+(grid?'여러 변화가 같은 시기에 나타났어요':'큰 변화 없이 이어지고 있어요')+'</strong></span></div>'+icon('wave-sine'));
-  pattern.append(patternHead);
-  if(grid)pattern.append(grid);
-  else if(stable)pattern.append(stable);
-  journey.append(pattern);
-
-  if(level){
-    const key=statusKey(level);
-    const line=level.querySelector('.monitoring-level-line');
-    const heading=level.querySelector('h2');
-    const meaning={
-      stable:'최근 기록은 평소 범위 안에서 이어지고 있습니다.',
-      warning:'한 가지 이상 변화가 보여 조금 더 세심하게 살펴볼 때입니다.',
-      danger:'수면·활동·말하기 변화가 같은 시기에 보여 전문가와 확인하는 편이 안전합니다.',
-      serious:'여러 변화의 폭이 커져 빠른 전문가 확인이 필요한 상태입니다.',
-      urgent:'큰 변화가 함께 보여 보호자와 의료기관에 바로 연결할 필요가 있습니다.'
-    }[key];
-    const top=make('div','monitoring-level-top','<span class="journey-index">03</span><small>변화의 의미</small>');
-    if(line){line.classList.add('monitoring-level-badge');top.append(line)}
-    level.prepend(top);
-    if(heading){
-      const note=make('p','monitoring-level-note',meaning);
-      heading.after(note);
-    }
-    journey.append(level);
-
-    const actions=screen.querySelector('.monitoring-actions');
-    const nextTitle=screen.querySelector('.monitoring-next-title');
-    const detail=screen.querySelector('.monitoring-detail-link');
-    if(actions){
-      const conclusion={
-        stable:'지금처럼 생활 기록을 이어가세요.',
-        warning:'기능별 변화를 한 번 더 확인해보세요.',
-        danger:'혼자 판단하지 말고, 지금 연결하세요.',
-        serious:'오늘 안에 전문가와 연결하세요.',
-        urgent:'지금 보호자와 의료기관에 연락하세요.'
-      }[key];
-      const box=make('section','monitoring-conclusion');
-      box.innerHTML='<div class="monitoring-conclusion-head"><span class="journey-index">04</span><div><small>다음 행동</small><h2>'+conclusion+'</h2></div></div>';
-      box.append(actions);
-      if(detail)box.append(detail);
-      nextTitle?.remove();
-      journey.append(box);
-      actions.querySelectorAll('.status-action').forEach(btn=>{
-        const old=clean(btn.textContent);
-        const isShare=/보호자/.test(old), isCall=/상담센터/.test(old), isCare=/의료/.test(old), isDetail=/기능별/.test(old);
-        const label=isShare?'가족에게 알리기':isCall?'전문가와 확인하기':isCare?'가까운 지원 찾기':isDetail?'기록을 더 자세히':'다음 행동';
-        const strong=old;
-        const ico=btn.querySelector('i')?.outerHTML||'';
-        btn.innerHTML=ico+'<span><small>'+label+'</small><strong>'+strong+'</strong></span>';
-      });
-    }
-  }
+  const details=make('details','kimse-monitoring-details');
+  const summary=make('summary','');summary.textContent='상세 변화·판단 근거 보기';details.append(summary);
+  [...screen.childNodes].forEach(node=>details.append(node)); // move controls intact, never duplicate
+  screen.append(overview,details);
+  screen.dataset.monitoringOneScreen='true';
 }
 function enhanceAccessibility(screen){
   const title=screen.querySelector('.page-title'),desc=screen.querySelector('.page-desc'),card=screen.querySelector('.summary-card');

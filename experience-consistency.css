@@ -148,3 +148,43 @@
 .large-text .screen-evidence-proof .kimse-evidence-references > summary strong { font-size:20px!important; }
 .large-text .screen-evidence-proof .kimse-evidence-references > summary small { font-size:17px!important; }
 .high-contrast .screen-evidence-proof .kimse-evidence-references { border:2px solid #111; background:#fff; }
+
+/* Real monitoring screen: no four-panel journey, essential content fits in the first fold. */
+.screen-monitoring-status:has(>.kimse-monitoring-one-screen){max-width:560px!important;padding:13px 15px 20px!important}
+.screen-monitoring-status .kimse-monitoring-one-screen{display:grid;gap:10px;min-width:0}
+.screen-monitoring-status .kimse-one-screen-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.screen-monitoring-status .kimse-one-screen-kicker{font-size:13px;line-height:1.3;font-weight:800;color:#496d5e}
+.screen-monitoring-status .kimse-one-screen-badge{flex-shrink:0;border:1px solid #cbded5;border-radius:999px;padding:5px 9px;font-size:13px;font-weight:850;line-height:1.25;color:#1d5949;background:#f0f7f3}
+.screen-monitoring-status .kimse-one-screen-badge.level-warning,.screen-monitoring-status .kimse-one-screen-badge.level-danger{background:#fff4e8;border-color:#e4cdaa;color:#79551d}
+.screen-monitoring-status .kimse-one-screen-badge.level-serious,.screen-monitoring-status .kimse-one-screen-badge.level-urgent{background:#fff0ed;border-color:#e8c5bc;color:#923d32}
+.screen-monitoring-status .kimse-one-screen-headline.page-title{margin:0!important;font-size:clamp(23px,5.6vw,27px)!important;line-height:1.2!important;color:#123b39!important;letter-spacing:-.03em!important;word-break:keep-all;overflow-wrap:break-word}
+.screen-monitoring-status .kimse-one-screen-intro{margin:0!important;color:#526b64;font-size:14px;line-height:1.45}
+.screen-monitoring-status .kimse-one-screen-signals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:3px 0 0}
+.screen-monitoring-status .kimse-one-screen-signal{min-width:0;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;gap:7px;padding:13px 9px;border:1px solid #dae7df;border-radius:16px;background:#fffdfa}
+.screen-monitoring-status .kimse-one-screen-name{font-size:14px;font-weight:850;line-height:1.35;color:#35594e;word-break:keep-all;overflow-wrap:break-word}
+.screen-monitoring-status .kimse-one-screen-delta{font-size:24px;font-weight:900;letter-spacing:-.035em;line-height:1;color:#12413c;white-space:nowrap;font-variant-numeric:tabular-nums}
+.screen-monitoring-status .kimse-one-screen-more{font-size:12px;line-height:1.4;color:#5d786e}
+.screen-monitoring-status .kimse-one-screen-empty{padding:17px 12px;border-radius:16px;background:#eff8f2;font-size:15px;font-weight:800;color:#345b4e}
+.screen-monitoring-status .kimse-one-screen-next{display:grid;gap:7px;margin:2px 0 0;padding:15px;border:1px solid #cddfd5;border-radius:18px;background:#eef7f1}
+.screen-monitoring-status .kimse-one-screen-next-label{font-size:13px;line-height:1.3;font-weight:850;color:#537567}
+.screen-monitoring-status .kimse-one-screen-advice{font-size:16px;line-height:1.4;font-weight:850;color:#173c33;word-break:keep-all;overflow-wrap:break-word}
+.screen-monitoring-status .kimse-one-screen-links{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:8px;margin-top:3px}
+.screen-monitoring-status .kimse-one-screen-links a{display:flex;align-items:center;justify-content:center;text-decoration:none;text-align:center;padding:9px 8px;min-width:0;min-height:49px;font-size:15px;line-height:1.25;font-weight:850;border-radius:13px;word-break:keep-all}
+.screen-monitoring-status .kimse-one-screen-primary{color:#fff;background:#155849}
+.screen-monitoring-status .kimse-one-screen-secondary{color:#1b5140;background:#fff;border:1px solid #c0d8cc}
+.screen-monitoring-status .kimse-monitoring-details{margin:13px 0 0;border-top:1px solid #d9e7df;padding:0}
+.screen-monitoring-status .kimse-monitoring-details>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:49px;padding:10px 4px;font-size:14px;font-weight:800;color:#33685a;cursor:pointer}
+.screen-monitoring-status .kimse-monitoring-details>summary::-webkit-details-marker{display:none}
+.screen-monitoring-status .kimse-monitoring-details>summary:after{content:'⌄';font-size:20px}
+.screen-monitoring-status .kimse-monitoring-details[open]>summary:after{transform:rotate(180deg)}
+.screen-monitoring-status .kimse-monitoring-details>.eyebrow,.screen-monitoring-status .kimse-monitoring-details>.page-title,.screen-monitoring-status .kimse-monitoring-details>.page-desc{display:none}
+.screen-monitoring-status .kimse-monitoring-details .summary-card{margin:8px 0;padding:13px}
+.screen-monitoring-status .kimse-monitoring-details .result-change-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:7px 0!important}
+.screen-monitoring-status .kimse-monitoring-details .result-change{min-width:0!important}
+.screen-monitoring-status .kimse-monitoring-details .monitoring-level-card{margin:8px 0!important}
+.screen-monitoring-status .kimse-monitoring-details .monitoring-detail-link{display:flex;margin-top:8px!important}
+.capture-frame-mode .screen-monitoring-status:has(>.kimse-monitoring-one-screen){padding:12px 15px!important}
+@media(max-width:360px){.screen-monitoring-status .kimse-one-screen-delta{font-size:21px}.screen-monitoring-status .kimse-one-screen-signals{gap:6px}.screen-monitoring-status .kimse-one-screen-signal{padding:12px 8px}.screen-monitoring-status .kimse-one-screen-links a{font-size:14px}}
+@media(max-width:260px){.screen-monitoring-status .kimse-one-screen-signals,.screen-monitoring-status .kimse-one-screen-links{grid-template-columns:1fr}.screen-monitoring-status .kimse-one-screen-signal{min-height:66px}.screen-monitoring-status .kimse-one-screen-meta{flex-wrap:wrap}}
+.large-text .screen-monitoring-status .kimse-one-screen-advice{font-size:20px}
+.high-contrast .screen-monitoring-status .kimse-one-screen-signal,.high-contrast .screen-monitoring-status .kimse-one-screen-next{background:#fff;border:2px solid #111;color:#111}
