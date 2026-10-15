@@ -2733,8 +2733,21 @@ function clinicalDomainReview(r){
     add('주관적 변화','HISTORY','<dl><div><dt>본인'+(selfDate?' · '+esc(selfDate):'')+'</dt><dd>'+esc(yn(d.subjective_change.self))+'</dd></div><div><dt>가족'+(informantDate?' · '+esc(informantDate):'')+'</dt><dd>'+esc(yn(d.subjective_change.informant))+'</dd></div><div><dt>본인-가족</dt><dd>'+esc(agreement)+(d.subjective_change.agreement==='DISAGREE'?' <span class="clinical-inline-change">불일치</span>':'')+'</dd></div></dl>','user / informant',refs(d.subjective_change),d.subjective_change.guard||'환자·가족 진술은 객관검사와 구분합니다.');
   }
   if(d.cognition){
-    const o=d.cognition.latest_objective_observation||{},tasks=Array.isArray(d.cognition.repeatable_task_sessions)?d.cognition.repeatable_task_sessions:[],ass=Array.isArray(d.cognition.recent_kimse_assessments)?d.cognition.recent_kimse_assessments:[];
-    add('인지 관련 변화','COGNITION','<dl><div><dt>최근 반복과제 상태</dt><dd>'+esc(o.state==='CHANGED'?'개인 baseline 대비 변화 관찰':o.state==='STABLE'?'현재 비교에서 뚜렷한 변화 없음':'자료 없음')+'</dd></div><div><dt>비교 가능한 반복 세션</dt><dd>'+esc(String(tasks.length))+'건</dd></div><div><dt>최근 KIMSE 과제</dt><dd>'+esc(String(ass.length))+'건</dd></div></dl>','KIMSE task',refs(d.cognition),d.cognition.guard);
+    const o=d.cognition.latest_objective_observation||{},
+      tasks=Array.isArray(d.cognition.repeatable_task_sessions)?d.cognition.repeatable_task_sessions:[],
+      ass=Array.isArray(d.cognition.recent_kimse_assessments)?d.cognition.recent_kimse_assessments:[];
+    const rawRows=(key,items)=>items.map((item,i)=>item&&typeof item==='object'&&!Array.isArray(item)
+      ?'<li data-clinical-cognition-screen="'+esc('clinical_domains.cognition.'+key+'['+i+']')+'">'
+       +'<strong>'+esc('clinical_domains.cognition.'+key+'['+i+']')+'</strong>'
+       +'<span>'+esc(JSON.stringify(item))+'</span></li>':'').join('');
+    const sourceRows=rawRows('repeatable_task_sessions',tasks)+rawRows('recent_kimse_assessments',ass);
+    const sourceDetail=sourceRows?'<details class="clinical-cognition-raw-details"><summary>회차별 KIMSE 원자료 보기 (임상검사 아님)</summary><ol>'
+       +sourceRows+'</ol></details>':'';
+    add('인지 관련 변화','COGNITION','<dl><div><dt>최근 반복과제 상태</dt><dd>'
+      +esc(o.state==='CHANGED'?'개인 baseline 대비 변화 관찰':o.state==='STABLE'?'현재 비교에서 뚜렷한 변화 없음':'자료 없음')
+      +'</dd></div><div><dt>비교 가능한 반복 세션</dt><dd>'+esc(String(tasks.length))+'건</dd></div>'
+      +'<div><dt>최근 KIMSE 과제</dt><dd>'+esc(String(ass.length))+'건</dd></div></dl>'
+      +sourceDetail,'KIMSE 자체과제 · 임상점수 아님',refs(d.cognition),d.cognition.guard);
   }
   if(d.function_independence){
     const fx=d.function_independence,answers=fx.latest_functional_answers||{},cmp=fx.functional_change_from_personal_baseline||{};
@@ -2998,6 +3011,28 @@ function clinicalPrintableSourceRecords(report){
         +'<small>원본 경로: '+esc('risk_confounders.'+key)
         +' · 출처: USER_ENTERED · 원래 관찰일 미수집 · 진단 아님</small></li>').join('')
       +'</ol></div>':'';
+  // Preserve each KIMSE cognitive source record, including nested baseline comparisons.
+  const cog=report?.clinical_domains?.cognition||{};
+  const cognitionAnnex=[
+    ['repeatable_task_sessions','반복 인지과제 원본'],
+    ['recent_kimse_assessments','최근 앱 인지평가 원본']
+  ].map(([key,label])=>{
+    const actual=safe(cog[key]).map((item,index)=>({item,index}))
+      .filter(x=>x.item&&typeof x.item==='object'&&!Array.isArray(x.item));
+    if(!actual.length)return '';
+    return '<div class="clinical-print-source-group clinical-print-cognition-group"><h3>'
+      +esc(label)+' <span>('+actual.length+'건 · KIMSE 자체과제, 임상점수 아님)</span></h3><ol>'
+      +actual.map(({item,index})=>{
+        const path='clinical_domains.cognition.'+key+'['+index+']';
+        const raw=JSON.stringify(item);
+        const when=item.completed_at?stamp(item.completed_at):'수행일 미수집';
+        const entered=item.created_at?stamp(item.created_at):'앱 등록일 미수집';
+        return '<li'+(raw.length>600?' class="clinical-print-long-entry"':'')
+          +' data-clinical-cognition-source="'+esc(path)+'"><strong>'+esc(when)+'</strong>'
+          +'<span>'+esc(path+' · '+raw)+'</span><small>'
+          +esc(entered)+' · KIMSE 앱 원자료 · MoCA-K/FAQ·의료진 평가·진단 아님</small></li>';
+      }).join('')+'</ol></div>';
+  }).join('');
   return '<section class="clinical-print-source-records" aria-label="출처별 진료 관련 원자료"><h2>출처별 기록 · 가족 진술과 의료검사 구분</h2>'
     +groups.map(group=>{
       const count=group.rows.length;
@@ -3010,7 +3045,7 @@ function clinicalPrintableSourceRecords(report){
       }).join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
-    }).join('') +domainSourceAnnex+functionalAnnex+sleepAnnex+medicationSnapshot+contextHistory+'</section>';
+    }).join('') +domainSourceAnnex+functionalAnnex+sleepAnnex+cognitionAnnex+medicationSnapshot+contextHistory+'</section>';
 }
 
 // Read-only source references for specialty cards. These paths point to the

@@ -276,6 +276,20 @@ async function main(){
   };
   history.clinical_domains={
     ...history.clinical_domains,
+    cognition:{
+      repeatable_task_sessions:[
+        {id:'syn-cog-base',phase:'BASELINE',completed_at:'2026-10-10T10:20:00Z',
+         delayed_recall_count:0,subtraction_answer:'70',subtraction_correct:false,
+         subtraction_response_ms:null,comparison:null,objective_state:'UNKNOWN'},
+        {id:'syn-cog-recheck',phase:'RECHECK',completed_at:'2026-10-12T10:20:00Z',
+         delayed_recall_count:2,subtraction_answer:'79',subtraction_correct:true,
+         subtraction_response_ms:1000,comparison:{delayed_recall:{baseline:0,delta:2},
+           serial_subtraction:{response_ms_delta:0}},objective_state:'STABLE'}],
+      recent_kimse_assessments:[
+        {assessment_code:'KIMSE',completed_at:'2026-10-13',total_score:0,
+         domain_scores:{memory:0,attention:null},source_type:'kimse_task'},
+        {assessment_code:'UNKNOWN',completed_at:null,total_score:null,domain_scores:{}}]
+    },
     subjective_change:{
       self:'PRESENT',self_observed_at:'2026-09-21',
       informant:'ABSENT',informant_observed_at:'2026-09-23',agreement:'DISAGREE'
@@ -374,6 +388,24 @@ async function main(){
   check(sleepBody.includes('3시간 30분')&&sleepBody.includes('frequent')
     &&sleepBody.includes('USER_ENTERED')&&sleepBody.includes('원래 관찰일 미수집'),
     'sleep-screen-raw-values-and-user-provenance');
+  const cognitiveDetail=hp.locator('details.clinical-cognition-raw-details');
+  check(await cognitiveDetail.count()===1,'cognition-screen-accessible-raw-disclosure');
+  await cognitiveDetail.locator('summary').click();
+  check(await cognitiveDetail.locator('li[data-clinical-cognition-screen]').count()===4,
+    'cognition-screen-four-raw-rows-on-expand');
+  await cognitiveDetail.locator('summary').click();
+  const cogRows=hp.locator('.clinical-print-cognition-group li[data-clinical-cognition-source]');
+  check(await cogRows.count()===4,'cognition-screen-four-raw-source-records');
+  for(const key of ['repeatable_task_sessions','recent_kimse_assessments'])
+    for(let i=0;i<2;i++)
+      check(await hp.locator('.clinical-print-cognition-group li[data-clinical-cognition-source="clinical_domains.cognition.'+key+'['+i+']"]').count()===1,
+        'cognition-screen-canonical-row-'+key+'-'+i);
+  const cogText=await hp.locator('.clinical-print-cognition-group').allInnerTexts();
+  check(cogText.join(' ').includes('delayed_recall_count')&&
+    cogText.join(' ').includes('subtraction_response_ms')&&
+    cogText.join(' ').includes('response_ms_delta')&&
+    cogText.join(' ').includes('total_score'),
+    'cognition-screen-fields-untruncated');
   const contextBody=await hp.locator('.clinical-print-source-records').innerText();
   check(contextBody.includes('new_dose: 0')&&contextBody.includes('2026-10-11')&&
     contextBody.includes('상태 ABSENT')&&contextBody.includes('상태 UNKNOWN')&&
@@ -428,6 +460,14 @@ async function main(){
     check(allText.includes('risk_confounders.'+key),'sleep-pdf-canonical-source-'+key);
   for(const phrase of ['3시간30분','frequent','USER_ENTERED','원래관찰일미수집','의료진확인·기기측정아님'])
     check(allText.includes(phrase),'sleep-pdf-raw-value-'+phrase);
+  for(const key of ['repeatable_task_sessions','recent_kimse_assessments'])
+    for(let i=0;i<2;i++)
+      check(allText.includes('clinical_domains.cognition.'+key+'['+i+']'),
+        'cognition-pdf-canonical-source-'+key+'-'+i);
+  for(const token of ['delayed_recall_count','subtraction_correct','false',
+                      'subtraction_response_ms','null','response_ms_delta','0',
+                      'total_score','2026-10-12','2026-10-13','MoCA-K/FAQ'])
+    check(allText.includes(token),'cognition-pdf-original-value-'+token);
   check(JSON.stringify(history)===originalHistory,'history-source-never-mutated');
   await historyCtx.close();
  }finally{await browser.close();}
