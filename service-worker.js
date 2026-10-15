@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261015-global-voice-manifest-2';
+const CACHE = 'kimse-pwa-20261015-usuk-live-3';
 const CORE = [
   './',
   './index.html',
