@@ -2680,7 +2680,8 @@ function clinicalContextSummary(r){
     const e=rows?.[0];if(!e)return null;
     return String(e.performed_at||'').slice(0,10)+' · '+(e.title||'복약 변경')+' · '+(CLINICAL_VERIFICATION_LABELS[e.verification_status]||e.verification_status||'사용자 전사');
   },items=[
-    ['수면장애 맥락',labelValue('sleep',x.sleep_disturbance_context)],
+    ['지난밤 수면시간 · 사용자 입력',x.current_sleep_user_record===0?'0':x.current_sleep_user_record],
+    ['수면장애 빈도 · 사용자 보고',labelValue('sleep',x.sleep_disturbance_context)],
     ['현재 기분 메모',x.mood_context],
     ['기분·행동 변화 이력',eventText(moodEvents)],
     ['현재 청력 맥락',labelValue('hearing',x.sensory_impairment_context)],
@@ -2981,6 +2982,22 @@ function clinicalPrintableSourceRecords(report){
           +'<small>관찰일: '+esc(observed?stamp(observed):'미수집')
           +' · 출처: KIMSE 본인 자가관찰 과제 · 의료진 기능검사·진단 아님</small></li>';
       }).join('')+'</ol></div>':'';
+  // User-entered sleep duration and sleep disturbance are independent Canonical fields.
+  // A report generation timestamp is not a user-observed sleep date.
+  const sleepRisk=report?.risk_confounders||{};
+  const sleepRows=[
+    ['current_sleep_user_record','지난밤 수면시간 · 사용자 입력'],
+    ['sleep_disturbance_context','수면장애 빈도 · 사용자 보고']
+  ].filter(([key])=>sleepRisk[key]!==null&&sleepRisk[key]!==undefined
+                       &&String(sleepRisk[key]).trim()!=='');
+  const sleepAnnex=sleepRows.length
+    ?'<div class="clinical-print-source-group clinical-print-sleep-group">'
+      +'<h3>수면 사용자 입력 <span>('+sleepRows.length+'건 · 의료진 확인·기기 측정 아님)</span></h3><ol>'
+      +sleepRows.map(([key,label])=>'<li data-clinical-sleep-source="'+esc('risk_confounders.'+key)+'">'
+        +'<strong>'+esc(label)+'</strong><span>'+esc(String(sleepRisk[key]))+'</span>'
+        +'<small>원본 경로: '+esc('risk_confounders.'+key)
+        +' · 출처: USER_ENTERED · 원래 관찰일 미수집 · 진단 아님</small></li>').join('')
+      +'</ol></div>':'';
   return '<section class="clinical-print-source-records" aria-label="출처별 진료 관련 원자료"><h2>출처별 기록 · 가족 진술과 의료검사 구분</h2>'
     +groups.map(group=>{
       const count=group.rows.length;
@@ -2993,7 +3010,7 @@ function clinicalPrintableSourceRecords(report){
       }).join('')+'</ol>'
         :'<p>기록 없음 · 정상 소견으로 해석하지 않음</p>';
       return '<div class="clinical-print-source-group"><h3>'+esc(group.label)+' <span>('+count+'건)</span></h3>'+content+'</div>';
-    }).join('')+domainSourceAnnex+functionalAnnex+medicationSnapshot+contextHistory+'</section>';
+    }).join('') +domainSourceAnnex+functionalAnnex+sleepAnnex+medicationSnapshot+contextHistory+'</section>';
 }
 
 // Read-only source references for specialty cards. These paths point to the
