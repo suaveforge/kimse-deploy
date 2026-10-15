@@ -41,6 +41,21 @@ jobs:
           node tests/localization-browser.test.cjs
           node tests/localization-deep-navigation.test.cjs
           node tests/localization-regional.test.cjs
+      - name: Wait for updated glossary on public Pages
+        run: |
+          for i in $(seq 1 36); do
+            if curl --fail --silent --show-error --max-time 12 "https://kimse.suaveforge.com/kimse-en.json?probe=$GITHUB_SHA" | grep -q "Original detailed records for 11 competitors"; then
+              echo "LIVE_GLOSSARY_DEPLOYED=$GITHUB_SHA"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Public Pages glossary did not update" >&2
+          exit 1
+      - name: Real public-domain US UK KR Chromium QA
+        env:
+          KIMSE_TEST_BASE: https://kimse.suaveforge.com
+        run: node tests/localization-regional.test.cjs
       - name: Preserve smoke-test screenshots
         if: always()
         uses: actions/upload-artifact@v4
