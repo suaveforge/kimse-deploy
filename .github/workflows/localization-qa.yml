@@ -4,6 +4,11 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'app.js'
+      - 'service-worker.js'
+      - 'manifest.webmanifest'
+      - 'manifest-en.webmanifest'
+      - 'call-transport.js'
       - 'kimse-en.json'
       - 'kimse-en-auto.json'
       - 'localizehub-runtime.js'
