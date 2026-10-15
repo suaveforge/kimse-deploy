@@ -69,7 +69,7 @@ async function verifyBrowserLocales(){
       if(!el||el.getClientRects().length===0||el.closest('script,style,noscript,localize-switcher,[hidden]'))continue;
       count+=(n.nodeValue?.match(/[가-힣]/g)||[]).length;
      }
-     return {browserLocale:navigator.language,locale:window.KIMSE_LOCALIZEHUB?.locale,lang:document.documentElement.lang,selector:document.querySelector('[data-kimse-locale-select]')?.value,hangul:count,overflow:document.documentElement.scrollWidth>window.innerWidth+8,url:location.pathname};
+     return {browserLocale:navigator.language,locale:window.KIMSE_LOCALIZEHUB?.locale,lang:document.documentElement.lang,selector:document.querySelector('[data-kimse-locale-select]')?.value,manifest:document.querySelector('link[rel="manifest"]')?.getAttribute('href')||'',title:document.title,ogTitle:document.querySelector('meta[property="og:title"]')?.content||'',hangul:count,overflow:document.documentElement.scrollWidth>window.innerWidth+8,url:location.pathname};
     });
     if(test.expectedParam){
      const selected=await page.evaluate(()=>({
@@ -85,6 +85,18 @@ async function verifyBrowserLocales(){
        assert.match(selected.title,/KIMSE/);
      }
      console.log('REGIONAL_URL_PRESERVATION',JSON.stringify({case:test.name,target,...selected}));
+    }
+    if(target.includes('#/start')){
+      assert.equal(state.manifest,test.expected==='en'?'./manifest-en.webmanifest':'./manifest.webmanifest',test.name+' PWA language selection mismatch');
+      const response=await page.request.get(base+'/'+(test.expected==='en'?'manifest-en.webmanifest':'manifest.webmanifest'));
+      assert.equal(response.status(),200,'Public PWA manifest must be deployed');
+      const info=await response.json();
+      assert.equal(info.lang,test.expected==='en'?'en':'ko-KR');
+      console.log('PWA_MANIFEST_QA',JSON.stringify({case:test.name,manifest:state.manifest,name:info.name,lang:info.lang}));
+    }
+    if(test.expected==='en'&&target.startsWith('/evidence/')){
+      assert.ok(state.ogTitle&&/KIMSE/.test(state.ogTitle),'English Evidence OG title missing');
+      assert.equal(/[가-힣]/.test(state.title),false,'English Evidence document title is Korean');
     }
     assert.equal(state.browserLocale,test.locale);
     assert.equal(state.lang,test.expected);
