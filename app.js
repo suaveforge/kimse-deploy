@@ -1579,6 +1579,10 @@ async function demoOnboardingSteps(alive){
   save();
 
   await demoGo('consent',900,{title:'앱 설치 후 데이터 이용 동의',position:'top',hold:520});if(!alive())return false;
+  // Optional sensor permissions are inside a closed disclosure on the real app.
+  // Open it just as a person must, or hidden controls cannot be operated honestly.
+  const optionalPanel=$('.screen-consent .kimse-consent-options');
+  if(optionalPanel&&!optionalPanel.open){optionalPanel.open=true;await demoWait(180)}
   for(const selector of ['#consent-service','#consent-privacy','#consent-health','#consent-location','#consent-motion','#consent-usage','#consent-caregiver']){
     if(!await demoTap(selector,150))return false;
   }
@@ -1641,12 +1645,13 @@ function demoInjectHistoryAndChanges(){
     {at:day(1),source:'scenario',memory:84,executive:82,language:84,spatial:82,daily:85},
     {at:day(0),source:'scenario',memory:83,executive:81,language:85,spatial:83,daily:85}
   ];
-  S.monitoring.summary={status:'READY',baseline_days:14,baseline_target_days:14,level:'ATTENTION',changes:[
+  // The production monitoring API emits NORMAL or WATCH (not a fabricated severity level).
+  S.monitoring.summary={status:'READY',baseline_days:14,baseline_target_days:14,level:'WATCH',changes:[
     {metric:'sleep_minutes',baseline:425,recent:336,relative_change:-0.2094,changed:true},
     {metric:'steps',baseline:5120,recent:3460,relative_change:-0.3242,changed:true},
     {metric:'voice_pause_ratio',baseline:0.18,recent:0.23,relative_change:0.2778,changed:true}
   ],metrics:[],interpretation:'현재 결과는 변화 관찰을 위한 참고 정보이며 치매 진단을 의미하지 않습니다.'};
-  S.monitoring.alerts=[{id:'capture-alert',level:'ATTENTION',summary:'위험 · 전문가 상담 권장',detected_at:new Date().toISOString()}];
+  S.monitoring.alerts=[{id:'capture-alert',level:'WATCH',summary:'평소와 다른 생활 변화가 함께 관찰되었습니다',detected_at:new Date().toISOString()}];
   S.care=true;S.self=true;S.caregivers=[{name:'가족 보호자',relation:'자녀'}];S.consents.caregiverShare=true;save();
 }
 function demoSeedScenario(){
@@ -1676,7 +1681,7 @@ async function runRealAppTour(prepared=false){
     await demoShowCaption({title:'2주간 생활 패턴 기록',position:'bottom'},760);if(!alive())return;
     if(!await demoAnimateBaseline(alive,true))return;
 
-    // 왜 이 항목들을 보는지 근거를 보여주고, 그 근거가 개인별 기준으로 이어지는 과정을 설명한다.
+    // Why these signals matter: show the concise real-app disclosure first.
     await demoGo('evidence-proof',3900,{title:'분석 기준 · 검증된 연구 근거',position:'bottom',hold:1000});if(!alive())return;
     await demoGo('research-engine',4200,{title:'개인 기준선과 연구 근거 비교',position:'bottom',hold:1050});if(!alive())return;
 
@@ -1706,7 +1711,12 @@ function stopDemoRecording(){
   if(demoRecorder&&demoRecorder.state!=='inactive')demoRecorder.stop();
   else{if(demoRecordStream){demoRecordStream.getTracks().forEach(t=>t.stop());demoRecordStream=null}demoRestoreState();go('demo-capture')}
 }
-function playDemoTimeline(){demoPreviewOnly=true;runRealAppTour()}
+function playDemoTimeline(){
+  // Preview must use the same 450 x 800 viewport as recording, not desktop media queries.
+  document.documentElement.classList.add('capture-frame-mode');
+  demoPreviewOnly=true;
+  void runRealAppTour();
+}
 async function startDemoCapture(){
   if(!navigator.mediaDevices?.getDisplayMedia||!('MediaRecorder'in window)){feedback('이 브라우저는 현재 탭 녹화를 지원하지 않습니다. 자동조작 미리보기만 이용해주세요.','warning');return}
   try{
@@ -2074,11 +2084,13 @@ page['evidence-proof']=()=>wrap(
   '</div>'+
   '<h2 class="evidence-section-title">관찰 항목을 고를 때 참고한 연구</h2>'+
   '<p class="evidence-study-intro">아래 수치는 각 연구의 대상과 기간이며, 낌새 앱의 진단 정확도나 실증 성과가 아닙니다.</p>'+
+  '<details class="kimse-evidence-references">'+
+  '<summary><span><strong>관찰 기준에 참고한 연구 3건</strong><small>20년 추적 · 국내 검증 · 복합 신호 연구</small></span><span class="kimse-source-open">원문 근거 보기 '+I('chevron-down')+'</span></summary>'+
   '<div class="evidence-story-list">'+
     '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>20년</strong><span>1,409명</span></div><div><strong>장기 생활·건강 위험요인 추적</strong><p>오랜 기간 생활·건강 요인이 치매 위험과 어떻게 이어지는지 추적했습니다.</p><small>연구 출처 · CAIDE Dementia Risk Score</small></div></section>'+
     '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>196명</strong><span>국내 검증</span></div><div><strong>기억·주의·언어 기능 검증</strong><p>한국어 환경에서 인지기능 검사의 민감도와 특이도를 확인했습니다.</p><small>연구 출처 · MoCA-K Validation</small></div></section>'+
     '<section class="evidence-story-card"><div class="evidence-story-stat"><strong>118명</strong><span>복수 신호</span></div><div><strong>걷기·말하기·그리기를 함께 분석</strong><p>한 가지 신호보다 여러 신호를 함께 봤을 때 성능이 높았습니다.</p><small>연구 출처 · Gait + Speech + Drawing</small></div></section>'+
-  '</div>'+
+  '</div></details>'+
   '<div class="evidence-story-conclusion">'+I('route')+'<div><strong>낌새는 동의한 기록을 개인의 평소 모습과 비교합니다.</strong><p>처음 14일은 생활패턴 비교를 시작하는 기준입니다. 위 연구들이 낌새의 14일 감지 정확도를 검증했다는 뜻은 아닙니다.</p></div></div>'+
   '<div class="hero-actions evidence-registry-link"><a class="btn-kimse btn-primary-k" href="#/research-engine">연구 근거를 내 기록과 비교하는 방법</a><a class="btn-kimse btn-secondary-k" href="'+evidenceUrl()+'" target="_blank" rel="noopener">연구별 원문과 적용 범위 보기</a></div>',
   {title:'근거',narrow:true,overview:true}
@@ -2237,7 +2249,7 @@ page['monitoring-status']=()=>{
     '<div class="eyebrow">최근 변화 · 지난 14일과 비교</div>'+
     '<h1 class="page-title">'+(ready?'지금 어떤 변화가 보이는지<br>한눈에 확인하세요':'평소의 생활패턴을<br>알아가는 중이에요')+'</h1>'+
     '<p class="page-desc">'+(ready?'평소의 나와 최근 기록을 비교해, 달라진 점과 다음 행동을 순서대로 보여드립니다.':'14일 기준선이 만들어지는 동안에는 변화 알림을 서두르지 않습니다.')+'</p>'+
-    '<section class="summary-card observation-stage-card"><div class="eyebrow">1 · 지금 보이는 변화</div><div class="d-flex justify-content-between gap-2"><h2>'+esc(sm.label)+'</h2><span class="context-chip">'+esc(STAGE_SUFFICIENCY[stage?.data_sufficiency]||'확인 자료 수집 중')+'</span></div><p>'+esc(sm.desc)+'</p><div class="list-row"><span><strong>왜 이렇게 보나요?</strong><small>'+esc(stageWhyText(stage,changes))+'</small></span></div><div class="list-row"><span><strong>지금 할 일</strong><small>'+esc(stagePrimaryActionText(stage))+'</small></span></div>'+(stage?.professional_anchor?'<div class="notice"><strong>병원·전문평가 결과는 별도로 보관합니다.</strong>'+esc(professionalResultLabel(stage.professional_anchor.result_category))+' · '+esc(professionalProvenanceLabel(stage.professional_anchor.provenance))+'</div>':'')+'</section>'+
+    '<section class="summary-card observation-stage-card"><div class="eyebrow">1 · 지금 보이는 변화</div><div class="d-flex justify-content-between gap-2"><h2>'+esc(sm.label)+'</h2><span class="context-chip">'+esc(STAGE_SUFFICIENCY[stage?.data_sufficiency]||'확인 자료 수집 중')+'</span></div><p>'+esc(sm.desc)+'</p><details class="kimse-stage-explanation"><summary>변화 판단 근거 자세히 보기</summary><div class="list-row"><span><strong>왜 이렇게 보나요?</strong><small>'+esc(stageWhyText(stage,changes))+'</small></span></div></details><div class="list-row"><span><strong>지금 할 일</strong><small>'+esc(stagePrimaryActionText(stage))+'</small></span></div>'+(stage?.professional_anchor?'<div class="notice"><strong>병원·전문평가 결과는 별도로 보관합니다.</strong>'+esc(professionalResultLabel(stage.professional_anchor.result_category))+' · '+esc(professionalProvenanceLabel(stage.professional_anchor.provenance))+'</div>':'')+'</section>'+
     (ready?'<section class="monitoring-level-card level-'+status.key+'"><div class="monitoring-level-line"><span class="monitoring-level-icon">'+I(status.icon)+'</span><strong>주의해서 볼 정도 · '+status.label+'</strong></div><h2>'+status.action+'</h2></section>':'')+
     (changeHtml?'<h2 class="section-title">생활기록에서는 무엇이 달라졌나요?</h2><div class="result-change-grid">'+changeHtml+'</div>':'<div class="monitoring-stable-note"><strong>'+(ready?'표시할 생활기록 변화 항목이 없습니다.':'비교할 생활기록을 모으고 있습니다.')+'</strong></div>')+
     (missing?'<section class="summary-card"><h3>더 확인하면 좋은 정보</h3><ul>'+missing+'</ul></section>':'')+

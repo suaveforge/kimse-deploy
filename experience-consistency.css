@@ -1,0 +1,150 @@
+/* KIMSE: single real-app composition for 450x800 video and narrow mobile.
+ * Extend existing Tabler/senior design primitives rather than maintaining a fake filming UI.
+ * Content remains reachable by scrolling / disclosure; do not crop medical explanations.
+ */
+.kimse-app, .kimse-app .page, .kimse-app .page > * { min-width:0; }
+.kimse-app img, .kimse-app svg { max-width:100%; }
+.kimse-app .page-title, .kimse-app .page-desc,
+.kimse-app .research-personal-note, .kimse-app .screen-footnote {
+  word-break:keep-all; overflow-wrap:break-word;
+}
+.kimse-app .hero-actions > *, .kimse-app .card-grid > *,
+.kimse-app .research-factor-row > * { min-width:0; }
+
+/* Evidence is a real user screen, not a slide: concise four-signal summary first.
+ * Original study details are accessible to every user with <details>. */
+.screen-evidence-proof .kimse-evidence-references {
+  margin:12px 0 14px; padding:0; border:1px solid #d3e3de;
+  border-radius:17px; background:#fff; overflow:hidden;
+}
+.screen-evidence-proof .kimse-evidence-references > summary {
+  list-style:none; cursor:pointer; display:flex; align-items:center;
+  justify-content:space-between; gap:10px; padding:14px 15px;
+  min-height:76px; color:#153f34;
+}
+.screen-evidence-proof .kimse-evidence-references > summary::-webkit-details-marker { display:none; }
+.screen-evidence-proof .kimse-evidence-references > summary > span:first-child { min-width:0; }
+.screen-evidence-proof .kimse-evidence-references > summary strong,
+.screen-evidence-proof .kimse-evidence-references > summary small { display:block; line-height:1.35; }
+.screen-evidence-proof .kimse-evidence-references > summary strong { font-size:17px; font-weight:850; }
+.screen-evidence-proof .kimse-evidence-references > summary small { font-size:14px; color:#547065; margin-top:4px; }
+.screen-evidence-proof .kimse-source-open { flex:0 0 auto; font-size:14px; font-weight:800; color:#137455; }
+.screen-evidence-proof .kimse-evidence-references[open] .kimse-source-open i { display:inline-block; transform:rotate(180deg); }
+.screen-evidence-proof .kimse-evidence-references .evidence-story-list { margin:0 12px 13px; padding-top:12px; border-top:1px solid #e5eee9; }
+.screen-evidence-proof .kimse-evidence-references > summary:focus-visible { outline:3px solid #155bba; outline-offset:-3px; }
+
+/* Use the same responsive hierarchy on an actual phone and in the 450px recorder.
+ * The outer desktop viewport must not select a desktop layout inside the recorder. */
+@media(max-width:520px) {
+  .screen-evidence-proof .evidence-signals { gap:8px!important; margin:10px 0 14px!important; }
+  .screen-evidence-proof .evidence-signal { min-width:0; padding:11px 12px!important; }
+  .screen-evidence-proof .evidence-section-title { margin:12px 0 7px!important; }
+  .screen-evidence-proof .evidence-study-intro { margin-bottom:8px!important; }
+  .screen-research-engine .research-source-stack { grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important; }
+  .screen-research-engine .research-source { display:flex!important;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;gap:5px!important;min-width:0;min-height:88px!important;padding:10px 6px!important; }
+  .screen-research-engine .research-source i { font-size:22px!important; }
+  .screen-research-engine .research-source small { font-size:13px!important;line-height:1.25!important; }
+  .screen-research-engine .research-source strong { font-size:15px!important;line-height:1.3!important; }
+  .screen-research-engine .research-review-gate { grid-template-columns:28px minmax(0,1fr)!important; padding:10px 12px!important; }
+  .screen-research-engine .research-review-gate span { grid-column:2!important; }
+  .screen-research-engine .research-personal-engine { gap:7px!important; margin:8px 0!important; }
+  .screen-research-engine .research-factor-panel { padding:11px 12px!important; }
+  .screen-research-engine .research-factor-row { margin-top:6px!important;gap:6px!important; }
+  .screen-research-engine .research-factor-row em { font-size:14px!important; padding:5px 9px!important; }
+  .screen-brain-map .brain-domain-tabs { display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;overflow:visible!important;margin:7px 0 9px!important; }
+  .screen-brain-map .brain-domain-tabs > button { grid-column:auto!important;min-width:0!important;
+    min-height:48px!important;padding:7px 5px!important;font-size:14px!important;line-height:1.25!important;white-space:normal!important; }
+  .screen-brain-map .brain-domain-tabs > button span { font-size:17px!important; }
+  .screen-brain-map .brain-visual { height:195px!important;max-height:195px!important; }
+  .screen-brain-map .brain-map-stage { padding:11px 12px!important; }
+  .screen-brain-map .brain-focus-summary { padding:10px 12px!important;margin:8px 0!important; }
+  .screen-brain-trends .trend-domain-tabs { display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;overflow:visible!important; }
+  .screen-brain-trends .trend-domain-tabs button { min-width:0!important;width:100%!important;min-height:44px!important;padding:7px 5px!important;font-size:14px!important;white-space:normal!important; }
+  .screen-brain-trends .overall-trend { height:205px!important; }
+  .screen-caregiver-home .kimse-caregiver-quick .card-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+  .screen-consent .kimse-consent-options { min-width:0; }
+}
+.capture-frame-mode .screen-evidence-proof .evidence-signals { gap:8px!important;margin:10px 0 14px!important; }
+.capture-frame-mode .screen-evidence-proof .evidence-signal { min-width:0;padding:11px 12px!important; }
+.capture-frame-mode .screen-evidence-proof .evidence-section-title { margin:12px 0 7px!important; }
+.capture-frame-mode .screen-evidence-proof .evidence-study-intro { margin-bottom:8px!important; }
+.capture-frame-mode .screen-research-engine .research-source-stack { display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important; }
+.capture-frame-mode .screen-research-engine .research-source { display:flex!important;flex-direction:column!important;justify-content:center;align-items:center;text-align:center;gap:5px!important;min-width:0;min-height:88px!important;padding:10px 6px!important; }
+.capture-frame-mode .screen-research-engine .research-source i { font-size:22px!important; }
+.capture-frame-mode .screen-research-engine .research-source small { font-size:13px!important; }
+.capture-frame-mode .screen-research-engine .research-source strong { font-size:15px!important; }
+.capture-frame-mode .screen-research-engine .research-review-gate { grid-template-columns:28px minmax(0,1fr)!important;padding:10px 12px!important; }
+.capture-frame-mode .screen-research-engine .research-personal-engine { gap:7px!important;margin:8px 0!important; }
+.capture-frame-mode .screen-research-engine .research-factor-panel { padding:11px 12px!important; }
+.capture-frame-mode .screen-research-engine .research-factor-row { margin-top:6px!important; }
+.capture-frame-mode .screen-brain-map .brain-domain-tabs { display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;overflow:visible!important;margin:7px 0 9px!important; }
+.capture-frame-mode .screen-brain-map .brain-domain-tabs > button { grid-column:auto!important;min-height:48px!important;min-width:0!important;padding:7px 5px!important;font-size:14px!important;white-space:normal!important; }
+.capture-frame-mode .screen-brain-map .brain-visual { height:195px!important;max-height:195px!important; }
+.capture-frame-mode .screen-brain-map .brain-map-stage { padding:11px 12px!important; }
+.capture-frame-mode .screen-brain-map .brain-focus-summary { padding:10px 12px!important;margin:8px 0!important; }
+.capture-frame-mode .screen-brain-trends .trend-domain-tabs { display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;overflow:visible!important; }
+.capture-frame-mode .screen-brain-trends .trend-domain-tabs button { width:100%!important;min-width:0!important;min-height:44px!important;padding:7px 5px!important;font-size:14px!important;white-space:normal!important; }
+.capture-frame-mode .screen-brain-trends .overall-trend { height:205px!important; }
+.capture-frame-mode .screen-caregiver-home .kimse-caregiver-quick .card-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+
+/* For real screens use native scrolling (not hidden controls), with a predictable
+ * top viewport and no horizontal page motion. */
+@media(max-width:520px) {
+ .kimse-app { overflow-x:clip; }
+ .kimse-app .page { width:100%;min-width:0;padding-inline:16px; }
+ .kimse-app .page .context-chip, .kimse-app .page .research-source { max-width:100%; }
+}
+.capture-frame-mode .kimse-app { overflow-x:hidden!important; }
+.capture-frame-mode .page { max-width:100%!important; min-width:0!important; }
+@media(min-width:521px) {
+  .capture-frame-mode .kimse-app { box-shadow:0 18px 50px rgba(25,50,92,.20); }
+}
+@media(prefers-reduced-motion:reduce) {
+ .kimse-evidence-references .kimse-source-open i { transition:none; }
+}
+
+/* Monitoring: next action remains visible; supporting rationale is expandable. */
+.screen-monitoring-status .kimse-stage-explanation { margin:8px 0 4px;padding:0;border-top:1px solid #e5ede9; }
+.screen-monitoring-status .kimse-stage-explanation > summary { cursor:pointer;display:flex;align-items:center;min-height:45px;font-size:15px;font-weight:800;color:#165f4a; }
+.screen-monitoring-status .kimse-stage-explanation[open] > .list-row { margin:0 0 9px;padding:9px 11px;border-radius:12px;background:#f4faf7; }
+@media(max-width:520px) {
+ .screen-monitoring-status .observation-stage-card { padding:13px 14px!important;margin:9px 0!important; }
+ .screen-monitoring-status .observation-stage-card h2 { font-size:18px!important;line-height:1.25!important;margin:3px 0; }
+ .screen-monitoring-status .observation-stage-card p { font-size:15px!important;line-height:1.45!important;margin:5px 0; }
+ .screen-monitoring-status .observation-stage-card .list-row { padding:8px 10px;min-height:0; }
+ .screen-monitoring-status .page-desc { font-size:15px!important;margin-bottom:8px!important; }
+ .screen-monitoring-status .page-title { font-size:27px!important;line-height:1.19!important; }
+ .screen-monitoring-status .monitoring-level-card { margin:9px 0!important;padding:11px 13px!important; }
+}
+.capture-frame-mode .screen-monitoring-status .observation-stage-card { padding:13px 14px!important;margin:9px 0!important; }
+.capture-frame-mode .screen-monitoring-status .observation-stage-card h2 { font-size:18px!important;line-height:1.25!important; }
+.capture-frame-mode .screen-monitoring-status .observation-stage-card p { font-size:15px!important;line-height:1.45!important;margin:5px 0!important; }
+.capture-frame-mode .screen-monitoring-status .observation-stage-card .list-row { padding:8px 10px!important;min-height:0!important; }
+.capture-frame-mode .screen-monitoring-status .page-desc { font-size:15px!important;margin-bottom:8px!important; }
+.capture-frame-mode .screen-monitoring-status .page-title { font-size:27px!important;line-height:1.19!important; }
+.capture-frame-mode .screen-monitoring-status .monitoring-level-card { margin:9px 0!important;padding:11px 13px!important; }
+
+/* Accessibility at narrow widths and browser zoom: do not squeeze 3 columns
+ * into a 220px equivalent viewport. Keep controls legible and tappable. */
+@media(max-width:360px){
+ .screen-research-engine .research-source-stack { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+ .screen-research-engine .research-source:last-child:nth-child(odd) { grid-column:1/-1; }
+ .screen-brain-map .brain-domain-tabs,
+ .screen-brain-trends .trend-domain-tabs { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+}
+@media(max-width:260px){
+ .screen-research-engine .research-source-stack,
+ .screen-brain-map .brain-domain-tabs,
+ .screen-brain-trends .trend-domain-tabs { grid-template-columns:minmax(0,1fr)!important; }
+ .screen-research-engine .research-source:last-child:nth-child(odd) { grid-column:auto; }
+ .screen-evidence-proof .kimse-evidence-references > summary { flex-wrap:wrap; }
+ .screen-evidence-proof .kimse-source-open { flex-basis:100%; }
+}
+/* Video should not silently drop the caregiver header that real users see. */
+.capture-frame-mode.real-app-capture-running #app:has(.screen-caregiver-home) .app-header { display:block!important; }
+.capture-frame-mode.real-app-capture-running #app:has(.screen-caregiver-home) .screen-caregiver-home { padding-top:12px!important; }
+.large-text .screen-evidence-proof .kimse-evidence-references > summary strong { font-size:20px!important; }
+.large-text .screen-evidence-proof .kimse-evidence-references > summary small { font-size:17px!important; }
+.high-contrast .screen-evidence-proof .kimse-evidence-references { border:2px solid #111; background:#fff; }

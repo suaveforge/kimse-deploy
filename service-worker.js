@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261015-english-and-jssip-browser';
+const CACHE = 'kimse-pwa-20261015-real-app-video-ui-consistency';
 const CORE = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const CORE = [
   './premium-ux.css',
   './govtech-p0.css',
   './senior-journey.css',
+  './experience-consistency.css',
   './app.js',
   './clinical-submission.js',
   './native-bridge.js',

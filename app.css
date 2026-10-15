@@ -1482,6 +1482,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* Keyboard skip-link remains accessible on screen; print only contains the report. */
 @media print{.skip-link,.offline-banner,#announcer,.visually-hidden{display:none!important}}
+
 /* Reusable patient-carried source trace: inline disclosure on screen, short source
    path identifiers on paper. No hidden interactive content is printed. */
 .clinical-specialty-source-summary{display:block;margin-top:5px;font-size:10px;color:#526a78}

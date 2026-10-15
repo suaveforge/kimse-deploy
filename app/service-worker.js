@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261014-clinical-event-context-35';
+const CACHE = 'kimse-pwa-20261015-real-app-video-ui-consistency';
 const CORE = [
   './',
   './index.html',
@@ -8,12 +8,17 @@ const CORE = [
   './premium-ux.css',
   './govtech-p0.css',
   './senior-journey.css',
+  './experience-consistency.css',
   './app.js',
   './clinical-submission.js',
   './native-bridge.js',
   './authhub.js',
   './push.js',
   './call-transport.js',
+  './jssip.browser.js',
+  './kimse-en.json',
+  './kimse-en-auto.json',
+  './localizehub-runtime.js',
   './accessibility-enhancements.js',
   './premium-ux.js',
   './govtech-p0.js',
