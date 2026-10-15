@@ -20,7 +20,7 @@ jobs:
         run: npm install --no-save --no-package-lock jssip@3.13.8 esbuild@0.25.12
       - name: Bundle current JsSIP release for native browser execution
         run: |
-          node ./node_modules/esbuild/bin/esbuild ./node_modules/jssip/lib/JsSIP.js \
+          ./node_modules/.bin/esbuild ./node_modules/jssip/lib/JsSIP.js \
             --bundle --format=iife --global-name=JsSIP --platform=browser \
             --target=es2020 --minify --outfile=./jssip.browser.js
           test -s ./jssip.browser.js
