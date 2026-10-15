@@ -459,7 +459,7 @@ window.KIMSE_COMPETITOR_RECORDS=[
     "name": "오늘건강",
     "owner": "보건복지부 · 한국건강증진개발원",
     "kind": "공공 건강관리",
-    "tag": "경쟁 + 데이터 연계 후보",
+    "tag": "인접 경쟁 · 공공 운영 참고",
     "brand": "#eea500",
     "logo": "https://play-lh.googleusercontent.com/lNImGhRCIcymjep5e2HvEeEmJibupaWILgBNHiDnDdFRw9yASgPh7Xm2hmDKRei2F3-On8vmjRpgOj8FG__kzg=w240-h480-rw",
     "one": "보건소가 제공하는 AI·IoT 어르신 건강관리 참여 앱",
@@ -493,8 +493,62 @@ window.KIMSE_COMPETITOR_RECORDS=[
     ],
     "data": "오늘건강→낌새 직접 기록 접근 경로는 확인되지 않음. 워치 원천 기기·앱 데이터 공통 제공 여부와 공공 제휴를 각각 검증.",
     "access": "직접 연동 미확인",
-    "relationship": "공공 건강관리 경쟁 및 데이터 접점 후보",
+    "relationship": "건강측정·활동관리 영역 인접 경쟁 · 보건소 운영 참고",
+    "competition": {
+      "overlap": [
+        "걸음수·혈압·혈당 등 건강지표 기록",
+        "전문인력의 비대면 데이터 점검과 맞춤 건강상담"
+      ],
+      "distinction": "오늘건강은 만성질환·허약 예방 및 건강습관 개선이 중심. 낌새는 개인별 인지·행동 변화의 경과와 가족·진료용 기록에 초점. 낌새 성능의 우위는 아직 실증되지 않음.",
+      "risk": "공공사업에서 이미 기기와 전문 상담을 제공해 단순 건강기록만으로 경쟁하기 어려움"
+    },
+    "usage": {
+      "audience": "보건소 AI·IoT 사업에 참여하는 65세 이상 어르신",
+      "operations": "방문간호사·운동사·영양사가 건강정보를 점검하고 상담",
+      "receive": "보급 기기(활동량계·혈압계·혈당계 등) 측정 정보가 앱으로 연동",
+      "device": "원천 기기가 공통 건강저장소에도 기록하는지 기기·OS별 확인",
+      "export": "오늘건강 자체 기록의 외부 제공 API 및 이용자 다운로드 가능 여부 미확인",
+      "institution": "보건소 내부 기록의 연계는 기관 협의·권한 및 목적별 동의 검토 필요",
+      "status": "기기 공통데이터 이용은 검증 필요 · 오늘건강→낌새 연동 미확인",
+      "questions": [
+        "활동량계 모델과 Health Connect 등 건강정보 기록 여부",
+        "개인이 자신의 측정 기록을 열람·파일로 받을 수 있는지",
+        "방문간호사의 인지·행동 경과 요약 활용 수요"
+      ]
+    },
+    "publicCase": {
+      "title": "양천구 · 2026 AI·IoT 어르신 건강관리",
+      "sourceLabel": "양천구 발표 인용 · 헤럴드경제 2026-01-11",
+      "sourceUrl": "https://v.daum.net/v/20260111085051033",
+      "stats": [
+        [
+          "방문간호사",
+          "28명"
+        ],
+        [
+          "AI·IoT 전담",
+          "4명"
+        ],
+        [
+          "데이터 점검",
+          "주 1회"
+        ],
+        [
+          "건강관리",
+          "6개월"
+        ]
+      ],
+      "flow": [
+        "건강측정기기",
+        "오늘건강 앱",
+        "보건소 전문인력",
+        "맞춤 건강상담"
+      ],
+      "description": "양천구가 발표한 계획에서는 대상자 건강상태에 따라 스마트밴드 등 기기를 제공하고 앱에 측정값을 연동한다. 전문인력이 주기적으로 점검하고 이상 수치·장기 미이용 때 전화로 확인한다.",
+      "note": "보건소 운영사례이며 낌새 연동·협력 확정 사례가 아님. 방문건강관리와 장기요양보험 방문간호도 구분."
+    },
     "sources": [
+      ["양천구 2026년 어르신 건강관리 발표","https://v.daum.net/v/20260111085051033","양천구 발표 인용 보도"],
       [
         "오늘건강 Google Play",
         "https://play.google.com/store/apps/details?id=kr.or.khealth.smhc&hl=ko",
@@ -512,7 +566,7 @@ window.KIMSE_COMPETITOR_RECORDS=[
     "name": "채움건강",
     "owner": "보건복지부 · 한국건강증진개발원",
     "kind": "공공 건강관리",
-    "tag": "경쟁 + 데이터 연계 후보",
+    "tag": "인접 경쟁 · 공공 운영 참고",
     "brand": "#43337e",
     "logo": "https://play-lh.googleusercontent.com/3Wg8Du3b5M7EcSp3fK131U6YCk3Q99XnoX3gUYnZAGZpr1sedvg2Oe_pSY_qCOOpoAEeDzrkw5JS3MiETtA1xQ=w240-h480-rw",
     "one": "보건소 모바일 헬스케어와 연계되는 일상 건강관리 앱",
@@ -546,8 +600,45 @@ window.KIMSE_COMPETITOR_RECORDS=[
     ],
     "data": "건강정보의 '수신' 기능 확인. 채움건강→낌새로의 직접 반출·Health Connect 쓰기 여부는 미확인. 사용자 동의 기반 공통 데이터 접근 별도 실증 필요.",
     "access": "수신 확인 · 외부 제공 미확인",
-    "relationship": "공공 건강관리 경쟁 및 데이터 접점 후보",
+    "relationship": "건강기록·상담 영역 인접 경쟁 · 공통 데이터 경로 검토",
+    "competition": {
+      "overlap": [
+        "걸음수·수면·건강측정정보 기록과 타 앱 데이터 수신",
+        "보건소 사업 참여자의 전문인력 건강상담"
+      ],
+      "distinction": "채움건강은 보편적 건강관리와 보건소 모바일 헬스케어에 중점. 낌새는 인지·행동의 장기 변화와 가족·의료 상담용 경과 정리에 초점을 두되, 성능 우위는 미검증.",
+      "risk": "Health Connect 등 범용 연계와 건강상담 기능이 있어 단순 수집 기능만으로 차별화하기 어려움"
+    },
+    "usage": {
+      "audience": "일반 이용자의 건강관리와 보건소 사업 참여자의 전문 상담 기능을 구분",
+      "operations": "보건소 모바일 헬스케어 참여자는 사전 검진과 보건소 의료·건강 전문가 상담",
+      "receive": "삼성헬스 등 타 건강관리 앱 및 Android Health Connect에서 건강정보 수신(수면 포함)",
+      "device": "기기 내 공통 건강저장소에 기록된 항목을 낌새가 별도 권한으로 읽을 수 있는지 확인",
+      "export": "채움건강 내부 기록의 외부 API·내보내기·Health Connect 쓰기 여부 미확인",
+      "institution": "보건소 도입·공급·데이터 제공은 사업 담당기관의 별도 협의 대상",
+      "status": "채움건강의 외부 건강정보 수신 확인 · 채움건강→낌새 반출 미확인",
+      "questions": [
+        "Health Connect의 데이터 항목과 생산 앱 출처",
+        "채움건강 자체 기록의 쓰기·내보내기 지원 여부",
+        "보편 가입자와 보건소 사업 참여자의 서비스 차이"
+      ]
+    },
+    "publicCase": {
+      "title": "보건소 모바일 헬스케어 · 2026 운영체계",
+      "sourceLabel": "2026년 보건소 모바일 헬스케어 운영매뉴얼",
+      "sourceUrl": "https://www.seoulhp.com/seoul/cmmn/file/fileDown.do?atchFileId=e86880790fb04938b31fd0a65274f9b1&fileSn=2&menuNo=100136",
+      "stats": [],
+      "flow": [
+        "건강검진·등록",
+        "채움건강 앱·기기",
+        "보건소 전문상담",
+        "건강관리·평가"
+      ],
+      "description": "공식 운영매뉴얼은 건강검진·설문 및 기기 사용 안내 후 채움건강 앱에서 전문인력 상담을 받는 절차를 설명한다. 일반 앱 이용과 보건소 사업 이용은 구별된다.",
+      "note": "양천구 오늘건강 사업의 28명·4명 운영 수치를 채움건강 운영 규모로 옮기지 않음. 낌새 협력도 미확정."
+    },
     "sources": [
+      ["2026년 보건소 모바일 헬스케어 운영매뉴얼","https://www.seoulhp.com/seoul/cmmn/file/fileDown.do?atchFileId=e86880790fb04938b31fd0a65274f9b1&fileSn=2&menuNo=100136","공공 운영매뉴얼"],
       [
         "채움건강 Google Play",
         "https://play.google.com/store/apps/details?id=kr.go.khealthmhc&hl=ko",
