@@ -27,6 +27,25 @@ async function run(){
       const t=document.querySelector('[data-kimse-locale-select]');
       return {url:location.href,lang:document.documentElement.lang,selector:t?.value,heading:document.querySelector('h1')?.innerText,hangulFirstElements:hangul.length,examples:visible.filter(x=>/[가-힣]/.test(x)).slice(0,6),overflow:document.documentElement.scrollWidth>window.innerWidth+12};
     });
+    if(dest==='observation.html'&&result.overflow){
+      const diag=await page.evaluate(()=>{
+        const vw=window.innerWidth;
+        const list=[];
+        for(const el of document.querySelectorAll('body *')){
+          const b=el.getBoundingClientRect();
+          if(b.right<=vw+10||!b.width)continue;
+          let clipped=false;
+          for(let parent=el.parentElement;parent&&parent!==document.body;parent=parent.parentElement){
+            if(['auto','hidden','scroll','clip'].includes(getComputedStyle(parent).overflowX)){clipped=true;break}
+          }
+          if(clipped)continue;
+          list.push({tag:el.tagName,cls:typeof el.className==='string'?el.className.slice(0,80):'',id:el.id,right:Math.round(b.right),width:Math.round(b.width),text:el.textContent?.trim().slice(0,90)});
+          if(list.length>=16)break;
+        }
+        return {viewport:vw,body:document.documentElement.scrollWidth,list};
+      });
+      console.log('OBSERVATION_MOBILE_OVERFLOW',JSON.stringify(diag));
+    }
     console.log('EVIDENCE_NAV_QA',JSON.stringify({dest,...result}));
     assert.equal(result.selector,'en');
     assert.equal(new URL(result.url).searchParams.get('lang'),'en');
