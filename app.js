@@ -867,6 +867,12 @@ function formatMonitoringValue(metric,value){
   if(metric==='task_response_ms')return Math.round(n)+(en?' ms':'ms');
   return Number.isInteger(n)?n.toLocaleString(locale):String(Math.round(n*100)/100);
 }
+function formatDistanceSummaryMeters(value){
+  const n=Math.max(0,Math.round(Number(value)||0)),locale=kimseDisplayLocale();
+  if(locale==='en-US')return n>=1609.344?(n/1609.344).toFixed(1)+' mi':Math.round(n*3.28084).toLocaleString(locale)+' ft';
+  if(locale==='en-GB')return n>=1000?(n/1000).toFixed(1)+' km':n.toLocaleString(locale)+' m';
+  return n.toLocaleString('ko-KR')+'m';
+}
 const signalId=()=>window.crypto&&crypto.randomUUID?crypto.randomUUID():'sig-'+Date.now()+'-'+Math.random().toString(36).slice(2);
 const monitoringEnabled=()=>!!(S.onboarding.completed&&S.consents.service&&S.consents.privacy&&S.consents.health);
 const localDayKey=(d=new Date())=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
@@ -2163,8 +2169,8 @@ function collectionStateItems(){
   const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?(d.locationInitialized?'오늘 위치 확인':'위치 신호 대기'):'권한 확인 전';
   const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?(d.motionInitialized?'움직임 기록 있음':'센서 신호 대기'):'권한 확인 전';
   const voiceCount=(S.initial.voiceSamples||[]).filter(Boolean).length,usageSeen=!!observedToday('app_sessions')||d.appActiveMs>0;
-  const movementValue=d.locationInitialized?Math.round(d.movementDistanceM).toLocaleString('ko-KR')+'m':'미수집';
-  const radiusValue=d.locationInitialized?Math.round(d.locationRadiusM).toLocaleString('ko-KR')+'m':'미수집';
+  const movementValue=d.locationInitialized?formatDistanceSummaryMeters(d.movementDistanceM):'미수집';
+  const radiusValue=d.locationInitialized?formatDistanceSummaryMeters(d.locationRadiusM):'미수집';
   const outingValue=d.locationInitialized?(d.outings?'확인됨':'관찰되지 않음'):'미수집';
   const motionValue=d.motionInitialized?(d.motionActiveMs>=60000?Math.round(d.motionActiveMs/60000)+'분':'1분 미만'):'미수집';
   const usageValue=!usageOn?'미수집':usageSeen?(d.appActiveMs>=60000?Math.round(d.appActiveMs/60000)+'분':'1분 미만'):'수집 시작 전';
@@ -2315,7 +2321,7 @@ page['brain-trends']=()=>{
     '<div class="segmented compact-range" role="group" aria-label="변화 조회 기간"><button type="button" data-brain-range="day" aria-pressed="'+(S.brainRange==='day')+'" class="'+(S.brainRange==='day'?'active':'')+'">일</button><button type="button" data-brain-range="week" aria-pressed="'+(S.brainRange==='week')+'" class="'+(S.brainRange==='week'?'active':'')+'">주</button><button type="button" data-brain-range="month" aria-pressed="'+(S.brainRange==='month')+'" class="'+(S.brainRange==='month'?'active':'')+'">월</button><button type="button" data-brain-range="year" aria-pressed="'+(S.brainRange==='year')+'" class="'+(S.brainRange==='year'?'active':'')+'">연</button></div>'+
     '<div class="trend-domain-tabs" role="group" aria-label="변화 관찰 영역"><button type="button" data-brain-domain="overall" aria-pressed="'+(key==='overall')+'" class="'+(key==='overall'?'active':'')+'">전체</button>'+BRAIN_DOMAINS.map(([k,t,r,icon])=>'<button type="button" data-brain-domain="'+k+'" aria-pressed="'+(key===k)+'" class="'+(key===k?'active':'')+'">'+icon+' '+t+'</button>').join('')+'</div>'+
     '<section class="trend-hero one-chart"><div class="trend-hero-head"><div><small>'+rangeLabel+'</small><strong>'+(key==='overall'?'전체 기능':meta[1])+'</strong></div><span>'+rows.length+'회 기록</span></div>'+trendSeriesSvg(key)+'</section>'+
-    (attention?'<div class="trend-attention-note"><span></span><div><strong>'+new Date(attention.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})+' · 눈에 띄는 변화</strong><small>'+esc(attention.flagLabel||'평소보다 크게 달라진 기록이 있어 노란 점으로 표시했습니다.')+'</small></div></div>':'')+
+    (attention?'<div class="trend-attention-note"><span></span><div><strong>'+new Date(attention.at).toLocaleDateString(kimseDisplayLocale(),{month:'numeric',day:'numeric'})+' · 눈에 띄는 변화</strong><small>'+esc(attention.flagLabel||'평소보다 크게 달라진 기록이 있어 노란 점으로 표시했습니다.')+'</small></div></div>':'')+
     '<p class="screen-footnote">실제 기록만 표시하며 기록이 없는 날짜를 임의로 채우지 않습니다.</p>',
     {title:'변화 흐름',narrow:true,overview:true}
   );
@@ -2379,7 +2385,7 @@ page['training-play']=()=>{const x=TRAINING[S.selectedTraining]||TRAINING.memory
 page.medication=()=>wrap(`<h1 class="page-title">복약 관리</h1><p class="page-desc">등록한 약마다 복용 여부를 바로 기록할 수 있어요.</p><div class="list">${S.medicines.map(m=>row('💊 '+m.name,`${m.time} · ${m.note||'복용 메모 없음'}`,`<button class="btn-kimse ${m.taken?'btn-secondary-k':'btn-primary-k'}" data-med-id="${m.id}">${m.taken?'복용 완료 ✓':'복용 기록'}</button>`)).join('')}</div><div class="hero-actions">${btn('+ 약 등록하기','medication-add','btn-blue-k')}</div>`,{title:'복약 관리',narrow:true});
 page['medication-add']=()=>wrap(`<h1 class="page-title">약 등록</h1><div class="form-stack"><div class="field"><label for="med-name">약 이름</label><input id="med-name" placeholder="예: 혈압약"></div><div class="field"><label for="med-time">복용 시간</label><input id="med-time" type="time" value="08:00"></div><div class="field"><label for="med-note">복용 메모</label><input id="med-note" placeholder="예: 아침 식사 후"></div><button id="save-med" class="btn-kimse btn-primary-k">등록하기</button></div>`,{title:'약 등록',narrow:true});
 const HEALTH_META={sleep:['🌙','수면','지난밤'],steps:['🚶','활동량','오늘'],pressure:['❤️','혈압','최근']};
-const liveStepText=()=>{const raw=S.monitoring?.liveSteps;return raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>=0?Math.round(Number(raw)).toLocaleString('ko-KR')+' 걸음':''};
+const liveStepText=()=>{const raw=S.monitoring?.liveSteps,loc=kimseDisplayLocale();return raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>=0?Math.round(Number(raw)).toLocaleString(loc)+(loc==='ko-KR'?' 걸음':' steps'):''};
 const healthDisplayValue=k=>k==='steps'&&liveStepText()?liveStepText():S.health[k]||'기록 없음';
 page.health=()=>wrap(`<h1 class="page-title">건강 기록</h1><p class="page-desc">오늘의 상태를 쉽고 빠르게 기록해요.</p><section class="kimse-health-daily" aria-labelledby="kimse-health-daily-title"><h2 class="kimse-health-section-title" id="kimse-health-daily-title">오늘의 기록</h2>${liveStepText()?`<div class="kimse-health-live"><span>오늘 걸음 수 · 기기 측정</span><strong>${liveStepText()}</strong><small>${esc(S.monitoring.liveStepProvider||'기기 걸음 센서')}</small></div>`:''}<div class="list kimse-health-main-list">${Object.entries(HEALTH_META).map(([k,x])=>`<button class="list-row menu-row" data-health="${k}"><span><strong>${x[0]} ${x[1]}</strong><small>${x[2]}</small></span><span class="kimse-health-value"><strong>${healthDisplayValue(k)}</strong>${I('chevron-right')}</span></button>`).join('')}</div></section><section class="kimse-health-mood" aria-labelledby="kimse-health-mood-title"><h2 class="kimse-health-section-title" id="kimse-health-mood-title">오늘의 기분</h2><div class="answer-grid kimse-health-mood-options">${[['🙂','좋아요'],['😐','보통이에요'],['🙁','안 좋아요']].map(x=>`<button class="answer" data-mood="${x[1]}" aria-pressed="${S.mood===x[1]}"><span class="emoji" aria-hidden="true">${x[0]}</span><span>${x[1]}</span></button>`).join('')}</div></section><section class="kimse-health-clinical" aria-labelledby="kimse-health-clinical-title"><h2 class="kimse-health-section-title" id="kimse-health-clinical-title">병원 기록과 특별한 변화</h2><div class="list"><button class="list-row menu-row" data-go="clinical-context-event"><span><strong>약 변경·낙상 등 기록</strong><small>평소와 달랐던 일을 남겨요</small></span>${I('chevron-right')}</button><button class="list-row menu-row" data-go="medical-records"><span><strong>병원·검사 결과 기록</strong><small>${clinicalRecordStats().total?clinicalRecordStats().total+'건 기록됨':'진료·검사 결과를 보관해요'}</small></span>${I('chevron-right')}</button></div></section>`,{title:'건강 기록',bottom:true,active:'health'});
 function healthNumberControl(id,label,value,suffix,step=1){
@@ -2398,7 +2404,7 @@ page['health-detail']=()=>{
   const live=Number.isFinite(fromSensor)&&fromSensor>0?Math.round(fromSensor):null;
   const fields=k==='steps'?
     '<p class="page-desc">오늘 측정한 걸음 수를 숫자로 입력하세요. 기기에서 확인한 값이 있으면 그대로 가져올 수 있어요.</p>'+
-    (live?'<button type="button" class="kimse-health-use-live" data-health-live-step>기기에서 확인한 '+live.toLocaleString('ko-KR')+'걸음 가져오기</button>':'')+
+    (live?'<button type="button" class="kimse-health-use-live" data-health-live-step>'+(kimseDisplayLocale()==='ko-KR'?'기기에서 확인한 '+live.toLocaleString('ko-KR')+'걸음 가져오기':'Use '+live.toLocaleString(kimseDisplayLocale())+' steps from device')+'</button>':'')+
     healthNumberControl('health-value','걸음 수',measuredSteps===null?'':Math.round(measuredSteps),'걸음',500):
     '<p class="page-desc">혈압계에 표시된 위·아래 숫자를 각각 적어주세요. 낌새에서 임의로 측정값을 만들지 않아요.</p>'+
     healthNumberControl('health-pressure-sys','높은 혈압',pressure[0]||'','mmHg',5)+
