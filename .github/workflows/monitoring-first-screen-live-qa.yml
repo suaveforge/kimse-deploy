@@ -1,0 +1,33 @@
+name: KIMSE Monitoring One-Screen Live Pixel QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'premium-ux.js'
+      - 'experience-consistency.css'
+      - 'service-worker.js'
+      - 'tests/monitoring-first-screen-live-qa.mjs'
+      - '.github/workflows/monitoring-first-screen-live-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-monitoring-pixels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser
+        run: |
+          npm install playwright --no-save --no-fund --no-audit
+          npx playwright install --with-deps chromium
+      - name: Verify actual published app at 450x800 mobile and capture mode
+        run: node tests/monitoring-first-screen-live-qa.mjs
+      - name: Upload browser screenshots and precise geometry
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitoring-first-screen-live-450x800
+          path: artifacts/monitoring-first-screen/
+          if-no-files-found: ignore
