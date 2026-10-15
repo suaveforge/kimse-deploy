@@ -59,8 +59,15 @@ async function run(){
     await page.waitForSelector('.clinical-explorer',{timeout:20000});
     await page.locator('#clinical-target-department').fill('신경과');
     await page.locator('#clinical-target-department').press('Tab');
-    await page.waitForFunction(()=>document.querySelectorAll('.clinical-print-source-group li').length===54,{timeout:30000});
-    ok(await page.locator('.clinical-print-source-group li').count()===54,'54-complete-source-records');
+    // The three long-form source groups have exactly 54 synthetic records.
+    // New independent cognition/profile/context annexes may add valid rows;
+    // never count them as lost/extra rows of these three groups.
+    const primarySelector='.clinical-print-source-records > div[class="clinical-print-source-group"] > ol > li';
+    await page.waitForFunction(selector=>document.querySelectorAll(selector).length===54,
+      primarySelector,{timeout:30000});
+    ok(await page.locator(primarySelector).count()===54,'54-complete-primary-source-records');
+    ok(await page.locator('[data-clinical-cognition-source="clinical_domains.cognition.repeatable_task_sessions[0]"]').count()===1,
+      'pre-existing-cognition-annex-kept-separately');
     const externalTags=page.locator('[data-clinical-external-item="true"]');
     ok(await externalTags.count()===34,'screen-17-extra-items-not-truncated');
     ok((await externalTags.nth(17).innerText()).includes('EXTERNAL_PARITY_01 · 0 points'),
