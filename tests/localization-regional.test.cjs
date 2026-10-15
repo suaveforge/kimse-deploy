@@ -55,6 +55,11 @@ async function verifyBrowserLocales(){
     await page.goto(base+target,{waitUntil:'domcontentloaded',timeout:35000});
     await page.waitForFunction(args=>document.documentElement.lang===args.expected&&window.KIMSE_LOCALIZEHUB?.locale===args.expected&&(!args.evidence||document.querySelector('[data-kimse-locale-select]')?.value===args.expected),{expected:test.expected,evidence:target.startsWith('/evidence/')},{timeout:30000});
     await page.waitForTimeout(400);
+    if(test.expected==='en'&&target.includes('competitors.html')){
+     const count=await page.locator('#competitor-research-archive details').evaluateAll(els=>{els.forEach(el=>el.open=true);return els.length});
+     assert.equal(count,11,'All 11 competitor archives must be inspectable');
+     await page.waitForTimeout(500);
+    }
     const state=await page.evaluate(()=>{
      const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n,count=0;
      while(n=w.nextNode()){
