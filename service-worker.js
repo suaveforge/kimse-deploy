@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261015-i18n-regional-archive-1';
+const CACHE = 'kimse-pwa-20261015-global-voice-manifest-2';
 const CORE = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const CORE = [
   './premium-ux.js',
   './govtech-p0.js',
   './manifest.webmanifest',
+  './manifest-en.webmanifest',
   '/assets/icons/icon.svg',
   '/assets/icons/icon-maskable-source.svg',
   '/assets/icons/kimse-status-stable.png',
