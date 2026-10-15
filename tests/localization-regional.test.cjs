@@ -43,7 +43,9 @@ async function verifyBrowserLocales(){
   {name:'UK',locale:'en-GB',expected:'en',urls:['/#/start','/evidence/','/evidence/observation.html','/evidence/clinical.html','/evidence/rd.html','/evidence/trust.html','/evidence/competitors.html']},
   {name:'Korea',locale:'ko-KR',expected:'ko',urls:['/#/start','/evidence/']},
   {name:'URL override',locale:'ko-KR',expected:'en',saved:'ko',urls:['/evidence/?lang=en']},
-  {name:'Saved English',locale:'ko-KR',expected:'en',saved:'en',urls:['/evidence/']}
+  {name:'Saved English',locale:'ko-KR',expected:'en',saved:'en',urls:['/evidence/']},
+  {name:'Preserve explicit US across GB browser',locale:'en-GB',expected:'en',expectedParam:'en-US',urls:['/evidence/?lang=en-US','/?lang=en-US#/start']},
+  {name:'Preserve explicit GB across US browser',locale:'en-US',expected:'en',expectedParam:'en-GB',urls:['/evidence/?lang=en-GB','/?lang=en-GB#/start']}
  ];
  try{
   for(const test of cases){
@@ -69,6 +71,21 @@ async function verifyBrowserLocales(){
      }
      return {browserLocale:navigator.language,locale:window.KIMSE_LOCALIZEHUB?.locale,lang:document.documentElement.lang,selector:document.querySelector('[data-kimse-locale-select]')?.value,hangul:count,overflow:document.documentElement.scrollWidth>window.innerWidth+8,url:location.pathname};
     });
+    if(test.expectedParam){
+     const selected=await page.evaluate(()=>({
+       localeParam:window.KIMSE_LOCALIZEHUB?.localeParameter,
+       link:document.querySelector('a[href*="observation.html"]')?.getAttribute('href')||null,
+       ogLocale:document.querySelector('meta[property="og:locale"]')?.content||null,
+       title:document.title
+     }));
+     assert.equal(selected.localeParam,test.expectedParam,test.name+' regional URL choice changed');
+     if(target.startsWith('/evidence/'))assert.ok(selected.link?.includes('lang='+test.expectedParam),test.name+' Evidence link lost regional variant');
+     if(target.startsWith('/?lang=')){
+       assert.equal(selected.ogLocale,test.expectedParam==='en-GB'?'en_GB':'en_US');
+       assert.match(selected.title,/KIMSE/);
+     }
+     console.log('REGIONAL_URL_PRESERVATION',JSON.stringify({case:test.name,target,...selected}));
+    }
     assert.equal(state.browserLocale,test.locale);
     assert.equal(state.lang,test.expected);
     if(test.expected==='en')assert.equal(state.hangul,0,test.name+' '+target+' contains untranslated Korean characters');
@@ -80,5 +97,27 @@ async function verifyBrowserLocales(){
   }
  }finally{await browser.close()}
 }
+function verifyLocalizedVoiceContract(){
+ const source=fs.readFileSync('app.js','utf8');
+ const voiceLine=source.split('\n').find(line=>line.startsWith('const say=t=>'));
+ assert.ok(voiceLine&&voiceLine.includes('kimseDisplayLocale()')&&voiceLine.includes('KIMSE_LOCALIZEHUB'),'Voice language must follow active KIMSE locale');
+ const synth=(locale,translation)=>{
+  const spoken=[];const N={textContent:''};
+  const speechSynthesis={cancel:()=>{},speak:u=>spoken.push({lang:u.lang,text:u.text})};
+  class Utterance { constructor(text){this.text=text;this.lang='';} }
+  const window={KIMSE_LOCALIZEHUB:{locale:locale==='ko-KR'?'ko':'en',translate:()=>translation}};
+  const S={a11y:{voiceGuidance:true}};
+  const say=new Function('S','N','window','speechSynthesis','SpeechSynthesisUtterance','kimseDisplayLocale','setTimeout',voiceLine+';return say;')(
+   S,N,window,speechSynthesis,Utterance,()=>locale,fn=>fn());
+  say('도움 요청');return {spoken,N:N.textContent};
+ };
+ assert.deepEqual(synth('en-US','Request help').spoken,[{lang:'en-US',text:'Request help'}]);
+ assert.deepEqual(synth('en-GB','Request help').spoken,[{lang:'en-GB',text:'Request help'}]);
+ assert.deepEqual(synth('en-GB','도움 요청').spoken,[],'Untranslated Korean must not be spoken with an English TTS voice');
+ assert.deepEqual(synth('ko-KR',null).spoken,[{lang:'ko-KR',text:'도움 요청'}]);
+ console.log('REGIONAL_VOICE_QA=PASS');
+}
+
+verifyLocalizedVoiceContract();
 verifyRegionalFormatters();
 verifyBrowserLocales().catch(err=>{console.error('REGIONAL_QA_FAILED',err);process.exit(1)});
