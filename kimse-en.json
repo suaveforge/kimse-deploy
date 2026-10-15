@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-15.en.15",
+  "schemaVersion": "2026-10-15.en.16",
   "locale": "en",
   "sourceLocale": "ko",
   "translations": {
@@ -870,17 +870,24 @@
     "서비스·제품": "Services and products",
     "관련 제품": "Related products",
     "나머지 28개": "28 remaining items",
-    "경쟁사 상세 원본 기록": "Detailed original competitor records",
+    "경쟁사 상세 원본 기록": "Detailed competitor source records",
     "경쟁사 상세 원본": "Original competitor source details",
-    "상세 원본 기록": "Detailed source records",
+    "상세 원본 기록": "Detailed original records",
     "상세 원본": "Original source details",
-    "상세 자료는 인터랙티브 스크립트 없이도 열람할 수 있습니다.": "Detailed source materials remain readable even without interactive scripts.",
+    "상세 자료는 인터랙티브 스크립트 없이도 열람할 수 있습니다.": "Detailed records are available even without interactive JavaScript.",
     "상세 자료": "Detailed information",
     "원본 기록": "Original records",
     "원본": "Original",
     "자료는": "The material",
     "열람할 수 있습니다.": "is available to read.",
-    "하단 더 보기": "Show more below"
+    "하단 더 보기": "Show more below",
+    "+ 약": "Add medication",
+    "+ 약 등록": "Add medication",
+    "상태명·아이콘·증감 방향을 함께 표시합니다.": "Show the status label, icon and direction of change together.",
+    "그래프의 핵심 변화는 글로도 제공해요": "Key changes in the chart are also described in text.",
+    "주요 변화와 눈에 띄는 날을 텍스트로 함께 확인할 수 있습니다.": "You can review important changes and notable days in text.",
+    "주요 버튼과 상황 요약을 화면 읽기 기능에서 확인할 수 있어요": "Screen readers can access important buttons and status summaries.",
+    "보이는 정보와 같은 의미가 접근성 트리에도 남도록 구성합니다.": "The accessibility tree preserves the meaning of the displayed information."
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
