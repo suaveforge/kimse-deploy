@@ -11,7 +11,7 @@ async function run(){
   await page.goto(base+'/evidence/?lang=en',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelector('[data-kimse-locale-select]')?.value==='en'&&window.KIMSE_LOCALIZEHUB?.locale==='en');
   const destinations=['observation.html','clinical.html','rd.html','trust.html','competitors.html'];
-  const violations=[];
+  const violations=[];let authSkipped=0;const unavailableRoutes=[];
   for(const dest of destinations){
     await page.goto(base+'/evidence/?lang=en',{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelector('.kimse-primary-choice'));
@@ -59,10 +59,10 @@ async function run(){
     await page.waitForTimeout(350);
     const status=await page.evaluate(()=>{
       let body=(document.querySelector('#main')?.innerText||document.body.innerText||'');
-      return {route:location.hash,lang:document.documentElement.lang,heading:document.querySelector('#main h1')?.innerText||'',authRequired:/로그인이 필요|login required|sign in required|account required/i.test(body),bodyChars:body.length,hangul:(body.match(/[가-힣]/g)||[]).length,examples:body.split('\n').map(x=>x.trim()).filter(x=>/[가-힣]/.test(x)).slice(0,15),overflow:document.documentElement.scrollWidth>window.innerWidth+12};
+      return {route:location.hash,lang:document.documentElement.lang,heading:document.querySelector('#main h1')?.innerText||'',authRequired:!!document.querySelector('[data-kimse-auth-required]')||/로그인이 필요|sign[- ]in required|you need to log in|account required/i.test(body),bodyChars:body.length,hangul:(body.match(/[가-힣]/g)||[]).length,examples:body.split('\n').map(x=>x.trim()).filter(x=>/[가-힣]/.test(x)).slice(0,15),overflow:document.documentElement.scrollWidth>window.innerWidth+12};
     });
     if(status.route!=='#/'+route)console.log('APP_ROUTE_UNAVAILABLE_WITHOUT_SIGNIN',JSON.stringify({requested:route,actual:status.route}));
-    if(status.authRequired){console.log('APP_ROUTE_AUTH_REQUIRED_NOT_VERIFIED',JSON.stringify({requested:route,actual:status.route,heading:status.heading}));continue;}
+    if(status.authRequired){authSkipped++;unavailableRoutes.push(route);console.log('APP_ROUTE_AUTH_REQUIRED_NOT_VERIFIED',JSON.stringify({requested:route,actual:status.route,heading:status.heading}));continue;}
     console.log('APP_ROUTE_QA',JSON.stringify(status));
     if(status.hangul>0)violations.push('App '+route+': '+status.hangul+' Korean characters');
     if(status.overflow){
@@ -80,6 +80,8 @@ async function run(){
       violations.push('App '+route+': mobile horizontal page overflow');
     }
   }
+  console.log('APP_AUTH_GATES_SUMMARY',JSON.stringify({authRequired:authSkipped,unverifiedRoutes:unavailableRoutes}));
+  assert.ok(authSkipped>=1,'Authenticated screens must not be silently counted as translated functional screens');
   console.log('NAV_QA_PAGE_ERRORS',JSON.stringify(errors.slice(0,12)));
   if(errors.some(e=>/require is not defined|JSSIP_UNAVAILABLE/.test(e)))violations.push('App library: JsSIP browser execution error');
   assert.deepEqual(violations,[], 'Remaining untranslated English-visible screens');
