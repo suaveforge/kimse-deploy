@@ -861,10 +861,10 @@ function formatMonitoringValue(metric,value){
   if(metric==='voice_pause_ratio')return Math.round(n*100)+'%';
   if(metric==='location_radius_m'||metric==='movement_distance_m'){
     if(locale==='en-US')return n>=1609.344?(n/1609.344).toFixed(1)+' mi':Math.round(n*3.28084)+' ft';
-    return n>=1000?(n/1000).toFixed(1)+' km':Math.round(n)+(en?' m':'m');
+    return n>=1000?(n/1000).toFixed(1)+(en?' km':'km'):Math.round(n)+'m';
   }
   if(metric==='motion_active_minutes'||metric==='app_active_minutes'||metric==='call_duration_min')return Math.round(n)+(en?' min':'분');
-  if(metric==='task_response_ms')return Math.round(n)+' ms';
+  if(metric==='task_response_ms')return Math.round(n)+(en?' ms':'ms');
   return Number.isInteger(n)?n.toLocaleString(locale):String(Math.round(n*100)/100);
 }
 const signalId=()=>window.crypto&&crypto.randomUUID?crypto.randomUUID():'sig-'+Date.now()+'-'+Math.random().toString(36).slice(2);
