@@ -42,7 +42,8 @@ async function run(){
           list.push({tag:el.tagName,cls:typeof el.className==='string'?el.className.slice(0,80):'',id:el.id,right:Math.round(b.right),width:Math.round(b.width),text:el.textContent?.trim().slice(0,90)});
           if(list.length>=16)break;
         }
-        return {viewport:vw,body:document.documentElement.scrollWidth,list};
+        const bigger=[...document.querySelectorAll('body *')].filter(el=>el.scrollWidth>el.clientWidth+7&&el.clientWidth>0&&getComputedStyle(el).overflowX==='visible').map(el=>({tag:el.tagName,cls:typeof el.className==='string'?el.className.slice(0,80):'',id:el.id,width:el.clientWidth,scrollWidth:el.scrollWidth,right:Math.round(el.getBoundingClientRect().right),directChildren:el.children.length,content:el.innerText?.slice(0,85)})).slice(0,25);
+        return {viewport:vw,body:document.documentElement.scrollWidth,list,bigger};
       });
       console.log('OBSERVATION_MOBILE_OVERFLOW',JSON.stringify(diag));
     }
