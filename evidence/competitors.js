@@ -13,7 +13,7 @@ function renderFilters(){const kinds=['전체',...new Set(records.map(a=>a.kind)
 function renderList(){
  const found=filtered();count.textContent=found.length+' / '+records.length+'개 서비스';
  if(!found.length){list.innerHTML='<div class="competitor-empty">검색 결과가 없습니다.</div>';return;}
- list.innerHTML=found.map(r=>'<div class="competitor-entry'+(r.id===active?' is-active':'')+'" data-open="'+escape(r.id)+'">'+logo(r,'competitor-logo')+'<div class="competitor-entry-main"><b>'+escape(r.name)+'</b><small>'+escape(r.one)+'</small></div><input type="checkbox" data-select="'+escape(r.id)+'" aria-label="'+escape(r.name)+' 비교 선택" '+(compareIds.includes(r.id)?'checked':'')+' title="비교 선택"></div>').join('');
+ list.innerHTML=found.map(r=>'<div class="competitor-entry'+(r.id===active?' is-active':'')+'" data-open="'+escape(r.id)+'" role="button" tabindex="0" aria-label="'+escape(r.name)+' 상세 보기">'+logo(r,'competitor-logo')+'<div class="competitor-entry-main"><b>'+escape(r.name)+'</b><small>'+escape(r.one)+'</small></div><input type="checkbox" data-select="'+escape(r.id)+'" aria-label="'+escape(r.name)+' 비교 선택" '+(compareIds.includes(r.id)?'checked':'')+' title="비교 선택"></div>').join('');
 }
 function metric(r){return r.stats.map(([title,value,note])=>'<div class="competitor-stat"><span>'+escape(title)+'</span><strong>'+escape(value)+'</strong><small>'+escape(note)+'</small></div>').join('');}
 function textLi(v){return '<ul class="ps-3 mb-0">'+v.map(s=>'<li>'+escape(s)+'</li>').join('')+'</ul>';}
