@@ -2917,7 +2917,6 @@ function clinicalPrintableSourceRecords(report){
     {label:'안전·지원 관련 이력',path:'clinical_domains.safety_support.context_events',rows:report?.clinical_domains?.safety_support?.context_events},
     {label:'기분·행동 관련 이력',path:'clinical_domains.mood_behavior.context_events',rows:report?.clinical_domains?.mood_behavior?.context_events},
     {label:'감각·운동 관련 이력',path:'clinical_domains.sensory_motor.context_events',rows:report?.clinical_domains?.sensory_motor?.context_events},
-    // Preserve uncategorized clinical events without inventing a nested source path.
     {label:'기타 사용자 보고 이력',path:'clinical_context_events',rows:report?.clinical_context_events,
      includes:row=>row.event_type==='OTHER'}
   ];
