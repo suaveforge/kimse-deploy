@@ -1,0 +1,35 @@
+name: KIMSE Inspect Actual MP4 Ending Frames
+on:
+  push:
+    branches: [qa/kimse-film-final-frame-20261016]
+    paths:
+      - .github/workflows/extract-film-ending.yml
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract genuine final seconds from previously verified MP4
+        run: |
+          set -Eeuo pipefail
+          command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y ffmpeg)
+          FILE="qa/video/kimse-real-published-450x800.mp4"
+          test -s "$FILE"
+          ffprobe -v error -show_entries stream=codec_name,width,height -show_entries format=duration,size -of json "$FILE"
+          ffmpeg -hide_banner -loglevel error -y -sseof -4 -i "$FILE" -frames:v 1 qa/video/film-endminus4.png
+          ffmpeg -hide_banner -loglevel error -y -sseof -2 -i "$FILE" -frames:v 1 qa/video/film-endminus2.png
+          ffmpeg -hide_banner -loglevel error -y -sseof -1 -i "$FILE" -frames:v 1 qa/video/film-endminus1.png
+          test -s qa/video/film-endminus4.png
+          test -s qa/video/film-endminus2.png
+          test -s qa/video/film-endminus1.png
+      - name: Preserve inspected ending frames in isolated evidence branch
+        run: |
+          set -Eeuo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qa/video/film-endminus*.png
+          git commit -m "test(kimse): real MP4 end-of-video frames [skip ci]"
+          git push
