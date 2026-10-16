@@ -10,6 +10,8 @@ on:
       - 'app.js'
       - 'app.css'
       - 'accessibility-enhancements.css'
+      - 'experience-consistency.css'
+      - 'app/experience-consistency.css'
       - 'accessibility-enhancements.js'
       - 'premium-ux.css'
       - 'premium-ux.js'
