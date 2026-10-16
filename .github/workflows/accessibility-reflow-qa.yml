@@ -83,6 +83,19 @@ jobs:
               await p.goto(BASE+'#/'+route,{waitUntil:'domcontentloaded',timeout:30000});await p.waitForSelector('#main',{timeout:15000});await p.waitForTimeout(160);
               const m=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,main:document.querySelector('#main')?.scrollWidth||0,mainc:document.querySelector('#main')?.clientWidth||0,large:document.documentElement.classList.contains('large-text'),contrast:document.documentElement.classList.contains('high-contrast'),reduced:document.documentElement.classList.contains('user-reduced-motion')}));
               check(m.sw<=m.cw+1,'no-page-horizontal-overflow-'+route,JSON.stringify(m));
+              if(m.main>m.mainc+1){
+                const overflow=await p.evaluate(()=>{
+                  const root=document.querySelector('#main'),bounds=root.getBoundingClientRect();
+                  return [...root.querySelectorAll('*')].map(el=>{
+                    const r=el.getBoundingClientRect(),c=getComputedStyle(el);
+                    return {tag:el.tagName.toLowerCase(),cls:String(el.className?.baseVal??el.className??'').slice(0,75),
+                      left:Math.round(r.left-bounds.left),right:Math.round(r.right-bounds.left),
+                      width:Math.round(r.width),scroll:el.scrollWidth,client:el.clientWidth,
+                      display:c.display,overflow:c.overflowX};
+                  }).filter(x=>x.right>bounds.width+2&&x.width>0).slice(0,15);
+                });
+                console.error('KIMSE_NARROW_OVERFLOW_CULPRITS '+route+' '+JSON.stringify(overflow));
+              }
               check(m.main<=m.mainc+1,'no-main-horizontal-overflow-'+route,JSON.stringify(m));
               check(m.large&&m.contrast&&m.reduced,'preferences-active-'+route,JSON.stringify(m));
               await p.keyboard.press('Tab');
