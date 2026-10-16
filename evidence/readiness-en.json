@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-17.1",
+  "schemaVersion": "2026-10-17.2",
   "locale": "en",
   "sourceLocale": "ko",
   "description": "Human-reviewed English labels for public KIMSE Evidence readiness. No clinical assertions added.",
@@ -109,6 +109,10 @@
     "전문인력·현장 평가 검증": "Verify assessments by professionals and frontline staff",
     "방문간호사·돌봄·의료진의 검증된 평가 미등록": "No verified reviews by visiting nurses, care staff or clinicians are registered",
     "개선 전후 비교·반복 사용 근거": "Document before-and-after improvement and repeat use",
-    "동일 참여자의 반복 사용 또는 사용성 개선 측정 없음": "No repeated-use or usability-change measurements from the same participants"
+    "동일 참여자의 반복 사용 또는 사용성 개선 측정 없음": "No repeated-use or usability-change measurements from the same participants",
+    "각 영역": "Each area",
+    "항목으로 평가.": "is assessed against five items.",
+    "여섯 영역은 증빙 준비도를 뜻하며 제품 출시 여부는 개인정보 보호, 안전성, 법률·운영 요건과 별도로 확인해야 함.": "The six areas measure evidence readiness, not launch approval. Privacy, safety, legal and operational requirements require separate checks.",
+    "투자 준비도도 성공 확률이나 투자 가능 여부가 아님.": "Investor readiness neither predicts fundraising success nor guarantees investment."
   }
 }
