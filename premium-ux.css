@@ -544,3 +544,9 @@ body{background:linear-gradient(180deg,#fffdfa 0%,var(--kimse-ivory) 52%,#f7f4ed
   .large-text .screen-brain-map .brain-domain-tabs button,
   .large-text .screen-brain-map .brain-view-switch button{font-size:16px!important}
 }
+
+/* The active monitoring one-screen must honor the large-touch preference. */
+.large-touch .screen-monitoring-status .kimse-one-screen-links a{
+  min-height:64px!important;
+  padding-block:12px!important;
+}
