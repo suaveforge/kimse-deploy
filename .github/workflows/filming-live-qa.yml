@@ -1,0 +1,52 @@
+name: KIMSE Published 450x800 Full Film QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/filming-live-qa.yml'
+      - 'tests/filming-live-qa.mjs'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  actual-published-filming:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install real browser and video codecs
+        run: |
+          npm install --no-save --no-fund --no-audit playwright@1.56.1
+          npx playwright install --with-deps chromium
+          command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y ffmpeg)
+      - name: Wait for actual production root assets then record full live demo
+        run: node tests/filming-live-qa.mjs
+      - name: Convert live Chromium video to playable MP4 and verify 450x800
+        run: |
+          set -Eeuo pipefail
+          cd artifacts/filming-live
+          ffmpeg -hide_banner -loglevel error -y -i kimse-real-published-450x800.webm -c:v libx264 -pix_fmt yuv420p -crf 24 -movflags +faststart kimse-real-published-450x800.mp4
+          ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_name,width,height,avg_frame_rate -of json kimse-real-published-450x800.mp4 > filming-ffprobe.json
+          test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 kimse-real-published-450x800.mp4)" = "450,800"
+          DURATION="$(ffprobe -v error -show_entries format=duration -of default=nk=1:nw=1 kimse-real-published-450x800.mp4)"
+          awk -v d="$DURATION" 'BEGIN{exit !(d>=60 && d<100)}'
+          ffmpeg -hide_banner -loglevel error -y -ss 3 -i kimse-real-published-450x800.mp4 -frames:v 1 film-start.png
+          ffmpeg -hide_banner -loglevel error -y -ss 65 -i kimse-real-published-450x800.mp4 -frames:v 1 film-finale.png
+          echo "KIMSE_PUBLISHED_MP4_PASS=YES duration=$DURATION dimensions=450x800"
+      - name: Save synthetic demo evidence on isolated QA branch
+        if: success()
+        run: |
+          set -Eeuo pipefail
+          BRANCH="qa/published-film-${GITHUB_RUN_ID}"
+          git switch -c "$BRANCH"
+          mkdir -p qa/video
+          cp artifacts/filming-live/kimse-real-published-450x800.mp4 artifacts/filming-live/filming-ffprobe.json artifacts/filming-live/monitoring-*.png artifacts/filming-live/film-*.png artifacts/filming-live/result.json qa/video/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qa/video
+          git commit -m "test(kimse): live published 450x800 film, frames, metrics [skip ci]"
+          git push origin "HEAD:refs/heads/$BRANCH"
+          echo "KIMSE_PUBLISHED_FILM_BRANCH=$BRANCH"
