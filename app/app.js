@@ -193,10 +193,10 @@ async function mountAuthHubSocial(){
 let audioCtx=null,lastSpokenRoute='',lastFeedbackAt=0;
 const ensureAudio=()=>{if(!S.a11y.soundEffects)return null;try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch{return null}};
 const tone=(kind='tap')=>{const ctx=ensureAudio();if(!ctx)return;try{const play=()=>{const o=ctx.createOscillator(),g=ctx.createGain();const hz=kind==='success'?660:kind==='warning'?260:440;o.frequency.value=hz;g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.07,ctx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.12);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.13)};if(ctx.state==='suspended')ctx.resume().then(play).catch(()=>{});else play()}catch{}};
-const say=t=>{N.textContent='';setTimeout(()=>N.textContent=t,10);if(S.a11y.voiceGuidance&&'speechSynthesis'in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=.9;speechSynthesis.speak(u)}};
+const say=t=>{const english=window.KIMSE_LOCALIZEHUB?.locale==='en';const spoken=english?(window.KIMSE_LOCALIZEHUB?.translate?.(t)||t):t;N.textContent='';setTimeout(()=>N.textContent=spoken,10);if(S.a11y.voiceGuidance&&'speechSynthesis'in window){speechSynthesis.cancel();if(english&&/[가-힣]/.test(spoken))return;let u=new SpeechSynthesisUtterance(spoken);u.lang=kimseDisplayLocale();u.rate=.9;speechSynthesis.speak(u)}};
 const feedback=(t,kind='tap')=>{lastFeedbackAt=Date.now();tone(kind);say(t)};
 const I=n=>`<i class="ti ti-${n}" aria-hidden="true"></i>`,btn=(t,p,c='btn-primary-k')=>`<button class="btn-kimse ${c} btn-full" data-go="${p}">${t}</button>`;
-const accountRequired=()=>wrap(`<h1 class="page-title">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
+const accountRequired=()=>wrap(`<h1 class="page-title" data-kimse-auth-required="true">로그인이 필요합니다</h1><p class="page-desc">내 기록과 가족 연결 정보를 사용하려면 먼저 계정을 시작해주세요.</p><div class="hero-actions">${btn('로그인 / 시작하기','auth')}${btn('처음 화면으로','start','btn-secondary-k')}</div>`,{title:'계정 확인',narrow:true});
 function demo(){return !!S.account}
 function head(t='낌새',back=true){return `<header class="app-header"><div class="app-header-inner">${back?`<button class="icon-button" data-back aria-label="이전 화면">${I('chevron-left')}</button>`:`<a class="brand" href="#/home"><img class="brand-status-icon" src="${appStatusIconSrc()}" alt="" aria-hidden="true"><span>낌새<small class="brand-sub">작은 변화를 먼저 알아차려요</small></span></a>`}<strong>${back?t:''}</strong><div class="app-header-actions"><a class="icon-button" href="#/settings" aria-label="설정">${I('settings')}</a></div></div></header>`}
 const foot=()=>`<div class="app-footer">인지·생활 변화를 관찰하는 서비스이며 의료 진단을 대신하지 않습니다.</div>`;
@@ -235,7 +235,19 @@ const notice=(h,p)=>`<div class="notice"><strong>${h}</strong>${p}</div>`;
 const row=(h,s='',right='')=>`<div class="list-row"><span><strong>${h}</strong>${s?`<small>${s}</small>`:''}</span>${right}</div>`;
 const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
 const safeUrl=v=>{try{const u=new URL(String(v||''));return /^https?:$/.test(u.protocol)?u.href:''}catch{return ''}};
-const fmtDate=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?String(v||''):d.toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})};
+// Regional display formatting; locale selection remains owned by LocalizeHub p45.
+function kimseDisplayLocale(){
+  let explicit='';
+  try{explicit=new URLSearchParams(location.search).get('lang')||localStorage.getItem('localizehub:p45:locale')||''}catch{}
+  const requested=String(explicit).toLowerCase().replace('_','-');
+  if(requested==='ko'||requested.startsWith('ko-'))return 'ko-KR';
+  if(requested==='en-us')return 'en-US';
+  if(requested==='en-gb')return 'en-GB';
+  const browser=(navigator.languages||[navigator.language||'ko-KR']).find(x=>/^en-(US|GB)$/i.test(x))||navigator.language||'';
+  if(requested==='en'||(!explicit&&/^en(?:-|$)/i.test(browser)))return /^en-GB$/i.test(browser)?'en-GB':'en-US';
+  return 'ko-KR';
+}
+const fmtDate=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?String(v||''):d.toLocaleString(kimseDisplayLocale(),{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})};
 const PARTNER_TYPE_LABEL={PRODUCT:'상품 입점',SERVICE:'서비스 제휴',AD:'광고/콘텐츠 제휴',COOPERATION:'공동사업/기관 협력'};
 const PARTNER_STATUS_LABEL={RECEIVED:'신규',REVIEWING:'검토중',CONTACTED:'회신완료',HOLD:'보류',CLOSED:'종료'};
 
@@ -843,13 +855,23 @@ function syncAppStatusIcon(){
 function formatMonitoringValue(metric,value){
   if(value===null||value===undefined||value==='')return '-';
   const n=Number(value);if(!Number.isFinite(n))return '-';
-  if(metric==='sleep_minutes'){const m=Math.max(0,Math.round(n));return Math.floor(m/60)+'시간 '+(m%60)+'분'}
-  if(metric==='steps')return Math.round(n).toLocaleString('ko-KR')+'보';
+  const locale=kimseDisplayLocale(),en=locale!=='ko-KR';
+  if(metric==='sleep_minutes'){const m=Math.max(0,Math.round(n));return en?Math.floor(m/60)+' hr '+(m%60)+' min':Math.floor(m/60)+'시간 '+(m%60)+'분'}
+  if(metric==='steps')return Math.round(n).toLocaleString(locale)+(en?' steps':'보');
   if(metric==='voice_pause_ratio')return Math.round(n*100)+'%';
-  if(metric==='location_radius_m'||metric==='movement_distance_m')return n>=1000?(n/1000).toFixed(1)+'km':Math.round(n)+'m';
-  if(metric==='motion_active_minutes'||metric==='app_active_minutes'||metric==='call_duration_min')return Math.round(n)+'분';
-  if(metric==='task_response_ms')return Math.round(n)+'ms';
-  return Number.isInteger(n)?n.toLocaleString('ko-KR'):String(Math.round(n*100)/100);
+  if(metric==='location_radius_m'||metric==='movement_distance_m'){
+    if(locale==='en-US')return n>=1609.344?(n/1609.344).toFixed(1)+' mi':Math.round(n*3.28084)+' ft';
+    return n>=1000?(n/1000).toFixed(1)+(en?' km':'km'):Math.round(n)+'m';
+  }
+  if(metric==='motion_active_minutes'||metric==='app_active_minutes'||metric==='call_duration_min')return Math.round(n)+(en?' min':'분');
+  if(metric==='task_response_ms')return Math.round(n)+(en?' ms':'ms');
+  return Number.isInteger(n)?n.toLocaleString(locale):String(Math.round(n*100)/100);
+}
+function formatDistanceSummaryMeters(value){
+  const n=Math.max(0,Math.round(Number(value)||0)),locale=kimseDisplayLocale();
+  if(locale==='en-US')return n>=1609.344?(n/1609.344).toFixed(1)+' mi':Math.round(n*3.28084).toLocaleString(locale)+' ft';
+  if(locale==='en-GB')return n>=1000?(n/1000).toFixed(1)+' km':n.toLocaleString(locale)+' m';
+  return n.toLocaleString('ko-KR')+'m';
 }
 const signalId=()=>window.crypto&&crypto.randomUUID?crypto.randomUUID():'sig-'+Date.now()+'-'+Math.random().toString(36).slice(2);
 const monitoringEnabled=()=>!!(S.onboarding.completed&&S.consents.service&&S.consents.privacy&&S.consents.health);
@@ -1500,7 +1522,7 @@ function startPassiveCollectors(){
   if(S.consents.location&&S.permissions.location==='granted')startLocationWatch();else stopLocationWatch();
   setTimeout(flushSignals,500);
 }
-const DEMO_DURATION_MS=50000;
+const DEMO_DURATION_MS=75000;
 const DEMO_CAPTURE_WINDOW=new URLSearchParams(location.search).get('capture')==='1';
 let demoRecorder=null,demoRecordStream=null,demoChunks=[],demoDownloadUrl='',demoAutoRunning=false,demoOriginalStateJson=null,demoRunId=0,demoPreviewOnly=false,demoTopic=null,demoSafetyTimer=null,demoResultPhase='normal';
 const demoWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -1770,7 +1792,7 @@ async function startDemoCapture(){
 }
 
 const page={};
-page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 50초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·동의·기본검사·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>최근 변화</span><i>→</i><span>연구</span><i>→</i><span>계속 업데이트</span><i>→</i><span>처음 상태</span><i>→</i><span>1→14일</span><i>→</i><span>변화 흐름</span><i>→</i><span>가족</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 자동촬영 시작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-50s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">녹화 시작 때 공유창에서 반드시 “현재 탭”을 선택하세요. Chrome에서는 앱 영역만 9:16 세로로 자동 크롭해 녹화합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
+page['demo-capture']=()=>wrap('<div class="eyebrow">모두의창업 제출 영상</div><h1 class="page-title">실제 앱을 자동 조작해<br>약 1분 10초로 촬영합니다</h1><p class="page-desc">별도 데모 화면을 만들지 않습니다. 시작·가입·동의·기본검사·14일 기준선·뇌 기능 지도·변화 감지·보호자 화면까지 <strong>현재 앱의 실제 화면과 버튼</strong>을 자동으로 조작합니다.</p>'+notice('14일은 어떻게 보여주나요?','실제 14일을 기다릴 수 없으므로 자동촬영 모드에서만 시간 경과와 예시 경과 데이터를 압축 재현합니다. 촬영이 끝나면 기존 사용자 데이터는 원상복구됩니다.')+'<div class="capture-route-list"><span>최근 변화</span><i>→</i><span>연구</span><i>→</i><span>계속 업데이트</span><i>→</i><span>처음 상태</span><i>→</i><span>1→14일</span><i>→</i><span>변화 흐름</span><i>→</i><span>가족</span></div><div class="hero-actions"><button id="demo-preview" class="btn-kimse btn-secondary-k">실제 앱 자동조작 미리보기</button><button id="demo-record" class="btn-kimse btn-primary-k">YouTube용 세로 자동촬영 시작</button><button id="demo-window" class="btn-kimse btn-blue-k">세로 촬영창 열기</button><button id="demo-stop" class="btn-kimse btn-danger-k">중지 / 원상복구</button>'+(demoDownloadUrl?'<a id="demo-download" class="btn-kimse btn-primary-k" href="'+demoDownloadUrl+'" download="kimse-youtube-demo-70s.webm">촬영 영상 저장</a>':'')+'</div><p class="demo-controller-note">녹화 시작 때 공유창에서 반드시 “현재 탭”을 선택하세요. Chrome에서는 앱 영역만 9:16 세로로 자동 크롭해 녹화합니다. 이후 앱 조작·스크롤·장면 이동·녹화 종료는 자동입니다. YouTube에는 ‘일부 공개’로 업로드한 뒤 링크를 제출하면 됩니다.</p>',{title:'자동촬영',narrow:true});
 page.start=()=>wrap(`<section class="kimse-entry" aria-label="낌새 시작 화면">
   <div class="kimse-entry-identity">
     <div class="kimse-entry-mark"><img src="${STATUS_ICON_ASSETS.stable}" alt="" aria-hidden="true"></div>
@@ -2147,8 +2169,8 @@ function collectionStateItems(){
   const locState=!locOn?'동의 안 함':S.permissions.location==='denied'?'권한 필요':S.permissions.location==='granted'?(d.locationInitialized?'오늘 위치 확인':'위치 신호 대기'):'권한 확인 전';
   const motionSupported=typeof DeviceMotionEvent!=='undefined',motionState=!motionOn?'동의 안 함':!motionSupported?'이 기기 미지원':S.permissions.motion==='denied'?'권한 필요':['granted','available'].includes(S.permissions.motion)?(d.motionInitialized?'움직임 기록 있음':'센서 신호 대기'):'권한 확인 전';
   const voiceCount=(S.initial.voiceSamples||[]).filter(Boolean).length,usageSeen=!!observedToday('app_sessions')||d.appActiveMs>0;
-  const movementValue=d.locationInitialized?Math.round(d.movementDistanceM).toLocaleString('ko-KR')+'m':'미수집';
-  const radiusValue=d.locationInitialized?Math.round(d.locationRadiusM).toLocaleString('ko-KR')+'m':'미수집';
+  const movementValue=d.locationInitialized?formatDistanceSummaryMeters(d.movementDistanceM):'미수집';
+  const radiusValue=d.locationInitialized?formatDistanceSummaryMeters(d.locationRadiusM):'미수집';
   const outingValue=d.locationInitialized?(d.outings?'확인됨':'관찰되지 않음'):'미수집';
   const motionValue=d.motionInitialized?(d.motionActiveMs>=60000?Math.round(d.motionActiveMs/60000)+'분':'1분 미만'):'미수집';
   const usageValue=!usageOn?'미수집':usageSeen?(d.appActiveMs>=60000?Math.round(d.appActiveMs/60000)+'분':'1분 미만'):'수집 시작 전';
@@ -2299,7 +2321,7 @@ page['brain-trends']=()=>{
     '<div class="segmented compact-range" role="group" aria-label="변화 조회 기간"><button type="button" data-brain-range="day" aria-pressed="'+(S.brainRange==='day')+'" class="'+(S.brainRange==='day'?'active':'')+'">일</button><button type="button" data-brain-range="week" aria-pressed="'+(S.brainRange==='week')+'" class="'+(S.brainRange==='week'?'active':'')+'">주</button><button type="button" data-brain-range="month" aria-pressed="'+(S.brainRange==='month')+'" class="'+(S.brainRange==='month'?'active':'')+'">월</button><button type="button" data-brain-range="year" aria-pressed="'+(S.brainRange==='year')+'" class="'+(S.brainRange==='year'?'active':'')+'">연</button></div>'+
     '<div class="trend-domain-tabs" role="group" aria-label="변화 관찰 영역"><button type="button" data-brain-domain="overall" aria-pressed="'+(key==='overall')+'" class="'+(key==='overall'?'active':'')+'">전체</button>'+BRAIN_DOMAINS.map(([k,t,r,icon])=>'<button type="button" data-brain-domain="'+k+'" aria-pressed="'+(key===k)+'" class="'+(key===k?'active':'')+'">'+icon+' '+t+'</button>').join('')+'</div>'+
     '<section class="trend-hero one-chart"><div class="trend-hero-head"><div><small>'+rangeLabel+'</small><strong>'+(key==='overall'?'전체 기능':meta[1])+'</strong></div><span>'+rows.length+'회 기록</span></div>'+trendSeriesSvg(key)+'</section>'+
-    (attention?'<div class="trend-attention-note"><span></span><div><strong>'+new Date(attention.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})+' · 눈에 띄는 변화</strong><small>'+esc(attention.flagLabel||'평소보다 크게 달라진 기록이 있어 노란 점으로 표시했습니다.')+'</small></div></div>':'')+
+    (attention?'<div class="trend-attention-note"><span></span><div><strong>'+new Date(attention.at).toLocaleDateString(kimseDisplayLocale(),{month:'numeric',day:'numeric'})+' · 눈에 띄는 변화</strong><small>'+esc(attention.flagLabel||'평소보다 크게 달라진 기록이 있어 노란 점으로 표시했습니다.')+'</small></div></div>':'')+
     '<p class="screen-footnote">실제 기록만 표시하며 기록이 없는 날짜를 임의로 채우지 않습니다.</p>',
     {title:'변화 흐름',narrow:true,overview:true}
   );
@@ -2363,7 +2385,7 @@ page['training-play']=()=>{const x=TRAINING[S.selectedTraining]||TRAINING.memory
 page.medication=()=>wrap(`<h1 class="page-title">복약 관리</h1><p class="page-desc">등록한 약마다 복용 여부를 바로 기록할 수 있어요.</p><div class="list">${S.medicines.map(m=>row('💊 '+m.name,`${m.time} · ${m.note||'복용 메모 없음'}`,`<button class="btn-kimse ${m.taken?'btn-secondary-k':'btn-primary-k'}" data-med-id="${m.id}">${m.taken?'복용 완료 ✓':'복용 기록'}</button>`)).join('')}</div><div class="hero-actions">${btn('+ 약 등록하기','medication-add','btn-blue-k')}</div>`,{title:'복약 관리',narrow:true});
 page['medication-add']=()=>wrap(`<h1 class="page-title">약 등록</h1><div class="form-stack"><div class="field"><label for="med-name">약 이름</label><input id="med-name" placeholder="예: 혈압약"></div><div class="field"><label for="med-time">복용 시간</label><input id="med-time" type="time" value="08:00"></div><div class="field"><label for="med-note">복용 메모</label><input id="med-note" placeholder="예: 아침 식사 후"></div><button id="save-med" class="btn-kimse btn-primary-k">등록하기</button></div>`,{title:'약 등록',narrow:true});
 const HEALTH_META={sleep:['🌙','수면','지난밤'],steps:['🚶','활동량','오늘'],pressure:['❤️','혈압','최근']};
-const liveStepText=()=>{const raw=S.monitoring?.liveSteps;return raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>=0?Math.round(Number(raw)).toLocaleString('ko-KR')+' 걸음':''};
+const liveStepText=()=>{const raw=S.monitoring?.liveSteps,loc=kimseDisplayLocale();return raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>=0?Math.round(Number(raw)).toLocaleString(loc)+(loc==='ko-KR'?' 걸음':' steps'):''};
 const healthDisplayValue=k=>k==='steps'&&liveStepText()?liveStepText():S.health[k]||'기록 없음';
 page.health=()=>wrap(`<h1 class="page-title">건강 기록</h1><p class="page-desc">오늘의 상태를 쉽고 빠르게 기록해요.</p><section class="kimse-health-daily" aria-labelledby="kimse-health-daily-title"><h2 class="kimse-health-section-title" id="kimse-health-daily-title">오늘의 기록</h2>${liveStepText()?`<div class="kimse-health-live"><span>오늘 걸음 수 · 기기 측정</span><strong>${liveStepText()}</strong><small>${esc(S.monitoring.liveStepProvider||'기기 걸음 센서')}</small></div>`:''}<div class="list kimse-health-main-list">${Object.entries(HEALTH_META).map(([k,x])=>`<button class="list-row menu-row" data-health="${k}"><span><strong>${x[0]} ${x[1]}</strong><small>${x[2]}</small></span><span class="kimse-health-value"><strong>${healthDisplayValue(k)}</strong>${I('chevron-right')}</span></button>`).join('')}</div></section><section class="kimse-health-mood" aria-labelledby="kimse-health-mood-title"><h2 class="kimse-health-section-title" id="kimse-health-mood-title">오늘의 기분</h2><div class="answer-grid kimse-health-mood-options">${[['🙂','좋아요'],['😐','보통이에요'],['🙁','안 좋아요']].map(x=>`<button class="answer" data-mood="${x[1]}" aria-pressed="${S.mood===x[1]}"><span class="emoji" aria-hidden="true">${x[0]}</span><span>${x[1]}</span></button>`).join('')}</div></section><section class="kimse-health-clinical" aria-labelledby="kimse-health-clinical-title"><h2 class="kimse-health-section-title" id="kimse-health-clinical-title">병원 기록과 특별한 변화</h2><div class="list"><button class="list-row menu-row" data-go="clinical-context-event"><span><strong>약 변경·낙상 등 기록</strong><small>평소와 달랐던 일을 남겨요</small></span>${I('chevron-right')}</button><button class="list-row menu-row" data-go="medical-records"><span><strong>병원·검사 결과 기록</strong><small>${clinicalRecordStats().total?clinicalRecordStats().total+'건 기록됨':'진료·검사 결과를 보관해요'}</small></span>${I('chevron-right')}</button></div></section>`,{title:'건강 기록',bottom:true,active:'health'});
 function healthNumberControl(id,label,value,suffix,step=1){
@@ -2390,7 +2412,7 @@ page['health-detail']=()=>{
   const live=Number.isFinite(fromSensor)&&fromSensor>0?Math.round(fromSensor):null;
   const fields=k==='steps'?
     '<p class="page-desc">오늘 측정한 걸음 수를 숫자로 입력하세요. 기기에서 확인한 값이 있으면 그대로 가져올 수 있어요.</p>'+
-    (live?'<button type="button" class="kimse-health-use-live" data-health-live-step>기기에서 확인한 '+live.toLocaleString('ko-KR')+'걸음 가져오기</button>':'')+
+    (live?'<button type="button" class="kimse-health-use-live" data-health-live-step>'+(kimseDisplayLocale()==='ko-KR'?'기기에서 확인한 '+live.toLocaleString('ko-KR')+'걸음 가져오기':'Use '+live.toLocaleString(kimseDisplayLocale())+' steps from device')+'</button>':'')+
     healthNumberControl('health-value','걸음 수',measuredSteps===null?'':Math.round(measuredSteps),'걸음',500):
     '<p class="page-desc">혈압계에 표시된 위·아래 숫자를 각각 적어주세요. 낌새에서 임의로 측정값을 만들지 않아요.</p>'+
     healthNumberControl('health-pressure-sys','높은 혈압',pressure[0]||'','mmHg',5)+
@@ -2903,7 +2925,6 @@ function clinicalPrintableSourceRecords(report){
     {label:'안전·지원 관련 이력',path:'clinical_domains.safety_support.context_events',rows:report?.clinical_domains?.safety_support?.context_events},
     {label:'기분·행동 관련 이력',path:'clinical_domains.mood_behavior.context_events',rows:report?.clinical_domains?.mood_behavior?.context_events},
     {label:'감각·운동 관련 이력',path:'clinical_domains.sensory_motor.context_events',rows:report?.clinical_domains?.sensory_motor?.context_events},
-    // Preserve uncategorized clinical events without inventing a nested source path.
     {label:'기타 사용자 보고 이력',path:'clinical_context_events',rows:report?.clinical_context_events,
      includes:row=>row.event_type==='OTHER'}
   ];
