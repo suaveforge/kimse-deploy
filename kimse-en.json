@@ -1047,7 +1047,17 @@
     "공식 운영매뉴얼은 건강검진·설문 및 기기 사용 안내 후 채움건강 앱에서 전문인력 상담을 받는 절차를 설명한다. 일반 앱 이용과 보건소 사업 이용은 구별된다.": "The official operating manual describes health screenings, questionnaires and device guidance followed by professional consultations using the Chaeum Geongang app. General app usage is separate from participation in the public health centre programme.",
     "양천구 오늘건강 사업의 28명·4명 운영 수치를 채움건강 운영 규모로 옮기지 않음. 낌새 협력도 미확정.": "The 28-person and 4-person staffing figures for Yangcheon-gu's Oneul Geongang programme must not be attributed to Chaeum Geongang's operations. Cooperation with KIMSE is also unconfirmed.",
     "2026년 보건소 모바일 헬스케어 운영매뉴얼 ↗": "2026 public health centre mobile healthcare operating manual ↗",
-    "(공공 운영매뉴얼)": "(public programme operating manual)"
+    "(공공 운영매뉴얼)": "(public programme operating manual)",
+    "약 1분 10초로 촬영합니다": "Record a video in about 1 minute and 10 seconds",
+    "워치 없이 잠자리 시각 기록": "Record bedtime without a smartwatch",
+    "자기 전 시작, 기상 후 종료하세요. 침대에 머문 시간일 뿐 수면시간·수면의 질을 자동 측정하지 않습니다. 별도 야간 녹음은 하지 않습니다.": "Start when you go to bed and stop when you get up. This records time spent in bed, not measured sleep duration or sleep quality. No audio is recorded overnight.",
+    "잠자리에 누웠어요 · 시작": "I'm going to bed · Start",
+    "휴대폰만으로 잠자리 시간 기록": "Track time in bed using only a phone",
+    "최근 잠자리 체류 기록:": "Most recent time-in-bed record:",
+    "잠자리에 누운 시각:": "Went to bed at:",
+    "일어났어요 · 기록하기": "I got up · Save record",
+    "잘못 누른 기록 취소": "Cancel accidental entry",
+    "수면시간과 다름": "Not the same as sleep duration"
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
