@@ -289,6 +289,13 @@ async function setLocale(locale){
         for(const [k,v] of Object.entries(entries)){
           if(normalize(k)&&normalize(v))sourceToTarget.set(normalize(k),String(v));
         }
+        // Explicit, reviewable translations of the Evidence readiness checklist.
+        // Apply after general glossaries: clinical status and missing evidence must
+        // retain their precise meaning even when the LocalizeHub API is offline.
+        const readiness=await fetchJSON('/evidence/readiness-en.json?v=20261017-evidence-ready-1').catch(()=>({}));
+        for(const [k,v] of Object.entries(readiness?.translations||{})){
+          if(normalize(k)&&normalize(v)&&!/[가-힣]/.test(v))sourceToTarget.set(normalize(k),String(v));
+        }
       }
       compileEnglishParts();
       applyTranslations(document);
