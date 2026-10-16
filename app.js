@@ -2395,10 +2395,18 @@ function healthNumberControl(id,label,value,suffix,step=1){
     '<span class="kimse-health-unit">'+esc(suffix)+'</span>'+
     '<button type="button" data-health-adjust="'+id+'" data-health-delta="'+step+'" aria-label="'+esc(label)+' '+step+' 늘리기">+</button></div></div>';
 }
+function sleepBedsideMarkup(){
+  const begun=Date.parse(S.health?.sleepBedStartAt||'');
+  const isActive=Number.isFinite(begun)&&begun<=Date.now()&&Date.now()-begun<36*60*60*1000;
+  const last=S.health?.sleepBedLast;
+  const saved=last&&Number.isFinite(Number(last.durationMin))?'<p class="page-desc">최근 잠자리 체류 기록: '+Math.round(Number(last.durationMin)/60*10)/10+'시간 (수면시간과 다름)</p>':'';
+  const active=isActive?'<p class="page-desc">잠자리에 누운 시각: '+new Date(begun).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</p><button type="button" id="kimse-bed-wake" class="btn-kimse btn-primary-k">일어났어요 · 기록하기</button><button type="button" id="kimse-bed-cancel" class="btn-kimse btn-secondary-k">잘못 누른 기록 취소</button>':'<button type="button" id="kimse-bed-start" class="btn-kimse btn-secondary-k">잠자리에 누웠어요 · 시작</button>';
+  return '<section class="kimse-sleep-bedside" aria-label="휴대폰만으로 잠자리 시간 기록"><strong>워치 없이 잠자리 시각 기록</strong><p class="page-desc">자기 전 시작, 기상 후 종료하세요. 침대에 머문 시간일 뿐 수면시간·수면의 질을 자동 측정하지 않습니다. 별도 야간 녹음은 하지 않습니다.</p>'+active+saved+'</section>';
+}
 page['health-detail']=()=>{
   const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep',x=HEALTH_META[k];
   const quick=k==='sleep'?'<div class="kimse-health-sleep-quick" role="group" aria-label="지난밤 수면시간">'+SLEEP_QUICK_OPTIONS.map(v=>'<button type="button" class="kimse-health-sleep-option" data-health-sleep="'+esc(v)+'" aria-label="'+esc(v)+' 수면시간 저장">'+esc(v)+'</button>').join('')+'</div><details class="kimse-health-manual"><summary>다른 시간 직접 입력하기</summary><div class="field"><label for="health-value">수면시간</label><input id="health-value" value="'+esc(S.health.sleep||'')+'" placeholder="예: 3시간 30분"></div><div class="field"><label for="health-memo">메모 (선택)</label><textarea id="health-memo" rows="3">'+esc(S.health.memo||'')+'</textarea></div><button id="save-health" class="btn-kimse btn-primary-k">직접 입력한 시간 저장</button></details>':'';
-  if(k==='sleep')return wrap('<h1 class="page-title">지난밤 몇 시간 주무셨어요?</h1><p class="page-desc">가까운 시간을 누르면 바로 기록돼요.</p>'+quick,{title:'수면 기록',narrow:true});
+  if(k==='sleep')return wrap('<h1 class="page-title">지난밤 몇 시간 주무셨어요?</h1><p class="page-desc">가까운 시간을 누르면 바로 기록돼요.</p>'+sleepBedsideMarkup()+quick,{title:'수면 기록',narrow:true});
   const pressure=String(S.health.pressure||'').split('/').map(v=>v.trim());
   const measuredSteps=parseSteps(S.health.steps),fromSensor=Number(S.monitoring.liveSteps);
   const live=Number.isFinite(fromSensor)&&fromSensor>0?Math.round(fromSensor):null;
@@ -3804,7 +3812,21 @@ document.addEventListener('click',e=>{
   tone('tap');
   $('#schedule-date')?.focus();
 });
-document.addEventListener('click',e=>{if(e.target.id==='begin'){tone('tap');S.q=0;S.answers=[];save();go('assessment')}if(e.target.id==='next'){if(S.answers[S.q]===undefined)return;if(S.q>=Q.length-1){feedback('결과를 확인합니다.');go('result')}else{S.q++;save();feedback((S.q+1)+'번째 문항입니다.');render()}}if(e.target.id==='save-alert'){const name=$('#alert-name').value.trim(),relation=$('#alert-relation').value.trim(),phone=$('#alert-phone').value.trim();if(!name||!phone){feedback('이름과 연락처를 입력해주세요.','warning');return}if(S.alertRecipients.length>=1&&S.plan!=='PREMIUM'){feedback('비상알림 수신자 2인째부터 구독이 필요합니다.','warning');go('plan')}else{S.alertRecipients.push({name,relation:relation||'가족',phone});save();feedback('비상알림 수신자를 저장했습니다.','success');go('emergency')}}if(e.target.id==='save-med'){const name=$('#med-name').value.trim(),time=$('#med-time').value||'08:00',note=$('#med-note').value.trim();if(!name){feedback('약 이름을 입력해주세요.','warning');return}S.medicines.push({id:'m'+Date.now(),name,time,note,taken:false});save();syncClinicalContextSnapshot().catch(()=>{});feedback('약을 등록했습니다.','success');go('medication')}if(e.target.closest('[data-health-sleep]')&&route()==='health-detail'&&S.selectedHealth==='sleep'){const v=e.target.closest('[data-health-sleep]').dataset.healthSleep;if(SLEEP_QUICK_OPTIONS.includes(v)){S.health.sleep=v;save();syncClinicalContextSnapshot().catch(()=>{});const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health');flushSignals();tone('tap');feedback('수면시간을 기록했어요.','success');go('health')}return}if(e.target.id==='save-health'){
+document.addEventListener('click',e=>{if(e.target.id==='begin'){tone('tap');S.q=0;S.answers=[];save();go('assessment')}if(e.target.id==='next'){if(S.answers[S.q]===undefined)return;if(S.q>=Q.length-1){feedback('결과를 확인합니다.');go('result')}else{S.q++;save();feedback((S.q+1)+'번째 문항입니다.');render()}}if(e.target.id==='save-alert'){const name=$('#alert-name').value.trim(),relation=$('#alert-relation').value.trim(),phone=$('#alert-phone').value.trim();if(!name||!phone){feedback('이름과 연락처를 입력해주세요.','warning');return}if(S.alertRecipients.length>=1&&S.plan!=='PREMIUM'){feedback('비상알림 수신자 2인째부터 구독이 필요합니다.','warning');go('plan')}else{S.alertRecipients.push({name,relation:relation||'가족',phone});save();feedback('비상알림 수신자를 저장했습니다.','success');go('emergency')}}if(e.target.id==='save-med'){const name=$('#med-name').value.trim(),time=$('#med-time').value||'08:00',note=$('#med-note').value.trim();if(!name){feedback('약 이름을 입력해주세요.','warning');return}S.medicines.push({id:'m'+Date.now(),name,time,note,taken:false});save();syncClinicalContextSnapshot().catch(()=>{});feedback('약을 등록했습니다.','success');go('medication')}if(route()==='health-detail'&&S.selectedHealth==='sleep'&&e.target.id==='kimse-bed-start'){
+  S.health.sleepBedStartAt=new Date().toISOString();save();feedback('잠자리에 누운 시각을 기록했습니다. 일어나면 종료해주세요.','success');go('health-detail');return;
+}
+if(route()==='health-detail'&&S.selectedHealth==='sleep'&&e.target.id==='kimse-bed-cancel'){
+  S.health.sleepBedStartAt='';save();feedback('잠자리 시작 기록을 취소했습니다.','success');go('health-detail');return;
+}
+if(route()==='health-detail'&&S.selectedHealth==='sleep'&&e.target.id==='kimse-bed-wake'){
+  const began=Date.parse(S.health?.sleepBedStartAt||'');const now=Date.now();
+  if(!Number.isFinite(began)||began>now||now-began<10*60*1000||now-began>18*60*60*1000){feedback('10분~18시간 범위의 잠자리 기록만 저장할 수 있어요.','warning');return;}
+  const durationMin=Math.round((now-began)/60000);
+  S.health.sleepBedLast={startAt:new Date(began).toISOString(),endAt:new Date(now).toISOString(),durationMin};
+  S.health.sleepBedStartAt='';save();
+  feedback('잠자리 체류시간을 기록했습니다. 실제 주무신 시간은 아래에서 선택해주세요.','success');go('health-detail');return;
+}
+if(e.target.closest('[data-health-sleep]')&&route()==='health-detail'&&S.selectedHealth==='sleep'){const v=e.target.closest('[data-health-sleep]').dataset.healthSleep;if(SLEEP_QUICK_OPTIONS.includes(v)){S.health.sleep=v;save();syncClinicalContextSnapshot().catch(()=>{});const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health');flushSignals();tone('tap');feedback('수면시간을 기록했어요.','success');go('health')}return}if(e.target.id==='save-health'){
   const k=S.selectedHealth in HEALTH_META?S.selectedHealth:'sleep';
   let v='';
   if(k==='pressure'){
