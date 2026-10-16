@@ -1,0 +1,336 @@
+{
+  "checkedAt": "2026-10-16T10:52:08.484Z",
+  "source": "live published domain, no JavaScript overrides",
+  "checks": [
+    {
+      "label": "production root assets match exact GitHub deployment commit",
+      "pass": true,
+      "details": {}
+    },
+    {
+      "label": "75s capture timeline present",
+      "pass": true,
+      "details": {}
+    },
+    {
+      "label": "90s safety stop present",
+      "pass": true,
+      "details": {}
+    },
+    {
+      "label": "actual tour visits required real screens",
+      "pass": true,
+      "details": {
+        "routes": [
+          "monitoring-status",
+          "consent",
+          "initial-check",
+          "voice-check",
+          "initial-result",
+          "baseline",
+          "evidence-proof",
+          "research-engine",
+          "brain-map",
+          "brain-trends",
+          "caregiver-home",
+          "demo-capture"
+        ]
+      }
+    },
+    {
+      "label": "monitoring screen appears at beginning and end",
+      "pass": true,
+      "details": {
+        "monitoringFrames": [
+          {
+            "sec": 0,
+            "ctaBottom": 432.609375,
+            "detailsBottom": 512.609375,
+            "signals": 3,
+            "old": false,
+            "advice": "가족 확인과 반복 체크를 이어가세요"
+          },
+          {
+            "sec": 61,
+            "ctaBottom": 432.609375,
+            "detailsBottom": 512.609375,
+            "signals": 3,
+            "old": false,
+            "advice": "가족 확인과 반복 체크를 이어가세요"
+          }
+        ]
+      }
+    },
+    {
+      "label": "real monitoring summary, details and CTA remain in 450x800",
+      "pass": true,
+      "details": [
+        {
+          "sec": 0,
+          "ctaBottom": 432.609375,
+          "detailsBottom": 512.609375,
+          "signals": 3,
+          "old": false,
+          "advice": "가족 확인과 반복 체크를 이어가세요"
+        },
+        {
+          "sec": 61,
+          "ctaBottom": 432.609375,
+          "detailsBottom": 512.609375,
+          "signals": 3,
+          "old": false,
+          "advice": "가족 확인과 반복 체크를 이어가세요"
+        }
+      ]
+    },
+    {
+      "label": "WATCH advice uses specific follow-up",
+      "pass": true,
+      "details": [
+        {
+          "sec": 0,
+          "ctaBottom": 432.609375,
+          "detailsBottom": 512.609375,
+          "signals": 3,
+          "old": false,
+          "advice": "가족 확인과 반복 체크를 이어가세요"
+        },
+        {
+          "sec": 61,
+          "ctaBottom": 432.609375,
+          "detailsBottom": 512.609375,
+          "signals": 3,
+          "old": false,
+          "advice": "가족 확인과 반복 체크를 이어가세요"
+        }
+      ]
+    },
+    {
+      "label": "autoplay restores capture menu after entire sequence",
+      "pass": true,
+      "details": {
+        "last": "demo-capture",
+        "elapsed": 65
+      }
+    },
+    {
+      "label": "full tour completes before 90s safety cutoff",
+      "pass": true,
+      "details": {
+        "duration": 65
+      }
+    },
+    {
+      "label": "browser recorded real video of published app",
+      "pass": true,
+      "details": {
+        "bytes": 4335782
+      }
+    }
+  ],
+  "routes": [
+    {
+      "sec": 0,
+      "route": "monitoring-status",
+      "one": true,
+      "old": false,
+      "status": "변화 확인",
+      "advice": "가족 확인과 반복 체크를 이어가세요",
+      "count": 3,
+      "ctaBottom": 432.609375,
+      "detailsBottom": 512.609375,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 5,
+      "route": "consent",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 11,
+      "route": "initial-check",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 18,
+      "route": "voice-check",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 21,
+      "route": "initial-result",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 22,
+      "route": "baseline",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 33,
+      "route": "evidence-proof",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 37,
+      "route": "research-engine",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 42,
+      "route": "brain-map",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 48,
+      "route": "brain-trends",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 58,
+      "route": "caregiver-home",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 61,
+      "route": "monitoring-status",
+      "one": true,
+      "old": false,
+      "status": "변화 확인",
+      "advice": "가족 확인과 반복 체크를 이어가세요",
+      "count": 3,
+      "ctaBottom": 432.609375,
+      "detailsBottom": 512.609375,
+      "viewport": 800,
+      "capture": true
+    },
+    {
+      "sec": 65,
+      "route": "demo-capture",
+      "one": false,
+      "old": false,
+      "status": "",
+      "advice": "",
+      "count": 0,
+      "ctaBottom": null,
+      "detailsBottom": null,
+      "viewport": 800,
+      "capture": false
+    }
+  ],
+  "monitoringFrames": [
+    {
+      "sec": 0,
+      "ctaBottom": 432.609375,
+      "detailsBottom": 512.609375,
+      "signals": 3,
+      "old": false,
+      "advice": "가족 확인과 반복 체크를 이어가세요"
+    },
+    {
+      "sec": 61,
+      "ctaBottom": 432.609375,
+      "detailsBottom": 512.609375,
+      "signals": 3,
+      "old": false,
+      "advice": "가족 확인과 반복 체크를 이어가세요"
+    }
+  ],
+  "errors": [],
+  "durationSeconds": 65,
+  "uniqueRoutes": [
+    "monitoring-status",
+    "consent",
+    "initial-check",
+    "voice-check",
+    "initial-result",
+    "baseline",
+    "evidence-proof",
+    "research-engine",
+    "brain-map",
+    "brain-trends",
+    "caregiver-home",
+    "demo-capture"
+  ]
+}
