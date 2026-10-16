@@ -56,7 +56,7 @@ jobs:
             brainRange:'week',brainTrendDomain:'overall',brainFocus:'memory',brainView:'side',
             a11y:{largeText:false,highContrast:false,largeTouchTargets:false,voiceGuidance:false,soundEffects:false,captions:true,colorIcons:true,screenReader:true,reduceMotion:false}};
           const mergeA11y=a=>{const s=clone(state);s.a11y={...s.a11y,...(a||{})};return s};
-          const marker={accessibility:'.accessibility-hero','monitoring-status':'.monitoring-journey','brain-trends':'.trend-chart-legend','brain-map':'.brain-map-stage'};
+          const marker={accessibility:'.accessibility-hero','monitoring-status':'.kimse-monitoring-one-screen','brain-trends':'.trend-chart-legend','brain-map':'.brain-map-stage'};
           async function open(browser,route,a11y={},viewport={width:430,height:932}){
             const ctx=await browser.newContext({viewport,deviceScaleFactor:1});
             await ctx.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),mergeA11y(a11y));
@@ -80,10 +80,10 @@ jobs:
                 check(!/Release\s+\d+(?:\.\d+)?/i.test(footer),'footer-internal-release-hidden',footer);
               }
               if(route==='monitoring-status'){
-                await p.waitForSelector('#monitoring-a11y-summary');check(await p.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-labels');
-                check(await p.locator('.monitoring-level-card[aria-describedby="monitoring-a11y-summary"]').count()===1,'monitoring-summary-link');
-                const txt=await p.locator('.monitoring-journey').innerText();for(const t of ['14일의 평소','오늘의 변화','변화의 의미','다음 행동'])check(txt.includes(t),'monitoring-story-'+t);
-                const minType=await p.evaluate(()=>Math.min(...[...document.querySelectorAll('.result-change small,.monitoring-level-note,.monitoring-level-top>small,.monitoring-level-badge>strong,.monitoring-detail-link,.screen-footnote')].filter(el=>getComputedStyle(el).display!=='none').map(el=>parseFloat(getComputedStyle(el).fontSize))));
+                await p.waitForSelector('.kimse-monitoring-one-screen[aria-label]');check(await p.locator('.kimse-one-screen-signals [role="listitem"][aria-label]').count()===3,'monitoring-noncolor-labels');
+                check(await p.locator('.kimse-monitoring-details #monitoring-a11y-summary').count()===1,'monitoring-original-summary-preserved');check(await p.locator('.kimse-monitoring-details .result-change[aria-label]').count()===3,'monitoring-original-observations-preserved');
+                const txt=await p.locator('.kimse-monitoring-one-screen').innerText();for(const t of ['최근 변화 · 14일 기준 비교','평소 기록과 비교한 결과','지금 할 일','상담용 요약 보기'])check(txt.includes(t),'monitoring-story-'+t);
+                const minType=await p.evaluate(()=>Math.min(...[...document.querySelectorAll('.kimse-monitoring-one-screen .kimse-one-screen-kicker,.kimse-monitoring-one-screen .kimse-one-screen-badge,.kimse-monitoring-one-screen .kimse-one-screen-next-label,.kimse-monitoring-one-screen .kimse-one-screen-intro')].filter(el=>getComputedStyle(el).display!=='none').map(el=>parseFloat(getComputedStyle(el).fontSize))));
                 check(minType>=14,'mobile-readable-secondary-type',String(minType));
               }
               if(route==='brain-trends'){
@@ -98,10 +98,10 @@ jobs:
               }
               await shot(p,route+'.png');await ctx.close();
             }
-            const hc=await open(browser,'monitoring-status',{highContrast:true});check(await hc.p.evaluate(()=>document.documentElement.classList.contains('high-contrast')),'high-contrast-active');check((await hc.p.locator('.monitoring-conclusion').innerText()).includes('다음 행동'),'high-contrast-same-meaning');await shot(hc.p,'monitoring-high-contrast.png');await hc.ctx.close();
+            const hc=await open(browser,'monitoring-status',{highContrast:true});check(await hc.p.evaluate(()=>document.documentElement.classList.contains('high-contrast')),'high-contrast-active');check((await hc.p.locator('.kimse-one-screen-next').innerText()).includes('지금 할 일'),'high-contrast-same-meaning');await shot(hc.p,'monitoring-high-contrast.png');await hc.ctx.close();
             const lt=await open(browser,'monitoring-status',{largeText:true});check(await lt.p.evaluate(()=>document.documentElement.classList.contains('large-text')),'large-text-active');check(await lt.p.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'large-text-no-horizontal-overflow');await shot(lt.p,'monitoring-large-text.png');await lt.ctx.close();
             const touch=await open(browser,'monitoring-status',{largeTouchTargets:true,reduceMotion:true});check(await touch.p.evaluate(()=>document.documentElement.classList.contains('large-touch')),'large-touch-active');check(await touch.p.evaluate(()=>document.documentElement.classList.contains('user-reduced-motion')),'reduced-motion-active');
-            const mh=await touch.p.locator('.status-action').first().evaluate(el=>parseFloat(getComputedStyle(el).minHeight)||el.getBoundingClientRect().height);check(mh>=60,'large-touch-target-height',String(mh));await touch.ctx.close();
+            const mh=await touch.p.locator('.kimse-one-screen-links a').first().evaluate(el=>parseFloat(getComputedStyle(el).minHeight)||el.getBoundingClientRect().height);check(mh>=60,'large-touch-target-height',String(mh));await touch.ctx.close();
             for(const route of ['accessibility','monitoring-status','brain-trends','brain-map']){
               const {ctx,p}=await open(browser,route,{largeText:true,highContrast:true,largeTouchTargets:true,reduceMotion:true},{width:215,height:800});
               const m=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,mw:document.querySelector('#main')?.scrollWidth||0,mc:document.querySelector('#main')?.clientWidth||0}));
