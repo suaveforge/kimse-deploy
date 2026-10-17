@@ -2626,11 +2626,26 @@ function clinicalSeriesSvg(metric){
   return '<svg class="clinical-series-chart" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(metric.clinical_label||metric.metric)+' 실제 날짜별 관찰 추이. 결측 날짜는 선으로 연결하지 않음">'+baseLine+segments.join('')+dots+'<text x="'+p+'" y="'+(h-1)+'">'+first+'</text><text x="'+(w-p)+'" y="'+(h-1)+'" text-anchor="end">'+last+'</text></svg>'
     +(hasGap?'<p class="clinical-microcopy">기록이 없는 날짜는 연속 관찰로 이어 그리지 않았습니다.</p>':'');
 }
+function clinicalObservedDayCount(value){
+  const n=clinicalFiniteNumber(value);
+  return n!==null&&Number.isInteger(n)&&n>=0?n:null;
+}
+function clinicalObservedDaysLabel(value){
+  const n=clinicalObservedDayCount(value);
+  return n===null?'자료 없음':n+'일';
+}
+function clinicalDeviationDateLabel(value){
+  if(typeof value!=='string')return '날짜 미상';
+  const v=value.trim();
+  return /^[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T.*)?$/.test(v)?v.slice(0,10):'날짜 미상';
+}
 function clinicalDeviationCopy(metric){
   const d=metric?.deviation_summary||{};
   if(d.status==='OBSERVED_DEVIATION'){
-    const first=d.first_observed_deviation_at||'날짜 미상',days=Number(d.observed_deviation_days||0),span=Number(d.deviation_span_days||0),gaps=Number(d.gap_days_within_span||0);
-    return '<div class="clinical-deviation-copy"><span><b>첫 관찰 이탈</b> '+esc(first)+'</span><span><b>관찰된 이탈일</b> '+esc(String(days))+'일</span><span><b>시간 범위</b> '+esc(String(span))+'일'+(gaps?' · 중간 미수집 '+esc(String(gaps))+'일':'')+'</span></div>';
+    const first=clinicalDeviationDateLabel(d.first_observed_deviation_at);
+    const days=clinicalObservedDaysLabel(d.observed_deviation_days),span=clinicalObservedDaysLabel(d.deviation_span_days),gaps=clinicalObservedDayCount(d.gap_days_within_span);
+    const gapCopy=gaps===null?' · 중간 미수집 자료 없음':gaps>0?' · 중간 미수집 '+gaps+'일':'';
+    return '<div class="clinical-deviation-copy"><span><b>첫 관찰 이탈</b> '+esc(first)+'</span><span><b>관찰된 이탈일</b> '+esc(days)+'</span><span><b>시간 범위</b> '+esc(span+gapCopy)+'</span></div>';
   }
   if(d.status==='NO_OBSERVED_DEVIATION')return '<div class="clinical-deviation-copy muted"><span>기준선 형성 후 기록된 날짜에서는 범위 이탈이 확인되지 않았습니다.</span></div>';
   return '';
@@ -2666,12 +2681,15 @@ function clinicalTimeline(r){
   });
   if(!rows.length)return '<div class="clinical-chart-empty">선택한 영역과 overlay 조건에 해당하는 시간축 기록이 없습니다.</div>';
   const labelType={BASELINE_STARTED:'기준선',SIGNAL_DEVIATION_ONSET:'첫 기준선 이탈',KIMSE_CHANGE_ALERT:'낌새 관찰',INFORMANT_FEEDBACK:'가족 확인',PROFESSIONAL_OUTCOME:'전문평가',EXTERNAL_CLINICAL_RECORD:'외부 검사·검진',CLINICAL_CONTEXT_EVENT:'진료 맥락',OBJECTIVE_COGNITIVE:'인지과제',SELF_CONTEXT:'본인 진술',CAREGIVER_CONTEXT:'보호자 진술',SAFETY_EVENT:'안전 기록'};
-  return '<div class="clinical-timeline">'+rows.map(x=>{const visibleMetrics=(x.metrics||[]).filter(m=>target==='all'||clinicalMetricMatches(metricMap[m],target));const metrics=visibleMetrics.map(m=>'<span>'+esc(SIGNAL_LABELS[m]||m)+'</span>').join('');let detail='';if(typeof x.detail==='string')detail=esc(x.detail);else if(x.detail&&typeof x.detail==='object'){if(x.kind==='SIGNAL_DEVIATION_ONSET'){detail=esc('관찰 이탈 '+String(x.detail.observed_deviation_days||0)+'일 · 시간 범위 '+String(x.detail.deviation_span_days||0)+'일'+(Number(x.detail.gap_days_within_span||0)?' · 중간 미수집 '+String(x.detail.gap_days_within_span)+'일':''));}else detail=esc([x.detail.event_type?(CLINICAL_CONTEXT_EVENT_META[x.detail.event_type]?.[1]||x.detail.event_type):null,x.detail.status?(CLINICAL_CONTEXT_STATUS_LABELS[x.detail.status]||x.detail.status):null,x.detail.summary,x.detail.institution,x.detail.result_category,x.detail.record_type?(EXTERNAL_RECORD_TYPE_META[x.detail.record_type]?.[1]||x.detail.record_type):null,x.detail.verification_status?(CLINICAL_VERIFICATION_LABELS[x.detail.verification_status]||x.detail.verification_status):null,x.detail.provenance,x.detail.subjective_change,x.detail.function_status,x.detail.state].filter(Boolean).join(' · '));}return '<div class="clinical-timeline-row clinical-event-'+esc(String(x.kind||'').toLowerCase())+'"><div class="clinical-time-date">'+esc(String(x.at||'').slice(0,10))+'</div><div class="clinical-time-mark"></div><div class="clinical-time-body"><small>'+esc(labelType[x.kind]||x.kind||'기록')+'</small><strong>'+esc(x.label||'')+'</strong>'+(detail?'<p>'+detail+'</p>':'')+(metrics?'<div class="clinical-time-metrics">'+metrics+'</div>':'')+'</div></div>'}).join('')+'</div>';
+  return '<div class="clinical-timeline">'+rows.map(x=>{const visibleMetrics=(x.metrics||[]).filter(m=>target==='all'||clinicalMetricMatches(metricMap[m],target));const metrics=visibleMetrics.map(m=>'<span>'+esc(SIGNAL_LABELS[m]||m)+'</span>').join('');let detail='';if(typeof x.detail==='string')detail=esc(x.detail);else if(x.detail&&typeof x.detail==='object'){if(x.kind==='SIGNAL_DEVIATION_ONSET'){
+    const gap=clinicalObservedDayCount(x.detail.gap_days_within_span);
+    detail=esc('관찰 이탈 '+clinicalObservedDaysLabel(x.detail.observed_deviation_days)+' · 시간 범위 '+clinicalObservedDaysLabel(x.detail.deviation_span_days)+(gap===null?' · 중간 미수집 자료 없음':gap>0?' · 중간 미수집 '+gap+'일':''));
+  }else detail=esc([x.detail.event_type?(CLINICAL_CONTEXT_EVENT_META[x.detail.event_type]?.[1]||x.detail.event_type):null,x.detail.status?(CLINICAL_CONTEXT_STATUS_LABELS[x.detail.status]||x.detail.status):null,x.detail.summary,x.detail.institution,x.detail.result_category,x.detail.record_type?(EXTERNAL_RECORD_TYPE_META[x.detail.record_type]?.[1]||x.detail.record_type):null,x.detail.verification_status?(CLINICAL_VERIFICATION_LABELS[x.detail.verification_status]||x.detail.verification_status):null,x.detail.provenance,x.detail.subjective_change,x.detail.function_status,x.detail.state].filter(Boolean).join(' · '));}return '<div class="clinical-timeline-row clinical-event-'+esc(String(x.kind||'').toLowerCase())+'"><div class="clinical-time-date">'+esc(String(x.at||'').slice(0,10))+'</div><div class="clinical-time-mark"></div><div class="clinical-time-body"><small>'+esc(labelType[x.kind]||x.kind||'기록')+'</small><strong>'+esc(x.label||'')+'</strong>'+(detail?'<p>'+detail+'</p>':'')+(metrics?'<div class="clinical-time-metrics">'+metrics+'</div>':'')+'</div></div>'}).join('')+'</div>';
 }
 function clinicalTopChangeRows(r){
   const rows=r?.previsit_summary?.top_changes||[];
   if(!rows.length)return '<div class="clinical-no-major">현재 비교 가능한 데이터에서 알고리즘 기준 변화 조합이 확인되지 않았거나 자료가 충분하지 않습니다.</div>';
-  return rows.map(x=>{const p=clinicalFiniteNumber(x.relative_change),pct=p===null?null:Math.round(p*100),d=x.deviation_summary||{},chron=d.status==='OBSERVED_DEVIATION'?' · 첫 이탈 '+String(d.first_observed_deviation_at||'').slice(0,10)+' · 관찰 '+String(d.observed_deviation_days||0)+'일':'';return '<div class="clinical-top-row"><span><strong>'+esc(x.clinical_label||SIGNAL_LABELS[x.metric]||x.metric)+'</strong><small>개인 기준 '+esc(formatMonitoringValue(x.metric,x.baseline))+' → 최근 '+esc(formatMonitoringValue(x.metric,x.recent))+esc(chron)+'</small></span><b>'+(pct===null?'-':(pct>0?'+':'')+pct+'%')+'</b></div>'}).join('');
+  return rows.map(x=>{const p=clinicalFiniteNumber(x.relative_change),pct=p===null?null:Math.round(p*100),d=x.deviation_summary||{},chron=d.status==='OBSERVED_DEVIATION'?' · 첫 이탈 '+clinicalDeviationDateLabel(d.first_observed_deviation_at)+' · 관찰 '+clinicalObservedDaysLabel(d.observed_deviation_days):'';return '<div class="clinical-top-row"><span><strong>'+esc(x.clinical_label||SIGNAL_LABELS[x.metric]||x.metric)+'</strong><small>개인 기준 '+esc(formatMonitoringValue(x.metric,x.baseline))+' → 최근 '+esc(formatMonitoringValue(x.metric,x.recent))+esc(chron)+'</small></span><b>'+(pct===null?'-':(pct>0?'+':'')+pct+'%')+'</b></div>'}).join('');
 }
 function clinicalCoverageOverview(r){
   const rows=Array.isArray(r?.clinical_coverage)?r.clinical_coverage:[];
