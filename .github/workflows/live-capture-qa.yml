@@ -46,7 +46,7 @@ jobs:
           const check=(v,n,d='')=>{log.checks.push({name:n,ok:!!v,detail:d});if(!v)throw Error(n+': '+d);console.log('PASS',n,d)};
           const save=()=>fs.writeFileSync(path.join(OUT,'live-qa.json'),JSON.stringify(log,null,2));
           (async()=>{const browser=await chromium.launch({headless:true});try{
-            const qa=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1}),p=await qa.newPage(),req=qa.request;
+            const qa=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1,locale:'ko-KR'}),p=await qa.newPage(),req=qa.request;
             const names=['','app.js','service-worker.js','manifest.webmanifest','assets/icons/icon.svg','capture-polish.css','accessibility-enhancements.css','accessibility-enhancements.js','premium-ux.css','premium-ux.js','govtech-p0.css','govtech-p0.js','experience-consistency.css'];
             const rs=await Promise.all(names.map(x=>req.get(BASE+x,{timeout:20000})));rs.forEach((r,i)=>check(r.ok(),'live-http-'+(names[i]||'root'),String(r.status())));
             const [html,js,sw,manifest,icon,polish,a11yCss,a11yJs,premiumCss,premiumJs,govCss,govJs,experienceCss]=await Promise.all(rs.map(r=>r.text()));
@@ -121,7 +121,7 @@ jobs:
             await p.screenshot({path:path.join(OUT,'screens','04-brain-trends-large-highcontrast.png'),fullPage:true});
             await qa.close();
 
-            const rec=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1,recordVideo:{dir:path.join(OUT,'video'),size:{width:450,height:800}}}),v=await rec.newPage();
+            const rec=await browser.newContext({viewport:{width:450,height:800},deviceScaleFactor:1,locale:'ko-KR',recordVideo:{dir:path.join(OUT,'video'),size:{width:450,height:800}}}),v=await rec.newPage();
             await v.goto(BASE+'?capture=1#/demo-capture',{waitUntil:'domcontentloaded',timeout:30000});await v.waitForSelector('#demo-preview',{timeout:15000});await v.evaluate(()=>document.documentElement.classList.add('capture-frame-mode'));
             const video=v.video();let stop=false,busy=false,last='',shot=10;
             const timer=setInterval(async()=>{if(stop||busy)return;busy=true;try{const s=await v.evaluate(()=>({hash:location.hash,caption:document.querySelector('#app')?.dataset?.captureCaption||'',day:document.querySelector('.baseline-calendar-leaf strong')?.textContent?.trim()||'',milestone:document.querySelector('.baseline-milestone-card strong')?.textContent?.trim()||'',attention:document.querySelector('.trend-attention-note small')?.textContent?.trim()||'',captionTop:getComputedStyle(document.querySelector('#app'),'::before').top,trendLinked:!!document.querySelector('.overall-trend[aria-describedby="brain-trends-a11y-summary"]'),caregiverShared:(document.querySelector('.gov-care-summary')?.innerText||'').includes('공유된 변화 요약')}));log.timeline.push({t:Date.now(),...s});if(s.hash!==last||s.day==='7'||s.day==='14'){await v.screenshot({path:path.join(OUT,'screens',String(shot++).padStart(2,'0')+'-'+(s.hash.replace('#/','')||'root')+(s.day?'-day'+s.day:'')+'.png')});last=s.hash}}catch(e){log.errors.push(String(e))}finally{busy=false}},250);
