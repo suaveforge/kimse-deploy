@@ -101,9 +101,13 @@ jobs:
               await p.keyboard.press('Tab');
               check(await p.evaluate(()=>document.activeElement&&document.activeElement!==document.body),'keyboard-focus-'+route);
             }
-            await p.goto(BASE+'#/monitoring-status',{waitUntil:'domcontentloaded'});await p.waitForSelector('#monitoring-a11y-summary');
-            check((await p.locator('#monitoring-a11y-summary').innerText()).trim().length>0,'monitoring-text-equivalent');
-            check(await p.locator('.monitoring-level-card[aria-describedby="monitoring-a11y-summary"]').count()>=1,'monitoring-text-equivalent-link');
+            await p.goto(BASE+'#/monitoring-status',{waitUntil:'domcontentloaded'});await p.waitForSelector('.kimse-monitoring-one-screen[aria-describedby="monitoring-a11y-summary"]');
+            const visible=await p.locator('.kimse-monitoring-one-screen').innerText();
+            check(visible.includes('지금 할 일')&&visible.includes('진단 결과는 아닙니다'),'monitoring-visible-nondiagnostic-text-equivalent');
+            // The original description is in a collapsed <details>; textContent
+            // verifies its full retained text without misusing hidden innerText.
+            check((await p.locator('#monitoring-a11y-summary').textContent()||'').trim().length>40,'monitoring-original-text-equivalent');
+            check(await p.locator('.kimse-monitoring-details .monitoring-level-card[aria-describedby="monitoring-a11y-summary"]').count()===1,'monitoring-original-text-equivalent-link');
             await p.goto(BASE+'#/brain-trends',{waitUntil:'domcontentloaded'});await p.waitForSelector('#brain-trends-a11y-summary');
             check((await p.locator('#brain-trends-a11y-summary').innerText()).trim().length>0,'brain-trends-text-equivalent');
             check(await p.locator('.overall-trend[aria-describedby="brain-trends-a11y-summary"]').count()>=1,'chart-text-equivalent-link');
