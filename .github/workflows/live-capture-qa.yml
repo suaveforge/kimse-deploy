@@ -74,9 +74,15 @@ jobs:
             await p.locator('.kimse-consent-options').evaluate(el=>{el.open=true});
             for(const id of ['#consent-microphone','#consent-location','#consent-motion','#consent-usage','#consent-notifications','#consent-caregiver'])if(await p.locator(id).isChecked())await p.uncheck(id);
             await p.locator('#consent-form button[type="submit"]').click();await p.waitForFunction(()=>location.hash==='#/home',null,{timeout:15000}).catch(async err=>{const diag=await p.evaluate(()=>{let state=null;try{const s=JSON.parse(localStorage.getItem('kimse.p0.state')||'{}');state={account:!!s.account,onboarding:s.onboarding,consents:s.consents}}catch{}return {hash:location.hash,state,consentForm:!!document.querySelector('#consent-form'),screen:(document.querySelector('#app')?.innerText||'').slice(0,1000)}});console.error('KIMSE_CONSENT_HOME_DIAGNOSTIC',JSON.stringify(diag));throw err});
-            await p.waitForSelector('.baseline-home-card',{timeout:15000});const ht=await p.locator('#app').innerText();const meterDay=await p.locator('[data-baseline-24h-meter]').getAttribute('data-day');const meterLabel=await p.locator('[data-baseline-24h-meter]').getAttribute('aria-label');const totalDays=await p.locator('[data-baseline-total-days]').innerText();check(ht.includes('생활패턴 확인 중')&&meterDay==='1'&&meterLabel.includes('24시간')&&totalDays.includes('0 / 14일 완료'),'consent-home-day1 '+JSON.stringify({inProgress:ht.includes('생활패턴 확인 중'),meterDay,meterLabel,totalDays,hasBaselineButton:ht.includes('14일 진행 보기')}));
-            await p.getByRole('button',{name:'14일 진행 보기'}).click();await p.waitForFunction(()=>location.hash==='#/baseline');
+            await p.waitForSelector('.kh2-progress[href="#/baseline"]',{timeout:15000});
+            const progress=await p.locator('.kh2-progress');
+            const homeProgressText=await progress.innerText();
+            const now=Number(await progress.locator('[role="progressbar"]').getAttribute('aria-valuenow'));
+            check(homeProgressText.includes('14일 관찰')&&homeProgressText.includes('1일째')&&homeProgressText.includes('시간 경과 · 데이터 수집률 아님')&&now>=0&&now<1,
+              'consent-home-day1',JSON.stringify({homeProgressText,now}));
+            await progress.click();await p.waitForFunction(()=>location.hash==='#/baseline');
             check((await p.locator('.baseline-calendar-leaf strong').innerText()).trim()==='1','baseline-start-day1');
+            check((await p.locator('.screen-baseline .page-desc').innerText()).includes('시간 경과와 실제 수집량은 다릅니다'),'baseline-not-sensor-coverage');
             check(!(await p.locator('#app').innerText()).includes('14일 확인 완료'),'day14-not-preexposed');
 
             await p.goto(BASE+'#/accessibility',{waitUntil:'domcontentloaded'});await p.waitForSelector('.screen-accessibility',{timeout:15000});await p.waitForTimeout(100);
