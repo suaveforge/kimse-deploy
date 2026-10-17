@@ -26,7 +26,7 @@ function enhanceMonitoring(screen){
   overview.setAttribute('aria-label','최근 생활 변화 한눈에 보기');
   // Keep the complete original, non-diagnostic screen-reader summary connected
   // when the full source observations are moved into the closed details panel.
-  if(screen.querySelector('#monitoring-a11y-summary'))overview.setAttribute('aria-describedby','monitoring-a11y-summary');
+  overview.setAttribute('aria-describedby','monitoring-a11y-summary');
   const meta=make('div','kimse-one-screen-meta');
   const kicker=make('span','kimse-one-screen-kicker');
   kicker.textContent='최근 변화 · 14일 기준 비교';
