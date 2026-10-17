@@ -58,7 +58,7 @@ jobs:
           const mergeA11y=a=>{const s=clone(state);s.a11y={...s.a11y,...(a||{})};return s};
           const marker={accessibility:'.accessibility-hero','monitoring-status':'.kimse-monitoring-one-screen','brain-trends':'.trend-chart-legend','brain-map':'.brain-map-stage'};
           async function open(browser,route,a11y={},viewport={width:430,height:932}){
-            const ctx=await browser.newContext({viewport,deviceScaleFactor:1});
+            const ctx=await browser.newContext({viewport,deviceScaleFactor:1,locale:'ko-KR'});
             await ctx.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),mergeA11y(a11y));
             await ctx.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
             const p=await ctx.newPage();await p.goto(BASE+'#/'+route,{waitUntil:'domcontentloaded',timeout:30000});await p.waitForSelector('#main',{timeout:15000});await p.waitForSelector(marker[route],{timeout:15000});await p.waitForTimeout(320);return {ctx,p};
@@ -109,7 +109,7 @@ jobs:
             }
             const gray=await open(browser,'monitoring-status');
             await gray.p.evaluate(()=>document.documentElement.style.filter='grayscale(1)');
-            const g=await gray.p.locator('.kimse-monitoring-one-screen').innerText();
+            const g=await gray.p.locator('.kimse-monitoring-one-screen').innerText();console.log('KIMSE_GRAY_KO_MEANING '+JSON.stringify({lang:await gray.p.locator('html').getAttribute('lang'),text:g.slice(0,1200)}));
             check(g.includes('변화')&&g.includes('지금 할 일')&&g.includes('상담용 요약 보기'),'grayscale-one-screen-meaning-retained');
             check(await gray.p.locator('.kimse-one-screen-primary[href="#/consultation-report"]').count()===1,'grayscale-report-route-retained');
             // Legacy clinical guidance lives under the user-expandable detail panel.
@@ -119,7 +119,7 @@ jobs:
             check(detailsText.includes('치매상담콜센터')||detailsText.includes('1899-9988'),'grayscale-detailed-help-retained');
             await gray.p.locator('.kimse-monitoring-details > summary').click();
             await shot(gray.p,'monitoring-grayscale.png');await gray.ctx.close();
-            const dc=await browser.newContext({viewport:{width:450,height:800}}),dp=await dc.newPage();await dp.goto(BASE+'#/demo-capture',{waitUntil:'domcontentloaded',timeout:30000});await dp.waitForSelector('#demo-preview',{timeout:15000});check(await dp.locator('#demo-preview').count()===1,'demo-capture-entry');await dc.close();
+            const dc=await browser.newContext({viewport:{width:450,height:800},locale:'ko-KR'}),dp=await dc.newPage();await dp.goto(BASE+'#/demo-capture',{waitUntil:'domcontentloaded',timeout:30000});await dp.waitForSelector('#demo-preview',{timeout:15000});check(await dp.locator('#demo-preview').count()===1,'demo-capture-entry');await dc.close();
             log.finishedAt=new Date().toISOString();fs.writeFileSync(path.join(OUT,'qa.json'),JSON.stringify(log,null,2));
           }finally{await browser.close()}})().catch(e=>{log.errors.push(String(e.stack||e));fs.writeFileSync(path.join(OUT,'qa.json'),JSON.stringify(log,null,2));console.error(e);process.exit(1)});
           NODE

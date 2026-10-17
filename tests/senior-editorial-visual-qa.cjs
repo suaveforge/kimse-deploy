@@ -21,7 +21,7 @@ const seed=(route,mode)=>({
  try{
   for(const profile of profiles){
    for(const route of routes){
-    const cx=await browser.newContext({viewport:{width:profile.w,height:810},reducedMotion:'reduce',deviceScaleFactor:1});
+    const cx=await browser.newContext({viewport:{width:profile.w,height:810},reducedMotion:'reduce',deviceScaleFactor:1,locale:'ko-KR'});
     await cx.addInitScript(state=>localStorage.setItem('kimse.p0.state',JSON.stringify(state)),seed(route,profile.mode));
     const page=await cx.newPage();
     const runtimeErrors=[];

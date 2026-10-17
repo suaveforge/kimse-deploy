@@ -62,7 +62,7 @@ jobs:
             'brain-map':{wait:'.brain-visual',anchor:'.brain-visual'}
           };
           async function capture(browser,{file,route,a11y={},mode='normal'}){
-            const context=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:1});
+            const context=await browser.newContext({viewport:{width:430,height:932},deviceScaleFactor:1,locale:'ko-KR'});
             await context.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),stateWith(a11y));
             await context.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
             const page=await context.newPage();
@@ -111,7 +111,8 @@ jobs:
               } else if(route==='monitoring-status'){
                 await page.waitForSelector('.kimse-monitoring-one-screen[aria-describedby="monitoring-a11y-summary"]',{timeout:15000});
                 check((await page.locator('#monitoring-a11y-summary').textContent()||'').trim().length>40,'monitoring-original-semantic-'+file);
-                check((await page.locator('.kimse-monitoring-one-screen').innerText()).includes('지금 할 일'),'monitoring-visible-action-'+file);
+                const monitoringText=await page.locator('.kimse-monitoring-one-screen').innerText();
+                check(monitoringText.includes('지금 할 일'),'monitoring-visible-action-'+file,JSON.stringify({lang:await page.locator('html').getAttribute('lang'),text:monitoringText.slice(0,950)}));
                 check(await page.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-'+file);
                 await page.evaluate(()=>window.scrollTo(0,0));
               } else if(route==='brain-trends'){
