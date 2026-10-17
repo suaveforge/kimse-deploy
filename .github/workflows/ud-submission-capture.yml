@@ -57,7 +57,7 @@ jobs:
           const check=(v,n,d='')=>{if(!v)throw Error(n+': '+d);checks.push(n);console.log('PASS',n,d)};
           const routeSpec={
             accessibility:{wait:'.screen-accessibility',anchor:null},
-            'monitoring-status':{wait:'.screen-monitoring-status',anchor:'.monitoring-level-card'},
+            'monitoring-status':{wait:'.kimse-monitoring-one-screen',anchor:'.kimse-one-screen-next'},
             'brain-trends':{wait:'.overall-trend',anchor:'.overall-trend'},
             'brain-map':{wait:'.brain-visual',anchor:'.brain-visual'}
           };
@@ -79,7 +79,7 @@ jobs:
                 const main=document.querySelector('#main');
                 if(main?.dataset?.premiumUx!=='39')return false;
                 const r=location.hash.replace('#/','');
-                const marker=r==='monitoring-status'?'.monitoring-journey':r==='brain-trends'?'.trend-chart-legend':r==='brain-map'?'.brain-map-stage':r==='accessibility'?'.accessibility-hero':null;
+                const marker=r==='monitoring-status'?'.kimse-monitoring-one-screen':r==='brain-trends'?'.trend-chart-legend':r==='brain-map'?'.brain-map-stage':r==='accessibility'?'.accessibility-hero':null;
                 return !marker||!!document.querySelector(marker);
               },{timeout:15000});
               check(await page.locator('localize-switcher').count()===0,'no-localize-'+file);
@@ -109,8 +109,9 @@ jobs:
                   return r.top>=headerBottom-1&&r.bottom<=innerHeight+1;
                 }),'accessibility-primary-settings-visible-'+file);
               } else if(route==='monitoring-status'){
-                await page.waitForSelector('.monitoring-journey',{timeout:15000});
-                check(await page.locator('#monitoring-a11y-summary').count()===1,'monitoring-semantic-'+file);
+                await page.waitForSelector('.kimse-monitoring-one-screen[aria-describedby="monitoring-a11y-summary"]',{timeout:15000});
+                check((await page.locator('#monitoring-a11y-summary').textContent()||'').trim().length>40,'monitoring-original-semantic-'+file);
+                check((await page.locator('.kimse-monitoring-one-screen').innerText()).includes('지금 할 일'),'monitoring-visible-action-'+file);
                 check(await page.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-'+file);
                 await page.evaluate(()=>window.scrollTo(0,0));
               } else if(route==='brain-trends'){
@@ -131,7 +132,7 @@ jobs:
                 check(await page.evaluate(()=>document.documentElement.classList.contains('large-text')),'large-text-applied-'+file);
                 if(route==='monitoring-status'){
                   await page.evaluate(()=>{
-                    const c=document.querySelector('.monitoring-conclusion');
+                    const c=document.querySelector('.kimse-one-screen-next');
                     if(!c)return;
                     const header=document.querySelector('.app-header')?.getBoundingClientRect().height||0;
                     const top=c.getBoundingClientRect().top+window.scrollY-header-500;
@@ -139,7 +140,7 @@ jobs:
                   });
                   await page.waitForTimeout(180);
                   check(await page.evaluate(()=>{
-                    const c=document.querySelector('.monitoring-conclusion');
+                    const c=document.querySelector('.kimse-one-screen-next');
                     if(!c)return false;
                     const r=c.getBoundingClientRect();
                     return r.top>=0&&r.bottom<=innerHeight+1;
