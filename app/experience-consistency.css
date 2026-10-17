@@ -129,8 +129,12 @@
 /* Accessibility at narrow widths and browser zoom: do not squeeze 3 columns
  * into a 220px equivalent viewport. Keep controls legible and tappable. */
 @media(max-width:360px){
- .screen-research-engine .research-source-stack { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
- .screen-research-engine .research-source:last-child:nth-child(odd) { grid-column:1/-1; }
+ /* Readable citation sources beat the filming-only three-column card layout. */
+ .screen-research-engine .research-source-stack { grid-template-columns:minmax(0,1fr)!important;gap:9px!important; }
+ .screen-research-engine .research-source:last-child:nth-child(odd) { grid-column:auto; }
+ .screen-research-engine .research-source { display:grid!important;grid-template-columns:32px minmax(0,1fr)!important;gap:11px!important;align-items:center!important;justify-items:stretch!important;text-align:left!important;padding:12px 14px!important;min-height:72px!important; }
+ .screen-research-engine .research-source strong { font-size:18px!important;line-height:1.35!important;white-space:normal!important;word-break:keep-all!important; }
+ .screen-research-engine .research-source small { font-size:16px!important;line-height:1.4!important;white-space:normal!important;word-break:keep-all!important; }
  .screen-brain-map .brain-domain-tabs,
  .screen-brain-trends .trend-domain-tabs { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
 }
