@@ -24,6 +24,9 @@ function enhanceMonitoring(screen){
   const statusText={stable:'평소 흐름',warning:'변화 확인',danger:'상담 준비',serious:'빠른 확인',urgent:'즉시 확인'}[key];
   const overview=make('section','kimse-monitoring-one-screen');
   overview.setAttribute('aria-label','최근 생활 변화 한눈에 보기');
+  // Keep the complete original, non-diagnostic screen-reader summary connected
+  // when the full source observations are moved into the closed details panel.
+  if(screen.querySelector('#monitoring-a11y-summary'))overview.setAttribute('aria-describedby','monitoring-a11y-summary');
   const meta=make('div','kimse-one-screen-meta');
   const kicker=make('span','kimse-one-screen-kicker');
   kicker.textContent='최근 변화 · 14일 기준 비교';
