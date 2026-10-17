@@ -316,6 +316,31 @@ async function main(){
     sensory_motor:{context_events:[
       {status:'UNKNOWN',event_type:'SENSORY_CHANGE',occurred_at:'2026-09-26',summary:'SYNTHETIC-SENSORY'}]}
   };
+
+  // Independent field-audit regression: unknown counts/dates must never be
+  // rewritten to zero in clinician screen, timeline or patient-carried A4.
+  const syntheticMissingDeviation={
+    status:'OBSERVED_DEVIATION',
+    first_observed_deviation_at:null,
+    observed_deviation_days:null,
+    deviation_span_days:null,
+    gap_days_within_span:null
+  };
+  const syntheticObservedZeroDeviation={
+    status:'OBSERVED_DEVIATION',
+    first_observed_deviation_at:'2026-10-05',
+    observed_deviation_days:0,
+    deviation_span_days:0,
+    gap_days_within_span:0
+  };
+  history.monitoring.metrics[0].deviation_summary=syntheticMissingDeviation;
+  history.monitoring.metrics[1].deviation_summary=syntheticObservedZeroDeviation;
+  history.previsit_summary.top_changes[0].deviation_summary=syntheticMissingDeviation;
+  history.previsit_summary.top_changes[1].deviation_summary=syntheticObservedZeroDeviation;
+  history.timeline.push(
+    {kind:'SIGNAL_DEVIATION_ONSET',at:'2026-10-06T00:00:00Z',label:'합성 결측 관찰 경과',metrics:['steps'],detail:syntheticMissingDeviation},
+    {kind:'SIGNAL_DEVIATION_ONSET',at:'2026-10-07T00:00:00Z',label:'합성 실제 0일 관찰 경과',metrics:['sleep_minutes'],detail:syntheticObservedZeroDeviation}
+  );
   const originalHistory=JSON.stringify(history);
   const historyCtx=await browser.newContext({viewport:{width:1440,height:950},locale:'ko-KR',serviceWorkers:'block'});
   await historyCtx.addInitScript(s=>localStorage.setItem('kimse.p0.state',JSON.stringify(s)),
@@ -327,6 +352,17 @@ async function main(){
   await hp.locator('#clinical-target-department').dispatchEvent('change');
   await hp.waitForFunction(()=>document.querySelector('.clinical-specialty-review')?.dataset.specialtyFocus==='GERIATRICS',
     null,{timeout:12000});
+  const metricMissingHtml=await hp.locator('.clinical-metric[data-clinical-metric="steps"] .clinical-deviation-copy').textContent();
+  check(metricMissingHtml.includes('첫 관찰 이탈 날짜 미상')&&metricMissingHtml.includes('관찰된 이탈일 자료 없음')&&metricMissingHtml.includes('시간 범위 자료 없음'),'deviation-screen-missing-is-not-zero');
+  check(!metricMissingHtml.includes('0일'),'deviation-screen-no-fabricated-zero');
+  const metricZeroHtml=await hp.locator('.clinical-metric[data-clinical-metric="sleep_minutes"] .clinical-deviation-copy').textContent();
+  check(metricZeroHtml.includes('2026-10-05')&&metricZeroHtml.includes('관찰된 이탈일 0일')&&metricZeroHtml.includes('시간 범위 0일'),'deviation-screen-explicit-zero-kept');
+  const printChangeRows=await hp.locator('.clinical-print-grid .clinical-top-row').allTextContents();
+  check(printChangeRows[0].includes('첫 이탈 날짜 미상 · 관찰 자료 없음'),'deviation-print-summary-missing-kept');
+  check(printChangeRows[1].includes('첫 이탈 2026-10-05 · 관찰 0일'),'deviation-print-summary-zero-kept');
+  const timelineText=await hp.locator('.clinical-timeline').textContent();
+  check(timelineText.includes('관찰 이탈 자료 없음 · 시간 범위 자료 없음')&&
+        timelineText.includes('관찰 이탈 0일 · 시간 범위 0일'),'deviation-timeline-missing-and-real-zero');
   const paths=[
     'risk_confounders.medication_change.events[0]',
     'risk_confounders.medication_change.events[1]',
@@ -446,6 +482,10 @@ async function main(){
     {encoding:'utf8'}).replace(/\s+/g,'');
   for(const path of paths)
     check(allText.includes(path),'history-pdf-original-path-'+path);
+  check(allText.includes('첫이탈날짜미상·관찰자료없음'),'deviation-a4-unknown-date-and-count');
+  check(allText.includes('첫이탈2026-10-05·관찰0일'),'deviation-a4-genuine-observed-zero');
+  check(!allText.includes('첫이탈날짜미상·관찰0일'),'deviation-a4-no-missing-to-zero-coercion');
+
   for(const phrase of ['new_dose:0','2026-09-20','2026-10-11',
                         '상태ABSENT','상태UNKNOWN','상태NONE_REPORTED',
                         '의료진확인결과아님','SYNTHETIC-OTHER-NONE',
