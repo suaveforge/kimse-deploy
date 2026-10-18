@@ -87,7 +87,9 @@ async function testCase(browser,template,zero){
       ok(metricText.includes('첫 관찰 이탈')&&metricText.includes('날짜 미상')&&metricText.includes('관찰된 이탈일')&&metricText.includes('자료 없음')&&!metricText.includes('0일'),label+'-metric-preserves-missing',metricText);
       ok(timelineText.includes('관찰 이탈 자료 없음')&&timelineText.includes('시간 범위 자료 없음')&&timelineText.includes('중간 미수집 자료 없음')&&!timelineText.includes('관찰 이탈 0일'),label+'-timeline-preserves-missing',timelineText);
     }
-    ok(await page.locator('.clinical-visit-brief[data-provider-approved="false"]').count()===1,label+'-no-institution-approval');
+    ok(await page.locator('[data-provider-approved="true"],[data-transport-authorized="true"]').count()===0&&
+      (await page.locator('.clinical-delivery-disclaimer').textContent()||'').includes('전자제출 버튼을 활성화하지 않습니다'),
+      label+'-no-institution-approval-or-transfer');
     await page.emulateMedia({media:'print'});
     const pdf=await page.pdf({format:'A4',printBackground:true,margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
     const filename='clinical-deviation-'+label+'.pdf';fs.writeFileSync(filename,pdf);
