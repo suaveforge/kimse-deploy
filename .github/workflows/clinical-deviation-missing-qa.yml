@@ -1,0 +1,37 @@
+name: KIMSE Clinical Missing-vs-Zero Live A4 QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app.js'
+      - 'app/app.js'
+      - 'app.css'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'tests/clinical-deviation-missing-qa.cjs'
+      - '.github/workflows/clinical-deviation-missing-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  missing-vs-zero:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium Korean fonts and PDF verification tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends poppler-utils fonts-noto-cjk
+          npm install playwright@1.56.1 pdf-lib --no-save --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Verify live Clinical Dataset missing versus measured zero across screen timeline A4
+        run: node tests/clinical-deviation-missing-qa.cjs
+      - name: Retain QA-only synthetic patient-carried PDF artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimse-clinical-missing-vs-zero-synthetic
+          path: clinical-deviation-*.pdf
+          if-no-files-found: ignore
+          retention-days: 14
