@@ -88,7 +88,7 @@ async function testCase(browser,template,zero){
       ok(timelineText.includes('관찰 이탈 자료 없음')&&timelineText.includes('시간 범위 자료 없음')&&timelineText.includes('중간 미수집 자료 없음')&&!timelineText.includes('관찰 이탈 0일'),label+'-timeline-preserves-missing',timelineText);
     }
     ok(await page.locator('[data-provider-approved="true"],[data-transport-authorized="true"]').count()===0&&
-      (await page.locator('.clinical-delivery-disclaimer').textContent()||'').includes('전자제출 버튼을 활성화하지 않습니다'),
+      (await page.locator('.clinical-delivery-disclaimer').allTextContents()).some(x=>x.includes('전자제출 버튼을 활성화하지 않습니다')),
       label+'-no-institution-approval-or-transfer');
     await page.emulateMedia({media:'print'});
     const pdf=await page.pdf({format:'A4',printBackground:true,margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
