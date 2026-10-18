@@ -2145,7 +2145,7 @@ page['research-engine']=()=>wrap(
 );
 
 function baselineEvent(day){
-  if(baselineComplete())return {tone:'complete',kicker:'14일 완료',title:'14일 확인 완료',text:'14일간의 시간을 모두 채웠습니다. 실제 수집된 기록을 확인해주세요.'};
+  if(baselineComplete())return {tone:'complete',kicker:'14일 경과',title:'14일 관찰 기간 경과',text:'시간 경과와 기록 완성은 다릅니다. 실제 수집된 유효 관찰일을 확인해주세요.'};
   if(day===14)return {tone:'second',kicker:'14일째',title:'마지막 24시간 확인 중',text:'오늘 24시간까지 마치면 14일 시간이 완료됩니다.'};
   if(day===7)return {tone:'week',kicker:'7일째',title:'첫 주 패턴 확인',text:'7일 동안 반복된 수면·활동·말하기·이동 흐름을 확인합니다.'};
   if(day>7)return {tone:'second',kicker:'2주차',title:'두 번째 주 확인 중',text:'첫 주와 이어지는 생활 리듬을 계속 확인하고 있습니다.'};
@@ -2241,13 +2241,18 @@ page['brain-map']=()=>{
 };
 
 page['monitoring-status']=()=>{
-  const careMode=S.mode==='care'&&!!S.careOverview.subjectId,s=careMode?S.careOverview.summary:S.monitoring.summary,changes=s&&Array.isArray(s.changes)?s.changes:[],ready=s?.status==='READY',status=monitoringUiStatus(s,changes),stage=careMode?S.careOverview.stage:S.stage.summary,sm=observationStageMeta(stage);
+  const careMode=S.mode==='care'&&!!S.careOverview.subjectId,s=careMode?S.careOverview.summary:S.monitoring.summary,changes=s&&Array.isArray(s.changes)?s.changes:[],ready=s?.status==='READY'&&s?.comparison_ready!==false,status=monitoringUiStatus(s,changes),stage=careMode?S.careOverview.stage:S.stage.summary,sm=observationStageMeta(stage);
   if(!ready){
     const stateTitle=stage?.observation_pattern?sm.label:'생활기록 비교 준비 중';
+    const collectingExplanation=s?.status==='READY'&&s?.comparison_ready===false
+      ?(s?.data_readiness==='AWAITING_RECENT_DATA'
+        ?'14일은 지났지만 최근 관찰기록이 부족합니다. 비교에는 같은 신호의 기준선 5일과 최근 2일 기록이 필요합니다.'
+        :'14일은 지났지만 유효한 관찰기록이 부족합니다. 시간 경과만으로 생활변화가 판정되지는 않습니다.')
+      :'평소와 비교할 생활기록이 아직 충분하지 않습니다.';
     return wrap(
       '<section class="kimse-monitoring-insufficient" aria-label="현재 기록 상태">'+
         '<h1 class="page-title">자료 수집 중</h1>'+
-        '<p>평소와 비교할 생활기록이 아직 충분하지 않습니다.</p>'+
+        '<p>'+esc(collectingExplanation)+'</p>'+
         '<div class="kimse-monitoring-current"><span>현재 확인</span><strong>'+esc(stateTitle)+'</strong></div>'+
       '</section>'+
       '<a class="btn-kimse btn-primary-k kimse-monitoring-collect" href="#/collection-status">오늘 수집 상태 확인 '+I('chevron-right')+'</a>'+
@@ -2288,7 +2293,10 @@ page['collection-status']=()=>{
   const coverage=S.monitoring.coverage,sourceLabels={MANUAL_ENTRY:'직접 입력',FOREGROUND_SENSOR:'앱 실행 중 센서',FOREGROUND_APP:'앱 실행',NATIVE_SENSOR:'네이티브 센서',IN_APP_CALL:'낌새 통화',OTHER_OR_UNVERIFIED:'기타·출처 확인 필요'};
   const coverageRows=Array.isArray(coverage?.metrics)?coverage.metrics.map(metric=>{
     const modes=[...new Set((metric.sources||[]).map(s=>sourceLabels[s.collection_mode]||'출처 확인 필요'))].join(' · ');
-    return '<div class="list-row"><span><strong>'+esc(SIGNAL_LABELS[metric.metric]||metric.metric)+'</strong><small>'+metric.observed_days+'일 기록 / '+metric.eligible_days+'일 관찰 가능 · '+esc(modes)+'</small></span></div>';
+    const daysText=metric.metric==='steps'&&Number.isFinite(Number(metric.comparison_days))
+      ?'입력·수집 '+metric.observed_days+'일 · 센서 비교 '+metric.comparison_days+'일 / '+metric.eligible_days+'일'
+      :metric.observed_days+'일 기록 / '+metric.eligible_days+'일 관찰 가능';
+    return '<div class="list-row"><span><strong>'+esc(SIGNAL_LABELS[metric.metric]||metric.metric)+'</strong><small>'+daysText+' · '+esc(modes)+'</small></span></div>';
   }).join(''):'';
   const coverageHtml='<section class="kimse-collection-history"><h2>최근 28일 · 서버 기록</h2>'+
     (coverage?.status==='OBSERVED'?'<p>관찰 시작 이후 '+coverage.eligible_days+'일 중 '+coverage.observed_days+'일에 신호 기록이 있습니다.</p>'+(coverageRows?'<div class="list">'+coverageRows+'</div>':'<p>아직 서버에 기록된 신호가 없습니다.</p>'):
@@ -2332,7 +2340,7 @@ page.switch=()=>{if(!demo())return accountRequired();return wrap(`<h1 class="pag
 page.home=()=>{if(!demo())return accountRequired();
   const clock=baselineTimeProgress(),stage=S.stage.summary,summary=S.monitoring.summary;
   const changes=Array.isArray(summary?.changes)?summary.changes:[];
-  const ready=summary?.status==='READY',sufficient=ready&&!['LOW','INSUFFICIENT'].includes(stage?.data_sufficiency);
+  const ready=summary?.status==='READY'&&summary?.comparison_ready!==false,sufficient=ready&&!['LOW','INSUFFICIENT'].includes(stage?.data_sufficiency);
   const felt=Array.isArray(stage?.basis)&&stage.basis.some(x=>x?.axis==='subjective'&&x?.state==='PRESENT');
   const meta=observationStageMeta(stage);
   const stateTitle=sufficient?(meta.short||meta.label):(felt?'느낀 변화 기록':'자료 수집 중');
@@ -2351,7 +2359,7 @@ page.home=()=>{if(!demo())return accountRequired();
       '<span class="kh2-arrow" aria-hidden="true">'+I('chevron-right')+'</span></a>';
   const progress=S.onboarding.completed?
     '<a class="kh2-progress" href="#/baseline" aria-label="14일 관찰 '+clock.day+'일째, 자세한 시간 경과 확인">'+
-      '<span class="kh2-progress-head"><span>'+I('calendar')+' <strong>14일 관찰</strong></span><b>'+(clock.complete?'14일 완료':clock.day+'일째')+' <small>/ 14일</small></b></span>'+
+      '<span class="kh2-progress-head"><span>'+I('calendar')+' <strong>14일 관찰</strong></span><b>'+(clock.complete?'14일 경과':clock.day+'일째')+' <small>/ 14일</small></b></span>'+
       '<span class="kh2-track" role="progressbar" aria-valuemin="0" aria-valuemax="14" aria-valuenow="'+Math.min(14,clock.completedDays+clock.percent/100).toFixed(2)+'" aria-label="14일 관찰 시간 경과"><i style="width:'+progressPercent.toFixed(2)+'%"></i></span>'+
       '<span class="kh2-progress-note">시간 경과 · 데이터 수집률 아님'+I('chevron-right')+'</span></a>':'';
   const entries=[
