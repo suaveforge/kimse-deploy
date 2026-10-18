@@ -111,7 +111,7 @@ jobs:
               } else if(route==='monitoring-status'){
                 await page.waitForSelector('.kimse-monitoring-one-screen[aria-describedby="monitoring-a11y-summary"]',{timeout:15000});
                 check((await page.locator('#monitoring-a11y-summary').textContent()||'').trim().length>40,'monitoring-original-semantic-'+file);
-                check((await page.locator('.kimse-monitoring-one-screen').innerText()).includes('지금 할 일'),'monitoring-visible-action-'+file);
+                check(await page.locator('.kimse-one-screen-next').isVisible()&&await page.locator('.kimse-one-screen-links a').count()>=1,'monitoring-visible-action-'+file);
                 check(await page.locator('.result-change[aria-label]').count()===3,'monitoring-noncolor-'+file);
                 await page.evaluate(()=>window.scrollTo(0,0));
               } else if(route==='brain-trends'){

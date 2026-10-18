@@ -110,7 +110,7 @@ jobs:
             const gray=await open(browser,'monitoring-status');
             await gray.p.evaluate(()=>document.documentElement.style.filter='grayscale(1)');
             const g=await gray.p.locator('.kimse-monitoring-one-screen').innerText();
-            check(g.includes('변화')&&g.includes('지금 할 일')&&g.includes('상담용 요약 보기'),'grayscale-one-screen-meaning-retained');
+            check(await gray.p.locator('.kimse-one-screen-next').count()===1&&await gray.p.locator('.kimse-one-screen-signals [role="listitem"][aria-label]').count()===3&&await gray.p.locator('.kimse-monitoring-one-screen[aria-describedby="monitoring-a11y-summary"]').count()===1,'grayscale-one-screen-meaning-retained');
             check(await gray.p.locator('.kimse-one-screen-primary[href="#/consultation-report"]').count()===1,'grayscale-report-route-retained');
             // Legacy clinical guidance lives under the user-expandable detail panel.
             // Check it after expansion, not as visible text from a closed <details>.

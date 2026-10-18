@@ -8,6 +8,7 @@ on:
       - '.github/workflows/senior-editorial-visual-qa.yml'
       - 'app.js'
       - 'senior-journey.css'
+      - 'experience-consistency.css'
       - 'premium-ux.js'
       - 'index.html'
       - 'service-worker.js'
