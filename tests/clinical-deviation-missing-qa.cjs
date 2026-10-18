@@ -71,7 +71,7 @@ async function testCase(browser,template,zero){
     await page.locator('.clinical-explorer').waitFor({timeout:25000});
     const top=page.locator('.clinical-top-row').filter({hasText:zero?'SYNTH-ZERO-DAYS-STEP':'SYNTH-MISSING-DAYS-STEP'});
     ok(await top.count()===1,label+'-single-top-change');
-    const topText=await top.innerText();
+    const topText=(await top.textContent()||'').replace(/\s+/g,' ').trim();
     const deviation=page.locator('.clinical-metric[data-clinical-metric="steps"] .clinical-deviation-copy');
     ok(await deviation.count()===1,label+'-metric-present');
     const metricText=await deviation.innerText();
@@ -94,9 +94,10 @@ async function testCase(browser,template,zero){
     const pages=(await PDFDocument.load(pdf)).getPageCount();
     ok(pages>=1&&pages<35,label+'-pdf-created',String(pages));
     const pdftxt=execFileSync('pdftotext',['-layout',filename,'-'],{encoding:'utf8'}).replace(/\s+/g,' ');
-    ok(pdftxt.includes(zero?'SYNTH-ZERO-DAYS-STEP':'SYNTH-MISSING-DAYS-STEP'),label+'-pdf-marker');
-    if(zero)ok(pdftxt.includes('관찰 0일'),label+'-pdf-measured-zero');
-    else ok(pdftxt.includes('관찰 자료 없음')&&!pdftxt.includes('SYNTH-MISSING-DAYS-STEP 첫 이탈 날짜 미상 · 관찰 0일'),label+'-pdf-missing-not-invented');
+    const pdfCompact=pdftxt.replace(/\s+/g,'');
+    ok(pdfCompact.includes(zero?'SYNTH-ZERO-DAYS-STEP':'SYNTH-MISSING-DAYS-STEP'),label+'-pdf-marker');
+    if(zero)ok(pdfCompact.includes('관찰0일'),label+'-pdf-measured-zero');
+    else ok(pdfCompact.includes('관찰자료없음')&&!pdfCompact.includes('SYNTH-MISSING-DAYS-STEP첫이탈날짜미상·관찰0일'),label+'-pdf-missing-not-invented');
     ok(JSON.stringify(report)===before,label+'-source-report-immutable');
   }finally{await context.close()}
 }
