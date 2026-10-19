@@ -3708,14 +3708,15 @@ async function finishOnboardingAndStartMonitoring(){
   if(!S.baseline.startedAt)S.baseline.startedAt=new Date().toISOString();
   save();
   if(demoAutoRunning){go('baseline');return true}
+  // Start consented local sensing immediately: network outages must not delay the first 14 days.
+  queueInitialSignals();
+  startPassiveCollectors();
   await startRemoteMonitoring();
   await syncMonitoringPreferences();
   await syncStageContextFromProfile();
   await syncClinicalContextSnapshot();
   await syncInitialCognitiveBaseline();
   await window.KIMSE_PUSH?.sync?.();
-  queueInitialSignals();
-  startPassiveCollectors();
   await flushSignals();
   save();
   return true;
@@ -4062,7 +4063,7 @@ async function bootstrap(){
     else if(oauth?.accessToken){await establishKimseAuth(oauth);S.auth.lastError='';save();go(authNextRoute())}
   }catch(err){S.auth.lastError='소셜 로그인을 완료하지 못했습니다.';save();go('auth')}
   render();
-  if(monitoringEnabled()){await hydrateSignalJournal();queueInitialSignals();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();await syncProfessionalOutcomes();await syncExternalClinicalRecords();await syncInitialCognitiveBaseline();if(S.consents.notifications)await window.KIMSE_PUSH?.sync?.();startPassiveCollectors();await syncMonitoring()}
+  if(monitoringEnabled()){await hydrateSignalJournal();queueInitialSignals();startPassiveCollectors();await startRemoteMonitoring();await syncMonitoringPreferences();await syncStageContextFromProfile();await syncClinicalContextSnapshot();await syncProfessionalOutcomes();await syncExternalClinicalRecords();await syncInitialCognitiveBaseline();if(S.consents.notifications)await window.KIMSE_PUSH?.sync?.();await syncMonitoring()}
 }
 bootstrap();
 })();
