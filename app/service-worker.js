@@ -1,4 +1,4 @@
-const CACHE = 'kimse-pwa-20261021-clinical-multipage-identity-1';
+const CACHE = 'kimse-pwa-20261021-clinical-multipage-identity-2';
 const CORE = [
   './',
   './index.html',
