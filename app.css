@@ -1514,26 +1514,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .kimse-sleep-bedside .btn-kimse{margin-top:7px;min-height:49px;width:100%}
 @media(max-width:540px){.kimse-sleep-bedside{padding:14px 13px}}
 
-/* Repeated A4 source identity stays in the physical page margin, not over clinical rows.
-   CSS page counters are printed by Chromium on every sheet, including appended records. */
-.clinical-print-page-identity{display:none}
+/* Repeated source identity uses the page margin, not a fixed body overlay. */
 @media print{
-  @page{
-    @bottom-right{
-      content:"쪽 " counter(page) " / " counter(pages);
-      font:8pt system-ui,sans-serif;
-      color:#394b57;
-    }
-  }
-  .clinical-print-page-identity{
-    display:flex!important;position:fixed;bottom:-6.5mm;left:0;right:27mm;
-    height:4mm;align-items:center;gap:7pt;min-width:0;
-    border-top:0.4pt solid #c1cbd1;padding-top:1pt;
-    background:#fff;color:#344954;font-size:7pt;line-height:1.15;
-  }
-  .clinical-print-page-reference{
-    display:block;min-width:0;flex:1;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  }
-  .clinical-print-page-identity strong{font-size:7pt;font-weight:700;white-space:nowrap;color:#1c3442}
+ @page{
+  @bottom-right{content:"쪽 " counter(page) " / " counter(pages);font:8pt system-ui,sans-serif;color:#394b57}
+ }
 }
