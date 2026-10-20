@@ -122,7 +122,7 @@ async function testPrevisitCoverage(browser,template,value,label,expected){
     const file='clinical-previsit-coverage-'+label+'.pdf';
     fs.writeFileSync(file,pdf);
     const rawText=execFileSync('pdftotext',['-raw',file,'-'],{encoding:'utf8'}).replace(/\s+/g,'');
-    const phrase='신호중앙coverage'+expected;
+    const phrase=('신호 중앙 coverage'+expected).replace(/\s+/g,'');
     ok(rawText.includes(phrase),'previsit-coverage-pdf-'+label,
       'expected='+phrase+' extracted-keyword-context='+rawText.slice(Math.max(0,rawText.indexOf('신호중앙coverage')-25),rawText.indexOf('신호중앙coverage')+95));
     ok(JSON.stringify(report)===before,'previsit-coverage-immutable-'+label);
