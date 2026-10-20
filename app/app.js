@@ -2911,16 +2911,22 @@ function clinicalRecordEntryMeta(record,clinicalDate){
 }
 
 function clinicalPrintPageIdentity(report){
-  // A detached A4 appendix must remain identifiable without assuming a hospital-verified identity.
+  // The Paged Media margin box repeats from the FIRST sheet, without
+  // moving or covering clinical rows in long source appendices.
   const name=typeof report?.subject?.display_name==='string'&&report.subject.display_name.trim()
     ?report.subject.display_name.trim():'미입력';
   const period=report?.report_context||{};
   const date=x=>typeof x==='string'&&x.trim()?x.trim():'미수집';
-  return '<div class="clinical-print-page-identity" role="note">'
-    +'<span class="clinical-print-page-reference">사용자 입력 이름: '+esc(name)
-    +' · 관찰기간: '+esc(date(period.window_start))+' ~ '+esc(date(period.window_end))
-    +' · 보고서 생성: '+esc(date(report?.generated_at))+'</span>'
-    +'<strong>의료기관 미검증 · 진단 아님</strong></div>';
+  const shortName=name.length>32?name.slice(0,32)+'…':name;
+  const reference='입력명 '+shortName+' · 관찰 '+date(period.window_start)+' ~ '+date(period.window_end)
+    +' · 생성 '+date(report?.generated_at)+' · 의료기관 미검증 · 진단 아님';
+  // Escape as a CSS quoted string AND prevent raw </style> markup breakout.
+  const cssString=x=>'"'+String(x).replace(/\\/g,'\\\\').replace(/"/g,'\\"')
+    .replace(/[\r\n\f]/g,' ').replace(/</g,'\\3C ').replace(/>/g,'\\3E ')+'"';
+  return '<style media="print" data-clinical-page-identity="true">'
+    +'@page{@bottom-left{content:'+cssString(reference)
+    +';font:7pt system-ui,sans-serif;color:#344954;}}'
+    +'</style>';
 }
 
 function clinicalPrintableSourceRecords(report){
