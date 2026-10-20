@@ -100,7 +100,7 @@ async function run(){
     // non-diagnostic warning, and its own page index.
     for(let n=1;n<=count;n++){
       const pageText=execFileSync('pdftotext',['-f',String(n),'-l',String(n),'-raw',file,'-'],{encoding:'utf8'}).replace(/\s+/g,'');
-      for(const token of ['SYNTHETIC_PATIENT_54','2026-09-01','2026-10-01','2026-10-02T09:00:00Z','의료기관미검증','진단아님']){
+      for(const token of ['SYNTHETIC_PATIENT_54','2026-09-13','2026-10-10','2026-10-02T09:00:00Z','의료기관미검증','진단아님']){
         ok(pageText.includes(token),'page-'+n+'-carry-id-'+token);
       }
       ok(pageText.includes(('쪽 '+n+' / '+count).replace(/\s+/g,'')),'page-'+n+'-correct-of-total');
