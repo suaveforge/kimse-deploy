@@ -18,6 +18,8 @@ async function run(){
   ok(published,'live-JS-matches-deploy-SHA');
   const report=JSON.parse(fs.readFileSync('clinical-template-demo-data.json','utf8'));
   const before=JSON.stringify(report);
+  report.subject={...(report.subject||{}),display_name:'SYNTHETIC_PATIENT_54'};
+  report.generated_at='2026-10-02T09:00:00Z';
   report.family_feedback=Array.from({length:18},(_,i)=>({
     feedback_at:date(i)+'T09:00:00Z',recorded_at:'2026-10-04',
     assessment:i%2?'NO_CHANGE':'CONFIRMED',reported_by:'SYNTHETIC CAREGIVER',
@@ -93,6 +95,16 @@ async function run(){
     ok(count>=4&&count<40,'multi-page-A4-'+count);
     const file='clinical-long-stress-a4.pdf';fs.writeFileSync(file,pdf);
     const text=execFileSync('pdftotext',['-layout',file,'-'],{encoding:'utf8'});
+    // Independent multi-page clinical safety: a detached source-record sheet
+    // must retain patient-entered identity, the actual source period, the
+    // non-diagnostic warning, and its own page index.
+    for(let n=1;n<=count;n++){
+      const pageText=execFileSync('pdftotext',['-f',String(n),'-l',String(n),'-raw',file,'-'],{encoding:'utf8'}).replace(/\s+/g,'');
+      for(const token of ['SYNTHETIC_PATIENT_54','2026-09-01','2026-10-01','2026-10-02T09:00:00Z','의료기관미검증','진단아님']){
+        ok(pageText.includes(token),'page-'+n+'-carry-id-'+token);
+      }
+      ok(pageText.includes(('쪽 '+n+' / '+count).replace(/\s+/g,'')),'page-'+n+'-correct-of-total');
+    }
     for(const token of ['FAMILY_FIRST','FAMILY_LAST','LONG_NOTE_END','EXTERNAL_FIRST','EXTERNAL_LAST','EXTERNAL_PARITY_01','EXTERNAL_PARITY_17','PROFESSIONAL_FIRST','PROFESSIONAL_LAST','ZERO_SCORE_17']){
       ok(text.includes(token),'pdf-text-'+token);
     }
