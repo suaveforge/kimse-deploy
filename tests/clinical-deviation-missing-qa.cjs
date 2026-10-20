@@ -121,7 +121,7 @@ async function testPrevisitCoverage(browser,template,value,label,expected){
     const pdf=await page.pdf({format:'A4',printBackground:true});
     const file='clinical-previsit-coverage-'+label+'.pdf';
     fs.writeFileSync(file,pdf);
-    const text=execFileSync('pdftotext',['-layout',file,'-'],{encoding:'utf8'}).replace(/\\s+/g,'');
+    const text=execFileSync('pdftotext',['-layout',file,'-'],{encoding:'utf8'}).replace(/\s+/g,'');
     ok(text.includes('신호중앙coverage'+expected),'previsit-coverage-pdf-'+label);
     ok(JSON.stringify(report)===before,'previsit-coverage-immutable-'+label);
   }finally{await ctx.close()}
@@ -132,11 +132,12 @@ async function testPrevisitCoverage(browser,template,value,label,expected){
   const template=JSON.parse(fs.readFileSync('clinical-template-demo-data.json','utf8'));
   ok(template.demo_marker==='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT','synthetic-report-only');
   const browser=await chromium.launch({headless:true});
-  try{await testCase(browser,template,false);await testCase(browser,template,true)}
-  await testPrevisitCoverage(browser,template,false,'false','자료 없음');
+  try{
+    await testCase(browser,template,false);await testCase(browser,template,true);
+    await testPrevisitCoverage(browser,template,false,'false','자료 없음');
   await testPrevisitCoverage(browser,template,'','empty','자료 없음');
   await testPrevisitCoverage(browser,template,'bad','invalid','자료 없음');
   await testPrevisitCoverage(browser,template,0,'measured-zero','0%');
-  await testPrevisitCoverage(browser,template,0.5,'measured-half','50%');
-  finally{await browser.close()}
+    await testPrevisitCoverage(browser,template,0.5,'measured-half','50%');
+  }finally{await browser.close()}
 })().catch(e=>{console.error('KIMSE_DEVIATION_QA_FAILED',e);process.exitCode=1});
