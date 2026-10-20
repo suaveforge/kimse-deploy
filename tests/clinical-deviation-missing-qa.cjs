@@ -103,11 +103,41 @@ async function testCase(browser,template,zero){
     ok(JSON.stringify(report)===before,label+'-source-report-immutable');
   }finally{await context.close()}
 }
+async function testPrevisitCoverage(browser,template,value,label,expected){
+  const report=JSON.parse(JSON.stringify(template));
+  report.previsit_summary.median_signal_coverage=value;
+  const before=JSON.stringify(report);
+  const ctx=await browser.newContext({viewport:{width:1340,height:920},locale:'ko-KR',serviceWorkers:'block'});
+  await ctx.addInitScript(state=>localStorage.setItem('kimse.p0.state',JSON.stringify(state)),makeState(report));
+  await ctx.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
+  try{
+    const page=await ctx.newPage();
+    await page.goto(BASE+'?lang=ko#/clinical-handoff',{waitUntil:'domcontentloaded',timeout:50000});
+    await page.locator('.clinical-explorer').waitFor({timeout:25000});
+    const fact=page.locator('.clinical-keyfact-grid').locator('div').filter({hasText:'신호 중앙 coverage'});
+    ok(await fact.count()===1&&await fact.locator('strong').innerText()===expected,
+      'previsit-coverage-'+label,expected);
+    await page.emulateMedia({media:'print'});
+    const pdf=await page.pdf({format:'A4',printBackground:true});
+    const file='clinical-previsit-coverage-'+label+'.pdf';
+    fs.writeFileSync(file,pdf);
+    const text=execFileSync('pdftotext',['-layout',file,'-'],{encoding:'utf8'}).replace(/\s+/g,'');
+    ok(text.includes('신호중앙coverage'+expected),'previsit-coverage-pdf-'+label);
+    ok(JSON.stringify(report)===before,'previsit-coverage-immutable-'+label);
+  }finally{await ctx.close()}
+}
+
 (async()=>{
   await awaitLiveAssets();
   const template=JSON.parse(fs.readFileSync('clinical-template-demo-data.json','utf8'));
   ok(template.demo_marker==='SYNTHETIC_ONLY_NOT_A_REAL_PATIENT','synthetic-report-only');
   const browser=await chromium.launch({headless:true});
-  try{await testCase(browser,template,false);await testCase(browser,template,true)}
-  finally{await browser.close()}
+  try{
+    await testCase(browser,template,false);await testCase(browser,template,true);
+    await testPrevisitCoverage(browser,template,false,'false','자료 없음');
+  await testPrevisitCoverage(browser,template,'','empty','자료 없음');
+  await testPrevisitCoverage(browser,template,'bad','invalid','자료 없음');
+  await testPrevisitCoverage(browser,template,0,'measured-zero','0%');
+    await testPrevisitCoverage(browser,template,0.5,'measured-half','50%');
+  }finally{await browser.close()}
 })().catch(e=>{console.error('KIMSE_DEVIATION_QA_FAILED',e);process.exitCode=1});
