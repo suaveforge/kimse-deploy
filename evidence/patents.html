@@ -46,6 +46,14 @@ body{background:#f7faf9;color:var(--ip-ink);font-family:"Noto Sans KR","Malgun G
 .ip-detail dt{font-size:12px;color:#5a7380;font-weight:750}
 .ip-detail dd{font-size:12px;color:#314f5c;margin:0;overflow-wrap:anywhere}
 .ip-card-link{display:inline-flex;align-items:center;gap:5px;color:#087c72;font-size:13px;font-weight:750;text-decoration:none;margin-top:16px}
+.ip-progress-title{font-size:12px;color:#3d6067;font-weight:850;margin:16px 0 8px}
+.ip-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ip-progress-step{border:1px solid #e3eae8;border-radius:8px;padding:8px;background:#f8faf9;min-width:0;color:#53707b}
+.ip-progress-step span{font-size:11px;font-weight:800;display:block;line-height:1.4}
+.ip-progress-step small{font-size:10px;color:#71818a;display:block;margin-top:4px}
+.ip-progress-step.is-confirmed{background:#e9f7f1;border-color:#a7d4c8;color:#067668}
+.ip-progress-step.is-confirmed small{color:#067668}
+.ip-next{margin-top:12px;font-size:12px;line-height:1.6;color:#4c6871}
 .ip-guide{font-size:13px;line-height:1.9;color:#516a74}
 .ip-footer{margin:48px 0 30px;font-size:12px;color:#71838a}
 .ip-empty{padding:35px;text-align:center;color:#657b82}
@@ -68,10 +76,10 @@ body{background:#f7faf9;color:var(--ip-ink);font-family:"Noto Sans KR","Malgun G
 </section>
 <div class="alert alert-warning" role="note"><strong>공개 범위</strong> · 출원 전 권리화에 영향을 줄 수 있는 구체적인 알고리즘·구현 세부사항·청구항 초안은 표시하지 않습니다. 공식 확인자료가 없는 출원·등록 상태는 추정하지 않습니다.</div>
 <div class="row row-cards mb-4" aria-label="특허 검토 요약">
-<div class="col-6 col-lg-3"><div class="ip-metric"><span>권리화 검토 후보</span><strong id="ip-candidates">확인 중</strong><small>출원 건수가 아닌 검토 대상</small></div></div>
-<div class="col-6 col-lg-3"><div class="ip-metric"><span>우선 검토 후보</span><strong id="ip-priority">확인 중</strong><small>기술 구분을 위한 내부 우선순위</small></div></div>
-<div class="col-6 col-lg-3"><div class="ip-metric"><span>공식 출원 확인</span><strong id="ip-filed">확인 중</strong><small>출원번호·출처가 확보된 건만 집계</small></div></div>
-<div class="col-6 col-lg-3"><div class="ip-metric"><span>공식 등록 확인</span><strong id="ip-registered">확인 중</strong><small>등록번호·출처가 확보된 건만 집계</small></div></div>
+<div class="col-6 col-lg-3"><div class="ip-metric"><span>권리화 검토 후보</span><strong id="ip-candidates">6건</strong><small>출원 건수가 아닌 검토 대상</small></div></div>
+<div class="col-6 col-lg-3"><div class="ip-metric"><span>우선 검토 후보</span><strong id="ip-priority">3건</strong><small>기술 구분을 위한 내부 우선순위</small></div></div>
+<div class="col-6 col-lg-3"><div class="ip-metric"><span>공식 출원 확인</span><strong id="ip-filed">0건 확인</strong><small>출원번호·출처가 확보된 건만 집계</small></div></div>
+<div class="col-6 col-lg-3"><div class="ip-metric"><span>공식 등록 확인</span><strong id="ip-registered">0건 확인</strong><small>등록번호·출처가 확보된 건만 집계</small></div></div>
 </div>
 <section class="card mb-4">
 <div class="card-header"><h2 class="card-title ip-section-head mb-0">권리화 진행 단계</h2></div>
@@ -91,16 +99,71 @@ body{background:#f7faf9;color:var(--ip-ink);font-family:"Noto Sans KR","Malgun G
 <section aria-labelledby="ip-list-title">
 <div class="d-flex align-items-end justify-content-between flex-wrap gap-2">
 <div><h2 id="ip-list-title" class="ip-section-head mb-1">기능별 특허 검토 목록</h2><p class="small text-secondary mb-0">앱 기능·연구 근거·의료전달 구조와 연결한 검토 항목</p></div>
-<div class="small text-secondary" id="ip-updated" aria-live="polite"></div>
+<div class="small text-secondary" id="ip-updated" aria-live="polite">목록 점검일 2026-10-21</div>
 </div>
 <div class="ip-filter">
 <label for="ip-area">기능 분야</label>
 <select class="form-select" id="ip-area" aria-label="기능 분야"><option value="">전체 분야</option></select>
 <label for="ip-priority-filter">우선순위</label>
 <select class="form-select" id="ip-priority-filter" aria-label="우선순위"><option value="">전체 후보</option><option value="우선 검토">우선 검토</option><option value="후속 검토">후속 검토</option></select>
-<span class="small text-secondary" id="ip-filter-total"></span>
+<span class="small text-secondary" id="ip-filter-total">전체 6건</span>
 </div>
-<div class="row row-cards" id="ip-list" aria-live="polite"><div class="col-12"><div class="ip-empty">권리화 목록을 불러오는 중입니다.</div></div></div>
+<div class="row row-cards" id="ip-list" aria-live="polite">
+<div class="col-lg-6"><article class="ip-card">
+<div class="ip-card-head"><div><div class="ip-no">IP-01</div><h3>개인 기준선과 단기·중기·장기 변화 분석</h3></div><span class="badge bg-secondary-lt">확인 전</span></div>
+<p class="ip-body">개인별 생활기록을 서로 다른 기간으로 비교하고 평소 패턴에서 달라진 흐름을 살펴보는 기능.</p>
+<div class="ip-meta"><span class="badge bg-azure-lt">개인화 분석</span><span class="badge bg-green-lt">우선 검토</span></div>
+<div class="ip-detail"><dl><dt>권리화 검토</dt><dd>선행기술 조사 여부 미확인</dd><dt>출원번호</dt><dd>공식 확인자료 없음</dd><dt>출원일</dt><dd>공식 확인자료 없음</dd><dt>등록번호</dt><dd>공식 확인자료 없음</dd></dl></div>
+<div class="ip-progress-title">권리화 단계별 확인 상태</div><div class="ip-progress" aria-label="진행 단계별 확인 상태"><div class="ip-progress-step"><span>선행기술 조사</span><small>확인 전</small></div><div class="ip-progress-step"><span>차별성 검토</span><small>확인 전</small></div><div class="ip-progress-step"><span>명세서 작성</span><small>확인 전</small></div><div class="ip-progress-step"><span>출원 접수</span><small>확인 전</small></div><div class="ip-progress-step"><span>심사</span><small>확인 전</small></div><div class="ip-progress-step"><span>등록</span><small>확인 전</small></div></div>
+<p class="ip-next">다음 확인: 개인 기준선 형성 및 기간별 변화 비교와 관련된 선행 특허를 검색하고 청구항을 대조</p>
+<a class="ip-card-link" href="./collection.html">관련 Evidence 보기 →</a>
+</article></div>
+<div class="col-lg-6"><article class="ip-card">
+<div class="ip-card-head"><div><div class="ip-no">IP-02</div><h3>서로 다른 생활신호의 변화 통합</h3></div><span class="badge bg-secondary-lt">확인 전</span></div>
+<p class="ip-body">이동·활동·수면·말하기 등 여러 항목의 변화를 함께 살펴보고 개별 변화와 복합 변화를 구분하는 기능.</p>
+<div class="ip-meta"><span class="badge bg-azure-lt">복합신호 분석</span><span class="badge bg-green-lt">우선 검토</span></div>
+<div class="ip-detail"><dl><dt>권리화 검토</dt><dd>선행기술 조사 여부 미확인</dd><dt>출원번호</dt><dd>공식 확인자료 없음</dd><dt>출원일</dt><dd>공식 확인자료 없음</dd><dt>등록번호</dt><dd>공식 확인자료 없음</dd></dl></div>
+<div class="ip-progress-title">권리화 단계별 확인 상태</div><div class="ip-progress" aria-label="진행 단계별 확인 상태"><div class="ip-progress-step"><span>선행기술 조사</span><small>확인 전</small></div><div class="ip-progress-step"><span>차별성 검토</span><small>확인 전</small></div><div class="ip-progress-step"><span>명세서 작성</span><small>확인 전</small></div><div class="ip-progress-step"><span>출원 접수</span><small>확인 전</small></div><div class="ip-progress-step"><span>심사</span><small>확인 전</small></div><div class="ip-progress-step"><span>등록</span><small>확인 전</small></div></div>
+<p class="ip-next">다음 확인: 복합 생활신호를 결합하는 개인화 변화탐지 선행 특허의 청구항 조사</p>
+<a class="ip-card-link" href="./observation.html">관련 Evidence 보기 →</a>
+</article></div>
+<div class="col-lg-6"><article class="ip-card">
+<div class="ip-card-head"><div><div class="ip-no">IP-03</div><h3>의학 연구근거와 관찰 기준 연결</h3></div><span class="badge bg-secondary-lt">확인 전</span></div>
+<p class="ip-body">관찰 항목이 어떤 연구에서 출발했는지 연결하고 출처와 적용 기준을 추적하는 기능.</p>
+<div class="ip-meta"><span class="badge bg-azure-lt">근거 반영</span><span class="badge bg-green-lt">우선 검토</span></div>
+<div class="ip-detail"><dl><dt>권리화 검토</dt><dd>선행기술 조사 여부 미확인</dd><dt>출원번호</dt><dd>공식 확인자료 없음</dd><dt>출원일</dt><dd>공식 확인자료 없음</dd><dt>등록번호</dt><dd>공식 확인자료 없음</dd></dl></div>
+<div class="ip-progress-title">권리화 단계별 확인 상태</div><div class="ip-progress" aria-label="진행 단계별 확인 상태"><div class="ip-progress-step"><span>선행기술 조사</span><small>확인 전</small></div><div class="ip-progress-step"><span>차별성 검토</span><small>확인 전</small></div><div class="ip-progress-step"><span>명세서 작성</span><small>확인 전</small></div><div class="ip-progress-step"><span>출원 접수</span><small>확인 전</small></div><div class="ip-progress-step"><span>심사</span><small>확인 전</small></div><div class="ip-progress-step"><span>등록</span><small>확인 전</small></div></div>
+<p class="ip-next">다음 확인: 임상 연구근거와 관찰 규칙 연결·갱신에 관한 선행 특허 조사</p>
+<a class="ip-card-link" href="./observation.html">관련 Evidence 보기 →</a>
+</article></div>
+<div class="col-lg-6"><article class="ip-card">
+<div class="ip-card-head"><div><div class="ip-no">IP-04</div><h3>변화 설명과 보호자 알림</h3></div><span class="badge bg-secondary-lt">확인 전</span></div>
+<p class="ip-body">관찰된 변화의 기간·항목·정도를 이해하기 쉽게 설명하고 동의한 보호자와 공유하는 기능.</p>
+<div class="ip-meta"><span class="badge bg-azure-lt">안내 및 연계</span><span class="badge bg-secondary-lt">후속 검토</span></div>
+<div class="ip-detail"><dl><dt>권리화 검토</dt><dd>선행기술 조사 여부 미확인</dd><dt>출원번호</dt><dd>공식 확인자료 없음</dd><dt>출원일</dt><dd>공식 확인자료 없음</dd><dt>등록번호</dt><dd>공식 확인자료 없음</dd></dl></div>
+<div class="ip-progress-title">권리화 단계별 확인 상태</div><div class="ip-progress" aria-label="진행 단계별 확인 상태"><div class="ip-progress-step"><span>선행기술 조사</span><small>확인 전</small></div><div class="ip-progress-step"><span>차별성 검토</span><small>확인 전</small></div><div class="ip-progress-step"><span>명세서 작성</span><small>확인 전</small></div><div class="ip-progress-step"><span>출원 접수</span><small>확인 전</small></div><div class="ip-progress-step"><span>심사</span><small>확인 전</small></div><div class="ip-progress-step"><span>등록</span><small>확인 전</small></div></div>
+<p class="ip-next">다음 확인: 위험 변화 설명 및 보호자 알림 기술과 관련된 선행 특허 조사</p>
+<a class="ip-card-link" href="./observation.html">관련 Evidence 보기 →</a>
+</article></div>
+<div class="col-lg-6"><article class="ip-card">
+<div class="ip-card-head"><div><div class="ip-no">IP-05</div><h3>시간 흐름을 보존하는 의료 리포트</h3></div><span class="badge bg-secondary-lt">확인 전</span></div>
+<p class="ip-body">일상 변화의 시작·지속 기간·출처를 의료진에게 전달할 수 있는 자료로 정리하는 기능.</p>
+<div class="ip-meta"><span class="badge bg-azure-lt">의료 전달</span><span class="badge bg-secondary-lt">후속 검토</span></div>
+<div class="ip-detail"><dl><dt>권리화 검토</dt><dd>선행기술 조사 여부 미확인</dd><dt>출원번호</dt><dd>공식 확인자료 없음</dd><dt>출원일</dt><dd>공식 확인자료 없음</dd><dt>등록번호</dt><dd>공식 확인자료 없음</dd></dl></div>
+<div class="ip-progress-title">권리화 단계별 확인 상태</div><div class="ip-progress" aria-label="진행 단계별 확인 상태"><div class="ip-progress-step"><span>선행기술 조사</span><small>확인 전</small></div><div class="ip-progress-step"><span>차별성 검토</span><small>확인 전</small></div><div class="ip-progress-step"><span>명세서 작성</span><small>확인 전</small></div><div class="ip-progress-step"><span>출원 접수</span><small>확인 전</small></div><div class="ip-progress-step"><span>심사</span><small>확인 전</small></div><div class="ip-progress-step"><span>등록</span><small>확인 전</small></div></div>
+<p class="ip-next">다음 확인: 종단형 의료 리포트 생성·표준 의료전달과 관련된 선행 특허 조사</p>
+<a class="ip-card-link" href="./clinical.html">관련 Evidence 보기 →</a>
+</article></div>
+<div class="col-lg-6"><article class="ip-card">
+<div class="ip-card-head"><div><div class="ip-no">IP-06</div><h3>동의 범위에 따른 연구데이터 추적·검증</h3></div><span class="badge bg-secondary-lt">확인 전</span></div>
+<p class="ip-body">동의 범위와 데이터 출처, 생성 시점, 변경·제공 이력을 확인할 수 있도록 관리하는 기능.</p>
+<div class="ip-meta"><span class="badge bg-azure-lt">데이터 신뢰</span><span class="badge bg-secondary-lt">후속 검토</span></div>
+<div class="ip-detail"><dl><dt>권리화 검토</dt><dd>선행기술 조사 여부 미확인</dd><dt>출원번호</dt><dd>공식 확인자료 없음</dd><dt>출원일</dt><dd>공식 확인자료 없음</dd><dt>등록번호</dt><dd>공식 확인자료 없음</dd></dl></div>
+<div class="ip-progress-title">권리화 단계별 확인 상태</div><div class="ip-progress" aria-label="진행 단계별 확인 상태"><div class="ip-progress-step"><span>선행기술 조사</span><small>확인 전</small></div><div class="ip-progress-step"><span>차별성 검토</span><small>확인 전</small></div><div class="ip-progress-step"><span>명세서 작성</span><small>확인 전</small></div><div class="ip-progress-step"><span>출원 접수</span><small>확인 전</small></div><div class="ip-progress-step"><span>심사</span><small>확인 전</small></div><div class="ip-progress-step"><span>등록</span><small>확인 전</small></div></div>
+<p class="ip-next">다음 확인: 목적별 동의·무결성 검증·데이터 제공 이력과 관련된 선행 특허 조사</p>
+<a class="ip-card-link" href="./trust.html">관련 Evidence 보기 →</a>
+</article></div>
+</div>
 </section>
 <section class="card mt-4">
 <div class="card-header"><h2 class="card-title ip-section-head mb-0">기록·확인 원칙</h2></div>
@@ -129,6 +192,18 @@ function card(item){
  const meta=node('div',null,'ip-meta');meta.append(node('span',item.area,'badge bg-azure-lt'),node('span',item.reviewPriority,'badge '+(item.reviewPriority==='우선 검토'?'bg-green-lt':'bg-secondary-lt')));c.append(meta);
  const details=node('div',null,'ip-detail'),dl=node('dl');for(const [label,value] of [
  ['권리화 검토',item.reviewStatus],['출원번호',item.applicationNumber||'공식 확인자료 없음'],['출원일',item.filingDate||'공식 확인자료 없음'],['등록번호',item.registrationNumber||'공식 확인자료 없음']])dl.append(...info(label,value));details.append(dl);c.append(details);
+ if(Array.isArray(item.progress)){
+  c.append(node('div','권리화 단계별 확인 상태','ip-progress-title'));
+  const group=node('div',null,'ip-progress');
+  group.setAttribute('aria-label','진행 단계별 확인 상태');
+  item.progress.forEach(step=>{
+   const verified=step.status==='확인됨'&&step.verificationSource;
+   const tile=node('div',null,'ip-progress-step'+(verified?' is-confirmed':''));
+   tile.append(node('span',step.name),node('small',verified?'확인됨':step.status||'확인 전'));
+   group.append(tile);
+  });c.append(group);
+ }
+ if(item.nextStep)c.append(node('p','다음 확인: '+item.nextStep,'ip-next'));
  if(item.evidencePage&&/^\.\//.test(item.evidencePage)){
  const a=node('a','관련 Evidence 보기 →','ip-card-link');a.href=item.evidencePage;c.append(a);
  }
@@ -154,8 +229,8 @@ fetch('./patent-registry.json',{cache:'no-store'}).then(resp=>{if(!resp.ok)throw
  const areas=[...new Set(rows.map(x=>x.area))];areas.forEach(k=>{const option=node('option',k);option.value=k;area.append(option);});
  area.addEventListener('change',render);priority.addEventListener('change',render);render();
 }).catch(()=>{
- container.replaceChildren(node('div','권리화 목록 자료를 불러올 수 없습니다. 목록이 비어 있다고 판단하지 마세요.','ip-empty col-12'));
- ['ip-candidates','ip-priority','ip-filed','ip-registered'].forEach(id=>set(id,'확인 불가'));
+ container.prepend(node('div','최신 자료 확인에 실패했습니다. 아래 목록은 마지막 게시일 기준이며 최신 출원·등록 사실을 보증하지 않습니다.','alert alert-warning col-12'));
+ set('ip-updated','실시간 갱신 확인 불가 · 게시일 2026-10-21');
 });
 })();
 </script>
