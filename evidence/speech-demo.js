@@ -1,6 +1,22 @@
 import {SpeechSession,TASKS,SPEECH_DEMO_VERSION} from './speech-demo-core.mjs';
 const el=id=>document.getElementById(id),mode=()=>document.querySelector('input[name="task"]:checked')?.value||'free';
 let stream=null,mic=null,ctx=null,analyser=null,detector=null,pitchTimer=0,raf=0,session=null,active=false,report=null;
+const completedSessions=[];
+function prepareAudioCapture(){
+  // iOS Safari/WebKit may reject getUserMedia when AudioSession is 'playback'.
+  if('audioSession' in navigator && navigator.audioSession){
+    try{navigator.audioSession.type='play-and-record';}catch(error){console.warn('AudioSession type could not be set',error);}
+  }
+}
+function updateReportSummary(){
+  const target=el('measurement-summary');if(!target)return;
+  if(!report){target.textContent='측정 후 분석 가능한 결과가 여기에 표시됩니다. 인지검사 점수는 산출하지 않습니다.';return;}
+  const last=completedSessions.at(-1);
+  const tasks=new Set(completedSessions.map(x=>x.task));
+  const gap=last.meanGapMs===null?'관찰되지 않음':sec(last.meanGapMs);
+  target.textContent='완료한 측정 '+completedSessions.length+'회 · 과제 '+tasks.size+'/3종 · 최근 과제 '+last.taskLabel+' · 음성 구간 '+last.segmentCount+'개 · 발화 사이 평균 간격 '+gap+' · 인지저하 판정: 임상 미검증으로 제공하지 않음';
+}
+
 const status=s=>{el('status').textContent=s;}, sec=ms=>(ms/1000).toFixed(1)+'초';
 function update() {
  if(!session)return;
@@ -26,11 +42,19 @@ function renderPitch(points) {
 }
 async function stop() {
  if(!stream&&!mic){el('start').disabled=false;el('stop').disabled=true;return;}
+ const hadStarted=active;
  active=false;cancelAnimationFrame(raf);
  if(mic){try{await mic.pause();}catch{}mic=null;}
  if(ctx){try{await ctx.close();}catch{}ctx=null;}
  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
- if(session){report=session.report(performance.now());update();}
+ if(session && hadStarted){
+   if(session.currentStart!==null)session.speechEnd(performance.now());
+   const result=session.report(performance.now());
+   completedSessions.push(result);
+   report={...result,completedSessions:completedSessions.slice(),measurementOnly:true};
+   update();updateReportSummary();
+ }
+ session=null;
  el('start').disabled=false;el('stop').disabled=true;el('export').disabled=!report;
  status('종료되었습니다. 결과는 브라우저에만 있으며, 다운로드를 선택해야 JSON 파일이 생성됩니다.');
 }
@@ -47,8 +71,9 @@ function tick(time) {
 async function begin(){
  if(active||stream)return;
  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){status('HTTPS와 마이크 권한이 필요합니다.');return;}
- el('start').disabled=true;status('사전학습 음성 모델을 불러오는 중입니다.');
+ el('start').disabled=true;report=null;session=null;el('export').disabled=true;updateReportSummary();status('사전학습 음성 모델을 불러오는 중입니다.');
  try{
+  prepareAudioCapture();
   if(!window.vad?.MicVAD)throw Error('Silero VAD 라이브러리를 불러오지 못했습니다.');
   stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
   report=null;
@@ -71,7 +96,10 @@ async function begin(){
   await mic.start();session=new SpeechSession(mode(),performance.now());active=true;el('stop').disabled=false;el('export').disabled=true;
   status('측정 중 · 시간별 발화 시작·종료 이벤트가 기록됩니다. 원본 음성은 저장하지 않습니다.');
   raf=requestAnimationFrame(tick);
- }catch(e){const reason=e?.message||String(e);await stop();status('측정 시작 실패: '+reason);}
+ }catch(e){const reason=e?.message||String(e);await stop();
+  if(/AudioSession category|audio capture/i.test(reason))status('마이크 오디오 세션 충돌: 브라우저에서 녹음용 오디오 세션을 설정하지 못했습니다. Safari/Chrome을 완전히 닫았다가 다시 열어주세요. ('+reason+')');
+  else status('측정 시작 실패: '+reason);
+ }
 }
 document.querySelectorAll('input[name="task"]').forEach(x=>x.addEventListener('change',()=>{
  if(active)return;el('prompt').textContent=TASKS[mode()].prompt;status('대기 중 · 선택한 과제의 측정 방법을 확인하세요.');
@@ -84,3 +112,4 @@ el('export').addEventListener('click',()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&stream)stop();});
 window.addEventListener('pagehide',()=>{if(stream)stop();});
 el('version').textContent=SPEECH_DEMO_VERSION;
+updateReportSummary();
