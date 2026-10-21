@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2026-10-21.1",
+  "schemaVersion": "2026-10-21.2",
   "reviewedAt": "2026-10-21",
   "scope": "KIMSE 기능별 권리화 검토 목록. 공식 출원·등록 확인 자료가 확보되지 않은 항목은 확인 전으로 표시하며, 실제 특허 존재·출원·등록을 주장하지 않습니다.",
   "stages": [
@@ -23,7 +23,47 @@
       "applicationNumber": null,
       "filingDate": null,
       "registrationNumber": null,
-      "verifiedSource": null
+      "verifiedSource": null,
+      "nextStep": "개인 기준선 형성 및 기간별 변화 비교와 관련된 선행 특허를 검색하고 청구항을 대조",
+      "progress": [
+        {
+          "name": "선행기술 조사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "차별성 검토",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "명세서 작성",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "출원 접수",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "심사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "등록",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        }
+      ],
+      "history": []
     },
     {
       "id": "IP-02",
@@ -37,7 +77,47 @@
       "applicationNumber": null,
       "filingDate": null,
       "registrationNumber": null,
-      "verifiedSource": null
+      "verifiedSource": null,
+      "nextStep": "복합 생활신호를 결합하는 개인화 변화탐지 선행 특허의 청구항 조사",
+      "progress": [
+        {
+          "name": "선행기술 조사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "차별성 검토",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "명세서 작성",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "출원 접수",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "심사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "등록",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        }
+      ],
+      "history": []
     },
     {
       "id": "IP-03",
@@ -51,7 +131,47 @@
       "applicationNumber": null,
       "filingDate": null,
       "registrationNumber": null,
-      "verifiedSource": null
+      "verifiedSource": null,
+      "nextStep": "임상 연구근거와 관찰 규칙 연결·갱신에 관한 선행 특허 조사",
+      "progress": [
+        {
+          "name": "선행기술 조사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "차별성 검토",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "명세서 작성",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "출원 접수",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "심사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "등록",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        }
+      ],
+      "history": []
     },
     {
       "id": "IP-04",
@@ -65,7 +185,47 @@
       "applicationNumber": null,
       "filingDate": null,
       "registrationNumber": null,
-      "verifiedSource": null
+      "verifiedSource": null,
+      "nextStep": "위험 변화 설명 및 보호자 알림 기술과 관련된 선행 특허 조사",
+      "progress": [
+        {
+          "name": "선행기술 조사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "차별성 검토",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "명세서 작성",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "출원 접수",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "심사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "등록",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        }
+      ],
+      "history": []
     },
     {
       "id": "IP-05",
@@ -79,7 +239,47 @@
       "applicationNumber": null,
       "filingDate": null,
       "registrationNumber": null,
-      "verifiedSource": null
+      "verifiedSource": null,
+      "nextStep": "종단형 의료 리포트 생성·표준 의료전달과 관련된 선행 특허 조사",
+      "progress": [
+        {
+          "name": "선행기술 조사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "차별성 검토",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "명세서 작성",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "출원 접수",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "심사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "등록",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        }
+      ],
+      "history": []
     },
     {
       "id": "IP-06",
@@ -93,7 +293,47 @@
       "applicationNumber": null,
       "filingDate": null,
       "registrationNumber": null,
-      "verifiedSource": null
+      "verifiedSource": null,
+      "nextStep": "목적별 동의·무결성 검증·데이터 제공 이력과 관련된 선행 특허 조사",
+      "progress": [
+        {
+          "name": "선행기술 조사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "차별성 검토",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "명세서 작성",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "출원 접수",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "심사",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        },
+        {
+          "name": "등록",
+          "status": "확인 전",
+          "verifiedAt": null,
+          "verificationSource": null
+        }
+      ],
+      "history": []
     }
   ],
   "policy": {
