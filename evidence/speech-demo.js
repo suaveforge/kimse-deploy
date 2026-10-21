@@ -24,7 +24,7 @@ function update() {
  if(!session)return;
  const r=session.report(performance.now());
  el('elapsed').textContent=sec(r.durationMs);
- el('latency').textContent=r.firstSpeechDelayMs===null?'아직 없음':sec(r.firstSpeechDelayMs);
+ el('latency').textContent=r.durationMs>0?(Math.min(100,100*r.detectedDurationMs/r.durationMs)).toFixed(0)+'%':'—';
  el('segments').textContent=String(r.segmentCount);
  el('pauses').textContent=r.meanGapMs===null?'기록 없음':sec(r.meanGapMs);
  el('speech-total').textContent=sec(r.detectedDurationMs);
