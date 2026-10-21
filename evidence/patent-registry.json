@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "2026-10-21.1",
+  "reviewedAt": "2026-10-21",
+  "scope": "KIMSE 기능별 권리화 검토 목록. 공식 출원·등록 확인 자료가 확보되지 않은 항목은 확인 전으로 표시하며, 실제 특허 존재·출원·등록을 주장하지 않습니다.",
+  "stages": [
+    "선행기술 조사",
+    "차별성 정리",
+    "명세서 작성",
+    "출원",
+    "심사",
+    "등록"
+  ],
+  "items": [
+    {
+      "id": "IP-01",
+      "feature": "개인 기준선과 단기·중기·장기 변화 분석",
+      "area": "개인화 분석",
+      "reviewPriority": "우선 검토",
+      "publicDescription": "개인별 생활기록을 서로 다른 기간으로 비교하고 평소 패턴에서 달라진 흐름을 살펴보는 기능.",
+      "patentStatus": "확인 전",
+      "reviewStatus": "선행기술 조사 여부 미확인",
+      "evidencePage": "./collection.html",
+      "applicationNumber": null,
+      "filingDate": null,
+      "registrationNumber": null,
+      "verifiedSource": null
+    },
+    {
+      "id": "IP-02",
+      "feature": "서로 다른 생활신호의 변화 통합",
+      "area": "복합신호 분석",
+      "reviewPriority": "우선 검토",
+      "publicDescription": "이동·활동·수면·말하기 등 여러 항목의 변화를 함께 살펴보고 개별 변화와 복합 변화를 구분하는 기능.",
+      "patentStatus": "확인 전",
+      "reviewStatus": "선행기술 조사 여부 미확인",
+      "evidencePage": "./observation.html",
+      "applicationNumber": null,
+      "filingDate": null,
+      "registrationNumber": null,
+      "verifiedSource": null
+    },
+    {
+      "id": "IP-03",
+      "feature": "의학 연구근거와 관찰 기준 연결",
+      "area": "근거 반영",
+      "reviewPriority": "우선 검토",
+      "publicDescription": "관찰 항목이 어떤 연구에서 출발했는지 연결하고 출처와 적용 기준을 추적하는 기능.",
+      "patentStatus": "확인 전",
+      "reviewStatus": "선행기술 조사 여부 미확인",
+      "evidencePage": "./observation.html",
+      "applicationNumber": null,
+      "filingDate": null,
+      "registrationNumber": null,
+      "verifiedSource": null
+    },
+    {
+      "id": "IP-04",
+      "feature": "변화 설명과 보호자 알림",
+      "area": "안내 및 연계",
+      "reviewPriority": "후속 검토",
+      "publicDescription": "관찰된 변화의 기간·항목·정도를 이해하기 쉽게 설명하고 동의한 보호자와 공유하는 기능.",
+      "patentStatus": "확인 전",
+      "reviewStatus": "선행기술 조사 여부 미확인",
+      "evidencePage": "./observation.html",
+      "applicationNumber": null,
+      "filingDate": null,
+      "registrationNumber": null,
+      "verifiedSource": null
+    },
+    {
+      "id": "IP-05",
+      "feature": "시간 흐름을 보존하는 의료 리포트",
+      "area": "의료 전달",
+      "reviewPriority": "후속 검토",
+      "publicDescription": "일상 변화의 시작·지속 기간·출처를 의료진에게 전달할 수 있는 자료로 정리하는 기능.",
+      "patentStatus": "확인 전",
+      "reviewStatus": "선행기술 조사 여부 미확인",
+      "evidencePage": "./clinical.html",
+      "applicationNumber": null,
+      "filingDate": null,
+      "registrationNumber": null,
+      "verifiedSource": null
+    },
+    {
+      "id": "IP-06",
+      "feature": "동의 범위에 따른 연구데이터 추적·검증",
+      "area": "데이터 신뢰",
+      "reviewPriority": "후속 검토",
+      "publicDescription": "동의 범위와 데이터 출처, 생성 시점, 변경·제공 이력을 확인할 수 있도록 관리하는 기능.",
+      "patentStatus": "확인 전",
+      "reviewStatus": "선행기술 조사 여부 미확인",
+      "evidencePage": "./trust.html",
+      "applicationNumber": null,
+      "filingDate": null,
+      "registrationNumber": null,
+      "verifiedSource": null
+    }
+  ],
+  "policy": {
+    "publicDisclosure": "구체적인 구현 알고리즘, 미출원 청구항, 소스코드, 기술적 차별점의 세부 내용은 공개 등록하지 않습니다.",
+    "statusVerification": "출원·등록 사실은 공식 번호와 출처가 확인된 뒤에만 표기합니다.",
+    "notLegalOpinion": "검토 후보라는 표현은 신규성·진보성·특허성을 인정한 판단이 아닙니다."
+  }
+}
