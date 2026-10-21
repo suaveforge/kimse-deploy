@@ -14,7 +14,9 @@ function updateReportSummary(){
   const last=completedSessions.at(-1);
   const tasks=new Set(completedSessions.map(x=>x.task));
   const gap=last.meanGapMs===null?'관찰되지 않음':sec(last.meanGapMs);
-  target.textContent='완료한 측정 '+completedSessions.length+'회 · 과제 '+tasks.size+'/3종 · 최근 과제 '+last.taskLabel+' · 음성 구간 '+last.segmentCount+'개 · 발화 사이 평균 간격 '+gap+' · 인지저하 판정: 임상 미검증으로 제공하지 않음';
+  const pitch=last.pitch?.summary;
+  const pitchDesc=pitch?.count?(' · F0 중앙값 '+pitch.medianHz.toFixed(1)+'Hz · 변동폭 '+(pitch.maxHz-pitch.minHz).toFixed(1)+'Hz'):' · F0 추출 불가';
+  target.textContent='완료 '+completedSessions.length+'회 · 과제 '+tasks.size+'/3종 · 최근 '+last.taskLabel+' · 음성 '+last.segmentCount+'구간 · 쉼 평균 '+gap+pitchDesc+' · 인지저하 판정 모델 미구현';
 }
 
 const status=s=>{el('status').textContent=s;}, sec=ms=>(ms/1000).toFixed(1)+'초';
@@ -26,19 +28,33 @@ function update() {
  el('segments').textContent=String(r.segmentCount);
  el('pauses').textContent=r.meanGapMs===null?'기록 없음':sec(r.meanGapMs);
  el('speech-total').textContent=sec(r.detectedDurationMs);
- el('f0').textContent=r.pitch?.summary.medianHz?Math.round(r.pitch.summary.medianHz)+' Hz':'해당 없음';
+ const f0=r.pitch?.summary;el('f0').textContent=f0?.count?Math.round(f0.medianHz)+' Hz':'검출 없음';
+ if(el('f0-range'))el('f0-range').textContent=f0?.count?(f0.maxHz-f0.minHz).toFixed(1)+' Hz':'—';
+ if(el('pitch-count'))el('pitch-count').textContent=String(f0?.count||0);
  el('timeline').textContent=r.detectedSegments.length?r.detectedSegments.map(s=>(s.startMs/1000).toFixed(1)+'~'+(s.endMs/1000).toFixed(1)+'초').join(' · '):'아직 완료된 발화 구간 없음';
  renderPitch(r.pitch?.points||[]);
 }
 function renderPitch(points) {
  const canvas=el('pitch-chart'),c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
- c.clearRect(0,0,w,h);c.fillStyle='#f6faf9';c.fillRect(0,0,w,h);c.strokeStyle='#d5e6e0';c.strokeRect(1,1,w-2,h-2);
- if(points.length<2)return;
- const start=points[0].atMs,end=Math.max(start+1,points.at(-1).atMs),v=points.map(x=>x.hz),low=Math.min(...v),high=Math.max(low+1,...v);
+ c.clearRect(0,0,w,h);c.fillStyle='#f6faf9';c.fillRect(0,0,w,h);
+ const left=38,right=w-9,top=13,bottom=h-21;
+ c.strokeStyle='#dce9e5';c.lineWidth=1;
+ for(let i=0;i<3;i++){const y=top+(bottom-top)*i/2;c.beginPath();c.moveTo(left,y);c.lineTo(right,y);c.stroke();}
+ c.font='11px system-ui';c.fillStyle='#69828b';c.fillText('Hz',5,13);
+ if(points.length<2){c.fillText('발성 중 음높이 데이터가 추출되면 표시됩니다.',left+8,Math.round(h/2));return;}
+ const start=points[0].atMs,end=Math.max(start+1,points[points.length-1].atMs);
+ const v=points.map(x=>x.hz),low=Math.min(...v),high=Math.max(low+1,...v);
+ c.fillText(Math.round(high).toString(),3,top+10);c.fillText(Math.round(low).toString(),3,bottom);
+ c.fillText((start/1000).toFixed(1)+'s',left,bottom+15);
+ c.fillText((end/1000).toFixed(1)+'s',Math.max(left,right-35),bottom+15);
  c.strokeStyle='#087e70';c.lineWidth=2;c.beginPath();
- for(let i=0;i<points.length;i++){const p=points[i];const x=12+(w-24)*(p.atMs-start)/(end-start),y=h-10-(h-20)*(p.hz-low)/(high-low);
- if(!i)c.moveTo(x,y);else c.lineTo(x,y);
- }c.stroke();
+ let previous=null;
+ for(const p of points){
+  const x=left+(right-left)*(p.atMs-start)/(end-start),y=bottom-(bottom-top)*(p.hz-low)/(high-low);
+  if(!previous||p.atMs-previous.atMs>380)c.moveTo(x,y);else c.lineTo(x,y);
+  previous=p;
+ }
+ c.stroke();
 }
 async function stop() {
  if(!stream&&!mic){el('start').disabled=false;el('stop').disabled=true;return;}
@@ -60,7 +76,7 @@ async function stop() {
 }
 function tick(time) {
  if(!active)return;raf=requestAnimationFrame(tick);
- if(session?.task==='vowel'&&detector&&analyser&&time-pitchTimer>110) {
+ if(session&&detector&&analyser&&time-pitchTimer>90) {
   pitchTimer=time;const samples=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(samples);
   const [hz,clarity]=detector.findPitch(samples,ctx.sampleRate);
   // Display-quality gate from pitch estimation, not a medical cutoff.
@@ -81,10 +97,8 @@ async function begin(){
   await ctx.resume();const source=ctx.createMediaStreamSource(stream);
   analyser=ctx.createAnalyser();analyser.fftSize=2048;
   const silent=ctx.createGain();silent.gain.value=0;source.connect(analyser);analyser.connect(silent);silent.connect(ctx.destination);
-  if(mode()==='vowel'){
-    const {PitchDetector}=await import('https://esm.sh/pitchy@4');
-    detector=PitchDetector.forFloat32Array(analyser.fftSize);
-  }else detector=null;
+  const {PitchDetector}=await import('https://esm.sh/pitchy@4');
+  detector=PitchDetector.forFloat32Array(analyser.fftSize);
   mic=await window.vad.MicVAD.new({
     model:'v5',startOnLoad:false,
     baseAssetPath:'https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.31/dist/',
