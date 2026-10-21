@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>낌새 Evidence | 말하기·언어 측정</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.5.1/dist/css/tabler.min.css">
+<style>body{background:#f5faf8;color:#183b42}.wrap{max-width:1050px;margin:24px auto;padding:0 14px}.panel{background:#fff;border:1px solid #d4e7df;border-radius:16px;padding:20px}.prompt{padding:15px;background:#eef8f4;border-radius:10px}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{border:1px solid #e3eee8;border-radius:10px;padding:12px}.metric strong{font-size:1.4rem;display:block}.foot{color:#526e76;font-size:.86rem}canvas{width:100%;height:130px;border:1px solid #d4e7df;border-radius:8px}@media(max-width:760px){.metrics{grid-template-columns:1fr}}</style>
+</head><body><main class="wrap"><p><a href="./collection.html?view=operation#data-05">← Evidence / 말하기·언어</a></p>
+<h1>음성 특징 측정기</h1><p class="foot">사전학습 Silero VAD와 Pitchy를 사용합니다. 인지저하 진단·위험도 판단은 하지 않습니다.</p>
+<div class="row g-3"><section class="col-md-7"><div class="panel">
+<h2 class="h3">1단계 · 직접 측정</h2>
+<div><label><input type="radio" name="task" value="free" checked> 자유발화</label>　<label><input type="radio" name="task" value="read"> 문장 읽기</label>　<label><input type="radio" name="task" value="vowel"> 모음 발성</label></div>
+<p id="prompt" class="prompt my-3">최근에 있었던 일을 편하게 이야기해주세요.</p>
+<div class="d-flex flex-wrap gap-2"><button id="start" class="btn btn-primary">마이크 시작</button><button id="stop" class="btn btn-outline-secondary" disabled>종료</button><button id="export" class="btn btn-outline-secondary" disabled>JSON 저장</button></div>
+<p id="status" role="status" aria-live="polite" class="my-3">대기 중</p>
+<div class="metrics"><div class="metric">경과<strong id="elapsed">—</strong></div><div class="metric">첫 음성 지연<strong id="latency">—</strong></div><div class="metric">발화 구간<strong id="segments">—</strong></div><div class="metric">평균 구간 간격<strong id="pauses">—</strong></div><div class="metric">발화 시간<strong id="speech-total">—</strong></div><div class="metric">모음 F0 중앙값<strong id="f0">—</strong></div></div>
+<h3 class="h4 mt-4">모음 음높이 변화</h3><canvas id="pitch-chart" width="680" height="130"></canvas><p class="foot">모음 발성의 F0 변화이며, 음성 떨림·발음 정확도 진단이 아닙니다.</p>
+<h3 class="h4">추출된 시간 구간</h3><p id="timeline" class="foot">측정된 구간 없음</p>
+</div></section><aside class="col-md-5"><div class="panel"><h2 class="h3">2단계 · 인지저하 신호 판단</h2>
+<p>음성 측정값과 임상 판단은 별개입니다. 낌새 인지저하 예측 모델은 검증되지 않았으므로 점수를 표시하지 않습니다.</p>
+<p class="alert alert-warning">발음·어휘 분석, 병적 떨림 판정, 인지저하 위험도: 미구현</p>
+<details open><summary>추출 원리와 한계</summary><p>Silero VAD로 발화 이벤트를 추출하고 Pitchy로 모음 기본주파수를 추정합니다. 음성 시작·종료 시각은 처리 지연을 포함하는 근사치입니다.</p></details>
+<p class="foot">음성 원본은 서버로 전송·저장하지 않습니다. 라이브러리와 모델은 외부 CDN에서 다운로드합니다.</p>
+<p class="foot">엔진 <span id="version">—</span></p>
+</div></aside></div></main>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.31/dist/bundle.min.js"></script>
+<script type="module" src="./speech-demo.js?v=20261022a"></script></body></html>
