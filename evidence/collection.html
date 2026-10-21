@@ -144,6 +144,7 @@ main{padding-bottom:70px}.eyebrow{color:var(--teal);letter-spacing:.09em;font-si
 <div class="card-detail"><div class="k">어떤 기계 · 어떻게</div><p><strong>Android/iPhone 마이크 + 앱 내 동일 녹음 과제</strong><span class="method">사용자가 앱에서 직접 30~60초 녹음 → 녹음 시각·과제 ID 저장 → 음향 특징 추출. 어휘 다양성·분당 단어수 등은 별도 음성인식/언어 분석이 필요.</span></p></div>
 <div class="card-detail"><div class="k">수집 기간 · 빈도</div><p>30~60초씩 주 3회 제안, 28일간 반복</p></div>
 <div class="state-line"><span class="ti ti-progress-check" aria-hidden="true"></span> 능동 녹음·일부 음향특징 코드 · 언어 분석 미구현</div>
+<p><a class="kimse-demo-action" href="./speech-demo.html">마이크로 음성 특징 직접 측정해 보기 <i class="ti ti-arrow-up-right" aria-hidden="true"></i></a></p>
 <p class="limitation"><strong>한계</strong> 일반 통화 녹음·상시 주변 음성 자동수집 기능이 아님.</p></article>
 <article class="data-card" data-scope="phone" id="data-06" aria-labelledby="data-title-06">
 <header class="data-card-head"><span class="entry-no">06</span><h3 id="data-title-06">인지 · 화면 상호작용</h3></header>
@@ -215,6 +216,16 @@ main{padding-bottom:70px}.eyebrow{color:var(--teal);letter-spacing:.09em;font-si
 <dt>검증 상태</dt><dd>기술 시연용. 실제 운전 환경 성능이나 졸음 탐지 정확도 검증 전</dd>
 <dt>활용 범위</dt><dd>별도 재사용 분석 모듈 제공, 앱 통합은 후속 작업</dd></dl>
 <footer>운전 중 사용 금지 · 실제 졸음 및 건강 상태 진단 불가</footer>
+</article>
+<article class="reg-card" id="ai-speech-demo">
+<header class="kimse-demo-head"><div><small>08 · 사전학습 음성 AI · 직접 측정</small><h3>말하기·언어 음성 특징 측정 체험</h3></div><a class="kimse-demo-action" href="./speech-demo.html" aria-label="음성 측정기를 열어 직접 마이크로 테스트">테스트</a></header>
+<div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-microphone"></i><span>SPEECH<br>LIVE</span></div>
+<div><p class="kimse-vision-desc">자유발화·문장 읽기·모음 발성에서 사전학습 모델로 발화 시작과 종료, 간격, 모음 음높이를 측정합니다. 결과 구간을 직접 확인하고 JSON으로 저장할 수 있습니다.</p></div></div>
+<dl><dt>사용 모델</dt><dd>Silero VAD v5(기존 사전학습 음성 검출 모델) 및 Pitchy F0 추정 라이브러리</dd>
+<dt>추출과 판단</dt><dd>1단계 발화 시간·간격·모음 F0 측정 / 2단계 인지저하 판단 모델은 미검증·미구현</dd>
+<dt>개인정보</dt><dd>마이크 입력 기기 내 처리 · 원음 서버 미전송 · JSON 수동 저장</dd>
+<dt>검증 상태</dt><dd>기술 시연 단계 · 발음 정확도·언어 이해·병적 떨림·인지저하 판정은 제공하지 않음</dd></dl>
+<footer>HTTPS 마이크 권한 필요 · 음성 분석은 의료검사나 진단이 아님</footer>
 </article></div><div class="collection-caution">AI의 구매 가치는 ① 수집 품질 ② 불필요한 알림 감소 ③ 보호자 확인시간 ④ 기관 검토시간·비용 절감으로 검증합니다. 아직 치매 예측 정확도를 주장할 수 없습니다.</div></section>
 <section role="tabpanel" id="collection-api" class="collection-technical" aria-labelledby="collection-tab-api" data-collection-panel="api" tabindex="0" hidden>
 <div class="eyebrow">KIMSE / API &amp; ACCESS REGISTER</div><h2>API: 누가 어떤 데이터를 허용해야 받을 수 있나</h2>
