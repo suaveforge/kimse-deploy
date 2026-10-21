@@ -21,6 +21,7 @@ input[type=text],input[type=file],textarea{width:100%;padding:9px;border:1px sol
 <a href="./collection.html?view=ai">← 낌새 Evidence / AI</a>
 <h1>음성·인지검사 채점 검증실 <span class="tag">진단 아님</span></h1>
 <p class="sub">음성을 텍스트로 변환해 확인하고, 검사자가 실제 검사에서 채점한 결과를 공개된 공식 점수 규칙으로 계산하는 실험실입니다. 한국어 GPCOG 질문 원문을 복제하지 않으며 정식 검사 시행을 대신하지 않습니다.</p>
+<p class="meta">음성 AI 상담 웹통화는 <a href="/retell-test.html">Retell 테스트 ↗</a>에서 따로 체험할 수 있습니다. Retell과 이 채점 실험실의 데이터는 아직 자동 연결되지 않았습니다.</p>
 <div class="cols">
 <section class="card" aria-labelledby="data-title">
 <h2 id="data-title">① 음성 측정값 가져오기</h2>
@@ -28,12 +29,22 @@ input[type=text],input[type=file],textarea{width:100%;padding:9px;border:1px sol
 <input type="file" id="speech-json" accept=".json,application/json" aria-label="음성 측정 JSON 가져오기">
 <div id="speech-evidence" class="meta" style="margin-top:10px">불러온 측정 기록 없음</div>
 <h3 style="margin-top:14px">가상 데이터로 채점 흐름 확인</h3>
-<button id="synthetic" type="button">가상 사례 넣기 (실제 환자 아님)</button>
+<button id="synthetic" type="button">가상 채점 사례 바로 계산</button>
+<div id="synthetic-feedback" class="result" role="status" aria-live="polite" hidden style="margin-top:8px"></div>
+<p class="meta">이 기능은 <strong>가상 음성 재생·전사 테스트가 아니라</strong> 공식 채점 규칙 계산을 확인합니다. 아래 ③~⑥에도 결과가 자동 반영됩니다.</p>
 </section>
 <section class="card" aria-labelledby="asr-title">
 <h2 id="asr-title">② 음성 → 텍스트 (Whisper)</h2>
-<p class="meta">한국어를 지원하는 사전학습 Whisper tiny ONNX를 기기에서 시험합니다. 최초 모델 다운로드가 크고 모바일에서 매우 느리거나 실패할 수 있습니다.</p>
+<p class="meta">기본 Whisper tiny는 가볍지만 한국어 전사 품질이 부족할 수 있습니다. 더 큰 사전학습 모델을 선택할 수 있으며 정확도 향상을 보장하지 않습니다. 음성 원본은 기기에서 처리합니다.</p>
+<label for="asr-model" class="meta">전사 모델 선택</label>
+<select id="asr-model" aria-label="전사 모델" style="margin:5px 0 8px;width:100%;max-width:100%;padding:8px">
+<option value="Xenova/whisper-base" selected>Whisper base · 기본 품질 우선 (다운로드·메모리 증가)</option>
+<option value="Xenova/whisper-tiny">Whisper tiny · 저사양 호환 (품질 저하 가능)</option>
+<option value="Xenova/whisper-small">Whisper small · 고품질 시험 (PC 권장, 매우 큰 모델)</option>
+</select>
 <input type="file" id="audio-file" accept="audio/*" aria-label="녹음된 음성 파일 선택">
+<audio id="audio-preview" controls preload="none" hidden style="width:100%;margin-top:8px" aria-label="전사 대상 음성 미리 듣기"></audio>
+<p class="meta">원음을 재생해 녹음 품질을 확인한 뒤 전사 결과와 비교하세요. 미리 듣기 역시 브라우저 내부 기능입니다.</p>
 <div class="actions">
 <button id="mic-record" type="button">새 음성 녹음</button><button id="mic-stop" type="button" disabled>녹음 정지</button>
 <button id="transcribe" class="primary" type="button">선택된 음성 전사</button>
@@ -66,4 +77,4 @@ input[type=text],input[type=file],textarea{width:100%;padding:9px;border:1px sol
 <div class="warning"><strong>정확성·사용권한 안내</strong><p>공개된 GPCOG 채점 규칙을 확인하는 시뮬레이터입니다. 공식 검사 문항, 시행 절차, 해석 역량을 제공하지 않습니다. GPCOG 웹사이트는 개인 비상업적 이용조건을 명시합니다. 상용 서비스에 정식 검사로 도입하려면 도구 소유자의 허락과 전문 검증이 필요합니다.</p></div>
 <p class="meta"><a href="https://gpcog.com.au/index/frequently-asked-questions" target="_blank" rel="noopener noreferrer">GPCOG 공식 채점 FAQ</a> · <a href="https://gpcog.com.au/index/downloads" target="_blank" rel="noopener noreferrer">공식 한국어 검사지 다운로드</a> · <a href="https://huggingface.co/Xenova/whisper-tiny" target="_blank" rel="noopener noreferrer">Whisper 모델 정보</a></p>
 </section>
-</div></main><script type="module" src="./cognitive-scoring-demo.js?v=20261022-1"></script></body></html>
+</div></main><script type="module" src="./cognitive-scoring-demo.js?v=20261022-3"></script></body></html>
