@@ -1,5 +1,5 @@
 // KIMSE Evidence: descriptive voice feature extraction only. Not a dementia classifier.
-export const SPEECH_DEMO_VERSION = "2026.10.22.1";
+export const SPEECH_DEMO_VERSION = "2026.10.22.2";
 export const TASKS = Object.freeze({
  free: Object.freeze({label:"자유발화", prompt:"최근에 있었던 일을 편하게 이야기해주세요."}),
  read: Object.freeze({label:"문장 읽기", prompt:"오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다."}),
@@ -34,7 +34,7 @@ export class SpeechSession {
   this.currentStart=null;
  }
  pitchSample(at,hz,clarity) {
-  if(this.task!=="vowel"||!Number.isFinite(at)||!Number.isFinite(hz)||hz<=0||!Number.isFinite(clarity))return;
+  if(!Number.isFinite(at)||!Number.isFinite(hz)||hz<=0||!Number.isFinite(clarity))return;
   this.pitch.push({atMs:Math.round(at-this.startedAt),hz:Math.round(hz*10)/10,clarity:Math.round(clarity*1000)/1000});
   if(this.pitch.length>1200)this.pitch.shift();
  }
@@ -52,8 +52,9 @@ export class SpeechSession {
    detectedDurationMs:totalMs,
    betweenSegmentGapsMs:gaps,meanGapMs:gaps.length?Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length):null,
    maxGapMs:gaps.length?Math.max(...gaps):null,
-   pitch:this.task==="vowel"?{summary:summarizePitch(this.pitch),points:this.pitch.slice()}:null,
-   method:"Silero VAD v5 on-device; event callback times are approximate, include algorithmic lag. Pitchy clarity-filtered F0 for sustained vowel. Not jitter/shimmer, tremor diagnosis, pronunciation accuracy, ASR or cognitive-risk prediction.",
+   pitch:{summary:summarizePitch(this.pitch),points:this.pitch.slice()},
+   pitchMeasurementLabel:"voiced-region fundamental-frequency trajectory (all three tasks), not a clinical vocal-tremor measure", 
+   method:"Silero VAD v5 on-device; event callback times are approximate, include algorithmic lag. Pitchy clarity-filtered F0 during VAD-detected voiced regions for all tasks. Not jitter/shimmer, tremor diagnosis, pronunciation accuracy, ASR or cognitive-risk prediction.",
    clinicalValidation:"not_established"
   };
  }
