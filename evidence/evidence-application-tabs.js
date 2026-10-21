@@ -240,11 +240,11 @@ function iconClass(key){
   return 'ti-shield-check';
 }
 function choice(key,no,title,en,desc){
-  if(key==='collection'||key==='users'){
+  if(key==='collection'||key==='users'||key==='patents'){
     const explicit=(new URLSearchParams(location.search).get('lang')||'').trim();
     let stored='';try{stored=localStorage.getItem('localizehub:p45:locale')||''}catch{}
     const selected=String(explicit||stored||(navigator.languages||[])[0]||navigator.language||'ko').toLowerCase().split(/[-_]/)[0];
-    if(selected==='en')title=key==='users'?'User validation':'Data collection & operation';
+    if(selected==='en')title=key==='users'?'User validation':key==='patents'?'Patents & IP':'Data collection & operation';
   }
   return '<a class="kimse-primary-choice" data-readiness-key="'+key+'" href="'+pageHref(key)+'"><span class="kimse-primary-icon" aria-hidden="true"><i class="ti '+iconClass(key)+'"></i></span><span class="kimse-primary-copy"><span class="kimse-primary-title">'+title+'</span><span class="kimse-primary-en">'+en+'</span></span></a>';
 }
