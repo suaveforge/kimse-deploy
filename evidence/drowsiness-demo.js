@@ -154,8 +154,8 @@ $('start').addEventListener('click',async()=>{
     await video.play();
     if(id!==launchId)return;
     status('AI 모델 준비 중','처음 한 번 모델 파일을 불러옵니다.');
-    const mod=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm');
-    const resolver=await mod.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');
+    const mod=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/vision_bundle.mjs');
+    const resolver=await mod.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/wasm');
     const created=await mod.FaceLandmarker.createFromOptions(resolver,{
       baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:'CPU'},
       runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:false
