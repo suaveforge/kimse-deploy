@@ -14,6 +14,7 @@
 <div class="metrics"><div class="metric">경과<strong id="elapsed">—</strong></div><div class="metric">첫 음성 지연<strong id="latency">—</strong></div><div class="metric">발화 구간<strong id="segments">—</strong></div><div class="metric">평균 구간 간격<strong id="pauses">—</strong></div><div class="metric">발화 시간<strong id="speech-total">—</strong></div><div class="metric">모음 F0 중앙값<strong id="f0">—</strong></div></div>
 <h3 class="h4 mt-4">모음 음높이 변화</h3><canvas id="pitch-chart" width="680" height="130"></canvas><p class="foot">모음 발성의 F0 변화이며, 음성 떨림·발음 정확도 진단이 아닙니다.</p>
 <h3 class="h4">추출된 시간 구간</h3><p id="timeline" class="foot">측정된 구간 없음</p>
+<div class="alert alert-info mt-3" role="region" aria-label="측정 결과 요약"><h3 class="h5">측정 결과 요약</h3><p id="measurement-summary" class="mb-1">측정 후 분석 가능한 결과가 여기에 표시됩니다. 인지검사 점수는 산출하지 않습니다.</p><p class="foot mb-0">세 과제의 수행 결과는 JSON에 함께 담깁니다. 이것은 데이터 측정 요약이며 CIST·MMSE·MoCA 같은 인지검사 점수나 치매 위험도가 아닙니다.</p></div>
 </div></section><aside class="col-md-5"><div class="panel"><h2 class="h3">2단계 · 인지저하 신호 판단</h2>
 <p>음성 측정값과 임상 판단은 별개입니다. 낌새 인지저하 예측 모델은 검증되지 않았으므로 점수를 표시하지 않습니다.</p>
 <p class="alert alert-warning">발음·어휘 분석, 병적 떨림 판정, 인지저하 위험도: 미구현</p>
@@ -23,4 +24,4 @@
 </div></aside></div></main>
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.31/dist/bundle.min.js"></script>
-<script type="module" src="./speech-demo.js?v=20261022a"></script></body></html>
+<script type="module" src="./speech-demo.js?v=20261022b"></script></body></html>
