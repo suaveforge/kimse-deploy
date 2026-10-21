@@ -229,8 +229,8 @@ main{padding-bottom:70px}.eyebrow{color:var(--teal);letter-spacing:.09em;font-si
 </article>
 <article class="reg-card" id="ai-cognitive-scoring-sandbox">
 <header class="kimse-demo-head"><div><small>09 · 검증된 인지검사 채점규칙 · 음성 AI 연결 시험</small><h3>음성·인지검사 채점 검증실</h3></div><a class="kimse-demo-action" href="./cognitive-scoring-demo.html" aria-label="음성 전사와 공식 검사 채점규칙 검증실 열기">테스트</a></header>
-<div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-list-check"></i><span>SCORE<br>LAB</span></div><div><p class="kimse-vision-desc">사전학습 Whisper 한국어 전사(시범) → 사람이 답변 확인 → 공개된 GPCOG 채점규칙 계산. 기존 음성 JSON과 가상 사례를 불러올 수 있습니다. 검사지·해석권한은 별도이며 인지저하 예측 AI는 미구현입니다.</p></div></div>
-<dl><dt>기존 모델</dt><dd>Whisper tiny ONNX(선택적 브라우저 ASR) · GPCOG 공식 FAQ 9점·보호자 6점 규칙</dd><dt>자동 평가 범위</dt><dd>검사자가 정오를 확인한 항목들의 점수 합계만 산출 · 전사 문자 일치는 검토 제안만</dd><dt>제약</dt><dd>GPCOG 원문 사용권 별도 필요 · 한국어 ASR 정확도 및 임상 채점 일치도 미검증 · 진단 불가</dd></dl>
+<div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-list-check"></i><span>SCORE<br>LAB</span></div><div><p class="kimse-vision-desc">사전학습 Whisper 한국어 전사, 원문 읽기 발음 차이 후보 분석, Azure Speech 공식 한국어 발음 평가(서버 설정 시)와 GPCOG 공개 채점규칙 계산을 분리했습니다. 공식 발음 점수는 인지저하 진단이 아닙니다.</p></div></div>
+<dl><dt>기존 모델</dt><dd>Whisper tiny ONNX(선택적 브라우저 ASR) · GPCOG 공식 FAQ 9점·보호자 6점 규칙</dd><dt>실제 발음 평가</dt><dd>Azure Speech ko-KR(정확도·유창성·완성도, 계정 인증·외부 전송 동의·서버 비밀키 필요) · 언어학습 참고 점수이며 임상검사 아님</dd><dt>자동 평가 범위</dt><dd>검사자가 정오를 확인한 항목들의 점수 합계만 산출 · 전사 문자 일치는 검토 제안만</dd><dt>제약</dt><dd>GPCOG 원문 사용권 별도 필요 · 한국어 ASR 정확도 및 임상 채점 일치도 미검증 · 진단 불가</dd></dl>
 <footer>검사 시행/진단을 대체하지 않는, 공식 채점규칙 재현용 독립 실험실</footer>
 </article>
 <article class="reg-card" id="ai-retell-voice-demo">
