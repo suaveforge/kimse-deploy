@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0f4553">
+<title>낌새 | AI 음성 수집</title><link rel="icon" type="image/svg+xml" href="/assets/icons/icon.svg">
+<style>
+:root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;color:#1a3d40;background:#f3f7f6}*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:18px}main{width:min(100%,540px);padding:24px;border-radius:20px;background:white;border:1px solid #d9e7e4}
+h1{font-size:1.55rem;margin:6px 0 10px}h2{font-size:1.02rem;margin:15px 0 6px}p,li{line-height:1.6;color:#4c6268}
+.kicker{font-size:.82rem;color:#416a66;font-weight:750}
+.notice{background:#f2f7f6;padding:13px;border-radius:12px;font-size:.91rem;line-height:1.6;margin:14px 0}
+.warning{background:#fff2e6}button{border:none;min-height:48px;padding:12px 16px;border-radius:11px;background:#0f5967;color:white;font:700 1rem inherit;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}.danger{background:#ad3c3c}.secondary{background:#e6f0ee;color:#164e55}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin:15px 0}.controls button{flex:1}
+label{display:flex;gap:11px;align-items:flex-start;line-height:1.55;font-weight:500}input{margin-top:5px;min-width:20px;min-height:20px}
+#status{font-weight:700;color:#185c66;min-height:24px}#call-data{white-space:pre-wrap;overflow-wrap:anywhere;background:#f3f7f6;padding:12px;border-radius:10px;max-height:160px;overflow:auto;font-size:.88rem}
+a{color:#165d66}footer{font-size:.85rem;padding-top:10px}
+</style></head><body><main>
+<div class="kicker">KIMSE / 동의 기반 음성 수집</div><h1>낌새 AI와 이야기하기</h1>
+<p>부모님·가족과의 통화와 별도로 AI와 자연스럽게 대화합니다. 수집된 자료는 이후의 변화 분석을 위해 저장하며, 이 화면에서 치매를 진단하지 않습니다.</p>
+<div id="auth" class="notice">낌새 사용자 계정을 확인하는 중입니다.</div>
+<div class="notice warning">음성·대화 전문·발화별 시간 및 AI 분석 결과를 Retell과 낌새 서버에서 처리합니다. 개인정보·건강정보가 포함될 수 있으므로 본인만 참여해주세요. 낌새에 저장한 수집 자료의 기본 보존 기한은 90일입니다. Retell의 자체 보관·삭제 정책은 별도로 적용됩니다.</div>
+<label><input type="checkbox" id="consent" disabled><span>저는 본인 통화의 녹음과 문답, 발화 시각, AI 분석 데이터 수집 및 처리에 동의합니다. 동의하지 않으면 저장용 통화를 시작하지 않습니다.</span></label>
+<div class="controls">
+<button id="start" disabled>AI 통화 시작</button><button class="danger" id="stop" disabled>통화 종료</button>
+</div>
+<p id="status" role="status" aria-live="polite">계정을 확인하고 있습니다.</p>
+<div id="after" hidden>
+<h2>수집 결과</h2><div id="call-data">결과 확인 중입니다.</div>
+<div class="controls"><button class="secondary" id="sync">결과 다시 확인</button><button class="danger" id="erase">낌새 저장 자료 삭제</button></div>
+<p>삭제는 낌새 서버의 사본에 적용됩니다. Retell 측 기록 삭제는 Retell 보관 정책과 별도 절차에 따릅니다.</p>
+</div>
+<footer><a href="/">낌새 홈</a> · <a href="/retell-test.html">연결 기능만 테스트</a></footer>
+</main>
+<script type="module">
+import { RetellWebClient } from "https://esm.sh/retell-client-js-sdk@2.0.8";
+const API="https://api-kimse.suaveforge.com";
+const el=id=>document.getElementById(id);
+const status=message=>{el("status").textContent=message;};
+let self=null,client=null,callId="",ended=false,erased=false,work=false;
+try{
+ const app=JSON.parse(localStorage.getItem("kimse.p0.state")||"null");
+ const id=app?.remote?.selfSubjectId||app?.remote?.subjectId;
+ if(!app?.self || !app?.remote?.accountId || !app?.remote?.token || !id){
+   el("auth").textContent="낌새에서 본인 계정으로 로그인하고 초기 설정을 완료한 뒤 이용해주세요.";
+   status("본인 계정 연결이 필요합니다.");
+ }else{
+   self={account_id:app.remote.accountId,subject_id:id,token:app.remote.token};
+   el("auth").textContent="낌새 본인 계정 연결 정보를 확인했습니다. 서버에서 다시 검증한 후 통화를 시작합니다.";
+   el("consent").disabled=false;
+   status("동의하시면 통화를 시작할 수 있습니다.");
+ }
+}catch{
+ el("auth").textContent="계정 상태를 읽지 못했습니다. 낌새 홈에서 다시 로그인해주세요.";
+ status("로그인이 필요합니다.");
+}
+el("consent").addEventListener("change",()=>el("start").disabled=!self||!el("consent").checked||work||!!callId);
+const headers=()=>({"Content-Type":"application/json","X-KIMSE-ACCOUNT-TOKEN":self.token});
+function attach(client){
+ client.on("call_started",()=>status("연결됐습니다. AI와 이야기해주세요."));
+ client.on("call_ready",()=>status("통화 중입니다."));
+ client.on("call_ended",()=>{
+   ended=true;el("stop").disabled=true;status("통화가 종료됐습니다. 대화 자료를 확인합니다.");
+   if(callId&&!erased){el("after").hidden=false;setTimeout(refreshResult,1800);}
+ });
+ client.on("error",error=>{console.error("RETELL_CALL_ERROR",error);status("통화 오류가 발생했습니다. 마이크/네트워크 상태를 확인해주세요.");el("stop").disabled=true;});
+}
+el("start").addEventListener("click",async()=>{
+ if(!self||!el("consent").checked||work)return;
+ work=true;el("start").disabled=true;
+ try{
+   status("Retell 음성 연결 준비 중입니다.");
+   if(!client){client=new RetellWebClient();attach(client);}
+   const resp=await fetch(API+"/api/v1/retell/collection/calls",{method:"POST",headers:headers(),body:JSON.stringify({...self,consent:true}),cache:"no-store"});
+   const result=await resp.json().catch(()=>({}));
+   if(!resp.ok)throw new Error(result.detail||("연결 오류 "+resp.status));
+   callId=result.call_id;
+   el("stop").disabled=false;
+   await client.startCall({accessToken:result.access_token});
+   status("AI 상담원과 연결 중입니다.");
+ }catch(e){status("통화를 시작하지 못했습니다: "+String(e.message||e));el("stop").disabled=true;if(callId)el("after").hidden=false;}
+ finally{work=false;}
+});
+el("stop").addEventListener("click",()=>{if(client){client.stopCall();status("통화를 종료합니다.");el("stop").disabled=true;}});
+async function refreshResult(){
+ if(!callId||erased)return;
+ el("after").hidden=false;
+ try{
+   const u=API+"/api/v1/retell/collection/calls/"+encodeURIComponent(callId)+"?account_id="+encodeURIComponent(self.account_id);
+   const r=await fetch(u,{headers:headers(),cache:"no-store"});
+   if(!r.ok)throw new Error("조회 실패 "+r.status);
+   const data=await r.json();
+   const parts=[
+     "통화 상태: "+(data.latest_event||"처리 중"),
+     "녹음 보관: "+(data.recording_status||"대기"),
+     "원본 파일 크기: "+(data.recording_bytes==null?"아직 없음":data.recording_bytes+" 바이트"),
+     "문답 전문: "+(data.transcript?"수집됨":"아직 없음"),
+     "발화 시간 정보: "+(Array.isArray(data.transcript_object)?"수집됨":"아직 없음"),
+     "통화 후 분석: "+(data.call_analysis?"수집됨":"아직 없음"),
+     "의학적 진단: 제공하지 않음"
+   ];
+   el("call-data").textContent=parts.join("\n");
+ }catch(e){el("call-data").textContent=String(e.message||e);}
+}
+el("sync").addEventListener("click",async()=>{
+ if(!callId||!ended||erased)return;
+ el("sync").disabled=true;status("Retell에서 종료된 통화의 녹음과 문답을 확인하고 있습니다.");
+ try{
+   const u=API+"/api/v1/retell/collection/calls/"+encodeURIComponent(callId)+"/sync?account_id="+encodeURIComponent(self.account_id);
+   const r=await fetch(u,{method:"POST",headers:headers()});
+   if(!r.ok)throw Error("수집 확인 오류 "+r.status);
+   await refreshResult();
+   status("수집 상태를 다시 확인했습니다.");
+ }catch(e){status(String(e.message||e))}
+ finally{el("sync").disabled=false;}
+});
+el("erase").addEventListener("click",async()=>{
+ if(!callId||erased||!confirm("낌새 서버에 저장된 이 통화의 음성·문답 자료를 삭제할까요? Retell의 기록은 별도입니다."))return;
+ try{
+   const u=API+"/api/v1/retell/collection/calls/"+encodeURIComponent(callId)+"?account_id="+encodeURIComponent(self.account_id);
+   const r=await fetch(u,{method:"DELETE",headers:headers()});
+   if(!r.ok)throw Error("삭제 실패 "+r.status);
+   erased=true;el("call-data").textContent="낌새 서버의 수집 자료를 삭제했습니다.";el("erase").disabled=true;el("sync").disabled=true;
+   status("낌새 측 저장 데이터 삭제 완료. Retell 원본 기록은 별도입니다.");
+ }catch(e){status(String(e.message||e))}
+});
+</script></body></html>
