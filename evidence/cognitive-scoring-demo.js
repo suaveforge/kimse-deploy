@@ -2,7 +2,7 @@ import {GPCOG_SANDBOX_VERSION,PATIENT_ITEMS,INFORMANT_ITEM_IDS,gradeGpcog,descri
 import {READING_REFERENCE_TEXT,compareReadingText,readingEvidenceFromSessions,summarizeReadingIntervals} from './pronunciation-evidence.mjs';
 const el=id=>document.getElementById(id);
 const patient=Array(9).fill(null),informant=Array(6).fill(null);
-let importedSpeech=[],sample=false,lastASR=null,lastResult=null,micStream=null,recorder=null,recordedBlob=null,pipelinePromise=null,pipelineModel=null,previewUrl=null,lastReadingComparison=null,lastReadingAcoustics=null,lastSameAudioAcoustics=null;
+let importedSpeech=[],sample=false,lastASR=null,lastResult=null,micStream=null,recorder=null,recordedBlob=null,pipelinePromise=null,pipelineModel=null,previewUrl=null,lastReadingComparison=null,lastReadingAcoustics=null,lastSameAudioAcoustics=null,lastAzureResult=null,azureEnabled=false;
 el('reading-reference').textContent=READING_REFERENCE_TEXT;
 function showAudioPreview(blob){
  const player=el('audio-preview');if(!player)return;
@@ -155,7 +155,7 @@ el('mic-record').addEventListener('click',async()=>{
   const parts=[];recorder=new MediaRecorder(micStream);
   recorder.ondataavailable=e=>{if(e.data?.size)parts.push(e.data);};
   recorder.onstop=()=>{recordedBlob=new Blob(parts,{type:recorder.mimeType||'audio/webm'});showAudioPreview(recordedBlob);micStream?.getTracks().forEach(t=>t.stop());micStream=null;el('asr-status').textContent='녹음 완료 · '+Math.round(recordedBlob.size/1024)+'KB. 전사를 누르면 기기에서 분석합니다.';};
-  recordedBlob=null;lastASR=null;el('transcript').value='';clearReadingComparison();showAudioPreview(null);el('audio-file').value='';recorder.start();el('mic-record').disabled=true;el('mic-stop').disabled=false;
+  recordedBlob=null;lastASR=null;lastAzureResult=null;el('azure-summary').hidden=true;el('azure-word-details').replaceChildren();el('transcript').value='';clearReadingComparison();showAudioPreview(null);el('audio-file').value='';recorder.start();el('mic-record').disabled=true;el('mic-stop').disabled=false;
   el('asr-status').textContent='녹음 중 · 완료 시 정지를 누르세요.';
  }catch(e){micStream?.getTracks().forEach(t=>t.stop());micStream=null;el('asr-status').textContent='녹음 실패: '+e.message;}
 });
@@ -163,7 +163,7 @@ el('mic-stop').addEventListener('click',()=>{
  if(recorder?.state==='recording')recorder.stop();
  el('mic-record').disabled=false;el('mic-stop').disabled=true;
 });
-el('audio-file').addEventListener('change',()=>{recordedBlob=null;lastASR=null;el('transcript').value='';clearReadingComparison();showAudioPreview(el('audio-file').files?.[0]||null);el('asr-status').textContent='음성 파일 선택됨. 먼저 재생해 녹음 품질을 확인하세요. 브라우저 안에서 전사됩니다.';});
+el('audio-file').addEventListener('change',()=>{recordedBlob=null;lastASR=null;lastAzureResult=null;el('azure-summary').hidden=true;el('azure-word-details').replaceChildren();el('transcript').value='';clearReadingComparison();showAudioPreview(el('audio-file').files?.[0]||null);el('asr-status').textContent='음성 파일 선택됨. 먼저 재생해 녹음 품질을 확인하세요. 브라우저 안에서 전사됩니다.';});
 async function decodeTo16k(blob) {
  const raw=await blob.arrayBuffer();const audioContext=new (window.AudioContext||window.webkitAudioContext)();
  try{
@@ -205,9 +205,102 @@ el('transcribe').addEventListener('click',async()=>{
  }catch(e){pipelinePromise=null;pipelineModel=null;el('asr-status').textContent='전사 실패: '+(e?.message||String(e))+' / 다른 브라우저 또는 PC에서 재시도하거나 텍스트를 직접 입력하세요.';}
  finally{btn.disabled=false;}
 });
+
+const AZURE_PRONUNCIATION_API='https://api-kimse.suaveforge.com/api/v1/evidence/pronunciation';
+function getKimseIdentity(){
+ try{
+  const state=JSON.parse(localStorage.getItem('kimse.p0.state')||'null');
+  const accountId=state?.remote?.accountId,token=state?.remote?.token;
+  if(typeof accountId==='string'&&typeof token==='string'&&accountId&&token)return {accountId,token};
+ }catch{}
+ return null;
+}
+function wav16kBase64(audio){
+ if(!audio||audio.length<16000||audio.length>480000)throw Error('Azure 평가는 1~30초의 음성 파일만 지원합니다.');
+ const buffer=new ArrayBuffer(44+audio.length*2),dv=new DataView(buffer);
+ const write=(offset,value)=>{for(let i=0;i<value.length;i++)dv.setUint8(offset+i,value.charCodeAt(i));};
+ write(0,'RIFF');dv.setUint32(4,buffer.byteLength-8,true);write(8,'WAVE');
+ write(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
+ dv.setUint32(24,16000,true);dv.setUint32(28,32000,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);
+ write(36,'data');dv.setUint32(40,audio.length*2,true);
+ for(let i=0;i<audio.length;i++){const x=Math.max(-1,Math.min(1,Number(audio[i])||0));dv.setInt16(44+i*2,x<0?Math.round(x*32768):Math.round(x*32767),true);}
+ const data=new Uint8Array(buffer);let binary='';
+ for(let i=0;i<data.length;i+=16384)binary+=String.fromCharCode(...data.subarray(i,i+16384));
+ return btoa(binary);
+}
+function showAzureResult(data){
+ const panel=el('azure-summary');panel.hidden=false;
+ const fmt=x=>typeof x==='number'&&Number.isFinite(x)?x.toFixed(1)+'/100':'미제공';
+ if(data.status!=='assessed'){
+  panel.textContent='Azure 처리 결과: '+(data.recognitionStatus||data.status)+' · 점수가 제공되지 않았습니다. 음성과 언어·지역 설정을 확인하세요.';
+  return;
+ }
+ panel.textContent='Azure 원본 평가 · 정확도 '+fmt(data.scores?.accuracy)+
+  ' · 유창성 '+fmt(data.scores?.fluency)+
+  ' · 완성도 '+fmt(data.scores?.completeness)+
+  ' · 종합 발음 '+fmt(data.scores?.overallPronunciation)+
+  ' · 한국어 운율 평가: 미지원 · 인지저하 진단과 무관';
+ const details=el('azure-word-details');details.replaceChildren();
+ const title=document.createElement('strong');title.textContent='단어별 제공 결과 ('+(data.words?.length||0)+'개)';details.append(title);
+ for(const item of (Array.isArray(data.words)?data.words:[]).slice(0,40)){
+  const row=document.createElement('p');row.style.margin='4px 0';row.textContent=
+    (item.word||'단어 없음')+' · 정확도 '+fmt(item.accuracy)+
+    (item.errorType&&item.errorType!=='None'?' · 공급자 태그 '+item.errorType:'');
+  details.append(row);
+ }
+}
+async function checkAzureAvailability(){
+ const indicator=el('azure-status'),button=el('azure-assess');button.disabled=true;
+ try{
+  const controller=new AbortController(),limit=setTimeout(()=>controller.abort(),8000);
+  let response;
+  try{response=await fetch(AZURE_PRONUNCIATION_API+'/status',{signal:controller.signal,cache:'no-store'});}
+  finally{clearTimeout(limit);}
+  if(!response.ok)throw Error('API '+response.status);
+  const info=await response.json();
+  azureEnabled=info.enabled===true;
+  if(!azureEnabled){
+   indicator.textContent='Azure Speech 서버 키가 아직 설정되지 않았습니다. 키가 설정되기 전에는 외부 평가를 시작할 수 없습니다.';
+   return;
+  }
+  button.disabled=false;indicator.textContent='Azure 발음 평가 서버 준비됨 · 로그인 후 동의 체크하고 실제 녹음으로 시험하세요.';
+ }catch(e){azureEnabled=false;indicator.textContent='Azure 발음 평가 API 미연결: '+(e?.message||String(e))+' · 서버 배포 및 설정 상태 확인 필요.';}
+}
+el('azure-assess').addEventListener('click',async()=>{
+ const button=el('azure-assess'),status=el('azure-status'),blob=recordedBlob||el('audio-file').files?.[0];
+ if(!azureEnabled){status.textContent='Azure 서버 설정 완료 전에는 실행할 수 없습니다.';return;}
+ if(!el('azure-consent').checked){status.textContent='Microsoft Azure로 음성을 전송하는 데 먼저 동의해주세요.';return;}
+ const identity=getKimseIdentity();
+ if(!identity){status.textContent='낌새 앱에서 로그인한 계정이 필요합니다. 상단 낌새 로그인으로 이동해 로그인 후 다시 시도하세요.';return;}
+ if(!blob){status.textContent='실제로 읽은 문장 녹음 또는 파일이 필요합니다.';return;}
+ if(blob.size>12000000){status.textContent='12MB 이하의 30초 이내 파일을 선택하세요.';return;}
+ button.disabled=true;lastAzureResult=null;el('azure-summary').hidden=true;el('azure-word-details').replaceChildren();
+ try{
+  status.textContent='음성 파일을 16kHz WAV로 변환하는 중입니다.';
+  const samples=await decodeTo16k(blob);
+  const encoded=wav16kBase64(samples);
+  status.textContent='동의한 읽기 음성을 낌새 서버와 Azure Speech로 전송해 평가하는 중입니다.';
+  const request={account_id:identity.accountId,consent_azure_transfer:true,reference_id:'kimse_reading_01',audio_base64:encoded};
+  const controller=new AbortController(),limit=setTimeout(()=>controller.abort(),55000);
+  let response;
+  try{response=await fetch(AZURE_PRONUNCIATION_API+'/assess',{
+   method:'POST',headers:{'Content-Type':'application/json','X-KIMSE-ACCOUNT-TOKEN':identity.token},
+   body:JSON.stringify(request),signal:controller.signal,cache:'no-store',
+  });}finally{clearTimeout(limit);}
+  const data=await response.json().catch(()=>({detail:'INVALID_SERVER_RESPONSE'}));
+  if(!response.ok)throw Error(data.detail||'API '+response.status);
+  lastAzureResult={...data,audioTransferredToAzure:true,consent:true,referenceText:READING_REFERENCE_TEXT,
+   independentClinicalValidation:false};
+  showAzureResult(data);
+  status.textContent=data.status==='assessed'?'Azure 발음 평가 완료. 언어학습용 점수이며 의료·인지저하 점수가 아닙니다.':'Azure가 평가 점수를 반환하지 않았습니다. 원음과 발음 언어를 확인해주세요.';
+ }catch(e){const name=e?.name==='AbortError'?'서버 응답 시간 초과':(e?.message||String(e));status.textContent='Azure 발음 평가 실패: '+name;
+ }finally{button.disabled=!azureEnabled;}
+});
+checkAzureAvailability();
+
 el('save-audit').addEventListener('click',()=>{
  refreshScore();
- const output={version:GPCOG_SANDBOX_VERSION,createdAt:new Date().toISOString(),syntheticExample:sample,scoringSource:'https://gpcog.com.au/index/frequently-asked-questions',nonDiagnostic:true,license:'Official test administration and commercial reproduction require owner permission',patientRatings:patient,informantRatings:informant,scoring:lastResult,speechMeasurements:importedSpeech,readingComparison:lastReadingComparison,sameAudioVAD:lastSameAudioAcoustics,transcript:{text:el('transcript').value,asr:lastASR,reviewedByHuman:false},exactMatchSuggestions:suggestExactRecallMatches(el('transcript').value,targets.map(x=>x.value.trim()).filter(Boolean))};
+ const output={version:GPCOG_SANDBOX_VERSION,createdAt:new Date().toISOString(),syntheticExample:sample,scoringSource:'https://gpcog.com.au/index/frequently-asked-questions',nonDiagnostic:true,license:'Official test administration and commercial reproduction require owner permission',patientRatings:patient,informantRatings:informant,scoring:lastResult,speechMeasurements:importedSpeech,readingComparison:lastReadingComparison,sameAudioVAD:lastSameAudioAcoustics,azurePronunciation:lastAzureResult,transcript:{text:el('transcript').value,asr:lastASR,reviewedByHuman:false},exactMatchSuggestions:suggestExactRecallMatches(el('transcript').value,targets.map(x=>x.value.trim()).filter(Boolean))};
  const url=URL.createObjectURL(new Blob([JSON.stringify(output,null,2)],{type:'application/json'}));
  const a=document.createElement('a');a.href=url;a.download='kimse-cognitive-scoring-sandbox.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
 });
