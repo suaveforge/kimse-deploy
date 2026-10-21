@@ -1,8 +1,8 @@
 import {GPCOG_SANDBOX_VERSION,PATIENT_ITEMS,INFORMANT_ITEM_IDS,gradeGpcog,describeSpeechMeasurements,suggestExactRecallMatches,makeSyntheticScenario} from './cognitive-scoring-core.mjs';
-import {READING_REFERENCE_TEXT,compareReadingText,readingEvidenceFromSessions} from './pronunciation-evidence.mjs';
+import {READING_REFERENCE_TEXT,compareReadingText,readingEvidenceFromSessions,summarizeReadingIntervals} from './pronunciation-evidence.mjs';
 const el=id=>document.getElementById(id);
 const patient=Array(9).fill(null),informant=Array(6).fill(null);
-let importedSpeech=[],sample=false,lastASR=null,lastResult=null,micStream=null,recorder=null,recordedBlob=null,pipelinePromise=null,pipelineModel=null,previewUrl=null,lastReadingComparison=null,lastReadingAcoustics=null;
+let importedSpeech=[],sample=false,lastASR=null,lastResult=null,micStream=null,recorder=null,recordedBlob=null,pipelinePromise=null,pipelineModel=null,previewUrl=null,lastReadingComparison=null,lastReadingAcoustics=null,lastSameAudioAcoustics=null;
 el('reading-reference').textContent=READING_REFERENCE_TEXT;
 function showAudioPreview(blob){
  const player=el('audio-preview');if(!player)return;
@@ -60,11 +60,48 @@ el('speech-json').addEventListener('change',async()=>{
 });
 
 function clearReadingComparison(){
- lastReadingComparison=null;el('reading-summary').hidden=true;
+ lastReadingComparison=null;lastSameAudioAcoustics=null;el('reading-summary').hidden=true;
+ el('reading-acoustics').hidden=true;el('reading-acoustics').textContent='';
  el('reading-summary').textContent='';el('reading-differences').replaceChildren();
  el('reading-status').textContent='비교할 음성 전사 결과를 준비하세요. 음성인식 차이는 발음 오류가 아닙니다.';
 }
 el('reading-reset').addEventListener('click',clearReadingComparison);
+el('reading-vad').addEventListener('click',async()=>{
+ const blob=recordedBlob||el('audio-file').files?.[0];
+ if(!blob){el('reading-status').textContent='먼저 읽기 음성을 녹음하거나 파일로 불러오세요.';return;}
+ if(blob.size>20e6){el('reading-status').textContent='20MB 이하의 녹음 파일이 필요합니다.';return;}
+ const button=el('reading-vad');button.disabled=true;
+ try{
+  if(!window.vad?.NonRealTimeVAD)throw Error('Silero VAD 모델 라이브러리를 불러오지 못했습니다.');
+  el('reading-status').textContent='Silero VAD로 실제 음성 파일의 발화 구간을 분석하고 있습니다.';
+  const samples=await decodeTo16k(blob);
+  const vad=await window.vad.NonRealTimeVAD.new({
+   model:'v5',modelURL:'https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.31/dist/silero_vad_v5.onnx',
+   onnxWASMBasePath:'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/'
+  });
+  const intervals=[];
+  for await(const item of vad.run(samples,16000))intervals.push({startMs:item.start,endMs:item.end});
+  if(typeof vad.destroy==='function')await vad.destroy();
+  const asr=lastASR?.text||'';
+  lastSameAudioAcoustics=summarizeReadingIntervals(intervals,samples.length/16,asr);
+  if(lastReadingComparison)lastReadingComparison.acousticEvidence=lastSameAudioAcoustics;
+  const display=el('reading-acoustics');display.hidden=false;
+  if(lastSameAudioAcoustics.status!=='measured'){
+   display.textContent='음성 구간 검출 결과: '+lastSameAudioAcoustics.status+' · 이 상태에서 발화속도 수치를 생성하지 않았습니다.';
+  }else{
+   const x=lastSameAudioAcoustics;
+   display.textContent='같은 음성 파일 측정: 음성 '+x.segmentCount+'구간 · 실제 감지 발화시간 '+(x.speechDurationMs/1000).toFixed(2)+
+    '초 / 파일 '+(x.totalDurationMs/1000).toFixed(2)+'초 · 구간 사이 쉼 '+
+    (x.betweenSpeechGapsMs.length?x.betweenSpeechGapsMs.map(v=>(v/1000).toFixed(2)+'초').join(', '):'검출된 구간 간 쉼 없음')+
+    (x.asrSyllablesPerVoicedSecond===null?' · 읽기 속도: Whisper 전사 없음':
+      ' · AI 전사 기준 읽기 속도 '+x.asrSyllablesPerVoicedSecond.toFixed(2)+'음절/초 (ASR 오류 영향)')+
+    ' · 인지저하·조음장애 평가 아님';
+  }
+  el('reading-status').textContent='사전학습 음성구간 검출 결과가 표시됐습니다. 발음 오류가 아닌 발화시간·쉼 측정입니다.';
+ }catch(e){el('reading-status').textContent='음성 구간 분석 실패: '+(e?.message||String(e));}
+ finally{button.disabled=false;}
+});
+
 el('reading-compare').addEventListener('click',()=>{
  const typed=el('transcript').value.trim();
  const asrText=String(lastASR?.text||'').trim();
@@ -76,7 +113,7 @@ el('reading-compare').addEventListener('click',()=>{
  const comparison=compareReadingText(READING_REFERENCE_TEXT,transcription);
  if(comparison.status!=='compared'){clearReadingComparison();el('reading-status').textContent=comparison.reason;return;}
  lastReadingComparison={...comparison,source,reference:READING_REFERENCE_TEXT,recognizedText:transcription,
-   editedText:typed!==asrText?typed:null,acousticEvidence:lastReadingAcoustics,
+   editedText:typed!==asrText?typed:null,acousticEvidence:lastSameAudioAcoustics||lastReadingAcoustics,
    humanConfirmedPronunciation:false,officialCognitiveScoreContribution:0};
  const percent=(comparison.characterDisagreementRate*100).toFixed(1);
  const result=el('reading-summary');result.hidden=false;
@@ -170,7 +207,7 @@ el('transcribe').addEventListener('click',async()=>{
 });
 el('save-audit').addEventListener('click',()=>{
  refreshScore();
- const output={version:GPCOG_SANDBOX_VERSION,createdAt:new Date().toISOString(),syntheticExample:sample,scoringSource:'https://gpcog.com.au/index/frequently-asked-questions',nonDiagnostic:true,license:'Official test administration and commercial reproduction require owner permission',patientRatings:patient,informantRatings:informant,scoring:lastResult,speechMeasurements:importedSpeech,readingComparison:lastReadingComparison,transcript:{text:el('transcript').value,asr:lastASR,reviewedByHuman:false},exactMatchSuggestions:suggestExactRecallMatches(el('transcript').value,targets.map(x=>x.value.trim()).filter(Boolean))};
+ const output={version:GPCOG_SANDBOX_VERSION,createdAt:new Date().toISOString(),syntheticExample:sample,scoringSource:'https://gpcog.com.au/index/frequently-asked-questions',nonDiagnostic:true,license:'Official test administration and commercial reproduction require owner permission',patientRatings:patient,informantRatings:informant,scoring:lastResult,speechMeasurements:importedSpeech,readingComparison:lastReadingComparison,sameAudioVAD:lastSameAudioAcoustics,transcript:{text:el('transcript').value,asr:lastASR,reviewedByHuman:false},exactMatchSuggestions:suggestExactRecallMatches(el('transcript').value,targets.map(x=>x.value.trim()).filter(Boolean))};
  const url=URL.createObjectURL(new Blob([JSON.stringify(output,null,2)],{type:'application/json'}));
  const a=document.createElement('a');a.href=url;a.download='kimse-cognitive-scoring-sandbox.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
 });
