@@ -1,27 +1,98 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>낌새 Evidence | 말하기·언어 측정</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.5.1/dist/css/tabler.min.css">
-<style>body{background:#f5faf8;color:#183b42}.wrap{max-width:1050px;margin:24px auto;padding:0 14px}.panel{background:#fff;border:1px solid #d4e7df;border-radius:16px;padding:20px}.prompt{padding:15px;background:#eef8f4;border-radius:10px}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{border:1px solid #e3eee8;border-radius:10px;padding:12px}.metric strong{font-size:1.4rem;display:block}.foot{color:#526e76;font-size:.86rem}canvas{width:100%;height:130px;border:1px solid #d4e7df;border-radius:8px}@media(max-width:760px){.metrics{grid-template-columns:1fr}}</style>
-</head><body><main class="wrap"><p><a href="./collection.html?view=operation#data-05">← Evidence / 말하기·언어</a></p>
-<h1>음성 특징 측정기</h1><p class="foot">사전학습 Silero VAD와 Pitchy를 사용합니다. 인지저하 진단·위험도 판단은 하지 않습니다.</p>
-<div class="row g-3"><section class="col-md-7"><div class="panel">
-<h2 class="h3">1단계 · 직접 측정</h2>
-<div><label><input type="radio" name="task" value="free" checked> 자유발화</label>　<label><input type="radio" name="task" value="read"> 문장 읽기</label>　<label><input type="radio" name="task" value="vowel"> 모음 발성</label></div>
-<p id="prompt" class="prompt my-3">최근에 있었던 일을 편하게 이야기해주세요.</p>
-<div class="d-flex flex-wrap gap-2"><button id="start" class="btn btn-primary">마이크 시작</button><button id="stop" class="btn btn-outline-secondary" disabled>종료</button><button id="export" class="btn btn-outline-secondary" disabled>JSON 저장</button></div>
-<p id="status" role="status" aria-live="polite" class="my-3">대기 중</p>
-<div class="metrics"><div class="metric">경과<strong id="elapsed">—</strong></div><div class="metric">첫 음성 지연<strong id="latency">—</strong></div><div class="metric">발화 구간<strong id="segments">—</strong></div><div class="metric">평균 구간 간격<strong id="pauses">—</strong></div><div class="metric">발화 시간<strong id="speech-total">—</strong></div><div class="metric">모음 F0 중앙값<strong id="f0">—</strong></div></div>
-<h3 class="h4 mt-4">모음 음높이 변화</h3><canvas id="pitch-chart" width="680" height="130"></canvas><p class="foot">모음 발성의 F0 변화이며, 음성 떨림·발음 정확도 진단이 아닙니다.</p>
-<h3 class="h4">추출된 시간 구간</h3><p id="timeline" class="foot">측정된 구간 없음</p>
-<div class="alert alert-info mt-3" role="region" aria-label="측정 결과 요약"><h3 class="h5">측정 결과 요약</h3><p id="measurement-summary" class="mb-1">측정 후 분석 가능한 결과가 여기에 표시됩니다. 인지검사 점수는 산출하지 않습니다.</p><p class="foot mb-0">세 과제의 수행 결과는 JSON에 함께 담깁니다. 이것은 데이터 측정 요약이며 CIST·MMSE·MoCA 같은 인지검사 점수나 치매 위험도가 아닙니다.</p></div>
-</div></section><aside class="col-md-5"><div class="panel"><h2 class="h3">2단계 · 인지저하 신호 판단</h2>
-<p>음성 측정값과 임상 판단은 별개입니다. 낌새 인지저하 예측 모델은 검증되지 않았으므로 점수를 표시하지 않습니다.</p>
-<p class="alert alert-warning">발음·어휘 분석, 병적 떨림 판정, 인지저하 위험도: 미구현</p>
-<details open><summary>추출 원리와 한계</summary><p>Silero VAD로 발화 이벤트를 추출하고 Pitchy로 모음 기본주파수를 추정합니다. 음성 시작·종료 시각은 처리 지연을 포함하는 근사치입니다.</p></details>
-<p class="foot">음성 원본은 서버로 전송·저장하지 않습니다. 라이브러리와 모델은 외부 CDN에서 다운로드합니다.</p>
-<p class="foot">엔진 <span id="version">—</span></p>
-</div></aside></div></main>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>말하기·언어 측정 | 낌새 Evidence</title>
+<meta name="description" content="자유발화, 문장 읽기, 모음 발성의 음성 구간과 음높이를 직접 측정합니다. 의료적 판단은 하지 않습니다.">
+<style>
+:root{color-scheme:light;--bg:#f5faf8;--ink:#193c42;--muted:#56717a;--teal:#087e70;--line:#d3e6df;--soft:#ecf7f2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+a{color:var(--teal)}button,input{font:inherit}
+.workspace{max-width:1130px;margin:0 auto;padding:10px 14px 16px}
+.mast{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:8px}
+.mast a{text-decoration:none;font-weight:700;white-space:nowrap}
+.mast h1{font-size:clamp(17px,2vw,23px);letter-spacing:-.04em;margin:0}
+.state-tag{font-size:11px;color:#905e25;background:#fff6e8;padding:4px 8px;border-radius:8px;white-space:nowrap}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.task-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.task-row label{border:1px solid var(--line);border-radius:8px;display:inline-flex;align-items:center;gap:5px;padding:6px 9px;cursor:pointer;white-space:nowrap;font-weight:700}
+.task-row label:has(input:checked){border-color:var(--teal);background:var(--soft)}
+.task-row input{accent-color:var(--teal)}
+.prompt{background:#f1f8f5;border-radius:9px;padding:9px 11px;margin:9px 0;font-weight:680}
+.toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+button{cursor:pointer;padding:8px 12px;border:1px solid #abcfc3;border-radius:9px;background:#fff;color:var(--ink);font-weight:750;min-height:38px}
+button.primary{color:white;background:var(--teal);border-color:var(--teal)}
+button:disabled{opacity:.48;cursor:not-allowed}
+#status{margin:7px 0 8px;font-size:12px;color:var(--muted);min-height:18px}
+.metrics{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-bottom:9px}
+.metric{min-width:0;border:1px solid var(--line);border-radius:9px;padding:7px 8px;background:#fff}
+.metric small{color:var(--muted);display:block;font-size:10px;white-space:nowrap}
+.metric strong{font-size:17px;letter-spacing:-.03em;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.outputs{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(290px,.8fr);gap:9px}
+.output-block{border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-width:0}
+.output-head{display:flex;justify-content:space-between;align-items:center;gap:5px;margin-bottom:5px}
+h2{font-size:14px;line-height:1.3;margin:0}
+.caption{font-size:11px;color:var(--muted)}
+.trace{display:block;width:100%;height:125px;background:#f8fbfa;border-radius:7px}
+#timeline{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:5px 0 0}
+#measurement-summary{font-size:12px;margin:5px 0 6px;line-height:1.55}
+.result-status{color:#845a1b;font-size:11px;font-weight:800}
+.note{font-size:11px;color:var(--muted)}
+.details{border-top:1px solid var(--line);margin-top:8px;padding-top:6px}
+.details summary{font-size:12px;font-weight:750;cursor:pointer}
+.details p{font-size:12px;color:var(--muted);margin:6px 0}
+.details a{font-size:12px}
+.footer{display:flex;gap:8px;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+@media(max-width:780px){.outputs{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.state-tag{font-size:10px}.trace{height:106px}}
+@media(max-width:520px){body{font-size:13px}.workspace{padding:7px 7px 10px}.panel{padding:9px}.mast{gap:5px;margin-bottom:7px}.mast h1{font-size:17px}.mast a{font-size:11px}.state-tag{font-size:9px;padding:3px 5px}.task-row{justify-content:space-between;gap:4px}.task-row label{padding:7px 6px;font-size:12px}.prompt{padding:7px 8px;margin:7px 0;font-size:13px}.toolbar{gap:5px}.toolbar button{flex:1;min-width:0;padding:6px;font-size:12px}.metrics{gap:4px;margin-bottom:7px}.metric{padding:5px}.metric small{font-size:9.5px}.metric strong{font-size:15px}.output-block{padding:7px 8px}.trace{height:96px}.caption{font-size:10px}.footer{font-size:10px}}
+@media(max-height:680px) and (max-width:780px){.trace{height:78px}.prompt{margin:5px 0;padding:5px 8px}.metric{padding:4px 5px}.metric strong{font-size:14px}.output-block{padding:6px 8px}.panel{padding:7px}.outputs{gap:6px}#status{margin:4px 0}}
+</style></head><body>
+<main class="workspace">
+<header class="mast"><a href="./collection.html?view=operation#data-05">← Evidence</a><h1>말하기·언어 측정기</h1><span class="state-tag">진단 모델 미구현</span></header>
+<section class="panel" aria-label="음성 특징 측정">
+<div class="task-row" role="radiogroup" aria-label="측정 과제">
+<label><input type="radio" name="task" value="free" checked>자유발화</label>
+<label><input type="radio" name="task" value="read">문장 읽기</label>
+<label><input type="radio" name="task" value="vowel">모음 발성</label>
+</div>
+<div class="prompt" id="prompt">최근에 있었던 일을 편하게 이야기해주세요.</div>
+<div class="toolbar">
+<button type="button" class="primary" id="start">마이크 시작</button>
+<button type="button" id="stop" disabled>측정 종료</button>
+<button type="button" id="export" disabled>JSON 저장</button>
+</div>
+<p id="status" role="status" aria-live="polite">준비됨 · 세 과제 모두 말하는 구간의 음높이를 추출합니다.</p>
+<div class="metrics" aria-label="측정값">
+<div class="metric"><small>경과</small><strong id="elapsed">—</strong></div>
+<div class="metric"><small>첫 음성 지연</small><strong id="latency">—</strong></div>
+<div class="metric"><small>발화 구간</small><strong id="segments">—</strong></div>
+<div class="metric"><small>평균 쉼</small><strong id="pauses">—</strong></div>
+<div class="metric"><small>발화 시간</small><strong id="speech-total">—</strong></div>
+<div class="metric"><small>F0 중앙값</small><strong id="f0">—</strong></div>
+<div class="metric"><small>F0 변동폭</small><strong id="f0-range">—</strong></div>
+<div class="metric"><small>F0 유효표본</small><strong id="pitch-count">—</strong></div>
+</div>
+<div class="outputs">
+<div class="output-block">
+<div class="output-head"><h2>음높이 변화 위치</h2><span class="caption">모든 과제 · 시간축 / Hz</span></div>
+<canvas id="pitch-chart" class="trace" width="680" height="154" aria-label="말하는 중의 음높이 추이"></canvas>
+<p id="timeline">감지된 발화 구간이 여기에 표시됩니다.</p>
+</div>
+<div class="output-block">
+<div class="output-head"><h2>측정 결과</h2><span class="result-status">인지저하 판정 미구현</span></div>
+<p id="measurement-summary">과제를 마치면 발화·쉼·음높이 측정 요약이 여기에 표시됩니다.</p>
+<p class="note">F0 변동은 억양·목소리 높낮이 변화이며 음성 떨림의 임상 판정이 아닙니다. 결과는 이 브라우저에서만 계산합니다.</p>
+<details class="details"><summary>측정법·한계·인지저하 판단 상태</summary>
+<p>사전학습 Silero VAD v5로 음성 구간을 탐지하고 Pitchy로 유성음의 기본주파수(F0)를 추정합니다. 시간 위치는 VAD 처리 지연이 포함된 근사치입니다. F0 변동폭은 음성 떨림이나 Jitter·Shimmer를 뜻하지 않습니다.</p>
+<p>임상적으로 검증된 음성 기반 인지저하 판단 모델과 검사 문답 채점표 연결은 아직 구현되지 않았습니다. 현 화면에서 치매 확률·인지저하 점수를 산출하지 않습니다.</p>
+<p>마이크 입력은 기기에서 처리하고 원음은 낌새 서버에 전송·저장하지 않습니다. 초기에 모델·라이브러리 파일을 외부 CDN에서 받습니다. JSON 저장은 선택사항입니다.</p>
+<a href="https://github.com/ricky0123/vad" target="_blank" rel="noopener noreferrer">Silero VAD</a> · <a href="https://github.com/ianprime0509/pitchy" target="_blank" rel="noopener noreferrer">Pitchy</a>
+</details>
+</div>
+</div>
+</section>
+<div class="footer"><span>본 기능은 실험적 음성 특징 측정이며 의료검사가 아닙니다.</span><span>v<span id="version">—</span></span></div>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.31/dist/bundle.min.js"></script>
-<script type="module" src="./speech-demo.js?v=20261022b"></script></body></html>
+<script type="module" src="./speech-demo.js?v=20261022c"></script>
+</body></html>
