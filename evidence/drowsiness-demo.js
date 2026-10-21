@@ -29,41 +29,114 @@ function draw(points){
     ctx.closePath();ctx.stroke();
   }
 }
-// On iOS browsers WebAudio must be unlocked in a direct user-initiated click.
-// The same unlocked context is reused for later camera-driven feedback.
+// Safari / iOS Chrome: WebAudio defaults to an "ambient" audio session.
+// That output can be silent with the phone's silent switch enabled.
+// Use the media-playback session and a reusable HTMLAudioElement for audible feedback.
+let beepPlayer=null,beepUrl=null;
+function playbackSession(){
+  try{
+    if(navigator.audioSession && navigator.audioSession.type!=='playback')
+      navigator.audioSession.type='playback';
+  }catch(error){ /* unavailable on older browsers */ }
+}
+function beepWavBlob(){
+  const rate=24000,duration=0.48,count=Math.floor(rate*duration);
+  const data=new ArrayBuffer(44+count*2),view=new DataView(data);
+  const label=(offset,value)=>{for(let i=0;i<4;i++)view.setUint8(offset+i,value.charCodeAt(i));};
+  label(0,'RIFF');view.setUint32(4,data.byteLength-8,true);label(8,'WAVE');
+  label(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);
+  view.setUint16(22,1,true);view.setUint32(24,rate,true);
+  view.setUint32(28,rate*2,true);view.setUint16(32,2,true);view.setUint16(34,16,true);
+  label(36,'data');view.setUint32(40,count*2,true);
+  for(let i=0;i<count;i++){
+    const t=i/rate;
+    const envelope=Math.min(1,t/0.025)*Math.min(1,(duration-t)/0.075);
+    // Two short audible pulses, with rounded onsets/offsets.
+    const pulse=(t<0.19 || (t>=0.25 && t<0.46)) ? 1 : 0;
+    const signal=0.40*envelope*pulse*(Math.sin(2*Math.PI*760*t)+0.22*Math.sin(2*Math.PI*1140*t));
+    view.setInt16(44+i*2,Math.max(-32767,Math.min(32767,Math.round(signal*32767))),true);
+  }
+  return new Blob([data],{type:'audio/wav'});
+}
+function mediaPlayer(){
+  if(!beepPlayer){
+    beepUrl=URL.createObjectURL(beepWavBlob());
+    beepPlayer=new Audio();
+    beepPlayer.preload='auto';
+    beepPlayer.src=beepUrl;
+    beepPlayer.volume=1;
+    beepPlayer.addEventListener('ended',()=>{
+      $('sound-test').textContent='소리 확인';
+    });
+    beepPlayer.addEventListener('error',()=>{
+      $('sound-test').textContent='소리 오류';
+    });
+  }
+  return beepPlayer;
+}
 function unlockAudio(){
+  playbackSession();
   const AudioCtor=window.AudioContext||window.webkitAudioContext;
-  if(!AudioCtor)return Promise.reject(new Error('이 브라우저는 소리 재생을 지원하지 않습니다.'));
+  if(!AudioCtor)return Promise.reject(new Error('Web Audio 미지원'));
   try{
     if(!audioCtx||audioCtx.state==='closed')audioCtx=new AudioCtor();
-    return audioCtx.resume().then(()=>{
-      if(audioCtx.state!=='running')throw new Error('소리를 시작할 수 없습니다. 기기 음량을 확인하세요.');
-      return audioCtx;
-    });
+    return audioCtx.resume().then(()=>audioCtx);
   }catch(error){return Promise.reject(error);}
 }
-function tone(force=false,frequency=770){
-  if((!force&&!$('sound-enabled').checked)||!audioCtx||audioCtx.state!=='running')return false;
+function webAudioTone(){
+  if(!audioCtx||audioCtx.state!=='running')return false;
   try{
-    const start=audioCtx.currentTime+0.005;
-    const oscillator=audioCtx.createOscillator(),gain=audioCtx.createGain();
-    oscillator.type='sine';
-    oscillator.frequency.setValueAtTime(frequency,start);
-    oscillator.frequency.linearRampToValueAtTime(frequency+70,start+0.13);
-    gain.gain.setValueAtTime(0.0001,start);
-    gain.gain.exponentialRampToValueAtTime(0.22,start+0.025);
-    gain.gain.exponentialRampToValueAtTime(0.0001,start+0.24);
-    oscillator.connect(gain);gain.connect(audioCtx.destination);
-    oscillator.start(start);oscillator.stop(start+0.25);
+    playbackSession();
+    const now=audioCtx.currentTime+0.005;
+    const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+    osc.type='sine';
+    osc.frequency.setValueAtTime(760,now);
+    gain.gain.setValueAtTime(0.0001,now);
+    gain.gain.exponentialRampToValueAtTime(0.24,now+0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.4);
+    osc.connect(gain);gain.connect(audioCtx.destination);
+    osc.start(now);osc.stop(now+0.41);
     return true;
   }catch(error){return false;}
 }
-$('sound-test').addEventListener('click',()=>{
+function soundFailed(error){
   unlockAudio().then(()=>{
-    if(tone(true,660)){
-      status('소리 테스트 재생','소리가 안 들리면 아이폰 미디어 음량과 출력 기기를 확인하세요.','normal');
-    }else status('소리 재생 실패','아이폰 음량이나 브라우저 오디오 제한을 확인하세요.','alert');
-  }).catch(error=>status('소리 재생 불가',error.message,'alert'));
+    if(webAudioTone()){
+      $('sound-test').textContent='소리 확인';
+    }else{
+      $('sound-test').textContent='소리 실패';
+      status('소리 출력 실패','오디오 재생을 시작하지 못했습니다.','alert');
+    }
+  }).catch(()=>{
+    $('sound-test').textContent='소리 실패';
+    status('소리 출력 실패',error?.message||'브라우저 오디오 출력 오류','alert');
+  });
+}
+function tone(force=false){
+  if(!force&&!$('sound-enabled').checked)return false;
+  playbackSession();
+  try{
+    const player=mediaPlayer();
+    if(!player.paused)player.pause();
+    try{player.currentTime=0;}catch(error){ /* before metadata on some iOS versions */ }
+    const pending=player.play();
+    if(pending&&typeof pending.catch==='function')
+      pending.catch(error=>soundFailed(error));
+    return true;
+  }catch(error){soundFailed(error);return false;}
+}
+$('sound-test').addEventListener('click',()=>{
+  // Must call play() directly in the gesture, not after an awaited promise.
+  playbackSession();
+  $('sound-test').textContent='재생 중…';
+  const attempted=tone(true);
+  if(attempted){
+    if(!stream)status('소리 재생 요청','소리가 들리지 않으면 출력 설정을 확인할 수 있습니다.','normal');
+    unlockAudio().catch(()=>{});
+  }else{
+    $('sound-test').textContent='소리 실패';
+    status('소리 출력 실패','미디어 소리를 재생하지 못했습니다.','alert');
+  }
 });
 function stop(showStatus=true){
   ++launchId;
@@ -106,13 +179,13 @@ function loop(id){
         }
         if(phase==='open'){
           opened=samples;phase='closed';samples=[];stageAt=now;
-          status('보정 2/2 · 눈 감기','이제 눈을 감고 약 2초 유지하세요.');tone(false,520);
+          status('보정 2/2 · 눈 감기','이제 눈을 감고 약 2초 유지하세요.');tone();
         }else{
           try{
             meter.setCalibration(buildCalibration(opened,samples));
             phase='measure';previousClosed=false;
             status('실시간 분석 중','눈을 감으면 측정값과 소리로 알려줍니다.','normal');
-            tone(false,800);
+            tone();
           }catch(error){
             phase='open';stageAt=now;
             status('보정 재시도','눈을 뜨고 정면을 바라보세요.');
@@ -145,7 +218,11 @@ $('start').addEventListener('click',async()=>{
   $('start').disabled=true;$('start').textContent='준비 중…';$('stop').disabled=false;
   status('카메라 준비 중','카메라 권한을 허용하세요.');
   // Call unlockAudio immediately while the click's iOS user activation is valid.
-  if($('sound-enabled').checked)unlockAudio().then(()=>{if(id===launchId)tone(false,620);}).catch(()=>{});
+  if($('sound-enabled').checked){
+    playbackSession();
+    tone(); // Direct click unlocks HTML media audio for later non-gesture events.
+    unlockAudio().catch(()=>{}); // Secondary WebAudio fallback.
+  }
   try{
     if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw Error('HTTPS와 카메라 권한이 필요합니다.');
     const acquired=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
@@ -175,5 +252,5 @@ $('start').addEventListener('click',async()=>{
 });
 $('stop').addEventListener('click',()=>stop());
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&(active||stream))stop();});
-window.addEventListener('pagehide',()=>stop(false));
+window.addEventListener('pagehide',()=>{stop(false);if(beepPlayer)beepPlayer.pause();if(beepUrl)URL.revokeObjectURL(beepUrl);beepPlayer=null;beepUrl=null;});
 $('engine-version').textContent=DROWSINESS_DEMO_VERSION;
