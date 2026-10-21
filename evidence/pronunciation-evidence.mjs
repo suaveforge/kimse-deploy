@@ -44,3 +44,29 @@ export function readingEvidenceFromSessions(data){
   segmentCount:Number.isInteger(s.segmentCount)?s.segmentCount:null,meanGapMs:Number.isFinite(s.meanGapMs)?s.meanGapMs:null,
   pronunciationInference:null,source:'KIMSE speech measurement JSON; session linkage not independently verified'};
 }
+
+export function summarizeReadingIntervals(segments,totalDurationMs,recognizedText){
+ if(!Array.isArray(segments)||!Number.isFinite(totalDurationMs)||totalDurationMs<=0)
+  return {status:'unavailable',reason:'유효한 오디오 및 음성 검출 구간 없음'};
+ const normalized=segments
+  .filter(x=>Number.isFinite(x?.startMs)&&Number.isFinite(x?.endMs)&&x.endMs>x.startMs)
+  .map(x=>({startMs:Math.max(0,x.startMs),endMs:Math.min(totalDurationMs,x.endMs)}))
+  .filter(x=>x.endMs>x.startMs)
+  .sort((a,b)=>a.startMs-b.startMs);
+ if(!normalized.length)return {status:'no_detected_speech',speechDurationMs:0,segments:[],betweenSpeechGapsMs:[],referenceMedicalInference:null};
+ const merged=[];
+ for(const interval of normalized){
+  const tail=merged[merged.length-1];
+  if(tail&&interval.startMs<=tail.endMs)tail.endMs=Math.max(tail.endMs,interval.endMs);
+  else merged.push({...interval});
+ }
+ const speechDurationMs=merged.reduce((n,x)=>n+(x.endMs-x.startMs),0);
+ const gaps=[];for(let i=1;i<merged.length;i++)gaps.push(merged[i].startMs-merged[i-1].endMs);
+ const recognizedSyllables=Array.from(String(recognizedText??'')).filter(c=>/[가-힣]/u.test(c)).length;
+ return {status:'measured',totalDurationMs,speechDurationMs,segmentCount:merged.length,segments:merged,
+  betweenSpeechGapsMs:gaps,observedSpeechFraction:speechDurationMs/totalDurationMs,
+  recognizedSyllableCount:recognizedSyllables,
+  asrSyllablesPerVoicedSecond:recognizedSyllables&&speechDurationMs>0?recognizedSyllables/(speechDurationMs/1000):null,
+  referenceMedicalInference:null,
+  method:'Silero VAD default speech segmentation + Whisper recognized Korean syllables divided by VAD speech duration; no clinical accuracy or articulation diagnosis'};
+}
