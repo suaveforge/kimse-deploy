@@ -60,9 +60,10 @@ input[type=text],input[type=file],textarea{width:100%;padding:9px;border:1px sol
 <div class="meta">읽기 기준 문장 · 고정 과제</div>
 <strong id="reading-reference" style="font-size:16px">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</strong>
 </div>
-<div class="actions"><button type="button" id="reading-compare" class="primary">전사와 읽기 문장 비교</button><button type="button" id="reading-reset">비교 초기화</button></div>
+<div class="actions"><button type="button" id="reading-compare" class="primary">전사와 읽기 문장 비교</button><button type="button" id="reading-vad">실제 음성구간·속도 측정</button><button type="button" id="reading-reset">비교 초기화</button></div>
 <div id="reading-status" role="status" aria-live="polite" class="meta">음성을 먼저 녹음하거나 파일로 불러온 뒤 전사하세요. 직접 수정한 텍스트는 원본 ASR과 구분됩니다.</div>
 <div id="reading-summary" class="result" hidden style="margin-top:8px"></div>
+<div id="reading-acoustics" class="result" hidden style="margin-top:8px"></div>
 <div id="reading-differences" class="meta" style="margin-top:8px"></div>
 <p class="meta">문자 차이율은 ASR 모델의 인식 결과를 원문과 비교한 <strong>텍스트 지표</strong>입니다. 발음 정확도 점수가 아니며, 음소별 실제 오류인지 검증하지 않았습니다. 같은 문장의 반복 변화는 동일한 기기·조건과 사람의 확인이 필요합니다.</p>
 </section>
@@ -90,4 +91,4 @@ input[type=text],input[type=file],textarea{width:100%;padding:9px;border:1px sol
 <div class="warning"><strong>정확성·사용권한 안내</strong><p>공개된 GPCOG 채점 규칙을 확인하는 시뮬레이터입니다. 공식 검사 문항, 시행 절차, 해석 역량을 제공하지 않습니다. GPCOG 웹사이트는 개인 비상업적 이용조건을 명시합니다. 상용 서비스에 정식 검사로 도입하려면 도구 소유자의 허락과 전문 검증이 필요합니다.</p></div>
 <p class="meta"><a href="https://gpcog.com.au/index/frequently-asked-questions" target="_blank" rel="noopener noreferrer">GPCOG 공식 채점 FAQ</a> · <a href="https://gpcog.com.au/index/downloads" target="_blank" rel="noopener noreferrer">공식 한국어 검사지 다운로드</a> · <a href="https://huggingface.co/Xenova/whisper-tiny" target="_blank" rel="noopener noreferrer">Whisper 모델 정보</a></p>
 </section>
-</div></main><script type="module" src="./cognitive-scoring-demo.js?v=20261022-4"></script></body></html>
+</div></main><script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.31/dist/bundle.min.js"></script><script type="module" src="./cognitive-scoring-demo.js?v=20261022-5"></script></body></html>
