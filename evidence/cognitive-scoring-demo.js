@@ -1,7 +1,14 @@
 import {GPCOG_SANDBOX_VERSION,PATIENT_ITEMS,INFORMANT_ITEM_IDS,gradeGpcog,describeSpeechMeasurements,suggestExactRecallMatches,makeSyntheticScenario} from './cognitive-scoring-core.mjs';
 const el=id=>document.getElementById(id);
 const patient=Array(9).fill(null),informant=Array(6).fill(null);
-let importedSpeech=[],sample=false,lastASR=null,lastResult=null,micStream=null,recorder=null,recordedBlob=null,pipelinePromise=null;
+let importedSpeech=[],sample=false,lastASR=null,lastResult=null,micStream=null,recorder=null,recordedBlob=null,pipelinePromise=null,pipelineModel=null,previewUrl=null;
+function showAudioPreview(blob){
+ const player=el('audio-preview');if(!player)return;
+ if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
+ if(blob){previewUrl=URL.createObjectURL(blob);player.src=previewUrl;player.hidden=false;}
+ else{player.removeAttribute('src');player.hidden=true;}
+}
+window.addEventListener('pagehide',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);if(micStream)micStream.getTracks().forEach(t=>t.stop());});
 const pgrid=el('patient-grid'),igrid=el('informant-grid'),targetInputs=el('target-inputs');
 function row(container,i,label,items,onSelect) {
  const div=document.createElement('div');div.className='grid-item';
@@ -31,7 +38,11 @@ el('synthetic').addEventListener('click',()=>{
  const scenario=makeSyntheticScenario();sample=true;
  scenario.patient.forEach((x,i)=>{patient[i]=x;pselect[i].value=x;});
  scenario.informant.forEach((x,i)=>{informant[i]=x;isend[i].value=x;});
- refreshScore();el('match-result').textContent='가상 사례를 넣었습니다. 실제 사용자의 음성·인지 상태와 무관합니다.';
+ refreshScore();
+ const immediate=el('synthetic-feedback');
+ immediate.hidden=false;
+ immediate.textContent='가상 사례 계산 완료: 환자 5/9점 → 보호자 면담 4/6점 → 공식 규칙상 선별검사에서 유의한 인지저하 징후가 나타나지 않은 구간 (임상 검사·진단 아님).';
+ el('match-result').textContent='가상 사례를 채점 항목에 입력했습니다. 실제 음성·환자 상태와 무관합니다.';
 });
 el('speech-json').addEventListener('change',async()=>{
  const file=el('speech-json').files?.[0];if(!file)return;
@@ -61,8 +72,8 @@ el('mic-record').addEventListener('click',async()=>{
   audioSession();micStream=await navigator.mediaDevices.getUserMedia({audio:true});
   const parts=[];recorder=new MediaRecorder(micStream);
   recorder.ondataavailable=e=>{if(e.data?.size)parts.push(e.data);};
-  recorder.onstop=()=>{recordedBlob=new Blob(parts,{type:recorder.mimeType||'audio/webm'});micStream?.getTracks().forEach(t=>t.stop());micStream=null;el('asr-status').textContent='녹음 완료 · '+Math.round(recordedBlob.size/1024)+'KB. 전사를 누르면 기기에서 분석합니다.';};
-  recordedBlob=null;el('audio-file').value='';recorder.start();el('mic-record').disabled=true;el('mic-stop').disabled=false;
+  recorder.onstop=()=>{recordedBlob=new Blob(parts,{type:recorder.mimeType||'audio/webm'});showAudioPreview(recordedBlob);micStream?.getTracks().forEach(t=>t.stop());micStream=null;el('asr-status').textContent='녹음 완료 · '+Math.round(recordedBlob.size/1024)+'KB. 전사를 누르면 기기에서 분석합니다.';};
+  recordedBlob=null;showAudioPreview(null);el('audio-file').value='';recorder.start();el('mic-record').disabled=true;el('mic-stop').disabled=false;
   el('asr-status').textContent='녹음 중 · 완료 시 정지를 누르세요.';
  }catch(e){micStream?.getTracks().forEach(t=>t.stop());micStream=null;el('asr-status').textContent='녹음 실패: '+e.message;}
 });
@@ -70,7 +81,7 @@ el('mic-stop').addEventListener('click',()=>{
  if(recorder?.state==='recording')recorder.stop();
  el('mic-record').disabled=false;el('mic-stop').disabled=true;
 });
-el('audio-file').addEventListener('change',()=>{recordedBlob=null;el('asr-status').textContent='파일 선택됨 · 전사 전에 음성이 제3자 서버로 전송되지 않도록 브라우저 내부 추론을 사용합니다.';});
+el('audio-file').addEventListener('change',()=>{recordedBlob=null;showAudioPreview(el('audio-file').files?.[0]||null);el('asr-status').textContent='음성 파일 선택됨. 먼저 재생해 녹음 품질을 확인하세요. 브라우저 안에서 전사됩니다.';});
 async function decodeTo16k(blob) {
  const raw=await blob.arrayBuffer();const audioContext=new (window.AudioContext||window.webkitAudioContext)();
  try{
@@ -91,17 +102,23 @@ el('transcribe').addEventListener('click',async()=>{
  try{
   el('asr-status').textContent='음성 디코딩 중입니다.';
   const samples=await decodeTo16k(blob);
-  el('asr-status').textContent='로컬 Whisper tiny 모델 로딩·한국어 전사 중입니다. 최초 다운로드가 크고 오래 걸릴 수 있습니다.';
+  const selectedModel=el('asr-model').value;
+  el('asr-status').textContent='선택한 '+selectedModel+' 모델을 불러오는 중입니다. 최초 실행 시 수십~수백 MB의 모델 파일을 받을 수 있습니다.';
+  if(pipelineModel!==selectedModel){pipelinePromise=null;pipelineModel=selectedModel;}
   if(!pipelinePromise){
    pipelinePromise=import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm').then(async({pipeline})=>
-    pipeline('automatic-speech-recognition','Xenova/whisper-tiny',{device:'wasm'}));
+    pipeline('automatic-speech-recognition',selectedModel,{device:'wasm',progress_callback:(p)=>{
+     if(p.status==='progress'&&Number.isFinite(p.progress))el('asr-status').textContent=selectedModel+' 다운로드 '+Math.round(p.progress)+'%';
+    }}));
   }
   const asr=await pipelinePromise;
+  el('asr-status').textContent='한국어 음성을 전사하고 있습니다. 전사 내용은 확인·수정이 필요합니다.';
   const result=await asr(samples,{language:'korean',task:'transcribe'});
   const text=String(result?.text||'').trim();
-  lastASR={model:'Xenova/whisper-tiny',language:'ko',text,source:'in_browser_asr',verifiedByHuman:false};
-  el('transcript').value=text;el('asr-status').textContent='전사 완료. 잘못 인식한 글자는 직접 수정해야 합니다. 공식 검사 정답 자동 판정은 하지 않습니다.';
- }catch(e){pipelinePromise=null;el('asr-status').textContent='전사 실패: '+(e?.message||String(e))+' / 다른 브라우저 또는 PC에서 재시도하거나 텍스트를 직접 입력하세요.';}
+  lastASR={model:selectedModel,language:'ko',text,source:'in_browser_asr',verifiedByHuman:false};
+  el('transcript').value=text;
+  el('asr-status').textContent=text?'전사 완료 ('+selectedModel+'). 잘못 인식한 글자는 수정하세요. 검사지 자동 채점은 하지 않습니다.':'모델이 인식한 텍스트가 없습니다. 원본 소리·녹음 환경을 확인하세요.';
+ }catch(e){pipelinePromise=null;pipelineModel=null;el('asr-status').textContent='전사 실패: '+(e?.message||String(e))+' / 다른 브라우저 또는 PC에서 재시도하거나 텍스트를 직접 입력하세요.';}
  finally{btn.disabled=false;}
 });
 el('save-audit').addEventListener('click',()=>{
