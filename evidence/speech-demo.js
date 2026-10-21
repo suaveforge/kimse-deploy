@@ -15,7 +15,8 @@ function updateReportSummary(){
   const tasks=new Set(completedSessions.map(x=>x.task));
   const gap=last.meanGapMs===null?'관찰되지 않음':sec(last.meanGapMs);
   const pitch=last.pitch?.summary;
-  const pitchDesc=pitch?.count?(' · F0 중앙값 '+pitch.medianHz.toFixed(1)+'Hz · 변동폭 '+(pitch.maxHz-pitch.minHz).toFixed(1)+'Hz'):' · F0 추출 불가';
+  const stable=last.pitch?.middleVowel;
+  const pitchDesc=last.task==='vowel'?(stable?.available?' · 중앙 2초 F0 표준편차 '+stable.standardDeviationHz.toFixed(1)+'Hz (진단 아님)':' · 안정발성 중앙구간 자료 부족'):(pitch?.count?(' · F0 중앙값 '+pitch.medianHz.toFixed(1)+'Hz · 변동폭 '+(pitch.maxHz-pitch.minHz).toFixed(1)+'Hz'):' · F0 추출 불가');
   target.textContent='완료 '+completedSessions.length+'회 · 과제 '+tasks.size+'/3종 · 최근 '+last.taskLabel+' · 음성 '+last.segmentCount+'구간 · 쉼 평균 '+gap+pitchDesc+' · 인지저하 판정 모델 미구현';
 }
 
@@ -29,7 +30,9 @@ function update() {
  el('pauses').textContent=r.meanGapMs===null?'기록 없음':sec(r.meanGapMs);
  el('speech-total').textContent=sec(r.detectedDurationMs);
  const f0=r.pitch?.summary;el('f0').textContent=f0?.count?Math.round(f0.medianHz)+' Hz':'검출 없음';
- if(el('f0-range'))el('f0-range').textContent=f0?.count?(f0.maxHz-f0.minHz).toFixed(1)+' Hz':'—';
+ const steady=r.task==='vowel'?r.pitch?.middleVowel:null;
+ if(el('f0-range-label'))el('f0-range-label').textContent=r.task==='vowel'?'중앙 2초 F0 σ':'F0 변동폭';
+ if(el('f0-range'))el('f0-range').textContent=r.task==='vowel'?(steady?.available?steady.standardDeviationHz.toFixed(1)+' Hz':'자료 부족'):(f0?.count?(f0.maxHz-f0.minHz).toFixed(1)+' Hz':'—');
  if(el('pitch-count'))el('pitch-count').textContent=String(f0?.count||0);
  el('timeline').textContent=r.detectedSegments.length?r.detectedSegments.map(s=>(s.startMs/1000).toFixed(1)+'~'+(s.endMs/1000).toFixed(1)+'초').join(' · '):'아직 완료된 발화 구간 없음';
  renderPitch(r.pitch?.points||[]);
