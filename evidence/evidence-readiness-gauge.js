@@ -106,6 +106,11 @@ function render(reg){
   card.setAttribute('aria-label',c.title+', 근거 충족 '+score+'퍼센트, 상세 페이지 열기');
   fillMethod(c,score);scores[c.key]=score;
  }
+ const ipCard=grid.querySelector('[data-readiness-key="patents"]');
+ if(ipCard){
+  ipCard.append(el('strong','현황','readiness-gauge-value'),el('span','기능별 검토·출원 확인 상태','readiness-gauge-count'),el('span','권리화 목록 보기 ↗','readiness-gauge-linkhint'));
+  ipCard.setAttribute('aria-label','특허·지식재산, 기능별 권리화 검토 및 출원·등록 확인 상태');
+ }
  const keys=reg.summary.publicKeys;
  if(!Array.isArray(keys)||keys.length!==6||!keys.every(k=>typeof scores[k]==='number'))throw Error('summary scope');
  const publicScore=Math.round(keys.reduce((sum,k)=>sum+scores[k],0)/keys.length);
