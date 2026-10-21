@@ -220,7 +220,7 @@ main{padding-bottom:70px}.eyebrow{color:var(--teal);letter-spacing:.09em;font-si
 <article class="reg-card" id="ai-speech-demo">
 <header class="kimse-demo-head"><div><small>08 · 사전학습 음성 AI · 직접 측정</small><h3>말하기·언어 음성 특징 측정 체험</h3></div><a class="kimse-demo-action" href="./speech-demo.html" aria-label="음성 측정기를 열어 직접 마이크로 테스트">테스트</a></header>
 <div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-microphone"></i><span>SPEECH<br>LIVE</span></div>
-<div><p class="kimse-vision-desc">자유발화·문장 읽기·모음 발성에서 사전학습 모델로 발화 시작과 종료, 간격, 모음 음높이를 측정합니다. 결과 구간을 직접 확인하고 JSON으로 저장할 수 있습니다.</p></div></div>
+<div><p class="kimse-vision-desc">자유발화·문장 읽기·모음 발성 모두에서 사전학습 모델로 발화 시작·종료와 간격을 측정하고 음높이(F0) 추이를 표시합니다. 음높이 변화는 병적 떨림 판정이 아니며 결과 JSON을 저장할 수 있습니다.</p></div></div>
 <dl><dt>사용 모델</dt><dd>Silero VAD v5(기존 사전학습 음성 검출 모델) 및 Pitchy F0 추정 라이브러리</dd>
 <dt>추출과 판단</dt><dd>1단계 발화 시간·간격·모음 F0 측정 / 2단계 인지저하 판단 모델은 미검증·미구현</dd>
 <dt>개인정보</dt><dd>마이크 입력 기기 내 처리 · 원음 서버 미전송 · JSON 수동 저장</dd>
