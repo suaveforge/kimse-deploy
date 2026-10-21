@@ -53,28 +53,41 @@ input[type=text],input[type=file],textarea{width:100%;padding:9px;border:1px sol
 <textarea id="transcript" placeholder="전사한 텍스트가 표시됩니다. 오류가 있으면 직접 수정하세요." aria-label="한국어 전사 결과"></textarea>
 <p class="meta">전사 결과는 채점 담당자가 확인해야 하며 자동으로 정답·오답을 확정하지 않습니다.</p>
 </section>
+<section class="card wide" aria-labelledby="pronunciation-title" id="pronunciation">
+<h2 id="pronunciation-title">③ 문장 읽기 · 발음 차이 후보 검토</h2>
+<p class="meta">아래 문장을 똑같이 읽어 녹음하고, 위의 <strong>선택된 음성 전사</strong>를 누른 뒤 여기서 비교하세요. 인식 결과에서 어긋난 글자와 위치(문자 순서)를 보여줍니다. 실제 음소 발음 채점이나 의학적 평가는 아닙니다.</p>
+<div class="result" style="background:#f7fbf9;padding:10px 12px">
+<div class="meta">읽기 기준 문장 · 고정 과제</div>
+<strong id="reading-reference" style="font-size:16px">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</strong>
+</div>
+<div class="actions"><button type="button" id="reading-compare" class="primary">전사와 읽기 문장 비교</button><button type="button" id="reading-reset">비교 초기화</button></div>
+<div id="reading-status" role="status" aria-live="polite" class="meta">음성을 먼저 녹음하거나 파일로 불러온 뒤 전사하세요. 직접 수정한 텍스트는 원본 ASR과 구분됩니다.</div>
+<div id="reading-summary" class="result" hidden style="margin-top:8px"></div>
+<div id="reading-differences" class="meta" style="margin-top:8px"></div>
+<p class="meta">문자 차이율은 ASR 모델의 인식 결과를 원문과 비교한 <strong>텍스트 지표</strong>입니다. 발음 정확도 점수가 아니며, 음소별 실제 오류인지 검증하지 않았습니다. 같은 문장의 반복 변화는 동일한 기기·조건과 사람의 확인이 필요합니다.</p>
+</section>
 <section class="card" aria-labelledby="scoring-title">
-<h2 id="scoring-title">③ GPCOG 환자 평가 9개 항목</h2>
+<h2 id="scoring-title">④ GPCOG 환자 평가 9개 항목</h2>
 <p class="meta">정식 검사자가 공식 검사지로 시행한 후 항목별 정오를 입력합니다. 그림·시계 그리기 등은 오디오 전사만으로 채점할 수 없습니다.</p>
 <div id="patient-grid"></div>
 </section>
 <section class="card" aria-labelledby="family-title">
-<h2 id="family-title">④ 보호자 면담 6개 항목</h2>
+<h2 id="family-title">⑤ 보호자 면담 6개 항목</h2>
 <p class="meta">환자 5~8점일 때 필요합니다. 공식 FAQ 기준: '예(변화 발생)'는 0점, '아니요·모름·해당 없음'은 각각 1점. 미입력은 점수가 아닙니다.</p>
 <div id="informant-grid"></div>
 </section>
 <section class="card" aria-labelledby="compare-title">
-<h2 id="compare-title">⑤ 전사와 목표 답변 대조 보조</h2>
+<h2 id="compare-title">⑥ 전사와 목표 답변 대조 보조</h2>
 <p class="meta">검사자가 정식 과제의 목표 답변 요소를 직접 입력하면, 전사 텍스트에 문자 일치가 있는지만 확인합니다. 표현이 달라도 정답일 수 있어 자동 점수로 반영하지 않습니다.</p>
 <div id="target-inputs"></div>
 <button id="compare" type="button" class="rowbtn">전사와 문자 일치 확인</button>
 <div id="match-result" class="meta">아직 비교하지 않았습니다.</div>
 </section>
 <section class="card" aria-labelledby="result-title">
-<h2 id="result-title">⑥ 채점 결과와 근거</h2>
+<h2 id="result-title">⑦ 채점 결과와 근거</h2>
 <div id="score-result" class="result" role="status" aria-live="polite">환자 9개 항목의 채점이 완료되면 공식 점수 규칙을 계산합니다.</div>
 <div class="actions"><button id="calculate" type="button" class="primary">채점 계산</button><button id="save-audit" type="button">근거 JSON 저장</button></div>
 <div class="warning"><strong>정확성·사용권한 안내</strong><p>공개된 GPCOG 채점 규칙을 확인하는 시뮬레이터입니다. 공식 검사 문항, 시행 절차, 해석 역량을 제공하지 않습니다. GPCOG 웹사이트는 개인 비상업적 이용조건을 명시합니다. 상용 서비스에 정식 검사로 도입하려면 도구 소유자의 허락과 전문 검증이 필요합니다.</p></div>
 <p class="meta"><a href="https://gpcog.com.au/index/frequently-asked-questions" target="_blank" rel="noopener noreferrer">GPCOG 공식 채점 FAQ</a> · <a href="https://gpcog.com.au/index/downloads" target="_blank" rel="noopener noreferrer">공식 한국어 검사지 다운로드</a> · <a href="https://huggingface.co/Xenova/whisper-tiny" target="_blank" rel="noopener noreferrer">Whisper 모델 정보</a></p>
 </section>
-</div></main><script type="module" src="./cognitive-scoring-demo.js?v=20261022-3"></script></body></html>
+</div></main><script type="module" src="./cognitive-scoring-demo.js?v=20261022-4"></script></body></html>
