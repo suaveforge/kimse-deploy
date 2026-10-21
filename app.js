@@ -2376,6 +2376,7 @@ page.home=()=>{if(!demo())return accountRequired();
       '<div class="kh2-actions">'+entries.map(x=>
         '<a class="action-card kh2-action '+x[3]+'" href="#/'+x[2]+'"><span class="icon" aria-hidden="true">'+x[0]+'</span><strong>'+x[1]+'</strong></a>'
       ).join('')+'</div></section>'+
+    '<a class="kh2-family" href="/retell-collect.html">'+I('microphone')+'<span>AI 대화로 음성 기록</span>'+I('chevron-right')+'</a>'+
     '<a class="kh2-family" href="#/family">'+I('users')+'<span>가족·보호자</span>'+I('chevron-right')+'</a>',
     {back:false,bottom:true,active:'home'});
 };
