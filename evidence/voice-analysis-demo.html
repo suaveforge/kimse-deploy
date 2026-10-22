@@ -62,6 +62,60 @@ input[type=file]{max-width:100%;font-size:15px;margin-top:12px}
 @media(max-width:620px){body{padding:0 14px 25px}header{min-height:64px}.panel{border-radius:20px}.method-grid{grid-template-columns:1fr;gap:12px}.method{min-height:125px;flex-direction:row;align-items:center;flex-wrap:wrap;gap:12px;padding:21px}.method svg{width:40px;height:40px}.method strong{font-size:21px}.method span{flex-basis:100%}#self-panel{min-height:0}.actions{gap:9px}.actions button{font-size:16px}.results{gap:10px}}
 @media(prefers-reduced-motion:reduce){.dot{animation:none!important}*{scroll-behavior:auto!important;transition:none!important}}
 #question-guide{margin:4px 0 18px}.question-play{width:100%;min-height:74px;font-size:clamp(19px,3vw,25px)}#question-guide button:focus-visible{outline-offset:4px}#question-hint{line-height:1.5}
+
+/* Mobile-first measured-data report: no horizontal scrolling, no dummy curves. */
+#result-view{max-width:780px;margin:0 auto}
+.report-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:8px 2px 0}
+.report-heading h1{margin:5px 0 6px;font-size:clamp(27px,5.3vw,34px)}
+.eyebrow{font-size:11px;font-weight:820;letter-spacing:1.8px;color:#168779}
+.report-subtag{font-size:12px;font-weight:700;color:#306f65;background:#e6f4ee;padding:8px 12px;border-radius:20px;white-space:nowrap}
+.report-intro{font-size:15px;margin:0 2px 18px}
+.results{gap:14px;margin:12px 0 19px;display:grid;grid-template-columns:1fr}
+.result{padding:22px clamp(18px,4vw,29px);border-radius:22px;overflow:hidden}
+.result-head{display:flex;align-items:center;gap:12px;min-width:0}
+.result-icon{flex:none;width:47px;height:47px;background:#e8f6f0;color:#116f60;border-radius:15px;display:flex;justify-content:center;align-items:center;font-size:23px;font-weight:820}
+.result-name{flex:1;min-width:0}
+.result-name h2{font-size:19px;margin:0 0 2px;letter-spacing:-.6px}
+.result-name span{font-size:12px;color:#71817b}
+.result-head .value{font-variant-numeric:tabular-nums;font-size:clamp(21px,4.3vw,31px);margin:0;text-align:right;white-space:nowrap;max-width:44%;letter-spacing:-.7px}
+.viz-description{font-size:14px;color:#59766d;font-weight:650;margin:22px 0 9px}
+.timeline-viz{border:1px solid #e6eee9;background:#f8fbfa;border-radius:15px;padding:16px 12px 14px;overflow:hidden;min-height:104px}
+.viz-empty{min-height:70px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;color:#72867f;line-height:1.55}
+.time-track{height:42px;position:relative;border-radius:11px;background:#edf2ef;overflow:hidden}
+.time-track .segment{position:absolute;top:4px;height:34px;border-radius:7px;border:1px solid rgba(255,255,255,.6)}
+.time-track .segment.speech{background:#119789}
+.time-track .segment.pause{background:#f0b053}
+.time-track .segment.word{background:#0e977f;opacity:.85}
+.time-track .segment.word.lower{background:#f4b05a;opacity:1}
+.time-track .segment.initial{background:#f6e6cd;top:0;height:42px;border:0}
+.time-track .segment:focus-visible{outline:3px solid #1b5b50;outline-offset:-3px}
+.time-axis{display:flex;justify-content:space-between;margin:10px 0 0;font-size:12px;color:#6b8178;font-variant-numeric:tabular-nums;gap:8px}
+.time-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:12px;color:#557368}
+.time-legend span{display:flex;align-items:center;gap:6px}
+.time-dot{display:inline-block;width:11px;height:11px;border-radius:4px;background:#169987}
+.time-dot.pause{background:#f0b053}.time-dot.initial{background:#f6e6cd;border:1px solid #d7b984}
+.viz-insight{margin-top:11px;font-size:14px;line-height:1.55;color:#264e46;background:#e9f6f1;border-radius:11px;padding:10px 12px}
+.word-list{display:flex;flex-wrap:wrap;gap:6px 7px;margin-top:14px}
+.word-pill{border:1px solid #d6e5de;border-radius:10px;background:white;color:#31594d;padding:7px 9px;font-weight:650;font-size:13px;min-height:36px;font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}
+.word-pill.lower{border-color:#f4d9b2;background:#fff4e5;color:#8b5b21}
+.viz-svg{display:block;width:100%;height:auto;min-height:100px}
+.viz-svg .gridline{stroke:#dbe7e2;stroke-width:1}
+.viz-svg .f0-line{fill:none;stroke:#0f9b8b;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.viz-svg .midline{stroke:#8aaea3;stroke-width:1;stroke-dasharray:3 4}
+.viz-notice{font-size:12px;color:#71817a;margin-top:10px}
+.result .note{font-size:14px;line-height:1.55;margin-top:13px}
+@media(max-width:480px){
+ body{padding-left:12px;padding-right:12px}
+ .report-subtag{display:none}
+ .result{padding:18px 16px}
+ .result-icon{width:42px;height:42px;border-radius:13px}
+ .result-name h2{font-size:18px}
+ .result-head .value{font-size:clamp(18px,5.4vw,24px)}
+ .timeline-viz{padding:12px 10px}
+ .word-pill{font-size:12px}
+ .footer-actions{position:relative;flex-wrap:wrap;gap:8px}
+ .footer-actions>button{flex:1 1 100%}
+}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석</span></div><a class="back" href="./collection.html?view=ai">← 돌아가기</a></header>
 <section id="method-picker" class="panel">
@@ -94,11 +148,29 @@ input[type=file]{max-width:100%;font-size:15px;margin-top:12px}
 <button id="new-session" type="button" class="secondary" style="margin-top:24px;width:100%">처음부터 다시</button>
 </section>
 <section id="retell-panel" class="panel" hidden><h1>AI 통화로 검사</h1><p>AI와 대화하며 음성을 분석합니다.</p><div style="margin-top:24px"><a class="primary" href="./retell-lab.html">📞 통화 시작하기</a></div><p class="retell-note">통화 검증실에서 진행합니다. 접근 코드가 필요합니다.</p><button id="back-method" type="button" class="secondary" style="margin-top:26px;width:100%">다른 방법 선택</button></section>
-<section id="result-view" hidden><h1>분석 결과</h1><div class="results" id="results" aria-label="음성 분석 결과">
-<article class="result"><strong>발음 정확도</strong><div class="value" id="out-pron">미측정</div><div class="note" id="why-pron"></div></article>
-<article class="result"><strong>응답 지연</strong><div class="value" id="out-delay">미측정</div><div class="note" id="why-delay"></div></article>
-<article class="result"><strong>목소리 떨림</strong><div class="value" id="out-tremor">미측정</div><div class="note" id="why-tremor"></div></article></div>
+<section id="result-view" hidden>
+<div class="report-heading"><div><span class="eyebrow">KIMSE · EVIDENCE</span><h1>음성 분석 결과</h1></div><span class="report-subtag">3가지 측정</span></div>
+<p class="report-intro">측정 결과를 시간 순서대로 확인해 보세요.</p>
+<div class="results" id="results" aria-label="음성 분석 결과">
+<article class="result" aria-labelledby="pron-head">
+<div class="result-head"><span class="result-icon" aria-hidden="true">Aa</span><div class="result-name"><h2 id="pron-head">발음 정확도</h2><span>01 · 문장 읽기</span></div><div class="value" id="out-pron">미측정</div></div>
+<div class="viz-description" id="pron-caption">단어별 측정 위치</div>
+<div class="timeline-viz" id="viz-pron" aria-label="실제 발음 단어별 측정 시간축"></div>
+<div class="note" id="why-pron"></div>
+</article>
+<article class="result" aria-labelledby="delay-head">
+<div class="result-head"><span class="result-icon" aria-hidden="true">◷</span><div class="result-name"><h2 id="delay-head">응답 지연</h2><span>02 · 질문에 답하기</span></div><div class="value" id="out-delay">미측정</div></div>
+<div class="viz-description" id="delay-caption">질문 후 답변의 발화 및 침묵 구간</div>
+<div class="timeline-viz" id="viz-delay" aria-label="실제 답변 발화와 무음 구간"></div>
+<div class="note" id="why-delay"></div>
+</article>
+<article class="result" aria-labelledby="tremor-head">
+<div class="result-head"><span class="result-icon" aria-hidden="true">∿</span><div class="result-name"><h2 id="tremor-head">목소리 주기적 변조</h2><span>03 · 아— 발성</span></div><div class="value" id="out-tremor">미측정</div></div>
+<div class="viz-description" id="tremor-caption">기본주파수(F0)의 시간에 따른 변화</div>
+<div class="timeline-viz" id="viz-tremor" aria-label="실제 모음 발성의 주파수 추적"></div>
+<div class="note" id="why-tremor"></div>
+</article></div>
 <div class="footer-actions"><button id="restart-from-result" class="primary" type="button">다시 검사하기</button><button id="download" type="button" class="secondary" disabled>결과 저장</button></div>
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></section>
-</main><script type="module" src="./voice-analysis-demo.js?v=20261022j"></script></body></html>
+</main><script type="module" src="./voice-analysis-demo.js?v=20261022k"></script></body></html>
