@@ -26,7 +26,7 @@ a{color:#165d66}footer{font-size:.85rem;padding-top:10px}
 <p id="status" role="status" aria-live="polite">계정을 확인하고 있습니다.</p>
 <div id="after" hidden>
 <h2>수집 결과</h2><div id="call-data">결과 확인 중입니다.</div>
-<div class="controls"><button class="secondary" id="sync">결과 다시 확인</button><button class="danger" id="erase">낌새 저장 자료 삭제</button></div>
+<div class="controls"><button class="secondary" id="sync">결과 다시 확인</button><a id="analyze-call" href="/evidence/voice-analysis-demo.html" hidden style="align-self:center;font-weight:750">발음·응답 지연·떨림 통합 결과 보기 ↗</a><button class="danger" id="erase">낌새 저장 자료 삭제</button></div>
 <p>삭제는 낌새 서버의 사본에 적용됩니다. Retell 측 기록 삭제는 Retell 보관 정책과 별도 절차에 따릅니다.</p>
 </div>
 <footer><a href="/">낌새 홈</a> · <a href="/retell-test.html">연결 기능만 테스트</a></footer>
@@ -99,6 +99,8 @@ async function refreshResult(){
      "의학적 진단: 제공하지 않음"
    ];
    el("call-data").textContent=parts.join("\n");
+   el("analyze-call").href="/evidence/voice-analysis-demo.html?call_id="+encodeURIComponent(callId);
+   el("analyze-call").hidden=false;
  }catch(e){el("call-data").textContent=String(e.message||e);}
 }
 el("sync").addEventListener("click",async()=>{
@@ -119,7 +121,7 @@ el("erase").addEventListener("click",async()=>{
    const u=API+"/api/v1/retell/collection/calls/"+encodeURIComponent(callId)+"?account_id="+encodeURIComponent(self.account_id);
    const r=await fetch(u,{method:"DELETE",headers:headers()});
    if(!r.ok)throw Error("삭제 실패 "+r.status);
-   erased=true;el("call-data").textContent="낌새 서버의 수집 자료를 삭제했습니다.";el("erase").disabled=true;el("sync").disabled=true;
+   erased=true;el("call-data").textContent="낌새 서버의 수집 자료를 삭제했습니다.";el("analyze-call").hidden=true;el("erase").disabled=true;el("sync").disabled=true;
    status("낌새 측 저장 데이터 삭제 완료. Retell 원본 기록은 별도입니다.");
  }catch(e){status(String(e.message||e))}
 });
