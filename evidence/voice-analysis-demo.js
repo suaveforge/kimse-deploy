@@ -1,4 +1,4 @@
-// KIMSE: common output from authenticated quick-test WAV or consent-bound Retell metadata.
+// KIMSE Evidence: consented account-free quick test; private Retell calls remain account-bound.
 const el = id => document.getElementById(id);
 const API = 'https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis';
 const prompts = {
@@ -116,8 +116,7 @@ async function apiCall(url,options){
   return body;
 }
 el('quick-analyze').addEventListener('click',async()=>{
-  const status=el('quick-status'),person=identity(),button=el('quick-analyze');
-  if(!person){status.textContent='낌새 앱에서 로그인해야 원음 분석 API를 사용할 수 있습니다.';return;}
+  const status=el('quick-status'),button=el('quick-analyze');
   if(!sound){status.textContent='먼저 음성 파일을 선택하거나 녹음하세요.';return;}
   if(!el('server-consent').checked){status.textContent='낌새 서버 분석 동의가 필요합니다.';return;}
   if(el('task').value==='read'&&!el('azure-consent').checked){
@@ -128,9 +127,9 @@ el('quick-analyze').addEventListener('click',async()=>{
     status.textContent='녹음 디코딩 및 WAV 변환 중…';
     const pcm=await to16k(sound);
     status.textContent='공통 분석 엔진 계산 중…';
-    const result=await apiCall(API+'/quick',{method:'POST',headers:{'Content-Type':'application/json','X-KIMSE-ACCOUNT-TOKEN':person.token},
+    const result=await apiCall(API+'/guest',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        account_id:person.accountId,task:el('task').value,audio_base64:wav16kBase64(pcm),
+        task:el('task').value,audio_base64:wav16kBase64(pcm),
         consent_server_audio_processing:true,
         consent_azure_transfer:el('task').value==='read'&&el('azure-consent').checked
       })});
@@ -140,7 +139,7 @@ el('quick-analyze').addEventListener('click',async()=>{
 });
 el('retell-analyze').addEventListener('click',async()=>{
   const person=identity(),callId=el('call-id').value.trim(),status=el('retell-status'),button=el('retell-analyze');
-  if(!person){status.textContent='낌새 앱 로그인 후 진행하세요.';return;}
+  if(!person){status.textContent='개인 Retell 통화 기록은 소유자 인증이 필요합니다. 로그인 없는 에비던스는 왼쪽 빠른 음성 테스트를 사용하세요.';return;}
   if(!/^[A-Za-z0-9_-]{4,128}$/.test(callId)){status.textContent='정상적인 낌새 Retell 통화 ID를 입력하세요.';return;}
   button.disabled=true;
   try{
@@ -164,11 +163,11 @@ async function checkUnifiedEngine(){
   const r=await fetch(API+'/status',{cache:'no-store'});
   if(!r.ok)throw Error('HTTP '+r.status);
   const data=await r.json();
-  if(!data.ready||!Array.isArray(data.resultCategories)||data.resultCategories.length!==3)
+  if(!data.ready||!data.evidenceGuestQuickEnabled||!Array.isArray(data.resultCategories)||data.resultCategories.length!==3)
     throw Error('분석 서버 응답 형식 오류');
   quick.disabled=false;retell.disabled=false;
-  el('quick-status').textContent='분석 서버 연결됨 · 과제 음성을 녹음하거나 파일을 선택하세요.';
-  el('retell-status').textContent='분석 서버 연결됨 · 동의된 Retell 통화 종료 후 기록을 조회할 수 있습니다.';
+  el('quick-status').textContent='에비던스 비로그인 체험 · 녹음 또는 파일 선택 후 동의하고 바로 분석하세요. (공용 사용량 제한 적용)';
+  el('retell-status').textContent='Retell 통화 기록은 개인정보 보호를 위해 통화 소유자 인증이 필요합니다. 왼쪽 빠른 음성 테스트는 로그인 없이 가능합니다.';
  }catch(e){
   el('quick-status').textContent='공통 분석 서버가 아직 준비되지 않았습니다: '+(e?.message||String(e));
   el('retell-status').textContent='공통 분석 서버 대기 중 · 서버 배포를 확인하세요.';
