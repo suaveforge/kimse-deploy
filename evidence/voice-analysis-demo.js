@@ -623,6 +623,7 @@ async function analyze(){
       el('error-copy').hidden=false;
       setStatus('음성 구간을 충분히 추출하지 못했습니다. 재분석하거나 다시 녹음해주세요.','error');
       el('after-actions').hidden=false;
+      if(task==='response'){el('manual-response').hidden=false;el('manual-response').disabled=false;}
       return;
     }
     mergeResult(task,data,Math.round(pcm.length/16));
@@ -638,6 +639,7 @@ async function analyze(){
     const code=e?.httpStatus?'HTTP '+e.httpStatus:phase==='decode'?'녹음 변환':'요청 오류';
     setStatus('분석 실패 ('+code+'): '+friendlyError(e)+' 녹음 파일은 유지됩니다.','error');
     el('after-actions').hidden=false;
+    if(task==='response'){el('manual-response').hidden=false;el('manual-response').disabled=false;}
   }finally{
     busy=false;el('quick-analyze').disabled=false;
     if(el('self-panel').hidden===false)el('record').disabled=!serviceReady;
