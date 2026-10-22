@@ -157,6 +157,24 @@ el('download').addEventListener('click',()=>{
   const a=document.createElement('a');a.href=url;a.download='kimse-three-voice-results.json';a.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
+async function checkUnifiedEngine(){
+ const quick=el('quick-analyze'),retell=el('retell-analyze');
+ quick.disabled=true;retell.disabled=true;
+ try{
+  const r=await fetch(API+'/status',{cache:'no-store'});
+  if(!r.ok)throw Error('HTTP '+r.status);
+  const data=await r.json();
+  if(!data.ready||!Array.isArray(data.resultCategories)||data.resultCategories.length!==3)
+    throw Error('분석 서버 응답 형식 오류');
+  quick.disabled=false;retell.disabled=false;
+  el('quick-status').textContent='분석 서버 연결됨 · 과제 음성을 녹음하거나 파일을 선택하세요.';
+  el('retell-status').textContent='분석 서버 연결됨 · 동의된 Retell 통화 종료 후 기록을 조회할 수 있습니다.';
+ }catch(e){
+  el('quick-status').textContent='공통 분석 서버가 아직 준비되지 않았습니다: '+(e?.message||String(e));
+  el('retell-status').textContent='공통 분석 서버 대기 중 · 서버 배포를 확인하세요.';
+ }
+}
+checkUnifiedEngine();
 window.addEventListener('pagehide',()=>{cleanupPreview();stream?.getTracks().forEach(t=>t.stop());});
 const callId=new URLSearchParams(location.search).get('call_id');
 if(callId&&/^[A-Za-z0-9_-]{4,128}$/.test(callId)){
