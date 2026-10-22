@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f9f8">
+<title>AI 통화 체험 | 낌새 Evidence</title>
+<meta name="description" content="운영자 접근코드 없이 동의 후 Retell AI 통화를 시험하고 응답 지연 측정값을 확인합니다.">
+<style>
+:root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#163c43;background:#f5f9f8}
+*{box-sizing:border-box}body{margin:0;line-height:1.5}main{max-width:600px;margin:auto;padding:18px 14px 60px}
+a{color:#087669;text-decoration:none;font-weight:700}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #55c0a8;outline-offset:3px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.83rem;color:#4f6d72;margin-bottom:25px}
+h1{font-size:clamp(1.55rem,6vw,2rem);letter-spacing:-.045em;line-height:1.2;margin:0 0 12px}
+.lead{font-size:.93rem;color:#45696e;margin:0 0 16px}
+.card{background:white;border:1px solid #d5e7df;border-radius:17px;padding:18px;margin-top:13px}
+h2{font-size:1.04rem;letter-spacing:-.015em;margin:0 0 8px}
+.notice{padding:12px 13px;border:1px solid #dbe5de;background:#f6faf7;border-radius:10px;font-size:.81rem;line-height:1.5;color:#47686a}
+.check{display:flex;align-items:start;gap:10px;font-weight:650;font-size:.85rem;margin:15px 0 16px}
+.check input{flex:none;width:21px;height:21px;accent-color:#087669;margin-top:2px}
+.buttons{display:flex;gap:9px;flex-wrap:wrap}
+button{border:1px solid #bbd5ca;background:#fff;color:#13685f;padding:12px 15px;border-radius:10px;min-height:48px;font:750 .93rem system-ui;cursor:pointer}
+button.primary{flex:1 1 145px;background:#087669;color:white;border-color:#087669}
+button.danger{color:#9d4746;border-color:#e7c5c4}button:disabled{opacity:.47;cursor:default}
+#status{border-radius:10px;background:#eaf7f1;color:#225a51;padding:12px;font-size:.87rem;font-weight:700;margin-top:13px}
+#status[data-error="true"]{background:#fff0e9;color:#a0442b}
+.metric{background:#eaf5f1;border-radius:12px;padding:16px;margin:10px 0}
+.metric strong{display:block;color:#0b7568;font-size:clamp(1.5rem,6vw,2rem);margin:5px 0}
+.metric span{color:#52716d;font-size:.79rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{border:1px solid #d9e8e3;border-radius:11px;padding:12px}
+.box strong{font-size:.9rem}.box p{color:#607676;font-size:.8rem;margin:5px 0 0}
+.hint{font-size:.78rem;color:#5c767a;line-height:1.5;margin:10px 0 0}
+footer{font-size:.76rem;color:#698086;line-height:1.6;margin-top:16px}
+[hidden]{display:none!important}
+@media(max-width:390px){.grid{grid-template-columns:1fr}.card{padding:15px}}
+</style></head><body><main>
+<div class="top"><a href="./voice-analysis-demo.html">← 음성 분석으로 돌아가기</a><span>낌새 Evidence</span></div>
+<h1>AI와 직접 통화하기</h1>
+<p class="lead">운영자 코드나 회원가입 없이 동의 후 바로 대화해 볼 수 있습니다. 통화 후 질문에서 답변까지 걸린 시간을 확인합니다.</p>
+<section class="card">
+<h2>통화 시작</h2>
+<div class="notice">본인 목소리로만 테스트해 주세요. 통화 음성·대화 내용은 Retell과 낌새 서버에서 처리됩니다. 낌새의 시험용 수집 자료는 최대 48시간 보관되며, Retell의 보관 정책은 별도입니다. 실제 환자 정보나 민감한 내용은 말하지 마세요. 시험 통화는 비용과 남용 방지를 위해 이용 횟수가 제한됩니다.</div>
+<label class="check"><input type="checkbox" id="consent"><span>통화 음성·대화 내용·발화 시간을 처리 및 임시 저장하는 데 동의합니다.</span></label>
+<div class="buttons"><button class="primary" id="start" type="button">AI 통화 시작</button><button id="end" class="danger" disabled type="button">통화 종료</button></div>
+<div id="status" role="status" aria-live="polite">동의 체크 후 통화를 시작하세요.</div>
+</section>
+<section class="card" id="results" hidden>
+<h2>통화 결과</h2>
+<div class="metric"><span>AI 질문이 끝난 뒤 답변을 시작하기까지</span><strong id="delay">분석 대기</strong><span id="delay-detail">통화 종료 후 분석 데이터가 도착하면 표시합니다.</span></div>
+<div class="grid">
+<div class="box"><strong>발음 정확도</strong><p id="pronunciation">기준 문장 읽기 자료가 없어 미측정</p></div>
+<div class="box"><strong>음성 떨림</strong><p id="tremor">별도 모음 발성 자료가 없어 미측정</p></div>
+</div>
+<p class="hint" id="events">통화 데이터를 확인하는 중입니다.</p>
+<div class="buttons" style="margin-top:13px"><button id="refresh" type="button">결과 다시 확인</button><button id="delete" class="danger" type="button">시험 데이터 삭제</button></div>
+<p class="hint">발음·음성 떨림은 <a href="./voice-analysis-demo.html">3단계 셀프 테스트</a>에서 따로 측정할 수 있습니다. 통화 하나만으로 추정치를 만들지 않습니다.</p>
+</section>
+<footer>이 체험은 음성 데이터 수집·시간 측정 기능 확인용입니다. 의학적 진단이나 인지저하 판정이 아닙니다. 마이크 권한과 HTTPS가 필요합니다.</footer>
+<script type="module">
+const API='https://api-kimse.suaveforge.com/api/v1/evidence/retell/guest/calls';
+const el=id=>document.getElementById(id);
+let client=null,live=false,creating=false,callId='',sessionToken='',deleted=false,refreshTimer=null,requestEpoch=0;
+const storeKey='kimse_retell_evidence_guest';
+function show(message,error=false){el('status').textContent=message;el('status').dataset.error=String(error);}
+function clientMarker(){
+  const key='kimse_retell_guest_client';
+  try{
+    let marker=sessionStorage.getItem(key);
+    if(!marker){marker=(crypto.randomUUID?.()||'guest'+Math.random().toString(36).slice(2).repeat(5)).replace(/-/g,'');sessionStorage.setItem(key,marker);}
+    return marker;
+  }catch(error){return 'guest'+Math.random().toString(36).slice(2).repeat(5);}
+}
+function sessionHeaders(){return {'X-KIMSE-EVIDENCE-SESSION':sessionToken};}
+async function message(response){
+  const payload=await response.json().catch(()=>({}));
+  const reason=typeof payload.detail==='string'?payload.detail:'HTTP '+response.status;
+  const map={
+    EVIDENCE_GUEST_CALL_LIMIT_REACHED:'오늘의 체험 통화 이용 횟수를 초과했습니다.',
+    EVIDENCE_GUEST_QUOTA_UNAVAILABLE:'현재 시험 통화 발급이 불가능합니다.',
+    RETELL_API_KEY_NOT_CONFIGURED:'AI 통화 서버 설정이 완료되지 않았습니다.',
+    RETELL_GUEST_CALL_CREATION_FAILED:'AI 통화 연결 준비에 실패했습니다.',
+    EVIDENCE_SESSION_EXPIRED:'시험 기록의 보관 기간이 끝났습니다.',
+    EVIDENCE_SESSION_NOT_FOUND:'조회 권한이 만료되었습니다.',
+    EVIDENCE_ORIGIN_NOT_ALLOWED:'공식 낌새 사이트에서 접속해주세요.'
+  };
+  return map[reason]||('통화 서버 오류 ('+response.status+').');
+}
+function showResult(data){
+  el('results').hidden=false;
+  const value=data.responseDelay||{};
+  if(value.status==='measured'&&Number.isFinite(value.medianLatencyMs)){
+    el('delay').textContent=(value.medianLatencyMs/1000).toFixed(2)+'초';
+    el('delay-detail').textContent='측정 가능한 문답 '+(value.observedCount||0)+'건의 중앙값 · 단어별 시각을 이용한 근사치';
+  }else{
+    el('delay').textContent='미측정';
+    el('delay-detail').textContent=value.reason||'답변 시작 시간을 확인할 수 있는 자료가 아직 없습니다.';
+  }
+  el('pronunciation').textContent=data.pronunciation?.reason||'별도 문장 읽기 과제 필요';
+  el('tremor').textContent=data.vocalTremor?.reason||'별도 모음 발성 과제 필요';
+  const bits=Number(data.event_mask||0);
+  el('events').textContent='수신 상태: '+[(bits&1)?'통화 시작 ✓':'통화 시작 대기',(bits&2)?'종료 ✓':'종료 대기',(bits&4)?'분석 ✓':'분석 대기'].join(' · ');
+}
+async function refresh(){
+  if(!callId||!sessionToken||deleted)return;
+  const current=++requestEpoch;
+  try{
+    const response=await fetch(API+'/'+encodeURIComponent(callId),{headers:sessionHeaders(),cache:'no-store'});
+    if(!response.ok)throw Error(await message(response));
+    const data=await response.json();
+    if(current!==requestEpoch||deleted)return;
+    showResult(data);
+    if(data.event_mask&4)show('통화 분석 데이터가 도착했습니다.');
+    else if(!live)show('통화는 종료됐습니다. 분석 결과 수신을 확인하세요.');
+  }catch(error){
+    if(current!==requestEpoch)return;
+    show('결과 확인 실패: '+error.message,true);
+  }
+}
+function autoRefresh(){
+  for(const seconds of [2,5,9,15,25]){
+    setTimeout(()=>{if(!deleted&&!live)refresh();},seconds*1000);
+  }
+}
+async function finish(){
+  if(!client||!live)return;
+  el('end').disabled=true;
+  try{await client.stopCall();}catch(error){show('통화 종료 요청에 실패했습니다.',true);}
+  live=false;el('start').disabled=true;el('results').hidden=false;show('통화를 마쳤습니다. 분석 결과를 확인합니다.');
+  autoRefresh();
+}
+el('start').addEventListener('click',async()=>{
+  if(creating||live||callId)return;
+  if(!el('consent').checked){show('통화 데이터 처리 동의가 필요합니다.',true);return;}
+  if(!window.isSecureContext){show('HTTPS 환경에서만 통화할 수 있습니다.',true);return;}
+  creating=true;el('start').disabled=true;show('AI 통화를 준비하고 있습니다.');
+  try{
+    const response=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':clientMarker()},body:JSON.stringify({consent:true}),cache:'no-store'});
+    if(!response.ok)throw Error(await message(response));
+    const data=await response.json();
+    if(!data.call_id||!data.access_token||!data.session_token)throw Error('통화 정보를 받지 못했습니다.');
+    callId=data.call_id;sessionToken=data.session_token;deleted=false;
+    try{sessionStorage.setItem(storeKey,JSON.stringify({callId,sessionToken}));}catch(error){}
+    el('results').hidden=false;show('마이크 연결 중입니다. 권한 요청을 허용해주세요.');
+    const sdk=await import('https://esm.sh/retell-client-js-sdk@2.0.8');
+    client=new sdk.RetellWebClient();
+    client.on('call_started',()=>{live=true;el('end').disabled=false;show('AI와 통화 중입니다. 대화를 마치면 종료를 누르세요.');});
+    client.on('call_ended',()=>{live=false;el('end').disabled=true;show('통화 종료. 분석 결과를 확인하고 있습니다.');autoRefresh();});
+    client.on('error',error=>{live=false;el('end').disabled=true;show('통화 연결 오류: '+String(error?.message||'마이크 권한을 확인하세요.'),true);});
+    await client.startCall({accessToken:data.access_token});
+    live=true;el('end').disabled=false;show('통화 중입니다.');
+  }catch(error){
+    show(error.message||'통화를 시작하지 못했습니다.',true);
+    el('start').disabled=!!callId;
+    if(callId)autoRefresh();
+  }finally{creating=false;}
+});
+el('end').addEventListener('click',finish);
+el('refresh').addEventListener('click',refresh);
+el('delete').addEventListener('click',async()=>{
+  if(!callId||!sessionToken||deleted||!confirm('낌새 서버의 시험 통화 자료를 삭제할까요? Retell 측 저장분은 별도입니다.'))return;
+  try{
+    const response=await fetch(API+'/'+encodeURIComponent(callId),{method:'DELETE',headers:sessionHeaders()});
+    if(!response.ok)throw Error(await message(response));
+    deleted=true;callId='';sessionToken='';++requestEpoch;
+    try{sessionStorage.removeItem(storeKey);}catch(error){}
+    el('results').hidden=true;el('consent').checked=false;el('start').disabled=false;el('end').disabled=true;
+    show('낌새 서버에 저장된 시험 자료를 삭제했습니다. Retell 측 기록은 별도입니다.');
+  }catch(error){show('삭제 실패: '+error.message,true);}
+});
+try{
+  const prev=JSON.parse(sessionStorage.getItem(storeKey)||'null');
+  if(prev?.callId&&prev?.sessionToken){
+    callId=String(prev.callId);sessionToken=String(prev.sessionToken);
+    el('start').disabled=true;el('results').hidden=false;
+    show('이 브라우저에서 진행했던 통화 결과를 확인할 수 있습니다.');
+    refresh();
+  }
+}catch(error){}
+</script></main></body></html>
