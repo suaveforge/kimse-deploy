@@ -12,6 +12,18 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let busy=false,recordingSession=0,serviceReady=false;
+// Anonymous per-browser quota scope, not an identity or a login token.
+const anonymousClientId=(()=>{
+  const fresh=()=>window.crypto?.randomUUID?.().replace(/-/g,'')||
+    (Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
+  try{
+    const previous=window.sessionStorage?.getItem('kimse.voice.evidence.client')||'';
+    if(/^[A-Za-z0-9_-]{16,100}$/.test(previous))return previous;
+    const id=fresh();
+    window.sessionStorage?.setItem('kimse.voice.evidence.client',id);
+    return id;
+  }catch{return fresh();}
+})();
 const number=n=>typeof n==='number'&&Number.isFinite(n);
 const currentTask=()=>tasks[index];
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -265,7 +277,7 @@ async function analyze(){
     // Keep the server's documented 1-30 second PCM16 limit.
     const audio=wav16kBase64(pcm);
     const response=await fetch(API+'/guest',{
-      method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},
+      method:'POST',cache:'no-store',headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
       body:JSON.stringify({
         task,audio_base64:audio,consent_server_audio_processing:true,
         consent_azure_transfer:task==='read'&&el('azure-consent').checked,
