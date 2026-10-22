@@ -287,11 +287,160 @@ function newAssessment(){
   showStage(0);
   return checkService();
 }
-function mergeResult(task,data){
+function mergeResult(task,data,audioDurationMs=null){
   if(task==='read')completed.pronunciation=data.pronunciation;
   if(task==='response')completed.responseDelay=data.responseDelay;
   if(task==='vowel')completed.vocalTremor=data.vocalTremor;
+  if(number(audioDurationMs)&&audioDurationMs>0)completed[task+'AudioDurationMs']=audioDurationMs;
   completed[task+'Quality']={serverStatus:data?.status||'ok',at:new Date().toISOString()};
+}
+function escapeText(value){
+  return String(value??'').replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
+}
+function fmtSeconds(ms){
+  return (ms/1000).toFixed(1)+'초';
+}
+function pct(n,total){
+  if(!number(n)||!number(total)||total<=0)return 0;
+  return Math.max(0,Math.min(100,n/total*100));
+}
+function axis(totalMs,description){
+  return '<div class="time-axis" aria-label="'+escapeText(description)+'">'+
+    '<span>0%</span><span>50%</span><span>100% · '+fmtSeconds(totalMs)+'</span></div>';
+}
+function noChart(id,reason){
+  el(id).innerHTML='<div class="viz-empty">'+escapeText(reason)+'</div>';
+}
+function renderPronunciation(p){
+  const words=(Array.isArray(p.words)?p.words:[]).slice(0,80)
+    .map(x=>({
+      word:String(x?.word||'').slice(0,32),start:Number(x?.startMs),
+      duration:Number(x?.durationMs),accuracy:x?.accuracy
+    }))
+    .filter(x=>x.word&&number(x.start)&&x.start>=0&&number(x.duration)&&x.duration>0);
+  if(p.status!=='assessed'||!words.length){
+    noChart('viz-pron','단어별 위치 데이터가 없어 시간축을 표시하지 않습니다.');
+    return;
+  }
+  const maxWordEnd=Math.max(...words.map(w=>w.start+w.duration));
+  const duration=Math.max(maxWordEnd,number(completed.readAudioDurationMs)?completed.readAudioDurationMs:0);
+  if(duration<=0){noChart('viz-pron','시간 정보를 확인할 수 없습니다.');return;}
+  const numeric=words.filter(w=>number(w.accuracy));
+  const minimum=numeric.length?Math.min(...numeric.map(w=>w.accuracy)):null;
+  // Relative lowest score among this utterance, NOT a clinical cutoff.
+  const markMin=minimum!==null&&numeric.some(w=>w.accuracy>minimum);
+  const bars=words.map(w=>{
+    const offset=pct(w.start,duration),width=Math.max(.65,pct(w.duration,duration));
+    const lower=markMin&&w.accuracy===minimum;
+    const label=w.word+' · '+(number(w.accuracy)?w.accuracy.toFixed(0)+'점':'점수 없음')+
+      ' · '+fmtSeconds(w.start)+'~'+fmtSeconds(w.start+w.duration);
+    return '<span class="segment word'+(lower?' lower':'')+
+      '" role="img" aria-label="'+escapeText(label)+
+      '" title="'+escapeText(label)+'" style="left:'+offset.toFixed(2)+'%;width:'+
+      Math.min(width,100-offset).toFixed(2)+'%"></span>';
+  }).join('');
+  const pills=words.map(w=>{
+    const lower=markMin&&w.accuracy===minimum;
+    return '<span class="word-pill'+(lower?' lower':'')+'" aria-label="'+
+      escapeText(w.word+' '+(number(w.accuracy)?w.accuracy.toFixed(0)+'점':'점수 없음'))+'">'+
+      escapeText(w.word)+' <b>'+ (number(w.accuracy)?w.accuracy.toFixed(0)+'점':'—')+
+      '</b></span>';
+  }).join('');
+  const insight=markMin?'<div class="viz-insight">이번 읽기에서 상대적으로 낮은 단어: '+
+      escapeText(words.filter(w=>w.accuracy===minimum).map(w=>w.word).join(', '))+
+      ' ('+minimum.toFixed(0)+'점)</div>':'';
+  el('viz-pron').innerHTML='<div class="time-track" role="img" aria-label="단어별 실제 측정 시각과 발음 점수">'+
+    bars+'</div>'+axis(duration,'문장 읽기 녹음 길이')+
+    '<div class="time-legend"><span><i class="time-dot"></i>단어 위치</span>'+
+    (markMin?'<span><i class="time-dot pause"></i>이번 읽기에서 상대적으로 낮은 점수</span>':'')+
+    '</div><div class="word-list">'+pills+'</div>'+insight+
+    '<div class="viz-notice">Azure 단어별 교육용 발음 점수 · 의학적 기준선 없음</div>';
+}
+function renderDelay(d){
+  const source=Array.isArray(d.segments)?d.segments:[];
+  const slices=source.filter(x=>number(x?.startMs)&&number(x?.endMs)&&x.endMs>x.startMs);
+  const ms=number(d.audioDurationMs)?d.audioDurationMs:
+    number(completed.responseAudioDurationMs)?completed.responseAudioDurationMs:0;
+  if(d.status!=='measured'||!slices.length||ms<=0){
+    noChart('viz-delay','발화·무음 구간이 측정되지 않아 그래프를 표시하지 않습니다.');return;
+  }
+  const offset=number(d.initialResponseLatencyMs)&&number(d.firstSpeechFromWavStartMs)?
+    Math.max(0,d.initialResponseLatencyMs-d.firstSpeechFromWavStartMs):0;
+  const total=Math.max(ms+offset,1);
+  const all=[];
+  if(offset>0)all.push({start:0,end:offset,type:'initial'});
+  for(const voice of slices)all.push({start:voice.startMs+offset,end:voice.endMs+offset,type:'speech'});
+  const gaps=d.withinResponse?.silentPauses||[];
+  for(const gap of gaps){
+    if(number(gap.startMs)&&number(gap.endMs)&&gap.endMs>gap.startMs){
+      all.push({start:gap.startMs+offset,end:gap.endMs+offset,type:'pause'});
+    }
+  }
+  // In the WAV offset frame, the leading initial silence is shown as 'initial'
+  // only if question-end timing exists; otherwise do not attribute it to thinking.
+  const knownInitial=number(d.initialResponseLatencyMs);
+  if(knownInitial&&d.initialResponseLatencyMs>0)
+    all.push({start:offset,end:Math.max(offset,d.initialResponseLatencyMs),type:'initial'});
+  const bars=all.filter(x=>x.end>x.start).map(x=>{
+    const label=x.type==='speech'?'발화':x.type==='pause'?'답변 중 무음':'발화 이전';
+    return '<span class="segment '+x.type+'" role="img" aria-label="'+
+      escapeText(label+' '+fmtSeconds(x.start)+'~'+fmtSeconds(x.end))+
+      '" style="left:'+pct(x.start,total).toFixed(2)+'%;width:'+
+      Math.max(.25,pct(x.end-x.start,total)).toFixed(2)+'%"></span>';
+  }).join('');
+  const pauseCount=d.withinResponse?.silentPauseCount;
+  const pauseTotal=d.withinResponse?.totalSilentPauseMs;
+  const startInfo=knownInitial?
+    '답변 시작 '+fmtSeconds(d.initialResponseLatencyMs)+' (기기 시각 정합 검증 전)':
+    '질문 후 응답 시작시간 미측정';
+  const pauseInfo=number(pauseCount)&&number(pauseTotal)?
+    ' · 답변 중 무음 '+pauseCount+'회 / 총 '+fmtSeconds(pauseTotal):
+    ' · 답변 중 무음 횟수 미측정';
+  el('viz-delay').innerHTML='<div class="time-track" role="img" aria-label="답변의 실측 발화와 무음 구간">'+
+    bars+'</div>'+axis(total,knownInitial?'질문 종료 기준, 근사 정렬':'녹음 시작 기준')+
+    '<div class="time-legend"><span><i class="time-dot"></i>발화</span>'+
+    '<span><i class="time-dot pause"></i>답변 중 무음</span>'+
+    (knownInitial?'<span><i class="time-dot initial"></i>답변 시작 전</span>':'')+
+    '</div><div class="viz-insight">'+escapeText(startInfo+pauseInfo)+'</div>'+
+    '<div class="viz-notice">'+(knownInitial?'브라우저 질문 종료 시각과 음성 구간의 근사 정렬':
+      '첫 발화 이전 무음은 녹음 시작 기준이며 질문 종료시간은 미확정')+
+    ' · VAD 구간 자체는 임상 판정 아님</div>';
+}
+function renderTremor(v){
+  const raw=Array.isArray(v.pitchTrajectory)?v.pitchTrajectory:[];
+  const values=raw.slice(0,160).filter(x=>number(x?.timeMs)&&number(x?.f0Hz)&&x.f0Hz>0);
+  if(v.status!=='measured'||values.length<3){
+    noChart('viz-tremor','이번 결과에는 시간별 F0 자료가 없어 임의의 곡선을 그리지 않습니다.');
+    return;
+  }
+  const duration=number(completed.vowelAudioDurationMs)?completed.vowelAudioDurationMs:
+    Math.max(...values.map(p=>p.timeMs));
+  if(duration<=0){noChart('viz-tremor','주파수 시간축을 확인할 수 없습니다.');return;}
+  const lo=Math.min(...values.map(p=>p.f0Hz));
+  const hi=Math.max(...values.map(p=>p.f0Hz));
+  const range=Math.max(6,hi-lo);
+  const min=lo-range*.2,max=hi+range*.2;
+  const width=620,height=128,l=12,r=8,t=13,b=14;
+  const contentW=width-l-r,contentH=height-t-b;
+  const x=p=>l+pct(p.timeMs,duration)/100*contentW;
+  const y=p=>t+(1-(p.f0Hz-min)/(max-min))*contentH;
+  const line=values.map((p,i)=>(i?'L':'M')+x(p).toFixed(1)+' '+y(p).toFixed(1)).join(' ');
+  const center=number(v.medianF0Hz)?v.medianF0Hz:null;
+  const centerLine=center!==null?
+    '<line class="midline" x1="'+l+'" x2="'+(width-r)+'" y1="'+
+    y({f0Hz:center}).toFixed(1)+'" y2="'+y({f0Hz:center}).toFixed(1)+'"/>':'';
+  el('viz-tremor').innerHTML='<svg class="viz-svg" viewBox="0 0 '+width+' '+height+
+    '" role="img" aria-label="Praat이 실제 추적한 기본주파수 최소 '+lo.toFixed(1)+
+    ' 헤르츠에서 최대 '+hi.toFixed(1)+' 헤르츠">'+
+    [0,.5,1].map(v=>'<line class="gridline" x1="'+l+'" x2="'+(width-r)+'" y1="'+
+      (t+v*contentH).toFixed(1)+'" y2="'+(t+v*contentH).toFixed(1)+'"/>').join('')+
+    centerLine+'<path class="f0-line" d="'+line+'"/></svg>'+
+    axis(duration,'모음 녹음 길이')+
+    '<div class="viz-insight">실제 F0 범위 '+lo.toFixed(1)+'~'+hi.toFixed(1)+
+    ' Hz'+(center!==null?' · 중앙값 '+center.toFixed(1)+' Hz':'')+'</div>'+
+    '<div class="viz-notice">중앙 안정구간에서 추출한 실제 Praat F0 프레임의 축소 표현 · 떨림 진단 아님</div>';
 }
 function output(){
   const p=completed.pronunciation||{},d=completed.responseDelay||{},v=completed.vocalTremor||{};
@@ -313,6 +462,9 @@ function output(){
     '목소리 주기적 변조의 측정값 · 떨림 질환 판정 아님':
     '품질 기준을 충족한 모음 발성 자료가 없습니다.';
   report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,completedStages:tasks.filter(x=>completed[x+'Quality']),measuredAt:new Date().toISOString()};
+  renderPronunciation(p);
+  renderDelay(d);
+  renderTremor(v);
   el('evidence').textContent=JSON.stringify(report,null,2);
   el('download').disabled=false;
   el('self-panel').hidden=true;el('result-view').hidden=false;el('results').hidden=false;
@@ -388,12 +540,12 @@ async function analyze(){
     const good=task==='read'?feature?.status==='assessed':
       task==='response'?feature?.status==='measured':feature?.status==='measured';
     if(!good){
-      mergeResult(task,data); // preserve unavailable, do not fabricate a result
+      mergeResult(task,data,Math.round(pcm.length/16)); // preserve unavailable, no false curves
       setStatus('측정값을 얻지 못했습니다. 다시 녹음하거나 다음 단계로 진행할 수 있습니다.','error');
       el('after-actions').hidden=false;
       return;
     }
-    mergeResult(task,data);
+    mergeResult(task,data,Math.round(pcm.length/16));
     setStatus('분석 완료. 다음 단계로 이동합니다.','success');
     finishStage();
   }catch(e){
