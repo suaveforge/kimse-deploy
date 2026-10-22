@@ -1,205 +1,471 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f9f8">
-<title>AI 통화 체험 | 낌새 Evidence</title>
-<meta name="description" content="운영자 접근코드 없이 동의 후 Retell AI 통화를 시험하고 응답 지연 측정값을 확인합니다.">
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f8f6">
+<title>AI 음성 측정 | 낌새 Evidence</title>
 <style>
-:root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#163c43;background:#f5f9f8}
-*{box-sizing:border-box}body{margin:0;line-height:1.5}main{max-width:600px;margin:auto;padding:18px 14px 60px}
-a{color:#087669;text-decoration:none;font-weight:700}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #55c0a8;outline-offset:3px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.83rem;color:#4f6d72;margin-bottom:25px}
-h1{font-size:clamp(1.55rem,6vw,2rem);letter-spacing:-.045em;line-height:1.2;margin:0 0 12px}
-.lead{font-size:.93rem;color:#45696e;margin:0 0 16px}
-.card{background:white;border:1px solid #d5e7df;border-radius:17px;padding:18px;margin-top:13px}
-h2{font-size:1.04rem;letter-spacing:-.015em;margin:0 0 8px}
-.notice{padding:12px 13px;border:1px solid #dbe5de;background:#f6faf7;border-radius:10px;font-size:.81rem;line-height:1.5;color:#47686a}
-.check{display:flex;align-items:start;gap:10px;font-weight:650;font-size:.85rem;margin:15px 0 16px}
-.check input{flex:none;width:21px;height:21px;accent-color:#087669;margin-top:2px}
-.buttons{display:flex;gap:9px;flex-wrap:wrap}
-button{border:1px solid #bbd5ca;background:#fff;color:#13685f;padding:12px 15px;border-radius:10px;min-height:48px;font:750 .93rem system-ui;cursor:pointer}
-button.primary{flex:1 1 145px;background:#087669;color:white;border-color:#087669}
-button.danger{color:#9d4746;border-color:#e7c5c4}button:disabled{opacity:.47;cursor:default}
-#status{border-radius:10px;background:#eaf7f1;color:#225a51;padding:12px;font-size:.87rem;font-weight:700;margin-top:13px}
-#status[data-error="true"]{background:#fff0e9;color:#a0442b}
-.metric{background:#eaf5f1;border-radius:12px;padding:16px;margin:10px 0}
-.metric strong{display:block;color:#0b7568;font-size:clamp(1.5rem,6vw,2rem);margin:5px 0}
-.metric span{color:#52716d;font-size:.79rem}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.box{border:1px solid #d9e8e3;border-radius:11px;padding:12px}
-.box strong{font-size:.9rem}.box p{color:#607676;font-size:.8rem;margin:5px 0 0}
-.hint{font-size:.78rem;color:#5c767a;line-height:1.5;margin:10px 0 0}
-footer{font-size:.76rem;color:#698086;line-height:1.6;margin-top:16px}
-[hidden]{display:none!important}
-@media(max-width:390px){.grid{grid-template-columns:1fr}.card{padding:15px}}
-</style></head><body><main>
-<div class="top"><a href="./voice-analysis-demo.html">← 음성 분석으로 돌아가기</a><span>낌새 Evidence</span></div>
-<h1>AI와 직접 통화하기</h1>
-<p class="lead">운영자 코드나 회원가입 없이 동의 후 바로 대화해 볼 수 있습니다. 통화 후 질문에서 답변까지 걸린 시간을 확인합니다.</p>
-<section class="card">
-<h2>통화 시작</h2>
-<div class="notice">본인 목소리로만 테스트해 주세요. 통화 음성·대화 내용은 Retell과 낌새 서버에서 처리됩니다. 낌새의 시험용 수집 자료는 최대 48시간 보관되며, Retell의 보관 정책은 별도입니다. 실제 환자 정보나 민감한 내용은 말하지 마세요. 시험 통화는 비용과 남용 방지를 위해 이용 횟수가 제한됩니다.</div>
-<label class="check"><input type="checkbox" id="consent"><span>통화 음성·대화 내용·발화 시간을 처리 및 임시 저장하는 데 동의합니다.</span></label>
-<div class="buttons"><button class="primary" id="start" type="button">AI 통화 시작</button><button id="end" class="danger" disabled type="button">통화 종료</button></div>
-<div id="status" role="status" aria-live="polite">동의 체크 후 통화를 시작하세요.</div>
-</section>
-<section class="card" id="results" hidden>
-<h2>통화 결과</h2>
-<div class="metric"><span>AI 질문이 끝난 뒤 답변을 시작하기까지</span><strong id="delay">분석 대기</strong><span id="delay-detail">통화 종료 후 분석 데이터가 도착하면 표시합니다.</span></div>
-<div class="grid">
-<div class="box"><strong>발음 정확도</strong><p id="pronunciation">기준 문장 읽기 자료가 없어 미측정</p></div>
-<div class="box"><strong>음성 떨림</strong><p id="tremor">별도 모음 발성 자료가 없어 미측정</p></div>
+:root{color-scheme:light;--bg:#f4f8f6;--ink:#153e43;--muted:#527177;--line:#dce9e4;--green:#087a69;--light:#e9f6f1;--blue:#275d91;font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.4}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.48}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #69bcab;outline-offset:2px}[hidden]{display:none!important}
+a{color:var(--green);font-weight:800;text-decoration:none}
+.app{height:100dvh;min-height:540px;display:flex;flex-direction:column;max-width:560px;margin:auto;padding:0 14px env(safe-area-inset-bottom,0px);gap:10px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:42px;flex:none}
+.back{font-size:13px}.brand{font-size:11px;font-weight:800;color:#7a908e;letter-spacing:.085em}
+.heading{display:flex;align-items:center;justify-content:space-between;gap:9px;flex:none}
+h1{font-size:clamp(22px,5.8vw,30px);letter-spacing:-.065em;line-height:1.1;margin:0}
+.status-pill{border:1px solid #d9e7df;background:white;border-radius:100px;color:#52746c;font-size:12px;font-weight:750;padding:7px 12px;white-space:nowrap}
+.status-pill[data-kind=live]{background:#dff4e8;color:#08705e;border-color:#b1dfcf}.status-pill[data-kind=error]{background:#ffefe6;color:#a35036;border-color:#ecd3c8}
+.stage{position:relative;min-height:185px;flex:1 1 230px;background:#fff;border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;overflow:hidden}
+.speaker-symbol{border-radius:50%;background:var(--light);color:var(--green);width:59px;height:59px;display:grid;place-items:center;font-size:25px;font-weight:850;transition:.18s}
+.stage[data-speaker=agent] .speaker-symbol{background:#e6effa;color:var(--blue)}.stage[data-speaker=agent] #speaker-name{color:var(--blue)}
+#speaker-name{font-size:21px;letter-spacing:-.04em;font-weight:850;margin:8px 0 0;color:var(--green)}
+#speaker-help{color:var(--muted);font-size:12px;text-align:center;margin-top:2px;min-height:17px}
+.bars{display:flex;height:50px;gap:4px;align-items:center;justify-content:center;margin:3px 0 0;width:100%;max-width:220px}
+.bar{width:6px;height:100%;border-radius:8px;background:var(--green);transform:scaleY(var(--v,.07));opacity:.78;transition:transform 80ms ease-out}
+.stage[data-speaker=agent] .bar{background:var(--blue)}
+.stage[data-speaker=idle] .bar,.stage[data-speaker=ended] .bar{background:#9bb7ac;opacity:.5}
+.stage-detail{font-size:12px;color:#536e70;text-align:center;max-width:100%;min-height:18px;white-space:normal}
+.controls{flex:none;display:grid;grid-template-columns:1fr auto;gap:8px}
+.btn{height:51px;border:1px solid #cdded8;background:#fff;color:#2b6964;border-radius:12px;font-weight:800;padding:0 14px}
+.btn.primary{background:var(--green);color:white;border-color:var(--green);font-size:15px}
+.btn.secondary{min-width:95px}.btn.danger{color:#ad4847;border-color:#ecd0cf}
+.consent{display:flex;align-items:flex-start;gap:8px;flex:none;font-size:12px;color:#4d696c;line-height:1.45}
+.consent input{width:18px;height:18px;margin:0;accent-color:var(--green);flex:none}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;flex:none}
+.metric{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 10px 11px;min-height:112px;display:flex;flex-direction:column;min-width:0}
+.metric-name{color:#547674;font-size:12px;font-weight:780}.metric-value{display:block;font-size:clamp(18px,4.4vw,24px);font-weight:880;letter-spacing:-.045em;margin-top:8px;line-height:1.3;overflow-wrap:anywhere}
+.metric-sub{color:#82918c;font-size:11px;margin-top:auto;padding-top:5px}
+.metric button{border:none;border-radius:7px;background:#ebf5f2;color:#087369;padding:7px 4px;font-size:11px;font-weight:800;margin-top:8px;min-height:29px}
+#task-area{flex:none;background:#fff;border:1px solid #b8d9cf;border-radius:13px;padding:12px;display:grid;gap:9px}
+.task-title{font-weight:850;font-size:13px;color:#1a655b}.task-prompt{font-weight:650;color:#1d454b;font-size:14px}.task-options{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.task-options label{font-size:11px;color:#4c6c70;display:flex;align-items:center;gap:5px;flex:1}.task-options input{accent-color:var(--green)}
+.task-options button{font-weight:800;background:var(--green);color:white;border:0;border-radius:8px;min-height:38px;padding:6px 13px}
+.task-options .cancel{background:#e7efec;color:#366860}
+footer{flex:none;text-align:center;font-size:10px;color:#8b9a94;margin:0 0 7px}footer details{text-align:left}footer summary{display:inline-block;cursor:pointer}footer p{margin:6px 0 0;font-size:11px;line-height:1.5}
+body[data-task=active] .stage{flex:0 0 138px;min-height:138px}
+body[data-task=active] .consent{display:none}
+body[data-task=active] .stage .speaker-symbol{width:41px;height:41px;font-size:17px}
+body[data-task=active] .stage .bars{height:34px;margin:0}
+body[data-task=active] .stage #speaker-name{font-size:16px;margin-top:3px}
+@media(max-height:740px){.app{gap:7px}.stage{min-height:155px;padding:8px}.speaker-symbol{height:44px;width:44px;font-size:20px}.bars{height:40px;margin:0}.metric{min-height:95px;padding:8px}.metric-value{margin-top:4px}.btn{height:45px}footer{margin:0}}
+@media(max-height:610px){.app{min-height:540px;height:auto}.stage{min-height:145px}.metric{min-height:88px}}
+</style>
+</head><body>
+<div class="app">
+<header><a class="back" href="./voice-analysis-demo.html">← 음성 분석</a><span class="brand">KIMSE / EVIDENCE</span></header>
+<div class="heading"><h1>AI 음성 측정</h1><span id="connection" class="status-pill">연결 확인 중</span></div>
+<div class="stage" id="stage" data-speaker="idle" aria-label="통화 중 화자와 음성 입력·출력 상태">
+ <div class="speaker-symbol" id="speaker-icon" aria-hidden="true">◎</div>
+ <div id="speaker-name" aria-live="polite">통화 대기</div>
+ <div id="speaker-help">동의하고 통화를 시작하세요</div>
+ <div class="bars" id="bars" aria-hidden="true"></div>
+ <div class="stage-detail" id="stage-detail" role="status" aria-live="polite">내 목소리와 AI 상담사의 음성이 여기에 표시됩니다</div>
 </div>
-<p class="hint" id="events">통화 데이터를 확인하는 중입니다.</p>
-<div class="buttons" style="margin-top:13px"><button id="refresh" type="button">결과 다시 확인</button><button id="delete" class="danger" type="button">시험 데이터 삭제</button></div>
-<p class="hint">발음·음성 떨림은 <a href="./voice-analysis-demo.html">3단계 셀프 테스트</a>에서 따로 측정할 수 있습니다. 통화 하나만으로 추정치를 만들지 않습니다.</p>
+<label class="consent" id="consent-wrap"><input type="checkbox" id="consent"><span>음성·대화 내용의 Retell 전송 및 임시 저장에 동의합니다.</span></label>
+<div class="controls">
+ <button class="btn primary" id="start" type="button" disabled>통화 시작</button>
+ <button class="btn danger secondary" id="end" type="button" disabled>통화 종료</button>
+</div>
+<section class="metrics" aria-label="3종 음성 지표">
+ <div class="metric"><span class="metric-name">응답 지연</span><strong class="metric-value" id="delay">—</strong><span class="metric-sub" id="delay-detail">통화 후 계산</span></div>
+ <div class="metric"><span class="metric-name">발음 정확도</span><strong class="metric-value" id="pronunciation">—</strong><span class="metric-sub" id="pronunciation-detail">문장 읽기 필요</span><button id="read-test" type="button" disabled hidden>문장 읽기</button></div>
+ <div class="metric"><span class="metric-name">음성 주기 변조</span><strong class="metric-value" id="tremor">—</strong><span class="metric-sub" id="tremor-detail">모음 발성 필요</span><button id="vowel-test" type="button" disabled hidden>모음 발성</button></div>
 </section>
-<footer>이 체험은 음성 데이터 수집·시간 측정 기능 확인용입니다. 의학적 진단이나 인지저하 판정이 아닙니다. 마이크 권한과 HTTPS가 필요합니다.</footer>
+<section id="task-area" hidden>
+ <div class="task-title" id="task-title">추가 측정</div>
+ <div class="task-prompt" id="task-prompt"></div>
+ <div class="task-options">
+  <label id="azure-wrap" hidden><input type="checkbox" id="azure-consent">발음 평가를 위한 Azure Speech 음성 전송 동의</label>
+  <button id="task-record" type="button">녹음 시작</button>
+  <button class="cancel" id="task-close" type="button">닫기</button>
+ </div>
+</section>
+<footer><details><summary>개인정보·측정 안내 <span aria-hidden="true">⌄</span></summary><p>본인 음성만 테스트해 주세요. 통화 자료는 Retell과 낌새 서버에서 처리되며 낌새의 시험 저장 기간은 최대 48시간입니다. Retell 보관 기간은 별도입니다. 통화에서 응답 지연, 별도 읽기에서 발음 평가, 모음 발성에서 기본주파수(F0) 변조를 측정합니다. 치매·질환 진단은 하지 않습니다.</p><button type="button" id="delete" class="btn danger" style="height:34px;font-size:12px" disabled>시험 통화 자료 삭제</button></details></footer>
+</div>
 <script type="module">
-const API='https://api-kimse.suaveforge.com/api/v1/evidence/retell/guest/calls';
-const el=id=>document.getElementById(id);
-let client=null,live=false,creating=false,callId='',sessionToken='',deleted=false,refreshTimer=null,requestEpoch=0;
+const ROOT='https://api-kimse.suaveforge.com/api/v1/evidence';
+const CALLS=ROOT+'/retell/guest/calls', VOICE=ROOT+'/voice-analysis';
+const $=id=>document.getElementById(id);
+let client=null,callId='',sessionToken='',live=false,creating=false,ended=false,serviceReady=false,checking=false;
+let speaker='idle',agentSpeaking=false,agentRms=0,lastAgentAudio=0,userRms=0,meterCtx=null,meterStream=null,meterNode=null,meterSource=null,meterRunning=false,raf=0,trackRetry=0;
+let task='',taskRecorder=null,taskStream=null,taskChunks=[],taskEndTimer=0,taskInterval=0,taskAt=0,taskBusy=false,azureReady=false;
+let epoch=0,checkTimer=0,afterCallTimers=[];
 const storeKey='kimse_retell_evidence_guest';
-let serviceReady=false;
-el('start').disabled=true;
-
-function show(message,error=false){el('status').textContent=message;el('status').dataset.error=String(error);}
-function clientMarker(){
-  const key='kimse_retell_guest_client';
-  try{
-    let marker=sessionStorage.getItem(key);
-    if(!marker){marker=(crypto.randomUUID?.()||'guest'+Math.random().toString(36).slice(2).repeat(5)).replace(/-/g,'');sessionStorage.setItem(key,marker);}
-    return marker;
-  }catch(error){return 'guest'+Math.random().toString(36).slice(2).repeat(5);}
+const marker=(()=>{
+ try{const k='kimse_retell_guest_client';const old=sessionStorage.getItem(k);
+  if(/^[A-Za-z0-9_-]{16,96}$/.test(old||''))return old;
+  const generated=(crypto.randomUUID?.()||('guest'+Math.random().toString(36).slice(2).repeat(5))).replace(/-/g,'');
+  sessionStorage.setItem(k,generated);return generated;
+ }catch(error){return 'anonymous_client_'+Math.random().toString(36).slice(2).repeat(4);}
+})();
+const bars=Array.from({length:23},(_,i)=>{
+ const b=document.createElement('span');b.className='bar';$('bars').appendChild(b);return b;
+});
+function message(text,error=false){
+ $('stage-detail').textContent=text;
+ if(error)$('connection').dataset.kind='error';
 }
-function sessionHeaders(){return {'X-KIMSE-EVIDENCE-SESSION':sessionToken};}
-async function message(response){
-  const payload=await response.json().catch(()=>({}));
-  const reason=typeof payload.detail==='string'?payload.detail:'HTTP '+response.status;
-  const map={
-    EVIDENCE_GUEST_CALL_LIMIT_REACHED:'오늘의 체험 통화 이용 횟수를 초과했습니다.',
-    EVIDENCE_GUEST_QUOTA_UNAVAILABLE:'현재 시험 통화 발급이 불가능합니다.',
-    RETELL_API_KEY_NOT_CONFIGURED:'AI 통화 서버 설정이 완료되지 않았습니다.',
-    RETELL_GUEST_CALL_CREATION_FAILED:'AI 통화 연결 준비에 실패했습니다.',
-    EVIDENCE_SESSION_EXPIRED:'시험 기록의 보관 기간이 끝났습니다.',
-    EVIDENCE_SESSION_NOT_FOUND:'조회 권한이 만료되었습니다.',
-    EVIDENCE_ORIGIN_NOT_ALLOWED:'공식 낌새 사이트에서 접속해주세요.'
-  };
-  return map[reason]||('통화 서버 오류 ('+response.status+').');
+function connection(text,type=''){
+ $('connection').textContent=text;$('connection').dataset.kind=type;
 }
-function showResult(data){
-  el('results').hidden=false;
-  const value=data.responseDelay||{};
-  if(value.status==='measured'&&Number.isFinite(value.medianLatencyMs)){
-    el('delay').textContent=(value.medianLatencyMs/1000).toFixed(2)+'초';
-    el('delay-detail').textContent='측정 가능한 문답 '+(value.observedCount||0)+'건의 중앙값 · 단어별 시각을 이용한 근사치';
+function viewSpeaker(next,label,hint){
+ if(speaker!==next){speaker=next;$('stage').dataset.speaker=next;}
+ const icon=next==='agent'?'AI':next==='user'?'나':next==='task'?'●':'◎';
+ if($('speaker-icon').textContent!==icon)$('speaker-icon').textContent=icon;
+ if($('speaker-name').textContent!==label)$('speaker-name').textContent=label;
+ if($('speaker-help').textContent!==hint)$('speaker-help').textContent=hint;
+}
+function paintBars(value){
+ const level=Math.max(0,Math.min(1,value));
+ for(let i=0;i<bars.length;i++){
+  const shape=.5+.5*Math.sin(i*1.47+1)*Math.cos(i*.61);
+  const height=.06+Math.min(.94,level*(.6+shape*.95));
+  bars[i].style.setProperty('--v',height.toFixed(3));
+ }
+}
+function meterTick(){
+ raf=0;
+ if(!meterRunning)return;
+ if(meterNode){
+  const a=new Float32Array(meterNode.fftSize);meterNode.getFloatTimeDomainData(a);
+  let sum=0;for(let i=0;i<a.length;i++)sum+=a[i]*a[i];
+  userRms=Math.sqrt(sum/a.length);
+ }else userRms=0;
+ if(live){
+  const isAI=agentSpeaking;
+  if(isAI){
+   viewSpeaker('agent','AI 상담사','AI 음성 출력 중');
+   const val=performance.now()-lastAgentAudio<350?agentRms:0;
+   paintBars(val*10);
   }else{
-    el('delay').textContent='미측정';
-    el('delay-detail').textContent=value.reason||'답변 시작 시간을 확인할 수 있는 자료가 아직 없습니다.';
+   const speaking=userRms>.022;
+   viewSpeaker('user','나',meterNode?(speaking?'내 목소리 입력 중':'마이크가 듣고 있어요'):'마이크 음량 확인 중');
+   paintBars(userRms*14);
   }
-  el('pronunciation').textContent=data.pronunciation?.reason||'별도 문장 읽기 과제 필요';
-  el('tremor').textContent=data.vocalTremor?.reason||'별도 모음 발성 과제 필요';
-  const bits=Number(data.event_mask||0);
-  el('events').textContent='수신 상태: '+[(bits&1)?'통화 시작 ✓':'통화 시작 대기',(bits&2)?'종료 ✓':'종료 대기',(bits&4)?'분석 ✓':'분석 대기'].join(' · ');
+ }else if(taskRecorder?.state==='recording'){
+  viewSpeaker('task','나 · 녹음 중','마이크 입력 확인');
+  paintBars(userRms*14);
+ }
+ raf=requestAnimationFrame(meterTick);
+}
+function beginMeter(){meterRunning=true;if(!raf)raf=requestAnimationFrame(meterTick);}
+function stopMeter(){
+ meterRunning=false;if(raf)cancelAnimationFrame(raf);raf=0;
+ if(trackRetry)clearTimeout(trackRetry);trackRetry=0;
+ try{meterSource?.disconnect();}catch(error){}
+ meterSource=null;meterNode=null;
+ if(meterStream){meterStream.getTracks().forEach(t=>t.stop());meterStream=null;}
+ // Input from Retell is owned by Retell, not by this visualizer.
+ if(meterCtx){meterCtx.close().catch(()=>{});meterCtx=null;}
+ userRms=0;agentRms=0;paintBars(0);
+}
+function localMicTrack(){
+ const participant=client?.room?.localParticipant;
+ if(!participant)return null;
+ const direct=participant.getTrackPublication?.('microphone')?.track?.mediaStreamTrack;
+ if(direct?.readyState==='live')return direct;
+ const list=participant.audioTrackPublications;
+ if(list?.values)for(const pub of list.values()){
+  const track=pub?.track?.mediaStreamTrack;
+  if(track?.readyState==='live')return track;
+ }
+ return null;
+}
+function attachMeterToStream(stream,own=false){
+ if(!stream)return false;
+ try{
+  if(!meterCtx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return false;meterCtx=new C();}
+  meterSource?.disconnect();
+  meterSource=meterCtx.createMediaStreamSource(stream);
+  meterNode=meterCtx.createAnalyser();meterNode.fftSize=1024;meterNode.smoothingTimeConstant=.72;
+  meterSource.connect(meterNode);
+  meterCtx.resume().catch(()=>{});
+  if(own)meterStream=stream;
+  beginMeter();return true;
+ }catch(error){meterNode=null;return false;}
+}
+function attachRetellMic(attempt=0){
+ if(!live||!client||taskRecorder)return;
+ const track=localMicTrack();
+ if(track){
+  // Clone only the reference to the existing Retell track; do not request a second microphone.
+  attachMeterToStream(new MediaStream([track]));
+  message('통화 중 · AI와 내 음성을 구분해 표시합니다');
+  return;
+ }
+ if(attempt<25)trackRetry=setTimeout(()=>attachRetellMic(attempt+1),400);
+ else message('통화 중 · 마이크 음량 시각화가 지원되지 않는 환경입니다');
+}
+function soundRms(samples){
+ if(!(samples instanceof Float32Array)||!samples.length)return 0;
+ let sum=0;for(let i=0;i<samples.length;i++)sum+=samples[i]*samples[i];
+ return Math.sqrt(sum/samples.length);
+}
+function errorText(status,detail){
+ const map={EVIDENCE_GUEST_CALL_LIMIT_REACHED:'체험 통화 이용 횟수를 초과했습니다.',RETELL_API_KEY_NOT_CONFIGURED:'Retell 서버 설정을 확인해야 합니다.',RETELL_GUEST_CALL_CREATION_FAILED:'통화를 생성하지 못했습니다.',EVIDENCE_SESSION_EXPIRED:'통화 결과가 만료되었습니다.',EVIDENCE_GUEST_DAILY_QUOTA_REACHED:'오늘의 음성 분석 횟수를 초과했습니다.'};
+ return map[detail]||'서버 오류 '+status;
+}
+async function checkedResponse(response){
+ if(response.ok)return response.json();
+ const data=await response.json().catch(()=>({}));
+ throw Error(errorText(response.status,data.detail));
+}
+function headers(){return {'X-KIMSE-EVIDENCE-SESSION':sessionToken};}
+async function checkReady(){
+ if(checking||serviceReady||live||creating)return;
+ checking=true;
+ try{
+  const r=await fetch(CALLS+'/connectivity-check',{cache:'no-store'});
+  const j=await r.json().catch(()=>({}));
+  serviceReady=r.status===404&&j.detail==='EVIDENCE_SESSION_NOT_FOUND';
+ }catch(error){serviceReady=false;}
+ checking=false;
+ if(live||creating)return;
+ $('start').disabled=!serviceReady;
+ if(serviceReady){connection('연결 준비','');message('마이크와 AI 출력이 실시간으로 표시됩니다');}
+ else{
+  connection('서버 확인 중','error');message('통화 API 연결 확인 중 · 자동으로 다시 확인합니다');
+  checkTimer=setTimeout(checkReady,7000);
+ }
+}
+function startPolling(){
+ afterCallTimers.forEach(clearTimeout);afterCallTimers=[];
+ for(const seconds of [2,5,9,16,26,42]){
+  afterCallTimers.push(setTimeout(()=>{if(!live&&callId)refresh();},seconds*1000));
+ }
+}
+function showExtraTasks(){
+ $('read-test').hidden=false;$('vowel-test').hidden=false;
+ $('read-test').disabled=!azureReady;$('vowel-test').disabled=false;
+}
+function callEnded(){
+ if(ended)return;
+ ended=true;live=false;agentSpeaking=false;
+ stopMeter();
+ viewSpeaker('ended','통화 종료','측정 결과를 확인하고 있어요');
+ connection('분석 확인 중');
+ $('start').disabled=false;$('start').textContent='새 통화 시작';
+ $('end').disabled=true;showExtraTasks();startPolling();
+ message('응답 지연 확인 중 · 발음과 음성 변조는 아래에서 추가 측정');
 }
 async function refresh(){
-  if(!callId||!sessionToken||deleted)return;
-  const current=++requestEpoch;
-  try{
-    const response=await fetch(API+'/'+encodeURIComponent(callId),{headers:sessionHeaders(),cache:'no-store'});
-    if(!response.ok)throw Error(await message(response));
-    const data=await response.json();
-    if(current!==requestEpoch||deleted)return;
-    showResult(data);
-    if(data.event_mask&4)show('통화 분석 데이터가 도착했습니다.');
-    else if(!live)show('통화는 종료됐습니다. 분석 결과 수신을 확인하세요.');
-  }catch(error){
-    if(current!==requestEpoch)return;
-    show('결과 확인 실패: '+error.message,true);
+ if(!callId||!sessionToken)return;
+ const id=callId,token=sessionToken,current=++epoch;
+ try{
+  const data=await checkedResponse(await fetch(CALLS+'/'+encodeURIComponent(id),{headers:{'X-KIMSE-EVIDENCE-SESSION':token},cache:'no-store'}));
+  if(current!==epoch||id!==callId)return;
+  const delay=data.responseDelay||{};
+  if(delay.status==='measured'&&Number.isFinite(delay.medianLatencyMs)){
+   $('delay').textContent=(delay.medianLatencyMs/1000).toFixed(2)+'초';
+   $('delay-detail').textContent=(delay.observedCount||0)+'회 · 단어 시각 기준';
+  }else{
+   $('delay').textContent='미측정';
+   $('delay-detail').textContent='유효한 문답 시각 부족';
   }
+  if(Number(data.event_mask||0)&4)connection('분석 수신','');
+  else if(!live)connection('분석 확인 중');
+ }catch(error){if(current===epoch)message('결과 조회: '+error.message,true);}
 }
-function autoRefresh(){
-  for(const seconds of [2,5,9,15,25]){
-    setTimeout(()=>{if(!deleted&&!live)refresh();},seconds*1000);
+async function beginCall(){
+ if(creating||live||taskBusy||!serviceReady)return;
+ if(!$('consent').checked){message('음성 처리에 동의해야 통화할 수 있습니다',true);return;}
+ if(!window.isSecureContext){message('HTTPS 환경에서만 통화할 수 있습니다',true);return;}
+ creating=true;$('start').disabled=true;connection('연결 중');
+ try{
+  // A previous call token stays local only until the next session is created.
+  const response=await fetch(CALLS,{method:'POST',headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':marker},body:JSON.stringify({consent:true}),cache:'no-store'});
+  const data=await checkedResponse(response);
+  if(!data.call_id||!data.access_token||!data.session_token)throw Error('통화 연결 정보가 비어 있습니다');
+  callId=data.call_id;sessionToken=data.session_token;
+  try{sessionStorage.setItem(storeKey,JSON.stringify({callId,sessionToken}));}catch(error){}
+  ended=false;agentSpeaking=false;$('delete').disabled=false;
+  $('delay').textContent='—';$('delay-detail').textContent='통화 후 계산';
+  $('read-test').hidden=true;$('vowel-test').hidden=true;closeTask();
+  viewSpeaker('idle','연결 중','마이크 연결 중');
+  const sdk=await import('https://esm.sh/retell-client-js-sdk@2.0.8');
+  client=new sdk.RetellWebClient();
+  client.on('call_started',()=>{
+   live=true;connection('통화 중','live');$('end').disabled=false;
+   $('start').disabled=true;viewSpeaker('user','나','마이크 연결 중');message('AI 상담사와 대화 중');
+   beginMeter();attachRetellMic();
+  });
+  client.on('call_ready',()=>{if(live)message('AI 음성 출력 연결 완료');});
+  client.on('agent_start_talking',()=>{agentSpeaking=true;if(live)viewSpeaker('agent','AI 상담사','AI 음성 출력 중');});
+  client.on('agent_stop_talking',()=>{agentSpeaking=false;if(live)viewSpeaker('user','나','마이크가 듣고 있어요');});
+  client.on('audio',samples=>{agentRms=soundRms(samples);lastAgentAudio=performance.now();});
+  client.on('call_ended',callEnded);
+  client.on('error',error=>{
+   message('Retell 연결 오류 · '+String(error?.message||error||'네트워크 확인'),true);
+   if(!live&&callId)callEnded();
+  });
+  await client.startCall({accessToken:data.access_token,emitRawAudioSamples:true});
+ }catch(error){
+  connection('통화 오류','error');message(error.message||'연결에 실패했습니다',true);
+  if(callId)callEnded();
+  else $('start').disabled=!serviceReady;
+ }finally{creating=false;}
+}
+async function endCall(){
+ if(!client||ended)return;
+ $('end').disabled=true;message('통화를 종료하고 분석 결과를 확인합니다');
+ try{await client.stopCall();}catch(error){message('종료 요청 확인 필요',true);}
+ callEnded();
+}
+function closeTask(){
+ if(taskRecorder?.state==='recording')return;
+ $('task-area').hidden=true;document.body.dataset.task='';task='';
+}
+function chooseTask(name){
+ if(live||taskBusy||taskRecorder?.state==='recording')return;
+ task=name;$('task-area').hidden=false;document.body.dataset.task='active';
+ $('task-title').textContent=name==='read'?'발음 정확도 · 기준 문장 읽기':'음성 주기 변조 · 모음 발성';
+ $('task-prompt').textContent=name==='read'?'오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.':'“아—” 소리를 5~6초간 일정하게 내주세요.';
+ $('azure-wrap').hidden=name!=='read';
+ $('task-record').textContent='녹음 시작';
+ $('task-record').disabled=false;
+ message(name==='read'?'문장을 읽으면 공식 발음 평가 가능 여부를 확인합니다':'모음 음성에서 주파수 변화를 측정합니다');
+}
+function beginTaskCountdown(maxMs){
+ taskAt=performance.now();taskInterval=setInterval(()=>{
+  if(!taskRecorder||taskRecorder.state!=='recording')return;
+  const remain=Math.max(0,Math.ceil((maxMs-(performance.now()-taskAt))/1000));
+  $('task-record').textContent='녹음 종료 · '+remain+'초';
+ },200);
+ taskEndTimer=setTimeout(()=>stopTaskRecording(),maxMs);
+}
+function stopTaskRecording(){
+ clearTimeout(taskEndTimer);clearInterval(taskInterval);taskEndTimer=0;taskInterval=0;
+ if(taskRecorder?.state==='recording')taskRecorder.stop();
+}
+async function encodeWav16k(blob){
+ const AudioCtor=window.AudioContext||window.webkitAudioContext;
+ if(!AudioCtor)throw Error('이 브라우저에서는 녹음 변환을 지원하지 않습니다');
+ const context=new AudioCtor();
+ let rendered;
+ try{
+  const decoded=await context.decodeAudioData(await blob.arrayBuffer());
+  const Offline=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+  if(!Offline)throw Error('샘플레이트 변환이 지원되지 않습니다');
+  const count=Math.ceil(decoded.duration*16000);
+  const offline=new Offline(1,count,16000);
+  const source=offline.createBufferSource();source.buffer=decoded;source.connect(offline.destination);source.start();
+  rendered=(await offline.startRendering()).getChannelData(0);
+ }finally{await context.close().catch(()=>{});}
+ if(rendered.length<16000||rendered.length>480000)throw Error('녹음은 1~30초만 분석합니다');
+ const buf=new ArrayBuffer(44+rendered.length*2),dv=new DataView(buf);
+ const label=(p,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(p+i,s.charCodeAt(i));};
+ label(0,'RIFF');dv.setUint32(4,buf.byteLength-8,true);label(8,'WAVE');
+ label(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
+ dv.setUint32(24,16000,true);dv.setUint32(28,32000,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);
+ label(36,'data');dv.setUint32(40,rendered.length*2,true);
+ for(let i=0;i<rendered.length;i++)dv.setInt16(44+i*2,Math.round(Math.max(-1,Math.min(1,rendered[i]))*32767),true);
+ const bytes=new Uint8Array(buf);let raw='';
+ for(let i=0;i<bytes.length;i+=8192)raw+=String.fromCharCode(...bytes.subarray(i,i+8192));
+ return btoa(raw);
+}
+async function analyzeTask(dataBlob,name,azureAllowed){
+ $('task-record').disabled=true;
+ message('녹음 분석 중 · 서버에서 실제 음성값을 확인합니다');
+ try{
+  const payload=await encodeWav16k(dataBlob);
+  const response=await fetch(VOICE+'/guest',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':marker},body:JSON.stringify({task:name,audio_base64:payload,consent_server_audio_processing:true,consent_azure_transfer:name==='read'&&azureAllowed})});
+  const data=await checkedResponse(response);
+  const item=name==='read'?data.pronunciation:data.vocalTremor;
+  if(name==='read'){
+   if(item?.status==='assessed'){
+    const score=item.scores?.accuracy;
+    $('pronunciation').textContent=Number.isFinite(score)?Math.round(score)+'점':'평가됨';
+    $('pronunciation-detail').textContent='Azure 발음 평가 · 진단 아님';
+   }else{
+    $('pronunciation').textContent='미측정';
+    $('pronunciation-detail').textContent=azureAllowed?'평가 불가 · 재시도':'Azure 동의 필요';
+   }
+  }else{
+   if(item?.status==='measured'&&Number.isFinite(item.frequencyModulation?.peakRateHz)){
+    $('tremor').textContent=item.frequencyModulation.peakRateHz.toFixed(1)+'Hz';
+    $('tremor-detail').textContent='음성 변조 주기 · 진단 아님';
+   }else if(item?.status==='measured'){
+    $('tremor').textContent='측정됨';$('tremor-detail').textContent='음성 주기 변조 관찰';
+   }else{$('tremor').textContent='미측정';$('tremor-detail').textContent='모음 품질 부족 · 재시도';}
   }
+  message(item?.status==='assessed'||item?.status==='measured'?'음성 분석이 완료됐습니다':(item?.reason||'측정할 수 있는 자료가 부족합니다'));
+ }catch(error){message('음성 분석 실패 · '+error.message,true);}
+ finally{taskBusy=false;$('task-record').disabled=false;$('task-record').textContent='다시 녹음';}
 }
-async function finish(){
-  if(!client||!live)return;
-  el('end').disabled=true;
-  try{await client.stopCall();}catch(error){show('통화 종료 요청에 실패했습니다.',true);}
-  live=false;el('start').disabled=true;el('results').hidden=false;show('통화를 마쳤습니다. 분석 결과를 확인합니다.');
-  autoRefresh();
+async function recordTask(){
+ if(!task||live||taskBusy)return;
+ if(task==='read'&&!$('azure-consent').checked){
+  message('발음 평가를 위해 Azure Speech 전송 동의가 필요합니다',true);return;
+ }
+ const name=task,allowed=$('azure-consent').checked;
+ taskBusy=true;$('task-record').disabled=true;
+ try{
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('마이크 녹음을 지원하지 않습니다');
+  taskStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});
+  const chunks=[];taskChunks=chunks;
+  taskRecorder=new MediaRecorder(taskStream);
+  taskRecorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};
+  taskRecorder.onerror=()=>{message('음성 녹음 중 오류가 발생했습니다',true);};
+  taskRecorder.onstop=async()=>{
+   const captured=new Blob(chunks,{type:taskRecorder?.mimeType||'audio/webm'});
+   clearTimeout(taskEndTimer);clearInterval(taskInterval);taskEndTimer=0;taskInterval=0;
+   if(taskStream){taskStream.getTracks().forEach(t=>t.stop());taskStream=null;}
+   stopMeter();
+   viewSpeaker('ended','녹음 완료','음성 자료를 분석합니다');
+   await analyzeTask(captured,name,allowed);
+  };
+  taskRecorder.start();
+  $('task-record').disabled=false;
+  $('task-record').textContent='녹음 종료';
+  viewSpeaker('task','나 · 녹음 중',name==='read'?'화면의 문장을 천천히 읽어주세요':'아— 소리를 일정하게 내주세요');
+  attachMeterToStream(taskStream,false);
+  beginTaskCountdown(name==='read'?15000:6000);
+  message('실제 마이크 입력값이 움직입니다');
+ }catch(error){
+  if(taskStream){taskStream.getTracks().forEach(t=>t.stop());taskStream=null;}
+  taskBusy=false;$('task-record').disabled=false;message('마이크 사용 실패 · '+error.message,true);
+ }
 }
-el('start').addEventListener('click',async()=>{
-  if(!serviceReady){show('AI 통화 서버 연결이 준비되지 않았습니다.',true);return;}
-  if(creating||live||callId)return;
-  if(!el('consent').checked){show('통화 데이터 처리 동의가 필요합니다.',true);return;}
-  if(!window.isSecureContext){show('HTTPS 환경에서만 통화할 수 있습니다.',true);return;}
-  creating=true;el('start').disabled=true;show('AI 통화를 준비하고 있습니다.');
-  try{
-    const response=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':clientMarker()},body:JSON.stringify({consent:true}),cache:'no-store'});
-    if(!response.ok)throw Error(await message(response));
-    const data=await response.json();
-    if(!data.call_id||!data.access_token||!data.session_token)throw Error('통화 정보를 받지 못했습니다.');
-    callId=data.call_id;sessionToken=data.session_token;deleted=false;
-    try{sessionStorage.setItem(storeKey,JSON.stringify({callId,sessionToken}));}catch(error){}
-    el('results').hidden=false;show('마이크 연결 중입니다. 권한 요청을 허용해주세요.');
-    const sdk=await import('https://esm.sh/retell-client-js-sdk@2.0.8');
-    client=new sdk.RetellWebClient();
-    client.on('call_started',()=>{live=true;el('end').disabled=false;show('AI와 통화 중입니다. 대화를 마치면 종료를 누르세요.');});
-    client.on('call_ended',()=>{live=false;el('end').disabled=true;show('통화 종료. 분석 결과를 확인하고 있습니다.');autoRefresh();});
-    client.on('error',error=>{live=false;el('end').disabled=true;show('통화 연결 오류: '+String(error?.message||'마이크 권한을 확인하세요.'),true);});
-    await client.startCall({accessToken:data.access_token});
-    live=true;el('end').disabled=false;show('통화 중입니다.');
-  }catch(error){
-    show(error.message||'통화를 시작하지 못했습니다.',true);
-    el('start').disabled=!!callId;
-    if(callId)autoRefresh();
-  }finally{creating=false;}
-});
-el('end').addEventListener('click',finish);
-el('refresh').addEventListener('click',refresh);
-el('delete').addEventListener('click',async()=>{
-  if(!callId||!sessionToken||deleted||!confirm('낌새 서버의 시험 통화 자료를 삭제할까요? Retell 측 저장분은 별도입니다.'))return;
-  try{
-    const response=await fetch(API+'/'+encodeURIComponent(callId),{method:'DELETE',headers:sessionHeaders()});
-    if(!response.ok)throw Error(await message(response));
-    deleted=true;callId='';sessionToken='';++requestEpoch;
-    try{sessionStorage.removeItem(storeKey);}catch(error){}
-    el('results').hidden=true;el('consent').checked=false;el('start').disabled=false;el('end').disabled=true;
-    show('낌새 서버에 저장된 시험 자료를 삭제했습니다. Retell 측 기록은 별도입니다.');
-  }catch(error){show('삭제 실패: '+error.message,true);}
+async function deleteSession(){
+ if(!callId||!sessionToken||live)return;
+ if(!window.confirm('낌새 서버에 저장한 시험 통화 기록을 삭제할까요? Retell 측 보관은 별도입니다.'))return;
+ try{
+  const response=await fetch(CALLS+'/'+encodeURIComponent(callId),{method:'DELETE',headers:headers()});
+  if(!response.ok)throw Error('삭제 불가 '+response.status);
+  callId='';sessionToken='';epoch++;$('delete').disabled=true;
+  try{sessionStorage.removeItem(storeKey);}catch(error){}
+  message('낌새 서버의 통화 자료를 삭제했습니다');
+ }catch(error){message('삭제 오류 · '+error.message,true);}
+}
+$('start').addEventListener('click',beginCall);
+$('end').addEventListener('click',endCall);
+$('read-test').addEventListener('click',()=>chooseTask('read'));
+$('vowel-test').addEventListener('click',()=>chooseTask('vowel'));
+$('task-close').addEventListener('click',closeTask);
+$('task-record').addEventListener('click',()=>{if(taskRecorder?.state==='recording')stopTaskRecording();else recordTask();});
+$('delete').addEventListener('click',deleteSession);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!serviceReady)checkReady();});
+window.addEventListener('pageshow',()=>{if(!serviceReady)checkReady();});
+window.addEventListener('pagehide',()=>{
+ if(live&&client)try{client.stopCall();}catch(error){}
+ stopMeter();if(taskRecorder?.state==='recording')taskRecorder.stop();
+ clearTimeout(checkTimer);afterCallTimers.forEach(clearTimeout);
 });
 try{
-  const prev=JSON.parse(sessionStorage.getItem(storeKey)||'null');
-  if(prev?.callId&&prev?.sessionToken){
-    callId=String(prev.callId);sessionToken=String(prev.sessionToken);
-    el('start').disabled=true;el('results').hidden=false;
-    show('이 브라우저에서 진행했던 통화 결과를 확인할 수 있습니다.');
-    refresh();
-  }
+ const prev=JSON.parse(sessionStorage.getItem(storeKey)||'null');
+ if(prev?.callId&&prev?.sessionToken){
+  callId=String(prev.callId);sessionToken=String(prev.sessionToken);
+  ended=true;viewSpeaker('ended','이전 통화','마지막 통화 분석값을 불러옵니다');
+  $('start').disabled=false;$('start').textContent='새 통화 시작';
+  $('delete').disabled=false;showExtraTasks();refresh();
+ }
 }catch(error){}
-let serviceCheckTimer=0,checkingService=false;
-async function checkGuestService(){
-  if(callId||serviceReady||checkingService)return;
-  checkingService=true;
-  if(serviceCheckTimer){clearTimeout(serviceCheckTimer);serviceCheckTimer=0;}
-  try{
-    // The scoped owner-only endpoint returns a distinct 404 for missing session token.
-    // A missing route would return FastAPI's generic 404, so never enable on that.
-    const response=await fetch(API+'/connectivity-check',{cache:'no-store'});
-    const result=await response.json().catch(()=>({}));
-    serviceReady=response.status===404&&result.detail==='EVIDENCE_SESSION_NOT_FOUND';
-  }catch(error){serviceReady=false;}
-  finally{checkingService=false;}
-  if(callId)return;
-  el('start').disabled=!serviceReady;
-  if(serviceReady)show('AI 통화 연결 준비 완료. 동의 후 시작하세요.');
-  else{
-    show('통화 서버 연결 확인 중입니다. 자동으로 다시 연결합니다.',true);
-    serviceCheckTimer=setTimeout(checkGuestService,8000);
-  }
+async function checkVoice(){
+ try{
+  const r=await fetch(VOICE+'/status',{cache:'no-store'});
+  const data=await r.json();
+  azureReady=r.ok&&data.azureConfigured===true;
+  if(!azureReady){$('pronunciation-detail').textContent='Azure 서버 설정 필요';$('read-test').disabled=true;}
+ }catch(error){$('pronunciation-detail').textContent='발음 평가 연결 확인 불가';}
 }
-window.addEventListener('pageshow',()=>{if(!serviceReady)checkGuestService();});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!serviceReady)checkGuestService();});
-checkGuestService();
-</script></main></body></html>
+checkVoice();checkReady();
+</script></body></html>
