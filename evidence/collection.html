@@ -227,6 +227,14 @@ main{padding-bottom:70px}.eyebrow{color:var(--teal);letter-spacing:.09em;font-si
 <dt>검증 상태</dt><dd>기술 시연 단계 · 발음 정확도·언어 이해·병적 떨림·인지저하 판정은 제공하지 않음</dd></dl>
 <footer>HTTPS 마이크 권한 필요 · 음성 분석은 의료검사나 진단이 아님</footer>
 </article>
+<article class="reg-card" id="ai-unified-voice-evidence">
+<header class="kimse-demo-head"><div><small>09 · 수집 경로 2개 / 공통 분석 엔진 1개</small><h3>발음 · 응답 지연 · 음성 떨림 통합 분석</h3></div><a class="kimse-demo-action" href="./voice-analysis-demo.html" aria-label="3대 음성지표 분석 실험실 열기">테스트</a></header>
+<div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-wave-sine"></i><span>VOICE<br>3</span></div><div><p class="kimse-vision-desc">빠른 테스트 음성과 동의된 Retell 통화기록을 동일한 3대 지표 형식으로 분석합니다. 실제 근거가 없는 지표는 임의 점수 대신 미측정으로 표시합니다.</p></div></div>
+<dl><dt>결과 3개</dt><dd>발음 정확도 · 질문 후 응답 지연 · 모음 음성의 주기적 변조 후보</dd>
+<dt>사용 도구</dt><dd>Azure Speech ko-KR · Retell 단어별 시각 · Praat-Parselmouth</dd>
+<dt>필요 조건</dt><dd>계정 로그인, 녹음 처리 동의 · 발음 점수는 Azure 키 필요 · Retell은 별도 표준 읽기·모음 과제가 없으면 그 항목 미측정</dd>
+<dt>한계</dt><dd>치매 예측 및 병적 음성 떨림 판정 미검증 · 통화 시각은 근사치</dd></dl>
+<footer>임상 점수 임의 생성 없음 · 음성 원음 저장 없이 시험 분석</footer></article>
 <article class="reg-card" id="ai-cognitive-scoring-sandbox">
 <header class="kimse-demo-head"><div><small>09 · 검증된 인지검사 채점규칙 · 음성 AI 연결 시험</small><h3>음성·인지검사 채점 검증실</h3></div><a class="kimse-demo-action" href="./cognitive-scoring-demo.html" aria-label="음성 전사와 공식 검사 채점규칙 검증실 열기">테스트</a></header>
 <div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-list-check"></i><span>SCORE<br>LAB</span></div><div><p class="kimse-vision-desc">사전학습 Whisper 한국어 전사, 원문 읽기 발음 차이 후보 분석, Azure Speech 공식 한국어 발음 평가(서버 설정 시)와 GPCOG 공개 채점규칙 계산을 분리했습니다. 공식 발음 점수는 인지저하 진단이 아닙니다.</p></div></div>
