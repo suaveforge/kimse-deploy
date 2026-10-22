@@ -59,6 +59,9 @@ const API='https://api-kimse.suaveforge.com/api/v1/evidence/retell/guest/calls';
 const el=id=>document.getElementById(id);
 let client=null,live=false,creating=false,callId='',sessionToken='',deleted=false,refreshTimer=null,requestEpoch=0;
 const storeKey='kimse_retell_evidence_guest';
+let serviceReady=false;
+el('start').disabled=true;
+
 function show(message,error=false){el('status').textContent=message;el('status').dataset.error=String(error);}
 function clientMarker(){
   const key='kimse_retell_guest_client';
@@ -127,6 +130,7 @@ async function finish(){
   autoRefresh();
 }
 el('start').addEventListener('click',async()=>{
+  if(!serviceReady){show('AI 통화 서버 연결이 준비되지 않았습니다.',true);return;}
   if(creating||live||callId)return;
   if(!el('consent').checked){show('통화 데이터 처리 동의가 필요합니다.',true);return;}
   if(!window.isSecureContext){show('HTTPS 환경에서만 통화할 수 있습니다.',true);return;}
@@ -174,4 +178,17 @@ try{
     refresh();
   }
 }catch(error){}
+async function checkGuestService(){
+  if(callId)return;
+  try{
+    // Distinguish our explicit scoped 404 from a missing API route's generic 404.
+    const response=await fetch(API+'/connectivity-check',{cache:'no-store'});
+    const result=await response.json().catch(()=>({}));
+    serviceReady=response.status===404&&result.detail==='EVIDENCE_SESSION_NOT_FOUND';
+  }catch(error){serviceReady=false;}
+  el('start').disabled=!serviceReady;
+  if(serviceReady)show('AI 통화 연결 준비 완료. 동의 후 시작하세요.');
+  else show('AI 통화 서버가 아직 준비되지 않았습니다. 이 화면에서는 통화가 시작되지 않습니다.',true);
+}
+checkGuestService();
 </script></main></body></html>
