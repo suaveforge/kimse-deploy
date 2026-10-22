@@ -3,10 +3,12 @@ const el = id => document.getElementById(id);
 const API = 'https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis';
 const prompts = {
   read: '오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.',
-  vowel: "편한 목소리로 '아—'를 4~6초 동안 일정하게 발성하세요.",
-  free: '최근에 있었던 일을 편하게 이야기해주세요.'
+  response: "질문을 끝까지 듣고 대답해주세요. 어제 하루 동안 기억에 남는 일은 무엇이었나요?",
+  vowel: "편한 목소리로 '아—'를 4~6초 동안 일정하게 발성하세요."
 };
 let stream=null, recorder=null, sound=null, previewUrl=null, report=null;
+let questionEndedAt=null, questionCaptureOffsetMs=null;
+const stages=['read','response','vowel'];
 let quickSession=null;
 const number = n => typeof n === 'number' && Number.isFinite(n);
 function output(r){
@@ -15,11 +17,12 @@ function output(r){
   if(r?.source==='evidence_guest'){
     const earlier=quickSession;
     const tasks=new Set(earlier?.completedTasks||[]);
-    if(r.task==='read'||r.task==='vowel')tasks.add(r.task);
+    if(stages.includes(r.task))tasks.add(r.task);
     quickSession={...r,
       task:tasks.size>1?'multi_task_evidence_session':r.task,
       completedTasks:[...tasks],
       pronunciation:r.task==='read'||!earlier?r.pronunciation:earlier.pronunciation,
+      responseDelay:r.task==='response'||!earlier?r.responseDelay:earlier.responseDelay,
       vocalTremor:r.task==='vowel'||!earlier?r.vocalTremor:earlier.vocalTremor
     };
     r=quickSession;
@@ -32,11 +35,17 @@ function output(r){
      'Azure 발음 평가 · 유창성 '+(number(p.scores?.fluency)?p.scores.fluency.toFixed(1):'미제공')+
      '/100 · 완성도 '+(number(p.scores?.completeness)?p.scores.completeness.toFixed(1):'미제공')+
      '/100 · 교육용 점수, 임상적 조음 정확도 아님':(p.reason||'실제 발음 평가 결과 없음');
-  el('out-delay').textContent=d.status==='measured'&&number(d.medianLatencyMs)?
-    (d.medianLatencyMs/1000).toFixed(2)+'초':'미측정';
+  const responsePause=d.withinResponse||{};
+  const startMs=number(d.initialResponseLatencyMs)?d.initialResponseLatencyMs:
+                number(d.medianLatencyMs)?d.medianLatencyMs:null;
+  el('out-delay').textContent=startMs===null?
+    (d.status==='measured'?'답변 중 휴지 측정':'미측정'):(startMs/1000).toFixed(2)+'초 · 시작';
   el('why-delay').textContent=d.status==='measured'?
-     'Retell 질문→답변 '+d.observedCount+'회 · 근사 단어 시각 (청력·난도·연결시간 영향, 인지 지연 확정 아님)':
-     (d.reason||'질문·답변 타임스탬프 없음');
+    '답변 중 침묵 '+(number(responsePause.silentPauseCount)?responsePause.silentPauseCount+'회':(
+      number(responsePause.interWordGapCount)?responsePause.interWordGapCount+'개 후보':'미측정'))+
+    ' · 총 '+(number(responsePause.totalSilentPauseMs)?(responsePause.totalSilentPauseMs/1000).toFixed(2)+'초':'미측정')+
+    ' · WebRTC VAD 구간 추출, 녹음·시계 오차 검증 전 (정상·비정상 판정 아님)':
+    (d.reason||'음성구간 자료 없음');
   const fm=t.frequencyModulation?.peakRateHz,am=t.amplitudeModulation?.peakRateHz;
   el('out-tremor').textContent=t.status==='measured'?
      (number(fm)?fm.toFixed(2)+' Hz F0':'F0 변조율 미검출'):'미측정';
@@ -73,17 +82,54 @@ el('record').addEventListener('click',async()=>{
     stream=await navigator.mediaDevices.getUserMedia({audio:true});
     recorder=new MediaRecorder(stream);
     let fragments=[];
+    questionEndedAt=null;questionCaptureOffsetMs=null;
     recorder.ondataavailable=e=>{if(e.data?.size)fragments.push(e.data);};
     recorder.onstop=()=>{
       const blob=new Blob(fragments,{type:recorder.mimeType||'audio/webm'});
       newSound(blob);stream?.getTracks().forEach(t=>t.stop());stream=null;
-      el('quick-status').textContent='녹음 완료. 원음 재생과 과제 확인 후 분석할 수 있습니다.';
+      el('quick-status').textContent='녹음 완료. 분석 동의 후 다음 단계로 이동합니다.';
+      if(el('server-consent').checked && (el('task').value!=='read'||el('azure-consent').checked)){
+        el('quick-analyze').click();
+      }
     };
-    newSound(null);el('audio-file').value='';recorder.start();
-    el('record').disabled=true;el('stop').disabled=false;
-    el('quick-status').textContent='녹음 중 · 종료를 누르세요.';
+    recorder.onstart=()=>{
+      if(questionEndedAt!==null){
+        questionCaptureOffsetMs=Math.max(0,performance.now()-questionEndedAt);
+        // MediaRecorder start callback can lag PCM capture: label estimates only.
+      }
+    };
+    newSound(null);el('audio-file').value='';
+    el('record').disabled=true;
+    if(el('task').value==='response'){
+      if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){
+        throw Error('이 기기에서 질문 음성 재생을 지원하지 않습니다.');
+      }
+      el('quick-status').textContent='AI 질문을 재생합니다. 끝나면 녹음이 자동 시작됩니다.';
+      const prompt=new SpeechSynthesisUtterance('어제 하루 동안 기억에 남는 일은 무엇이었나요?');
+      prompt.lang='ko-KR';prompt.rate=0.92;
+      const candidates=speechSynthesis.getVoices().filter(v=>(v.lang||'').toLowerCase().startsWith('ko'));
+      if(candidates.length)prompt.voice=candidates[0];
+      prompt.onend=()=>{
+        questionEndedAt=performance.now();
+        if(recorder?.state==='inactive'){
+          recorder.start();
+          el('stop').disabled=false;
+          el('quick-status').textContent='질문 종료 · 이제 답변해 주세요. 끝나면 녹음 종료를 누르세요.';
+        }
+      };
+      prompt.onerror=()=>{
+        stream?.getTracks().forEach(t=>t.stop());stream=null;
+        el('record').disabled=false;
+        el('quick-status').textContent='질문 음성 재생 실패. 응답 시작시간을 측정할 수 없습니다.';
+      };
+      speechSynthesis.cancel();speechSynthesis.speak(prompt);
+    }else{
+      recorder.start();el('stop').disabled=false;
+      el('quick-status').textContent='녹음 중 · 끝나면 종료를 누르세요.';
+    }
   }catch(error){
     stream?.getTracks().forEach(t=>t.stop());stream=null;
+    el('record').disabled=false;
     el('quick-status').textContent='녹음 시작 실패: '+(error.message||error);
   }
 });
@@ -139,11 +185,44 @@ el('quick-analyze').addEventListener('click',async()=>{
       body:JSON.stringify({
         task:el('task').value,audio_base64:wav16kBase64(pcm),
         consent_server_audio_processing:true,
-        consent_azure_transfer:el('task').value==='read'&&el('azure-consent').checked
+        consent_azure_transfer:el('task').value==='read'&&el('azure-consent').checked,
+        question_end_to_capture_start_ms:el('task').value==='response'?questionCaptureOffsetMs:null
       })});
-    output(result);status.textContent='과제 분석 완료 · 같은 사람의 다른 과제를 측정하면 기존 실측 결과를 유지합니다.';
+    output(result);
+    const index=stages.indexOf(el('task').value);
+    if(index>=0 && index<stages.length-1){
+      el('task').value=stages[index+1];
+      el('progress').textContent=(index+2)+' / 3';
+      el('prompt').textContent=prompts[el('task').value];
+      el('azure-consent').disabled=true;
+      newSound(null);el('audio-file').value='';
+      questionEndedAt=null;questionCaptureOffsetMs=null;
+      status.textContent='이전 과제 완료. 다음 과제 안내를 확인하고 녹음 시작을 누르세요.';
+    }else{
+      el('results').hidden=false;
+      el('self-panel').hidden=true;
+      status.textContent='세 가지 과제 분석 완료. 위에서 측정 결과와 품질을 확인하세요.';
+      el('results').scrollIntoView({behavior:'smooth',block:'start'});
+    }
   }catch(error){status.textContent='통합 분석 실패: '+(error.message||error);}
   finally{button.disabled=false;}
+});
+el('choose-self').addEventListener('click',()=>{
+  el('method-picker').hidden=true;
+  el('retell-panel').hidden=true;
+  el('self-panel').hidden=false;
+  el('results').hidden=true;
+  el('new-session').click();
+});
+el('choose-retell').addEventListener('click',()=>{
+  el('method-picker').hidden=true;
+  el('self-panel').hidden=true;
+  el('retell-panel').hidden=false;
+  el('results').hidden=true;
+});
+el('back-method').addEventListener('click',()=>{
+  el('retell-panel').hidden=true;
+  el('method-picker').hidden=false;
 });
 el('new-session').addEventListener('click',()=>{
   quickSession=null;report=null;
@@ -152,6 +231,9 @@ el('new-session').addEventListener('click',()=>{
   el('server-consent').checked=false;
   el('azure-consent').checked=false;
   el('task').value='read';
+  questionEndedAt=null;questionCaptureOffsetMs=null;
+  el('results').hidden=true;el('self-panel').hidden=false;
+  el('progress').textContent='1 / 3';
   el('prompt').textContent=prompts.read;
   el('out-pron').textContent='미측정';
   el('out-delay').textContent='미측정';
@@ -161,7 +243,7 @@ el('new-session').addEventListener('click',()=>{
   el('why-tremor').textContent='새 모음 지속 발성 녹음을 입력하세요.';
   el('evidence').textContent='새 평가가 시작되었습니다.';
   el('download').disabled=true;
-  el('quick-status').textContent='새 평가 시작 · 문장 읽기 → 모음 ‘아’ 순서로 측정하세요.';
+  el('quick-status').textContent='새 평가 · 문장 읽기 → 질문 듣고 답변하기 → 모음 발성';
 });
 el('download').addEventListener('click',()=>{
   if(!report)return;
