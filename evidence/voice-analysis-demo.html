@@ -137,14 +137,7 @@ main{min-width:0}
 <div class="topline"><h2>셀프 테스트</h2><span id="progress">1 / 3</span></div><div class="progressTrack"><div id="progressFill"></div></div>
 <p id="stage-title" class="small" style="text-align:center;font-weight:750">1단계 · 문장 읽기</p>
 <p id="prompt">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</p>
-<div id="question-guide" hidden>
-<p class="small" style="text-align:center;margin:0 0 12px">질문을 소리로 들은 뒤 답변해 주세요.</p>
-<audio id="question-audio" preload="auto" playsinline></audio>
-<button id="play-question" class="primary question-play" type="button">🔊 1. 질문 듣기</button>
-<button id="repeat-question" class="secondary" type="button" style="width:100%;margin-top:8px" hidden>🔊 질문 다시 듣기</button>
-<button id="manual-response" class="primary" type="button" style="width:100%;min-height:76px;font-size:21px;margin-top:12px" hidden>🎙 2. 답변 녹음 시작</button>
-<p class="small" id="question-hint" style="text-align:center;margin:10px 0">질문을 들은 다음 녹음 시작을 직접 눌러주세요.</p>
-</div>
+
 <select id="task" hidden aria-label="측정 과제"><option value="read">읽기</option><option value="response">질문 응답</option><option value="vowel">모음</option></select>
 <div id="meter-wrap" aria-live="off"><div class="liveheader"><span id="record-state"><span class="dot"></span><span id="record-label">녹음 대기</span></span><span id="elapsed">00:00</span></div><canvas id="levelCanvas" width="560" height="100" aria-label="마이크 입력 음량 표시"></canvas><p id="signal-label">녹음을 시작하면 목소리에 따라 움직입니다.</p></div>
 <label class="consent"><input id="server-consent" type="checkbox"><span>음성 분석에 동의합니다.</span></label>
