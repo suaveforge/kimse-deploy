@@ -11,7 +11,7 @@ const prompts={
 let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarted=0;
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
-let busy=false,recordingSession=0;
+let busy=false,recordingSession=0,serviceReady=false;
 const number=n=>typeof n==='number'&&Number.isFinite(n);
 const currentTask=()=>tasks[index];
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -129,6 +129,29 @@ function cancelCapture(){
   if(recorder?.state==='recording'){recorder.onstop=null;recorder.stop();}
   recorder=null;closeMicrophone();window.speechSynthesis?.cancel?.();
 }
+async function checkService(){
+  serviceReady=false;
+  el('record').disabled=true;
+  el('check-connection').hidden=true;
+  setStatus('분석 서버 연결 확인 중…');
+  try{
+    const response=await Promise.race([
+      fetch(API+'/status',{cache:'no-store'}),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),8000))
+    ]);
+    if(!response.ok)throw Error('HTTP '+response.status);
+    const status=await response.json();
+    if(status.ready!==true||status.evidenceGuestQuickEnabled!==true)throw Error('API_NOT_READY');
+    serviceReady=true;
+    el('record').disabled=false;
+    setStatus('연결 완료 · 동의 후 녹음을 시작해 주세요.','success');
+  }catch(e){
+    serviceReady=false;
+    el('record').disabled=true;
+    el('check-connection').hidden=false;
+    setStatus('분석 서버에 연결할 수 없습니다. 녹음 전에 다시 연결해주세요.','error');
+  }
+}
 function showStage(i){
   cancelCapture();
   index=i;questionEnd=null;questionOffset=null;setAudio(null);
@@ -144,15 +167,16 @@ function showStage(i){
   el('after-actions').hidden=true;
   el('elapsed').textContent='00:00';
   el('record').textContent='🎙 녹음 시작';
-  el('record').disabled=false;
+  el('record').disabled=!serviceReady;
   busy=false;
-  setStatus(i===0?'동의 후 녹음을 시작해 주세요.':'준비되면 녹음 시작을 눌러주세요.');
+  setStatus(serviceReady?(i===0?'동의 후 녹음을 시작해 주세요.':'준비되면 녹음 시작을 눌러주세요.'):'분석 서버 연결을 확인해주세요.');
 }
 function newAssessment(){
   completed={};report=null;
   el('server-consent').checked=false;el('azure-consent').checked=false;
   el('method-picker').hidden=true;
   showStage(0);
+  return checkService();
 }
 function mergeResult(task,data){
   if(task==='read')completed.pronunciation=data.pronunciation;
@@ -265,16 +289,22 @@ async function analyze(){
     finishStage();
   }catch(e){
     if(session!==recordingSession)return;
+    if(/HTTP 50[0234]|Failed to fetch|NetworkError|Load failed|fetch failed/i.test(String(e?.message||e))){
+      serviceReady=false;
+      el('check-connection').hidden=false;
+    }
     setStatus('분석 실패: '+friendlyError(e)+' 다시 분석하거나 녹음해주세요.','error');
     el('after-actions').hidden=false;
   }finally{
     busy=false;el('quick-analyze').disabled=false;
-    if(el('self-panel').hidden===false)el('record').disabled=false;
+    if(el('self-panel').hidden===false)el('record').disabled=!serviceReady;
     el('quick-status').setAttribute('aria-busy','false');
   }
 }
 async function startRecording(){
-  if(busy||!checkConsent())return;
+  if(busy)return;
+  if(!serviceReady){await checkService();if(!serviceReady)return;}
+  if(!checkConsent())return;
   try{
     if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)
       throw Error('이 브라우저에서 마이크 녹음을 지원하지 않습니다.');
@@ -337,6 +367,7 @@ async function startRecording(){
     setStatus('녹음 시작 실패: '+friendlyError(e),'error');
   }
 }
+el('check-connection').addEventListener('click',checkService);
 el('choose-self').addEventListener('click',newAssessment);
 el('choose-retell').addEventListener('click',()=>{
   cancelCapture();el('method-picker').hidden=true;
