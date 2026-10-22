@@ -11,6 +11,7 @@ const prompts={
 let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarted=0;
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
+let responsePreRollMs=0,responseSoundHasPreRoll=false;
 let busy=false,recordingSession=0,serviceReady=false;
 let responseMicPreparing=false;
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
@@ -73,7 +74,11 @@ function friendlyError(e){
     return shortReason[raw]||'녹음 요청값을 서버에서 거절했습니다.';
   }
   if(http>=500)return '분석 서버가 요청을 처리하지 못했습니다.';
-  if(e?.phase==='decode')return '이 아이폰에서 녹음 파일 변환에 실패했습니다. 녹음 파일은 남아 있으니 다시 분석을 시도할 수 있습니다.';
+  if(e?.phase==='decode'){
+    if(/질문 이후 답변/.test(raw))return raw;
+    if(/1~30초|녹음 파일의 길이/.test(raw))return raw;
+    return '이 아이폰에서 녹음 파일 변환에 실패했습니다. 기존 녹음으로 재분석할 수 있습니다.';
+  }
   return shortReason[raw]||(/Failed to fetch|NetworkError|Load failed|fetch failed/i.test(raw)?
       '서버 연결에 실패했습니다. 인터넷 연결을 확인하고 다시 시도하세요.':raw);
 }
@@ -317,7 +322,7 @@ async function primeResponseMicrophone(){
 }
 function showStage(i){
   cancelCapture();
-  index=i;questionEnd=null;questionOffset=null;setAudio(null);
+  index=i;questionEnd=null;questionOffset=null;responsePreRollMs=0;responseSoundHasPreRoll=false;setAudio(null);
   lastAnalysisError=null;el('error-copy').hidden=true;
   const task=currentTask();
   el('self-panel').hidden=false;
@@ -334,6 +339,7 @@ function showStage(i){
   el('stop').hidden=task==='response';
   el('play-question').disabled=!serviceReady;
   el('repeat-question').hidden=true;
+  el('manual-response').hidden=true;
   if(task==='response'){
     const questionAudio=el('question-audio');
     if(!questionAudio.getAttribute('src')){
@@ -556,18 +562,25 @@ function checkConsent(){
   }
   return true;
 }
-async function to16k(blob){
+async function to16k(blob,removeQuestionMs=0){
   const Constructor=window.AudioContext||window.webkitAudioContext;
   if(!Constructor)throw Error('이 브라우저는 녹음 변환을 지원하지 않습니다.');
   const context=new Constructor();
   try{
     const decoded=await context.decodeAudioData(await blob.arrayBuffer());
-    if(decoded.duration<1||decoded.duration>30)throw Error('1~30초 음성을 녹음해주세요.');
+    // Stage two records the question as a safety pre-roll. Only the
+    // trimmed answer may be sent to the server (maximum 30 seconds).
+    if(decoded.duration<1||decoded.duration>45)throw Error('녹음 파일의 길이가 올바르지 않습니다.');
     const offline=new OfflineAudioContext(1,Math.ceil(decoded.duration*16000),16000);
     const source=offline.createBufferSource();
     source.buffer=decoded;source.connect(offline.destination);source.start();
     const rendered=await offline.startRendering();
-    return rendered.getChannelData(0);
+    const all=rendered.getChannelData(0);
+    const drop=Math.min(all.length,Math.max(0,Math.round(removeQuestionMs*16)));
+    const answer=all.subarray(drop);
+    if(answer.length<16000||answer.length>480000)
+      throw Error('질문 이후 답변이 1~30초 이상 녹음돼야 합니다.');
+    return answer;
   }finally{await context.close().catch(()=>{});}
 }
 function wav16kBase64(audio){
@@ -598,13 +611,17 @@ async function analyze(){
   el('quick-status').setAttribute('aria-busy','true');
   try{
     let pcm;
-    try{pcm=await to16k(sound);}
+    try{pcm=await to16k(sound,task==='response'&&responseSoundHasPreRoll?responsePreRollMs:0);}
     catch(e){e.phase='decode';throw e;}
     pcmLength=pcm.length;
     // On mobile the playback/recorder clock can have a large unexpected gap.
     // Never reject the entire voice analysis for an invalid initial-latency
     // offset: mark it unmeasured instead of supplying an invented interval.
-    const safeOffset=(number(questionOffset)&&questionOffset>=0&&questionOffset<=30000)?questionOffset:null;
+    // Question audio preceding the answer was removed locally. The new PCM
+    // starts at the browser's approximate prompt-end, not a fabricated
+    // positive device delay. Boundary quality remains explicitly unverified.
+    const safeOffset=task==='response'&&responseSoundHasPreRoll?0:
+      (number(questionOffset)&&questionOffset>=0&&questionOffset<=30000?questionOffset:null);
     phase='encode';
     const audio=wav16kBase64(pcm);
     phase='request';
@@ -659,21 +676,18 @@ async function startRecording(playback='none'){
   if(!checkConsent())return;
   const isResponse=currentTask()==='response';
   if(isResponse&&responseMicPreparing){
-    setStatus('마이크 준비가 끝난 뒤 질문을 들어주세요.');return;
+    setStatus('마이크를 준비하고 있습니다.');return;
   }
   if(isResponse&&!stream?.active){
-    // A denied or slow pre-warm must not start the question before recording is
-    // possible. Require an explicit tap again to preserve mobile media gestures.
+    // Never play a question that cannot be recorded. A new click after mic
+    // permission keeps playback within an actual user gesture on iPhone.
     await primeResponseMicrophone();
-    if(stream?.active){
-      el('play-question').disabled=false;
-      setStatus('마이크 준비 완료. 🔊 질문 듣고 답변하기를 다시 눌러주세요.','success');
-    }else setStatus('마이크를 사용할 수 없습니다. 브라우저 권한을 확인해주세요.','error');
+    if(stream?.active)setStatus('마이크 준비 완료. 질문 듣고 답변하기를 눌러주세요.','success');
+    else setStatus('마이크 권한을 확인해주세요.','error');
     return;
   }
   if(isResponse&&playback==='none'){
-    setStatus('🔊 질문 듣고 답변하기 버튼을 눌러주세요.','error');
-    return;
+    setStatus('질문 듣고 답변하기를 눌러주세요.','error');return;
   }
   try{
     if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)
@@ -681,134 +695,167 @@ async function startRecording(playback='none'){
     ++recordingSession;
     const session=recordingSession;
     el('after-actions').hidden=true;questionEnd=null;questionOffset=null;
+    responsePreRollMs=0;responseSoundHasPreRoll=false;
     setAudio(null);
     const chunks=[];
-    let questionAudio=el('question-audio');
-    let questionFinished=false;
-    let microphoneReady=false;
-    let playbackFailure=false;
-    let questionStarted=false;
-    let speakingTimer=0;
+    const questionAudio=el('question-audio');
+    let questionFinished=false,questionFailedAlready=false;
+    let speakingTimer=0,recorderStartedAt=null,captureStarted=false;
     const resetPlayButton=()=>{
       el('play-question').disabled=false;
       el('repeat-question').hidden=false;
-      el('question-hint').textContent='질문 소리가 안 들리면 다시 듣기를 눌러주세요.';
+      el('question-hint').textContent='질문 재생과 녹음 연결을 다시 시도해주세요.';
     };
-    function questionFailed(){
-      if(session!==recordingSession||questionFinished)return;
-      playbackFailure=true;
+    function shutdownFailedCapture(reason){
+      if(session!==recordingSession||questionFailedAlready)return;
+      questionFailedAlready=true;
       if(speakingTimer)clearTimeout(speakingTimer);
       questionAudio.pause();
-      closeMicrophone();
+      window.speechSynthesis?.cancel?.();
+      if(recorder?.state==='recording'){
+        try{recorder.onstop=null;recorder.stop();}catch{}
+      }
+      recorder=null;closeMicrophone();
       resetPlayButton();
-      setStatus('질문 재생에 실패했습니다. 다시 듣기를 눌러주세요.','error');
+      if(isResponse&&questionEnd!==null){
+        // Graceful iPhone fallback: the question was heard but automated
+        // media recorder activation was interrupted. A direct tap captures
+        // the answer, with unknown initial latency (never fabricated).
+        el('manual-response').hidden=false;
+      }
+      setStatus(reason||'녹음 시작에 실패했습니다. 질문 다시 듣기를 눌러주세요.','error');
+    }
+    function showAnswerCapture(){
+      if(session!==recordingSession||captureStarted||!questionFinished||
+         recorder?.state!=='recording')return;
+      captureStarted=true;
+      beginMeter(stream);
+      setRecordingState(true);
+      startClock();
+      beginAutoMonitor('response');
+      el('stop').hidden=false;
+      el('stop').disabled=false;
+      el('record-label').textContent='● 답변 녹음 중';
+      el('question-hint').textContent='이제 답변해 주세요. 말하기가 끝나면 자동 종료됩니다.';
+      setStatus('● 답변 녹음 중 · 말하기가 끝나면 자동 분석됩니다.');
     }
     function questionDone(){
-      if(session!==recordingSession||playbackFailure||questionFinished)return;
+      if(session!==recordingSession||questionFailedAlready||questionFinished)return;
       if(speakingTimer)clearTimeout(speakingTimer);
       questionEnd=performance.now();
-      if(!microphoneReady||!stream?.active||!recorder||recorder.state!=='inactive'){
-        // If the mic was not ready, the first speech sample could be lost.
-        // Do not fabricate a response-onset time; require a fresh play.
-        closeMicrophone();
-        resetPlayButton();
-        setStatus('마이크가 준비되기 전에 질문이 끝났습니다. 다시 듣기를 눌러주세요.','error');
+      if(!recorder||recorder.state!=='recording'){
+        shutdownFailedCapture('질문은 재생됐지만 녹음기가 작동하지 않았습니다. 다시 시도해주세요.');
         return;
       }
-      try{
-        recorder.start();
-        questionFinished=true;
-        el('question-hint').textContent='질문이 끝났습니다. 이제 답변해 주세요.';
-      }catch(e){
-        // Do not mark playback successful if iOS rejected MediaRecorder.start().
-        questionFailed();
-        setStatus('질문은 재생됐지만 녹음 시작에 실패했습니다. 다시 듣기를 눌러주세요.','error');
-      }
+      // Record the entire call prompt as pre-roll, discard only the prompt
+      // portion from decoded PCM on device. No prompt audio is uploaded.
+      responsePreRollMs=Math.max(0,questionEnd-(recorderStartedAt??questionEnd));
+      responseSoundHasPreRoll=true;
+      questionFinished=true;
+      showAnswerCapture();
     }
-    if(isResponse){
-      // Start the audio inside the direct tap BEFORE awaiting microphone permission.
-      // On iOS, speech synthesis after await getUserMedia can be silently blocked.
-      el('play-question').disabled=true;
-      el('repeat-question').hidden=true;
-      el('question-hint').textContent='질문을 재생하고 있습니다. 끝나면 답변해 주세요.';
-      setStatus('🔊 질문 재생 중 · 끝나면 답변해 주세요.');
-      speakingTimer=setTimeout(()=>{
-        if(session===recordingSession&&!questionFinished)questionFailed();
-      },20000);
-      if(playback==='tts'){
-        if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){
-          questionFailed();return;
-        }
-        window.speechSynthesis.cancel();
-        const spoken=new window.SpeechSynthesisUtterance(RESPONSE_QUESTION);
-        spoken.lang='ko-KR';spoken.rate=.9;spoken.volume=1;
-        const voices=window.speechSynthesis.getVoices();
-        const korean=voices.find(v=>(v.lang||'').toLowerCase().startsWith('ko'));
-        if(korean)spoken.voice=korean;
-        spoken.onstart=()=>{questionStarted=true};
-        spoken.onend=questionDone;
-        spoken.onerror=questionFailed;
-        window.speechSynthesis.speak(spoken);
-      }else{
-        questionAudio.pause();questionAudio.currentTime=0;
-        questionAudio.volume=1;
-        questionAudio.onplaying=()=>{questionStarted=true};
-        questionAudio.onended=questionDone;
-        questionAudio.onerror=questionFailed;
-        try{
-          const p=questionAudio.play();
-          if(p?.catch)p.catch(questionFailed);
-        }catch(e){questionFailed();}
-      }
-    }
-    // Acquire microphone while the user hears the question. Stage one already
-    // granted capture access; if setup is late, fail instead of faking latency.
-    if(navigator.audioSession && !isResponse){
-      try{navigator.audioSession.type='play-and-record';}catch{}
-    }
+    if(navigator.audioSession)try{navigator.audioSession.type='play-and-record';}catch{}
     if(!isResponse){
       stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-    }
-    if(session!==recordingSession){closeMicrophone();return;}
-    if(playbackFailure||questionFinished){
-      closeMicrophone();
-      resetPlayButton();
-      setStatus('질문 재생 중 녹음 연결에 실패했습니다. 다시 시도해주세요.','error');
-      return;
+      if(session!==recordingSession){closeMicrophone();return;}
     }
     recorder=new MediaRecorder(stream);
     recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};
     recorder.onstart=()=>{
       if(session!==recordingSession)return;
-      if(questionEnd!==null)questionOffset=Math.max(0,performance.now()-questionEnd);
-      beginMeter(stream);
-      setRecordingState(true);
-      startClock();
-      beginAutoMonitor(currentTask());
-      el('stop').hidden=false;
-      el('stop').disabled=false;
-      setStatus(currentTask()==='vowel'?'● 녹음 중 · 5.5초 후 자동 종료':
-        '● 녹음 중 · 발화를 마치면 자동 종료됩니다.');
+      if(isResponse){
+        // Do not reset the timer here: recorder.start() was called in the
+        // user gesture, before question playback.
+        showAnswerCapture();
+      }else{
+        beginMeter(stream);
+        setRecordingState(true);
+        startClock();
+        beginAutoMonitor(currentTask());
+        el('stop').hidden=false;
+        el('stop').disabled=false;
+        setStatus(currentTask()==='vowel'?'● 녹음 중 · 5.5초 후 자동 종료':
+          '● 녹음 중 · 발화를 마치면 자동 종료됩니다.');
+      }
     };
     recorder.onstop=()=>{
       if(session!==recordingSession)return;
+      if(isResponse&&!questionFinished){
+        shutdownFailedCapture('질문이 끝나기 전에 녹음기가 중단됐습니다. 다시 시도해주세요.');
+        return;
+      }
+      if(speakingTimer)clearTimeout(speakingTimer);
       const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
       closeMicrophone();recorder=null;
       if(!blob.size){setStatus('녹음 파일이 비어 있습니다. 다시 녹음해주세요.','error');return;}
       setAudio(blob);
+      // Set only after playback has successfully ended. User-chosen files
+      // are not interpreted as having a prerecorded prompt prefix.
+      responseSoundHasPreRoll=isResponse&&playback!=='manual_answer';
       el('after-actions').hidden=false;
       setStatus('녹음 완료 · 분석 중입니다…');
       analyze();
     };
     recorder.onerror=()=>{
-      closeMicrophone();
-      setStatus('녹음 오류가 발생했습니다. 다시 시도해주세요.','error');
-      if(isResponse)resetPlayButton();
+      if(isResponse)shutdownFailedCapture('아이폰에서 녹음 연결이 중단됐습니다. 다시 시도해주세요.');
+      else {closeMicrophone();setStatus('녹음 오류가 발생했습니다. 다시 시도해주세요.','error');}
     };
-    microphoneReady=true;
-    if(!isResponse){el('record').disabled=true;recorder.start();}
+    // Most important change: iPhone starts MediaRecorder synchronously
+    // inside the user's tap. The onended callback NEVER calls start().
+    if(isResponse&&playback==='manual_answer'){
+      questionFinished=true; // question was played on prior attempt
+      responsePreRollMs=0;responseSoundHasPreRoll=false;
+      el('manual-response').hidden=true;
+      el('play-question').disabled=true;
+      try{recorder.start();}
+      catch(e){
+        shutdownFailedCapture('답변 녹음 시작에 실패했습니다. 마이크 권한을 확인해주세요.');
+      }
+      return;
+    }
+    if(isResponse){
+      el('manual-response').hidden=true;
+      el('play-question').disabled=true;
+      el('repeat-question').hidden=true;
+      setStatus('마이크 녹음기 작동 확인 · 질문을 재생합니다.');
+      recorderStartedAt=performance.now();
+      try{recorder.start();}
+      catch(e){shutdownFailedCapture('마이크 녹음 시작에 실패했습니다. 다시 시도해주세요.');return;}
+      speakingTimer=setTimeout(()=>{
+        if(session===recordingSession&&!questionFinished)
+          shutdownFailedCapture('질문 재생이 끝나지 않았습니다. 다시 시도해주세요.');
+      },20000);
+      if(playback==='tts'){
+        if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){
+          shutdownFailedCapture('이 브라우저에서 질문 음성을 재생할 수 없습니다.');return;
+        }
+        window.speechSynthesis.cancel();
+        const spoken=new window.SpeechSynthesisUtterance(RESPONSE_QUESTION);
+        spoken.lang='ko-KR';spoken.rate=.9;spoken.volume=1;
+        const korean=window.speechSynthesis.getVoices().find(v=>(v.lang||'').toLowerCase().startsWith('ko'));
+        if(korean)spoken.voice=korean;
+        spoken.onend=questionDone;
+        spoken.onerror=()=>shutdownFailedCapture('질문 음성 재생에 실패했습니다.');
+        window.speechSynthesis.speak(spoken);
+      }else{
+        questionAudio.pause();questionAudio.currentTime=0;questionAudio.volume=1;
+        questionAudio.onended=questionDone;
+        questionAudio.onerror=()=>shutdownFailedCapture('질문 오디오 파일을 재생하지 못했습니다.');
+        try{
+          const p=questionAudio.play();
+          if(p?.catch)p.catch(()=>shutdownFailedCapture('질문 소리 재생에 실패했습니다.'));
+        }catch(e){shutdownFailedCapture('질문 소리 재생에 실패했습니다.');}
+      }
+      el('question-hint').textContent='질문 재생 중입니다. 끝나면 답변 녹음 표시로 전환됩니다.';
+    }else{
+      el('record').disabled=true;
+      recorder.start();
+    }
   }catch(e){
-    closeMicrophone();
+    if(recorder?.state==='recording'){
+      try{recorder.onstop=null;recorder.stop();}catch{}
+    }
+    recorder=null;closeMicrophone();
     el('play-question').disabled=false;
     setStatus('녹음 시작 실패: '+friendlyError(e),'error');
   }
@@ -830,6 +877,7 @@ function questionPlaybackMode(){
 }
 el('play-question').addEventListener('click',()=>startRecording(questionPlaybackMode()));
 el('repeat-question').addEventListener('click',()=>startRecording(questionPlaybackMode()==='audio'?'audio':'tts'));
+el('manual-response').addEventListener('click',()=>startRecording('manual_answer'));
 el('stop').addEventListener('click',()=>{
   if(recorder?.state==='recording'){
     requestRecordingStop('manual');
@@ -857,6 +905,7 @@ el('audio-file').addEventListener('change',e=>{
   const file=e.target.files?.[0]||null;
   setAudio(file);
   if(file){
+    responseSoundHasPreRoll=false;responsePreRollMs=0;
     el('after-actions').hidden=false;
     setStatus('파일을 선택했습니다. 분석 버튼을 누르세요.');
   }
