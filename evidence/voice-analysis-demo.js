@@ -5,13 +5,15 @@ const tasks=['read','response','vowel'];
 const stageNames=['문장 읽기','질문 듣고 답하기','모음 발성'];
 const prompts={
   read:'오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.',
-  response:'잠시 후 질문이 들립니다. 질문을 듣고 편하게 답변하세요.',
+  response:'어제 하루 동안 기억에 남는 일은 무엇이었나요?',
   vowel:"'아' 소리를 4~6초간 일정하게 내주세요."
 };
 let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarted=0;
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let busy=false,recordingSession=0,serviceReady=false;
+const QUESTION_AUDIO_URL=API+'/question-audio';
+const RESPONSE_QUESTION='어제 하루 동안 기억에 남는 일은 무엇이었나요?';
 // Anonymous per-browser quota scope, not an identity or a login token.
 const anonymousClientId=(()=>{
   const fresh=()=>window.crypto?.randomUUID?.().replace(/-/g,'')||
@@ -135,8 +137,11 @@ function closeMicrophone(){
   stream=null;endMeter();stopClock();setRecordingState(false);
   el('record').disabled=busy;
   el('stop').disabled=true;
+  if(currentTask()==='response')el('stop').hidden=true;
 }
 function cancelCapture(){
+  const questionAudio=el('question-audio');
+  questionAudio.pause();questionAudio.onended=null;questionAudio.onerror=null;
   ++recordingSession;
   if(recorder?.state==='recording'){recorder.onstop=null;recorder.stop();}
   recorder=null;closeMicrophone();window.speechSynthesis?.cancel?.();
@@ -156,10 +161,12 @@ async function checkService(){
     if(status.ready!==true||status.evidenceGuestQuickEnabled!==true)throw Error('API_NOT_READY');
     serviceReady=true;
     el('record').disabled=false;
+    el('play-question').disabled=false;
     setStatus('연결 완료 · 동의 후 녹음을 시작해 주세요.','success');
   }catch(e){
     serviceReady=false;
     el('record').disabled=true;
+    el('play-question').disabled=true;
     el('check-connection').hidden=false;
     setStatus('분석 서버에 연결할 수 없습니다. 녹음 전에 다시 연결해주세요.','error');
   }
@@ -175,13 +182,27 @@ function showStage(i){
   el('progressFill').style.width=((i+1)/3*100)+'%';
   el('stage-title').textContent=(i+1)+'단계 · '+stageNames[i];
   el('prompt').textContent=prompts[task];
+  el('question-guide').hidden=task!=='response';
+  el('record').hidden=task==='response';
+  el('stop').hidden=task==='response';
+  el('play-question').disabled=!serviceReady;
+  el('repeat-question').hidden=true;
+  if(task==='response'){
+    const questionAudio=el('question-audio');
+    if(!questionAudio.getAttribute('src')){
+      questionAudio.src=QUESTION_AUDIO_URL;
+      questionAudio.load();
+    }
+    el('question-hint').textContent='질문이 끝나면 답변 녹음이 자동으로 시작됩니다.';
+  }
   el('azure-row').hidden=i!==0;
   el('after-actions').hidden=true;
   el('elapsed').textContent='00:00';
   el('record').textContent='🎙 녹음 시작';
   el('record').disabled=!serviceReady;
   busy=false;
-  setStatus(serviceReady?(i===0?'동의 후 녹음을 시작해 주세요.':'준비되면 녹음 시작을 눌러주세요.'):'분석 서버 연결을 확인해주세요.');
+  setStatus(serviceReady?(task==='response'?'🔊 질문 듣고 답변하기를 눌러주세요.':
+    i===0?'동의 후 녹음을 시작해 주세요.':'준비되면 녹음 시작을 눌러주세요.'):'분석 서버 연결을 확인해주세요.');
 }
 function newAssessment(){
   completed={};report=null;
@@ -310,26 +331,117 @@ async function analyze(){
   }finally{
     busy=false;el('quick-analyze').disabled=false;
     if(el('self-panel').hidden===false)el('record').disabled=!serviceReady;
+    el('play-question').disabled=!serviceReady;
     el('quick-status').setAttribute('aria-busy','false');
   }
 }
-async function startRecording(){
+async function startRecording(playback='none'){
   if(busy)return;
   if(!serviceReady){await checkService();if(!serviceReady)return;}
   if(!checkConsent())return;
+  const isResponse=currentTask()==='response';
+  if(isResponse&&playback==='none'){
+    setStatus('🔊 질문 듣고 답변하기 버튼을 눌러주세요.','error');
+    return;
+  }
   try{
     if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)
       throw Error('이 브라우저에서 마이크 녹음을 지원하지 않습니다.');
     ++recordingSession;
     const session=recordingSession;
-    const task=currentTask();
     el('after-actions').hidden=true;questionEnd=null;questionOffset=null;
     setAudio(null);
-    if(navigator.audioSession){try{navigator.audioSession.type='play-and-record';}catch{}}
+    const chunks=[];
+    let questionAudio=el('question-audio');
+    let questionFinished=false;
+    let microphoneReady=false;
+    let playbackFailure=false;
+    let questionStarted=false;
+    let speakingTimer=0;
+    const resetPlayButton=()=>{
+      el('play-question').disabled=false;
+      el('repeat-question').hidden=false;
+      el('question-hint').textContent='질문 소리가 안 들리면 다시 듣기를 눌러주세요.';
+    };
+    function questionFailed(){
+      if(session!==recordingSession||questionFinished)return;
+      playbackFailure=true;
+      if(speakingTimer)clearTimeout(speakingTimer);
+      questionAudio.pause();
+      closeMicrophone();
+      resetPlayButton();
+      setStatus('질문 재생에 실패했습니다. 다시 듣기를 눌러주세요.','error');
+    }
+    function questionDone(){
+      if(session!==recordingSession||playbackFailure)return;
+      questionFinished=true;
+      if(speakingTimer)clearTimeout(speakingTimer);
+      questionEnd=performance.now();
+      if(!microphoneReady||!recorder||recorder.state!=='inactive'){
+        // If the mic was not ready, the first speech sample could be lost.
+        // Do not fabricate a response-onset time; require a fresh play.
+        closeMicrophone();
+        resetPlayButton();
+        setStatus('마이크가 준비되기 전에 질문이 끝났습니다. 다시 듣기를 눌러주세요.','error');
+        return;
+      }
+      try{
+        recorder.start();
+        el('question-hint').textContent='질문이 끝났습니다. 이제 답변해 주세요.';
+      }catch(e){questionFailed();}
+    }
+    if(isResponse){
+      // Start the audio inside the direct tap BEFORE awaiting microphone permission.
+      // On iOS, speech synthesis after await getUserMedia can be silently blocked.
+      el('play-question').disabled=true;
+      el('repeat-question').hidden=true;
+      el('question-hint').textContent='질문을 재생하고 있습니다. 끝나면 답변해 주세요.';
+      setStatus('🔊 질문 재생 중 · 끝나면 답변해 주세요.');
+      speakingTimer=setTimeout(()=>{
+        if(session===recordingSession&&!questionFinished)questionFailed();
+      },20000);
+      if(playback==='tts'){
+        if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){
+          questionFailed();return;
+        }
+        window.speechSynthesis.cancel();
+        const spoken=new window.SpeechSynthesisUtterance(RESPONSE_QUESTION);
+        spoken.lang='ko-KR';spoken.rate=.9;spoken.volume=1;
+        const voices=window.speechSynthesis.getVoices();
+        const korean=voices.find(v=>(v.lang||'').toLowerCase().startsWith('ko'));
+        if(korean)spoken.voice=korean;
+        spoken.onstart=()=>{questionStarted=true};
+        spoken.onend=questionDone;
+        spoken.onerror=questionFailed;
+        window.speechSynthesis.speak(spoken);
+      }else{
+        questionAudio.pause();questionAudio.currentTime=0;
+        questionAudio.volume=1;
+        questionAudio.onplaying=()=>{questionStarted=true};
+        questionAudio.onended=questionDone;
+        questionAudio.onerror=questionFailed;
+        try{
+          const p=questionAudio.play();
+          if(p?.catch)p.catch(questionFailed);
+        }catch(e){questionFailed();}
+      }
+    }
+    // Acquire microphone while the user hears the question. Stage one already
+    // granted capture access; if setup is late, fail instead of faking latency.
+    if(navigator.audioSession && !isResponse){
+      try{navigator.audioSession.type='play-and-record';}catch{}
+    }
     stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
     if(session!==recordingSession){closeMicrophone();return;}
+    if(playbackFailure||questionFinished){
+      closeMicrophone();
+      if(!playbackFailure){
+        resetPlayButton();
+        setStatus('마이크 연결이 늦었습니다. 질문을 다시 재생해주세요.','error');
+      }
+      return;
+    }
     recorder=new MediaRecorder(stream);
-    const chunks=[];
     recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};
     recorder.onstart=()=>{
       if(session!==recordingSession)return;
@@ -337,8 +449,9 @@ async function startRecording(){
       beginMeter(stream);
       setRecordingState(true);
       startClock();
+      el('stop').hidden=false;
       el('stop').disabled=false;
-      setStatus('● 녹음 중 · 끝나면 녹음 종료를 눌러주세요.');
+      setStatus('● 녹음 중 · 답변을 마치면 녹음 종료를 눌러주세요.');
     };
     recorder.onstop=()=>{
       if(session!==recordingSession)return;
@@ -350,32 +463,16 @@ async function startRecording(){
       setStatus('녹음 완료 · 분석 중입니다…');
       analyze();
     };
-    recorder.onerror=()=>{closeMicrophone();setStatus('녹음 오류가 발생했습니다. 다시 시도해주세요.','error');};
-    el('record').disabled=true;
-    if(task==='response'){
-      if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))
-        throw Error('이 브라우저에서 질문 음성 재생을 지원하지 않습니다.');
-      setStatus('질문을 읽어주고 있습니다. 끝나면 답변해주세요.');
-      const prompt=new SpeechSynthesisUtterance('어제 하루 동안 기억에 남는 일은 무엇이었나요?');
-      prompt.lang='ko-KR';prompt.rate=.92;
-      const voice=window.speechSynthesis.getVoices().find(v=>(v.lang||'').toLowerCase().startsWith('ko'));
-      if(voice)prompt.voice=voice;
-      prompt.onend=()=>{
-        if(session!==recordingSession)return;
-        questionEnd=performance.now();
-        recorder?.start();
-      };
-      prompt.onerror=()=>{
-        if(session!==recordingSession)return;
-        closeMicrophone();el('record').disabled=false;
-        setStatus('질문 음성을 재생하지 못했습니다. 다시 시도해주세요.','error');
-      };
-      window.speechSynthesis.cancel();window.speechSynthesis.speak(prompt);
-    }else{
-      recorder.start();
-    }
+    recorder.onerror=()=>{
+      closeMicrophone();
+      setStatus('녹음 오류가 발생했습니다. 다시 시도해주세요.','error');
+      if(isResponse)resetPlayButton();
+    };
+    microphoneReady=true;
+    if(!isResponse){el('record').disabled=true;recorder.start();}
   }catch(e){
     closeMicrophone();
+    el('play-question').disabled=false;
     setStatus('녹음 시작 실패: '+friendlyError(e),'error');
   }
 }
@@ -388,7 +485,9 @@ el('choose-retell').addEventListener('click',()=>{
 el('back-method').addEventListener('click',()=>{
   el('retell-panel').hidden=true;el('method-picker').hidden=false;
 });
-el('record').addEventListener('click',startRecording);
+el('record').addEventListener('click',()=>startRecording('none'));
+el('play-question').addEventListener('click',()=>startRecording('audio'));
+el('repeat-question').addEventListener('click',()=>startRecording('tts'));
 el('stop').addEventListener('click',()=>{
   if(recorder?.state==='recording'){
     el('stop').disabled=true;
