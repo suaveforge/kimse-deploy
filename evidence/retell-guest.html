@@ -178,17 +178,28 @@ try{
     refresh();
   }
 }catch(error){}
+let serviceCheckTimer=0,checkingService=false;
 async function checkGuestService(){
-  if(callId)return;
+  if(callId||serviceReady||checkingService)return;
+  checkingService=true;
+  if(serviceCheckTimer){clearTimeout(serviceCheckTimer);serviceCheckTimer=0;}
   try{
-    // Distinguish our explicit scoped 404 from a missing API route's generic 404.
+    // The scoped owner-only endpoint returns a distinct 404 for missing session token.
+    // A missing route would return FastAPI's generic 404, so never enable on that.
     const response=await fetch(API+'/connectivity-check',{cache:'no-store'});
     const result=await response.json().catch(()=>({}));
     serviceReady=response.status===404&&result.detail==='EVIDENCE_SESSION_NOT_FOUND';
   }catch(error){serviceReady=false;}
+  finally{checkingService=false;}
+  if(callId)return;
   el('start').disabled=!serviceReady;
   if(serviceReady)show('AI 통화 연결 준비 완료. 동의 후 시작하세요.');
-  else show('AI 통화 서버가 아직 준비되지 않았습니다. 이 화면에서는 통화가 시작되지 않습니다.',true);
+  else{
+    show('통화 서버 연결 확인 중입니다. 자동으로 다시 연결합니다.',true);
+    serviceCheckTimer=setTimeout(checkGuestService,8000);
+  }
 }
+window.addEventListener('pageshow',()=>{if(!serviceReady)checkGuestService();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!serviceReady)checkGuestService();});
 checkGuestService();
 </script></main></body></html>
