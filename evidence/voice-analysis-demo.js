@@ -12,6 +12,16 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let busy=false,recordingSession=0,serviceReady=false;
+let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
+let noiseFloor=.003,autoStopReason=null;
+// UI capture duration parameters only. These ARE NOT speech-disorder thresholds.
+// A fixed 5.5s vowel recording provides >=5s samples as used by tremor research.
+// For unstructured answers, a generous silence window protects interior hesitations.
+const RECORD_LIMITS={
+  read:{minimumMs:3500,silenceAfterMs:2600,maxMs:25000},
+  response:{minimumMs:6500,silenceAfterMs:5000,maxMs:29000},
+  vowel:{minimumMs:5500,silenceAfterMs:null,maxMs:5500}
+};
 const QUESTION_AUDIO_URL=API+'/question-audio';
 const RESPONSE_QUESTION='어제 하루 동안 기억에 남는 일은 무엇이었나요?';
 // Anonymous per-browser quota scope, not an identity or a login token.
@@ -69,6 +79,7 @@ function drawMeter(){
     let total=0;
     for(let j=0;j<arr.length;j++){const d=(arr[j]-128)/128;total+=d*d;}
     rms=Math.sqrt(total/arr.length);
+    watchRecordingActivity(rms);
   }
   const bars=35,gap=5,bw=(W-gap*(bars-1))/bars;
   const t=performance.now()/115;
@@ -109,6 +120,68 @@ function endMeter(){
   const canvas=el('levelCanvas'),ctx=canvas.getContext('2d');
   if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);
 }
+function stopAutoMonitor(){
+  if(autoStopTimer)clearTimeout(autoStopTimer);
+  autoStopTimer=0;
+  autoVoiceSeen=false;lastActiveVoiceMs=null;voiceAboveFrames=0;
+  activeRecordingTask=null;
+}
+function requestRecordingStop(reason){
+  if(recorder?.state!=='recording')return false;
+  autoStopReason=reason;
+  el('stop').disabled=true;
+  setStatus(reason==='vowel_time'?'5.5초 발성 녹음 완료 · 분석을 시작합니다.':
+    reason==='silence_after_speech'?'발화 종료 감지 · 분석을 시작합니다.':
+    reason==='maximum_duration'?'최대 녹음 시간에 도달했습니다. 분석을 시작합니다.':
+    '녹음 종료 · 분석을 시작합니다.');
+  recorder.stop();
+  return true;
+}
+function watchRecordingActivity(rms){
+  if(!activeRecordingTask||recorder?.state!=='recording')return;
+  const task=activeRecordingTask;
+  if(task==='vowel')return; // vowel stops by elapsed samples, not volume.
+  const now=performance.now();
+  const elapsed=now-recordingStarted;
+  // Slowly estimate ambient noise only in quiet frames. This detector decides
+  // when to stop the UX capture, NOT medically significant pause boundaries.
+  const threshold=Math.max(.008,Math.min(.055,noiseFloor*3.2));
+  if(rms<threshold*.65)noiseFloor=noiseFloor*.985+rms*.015;
+  if(rms>threshold){
+    voiceAboveFrames++;
+    if(voiceAboveFrames>=4){
+      autoVoiceSeen=true;
+      lastActiveVoiceMs=now;
+    }
+  }else voiceAboveFrames=0;
+  const conf=RECORD_LIMITS[task];
+  if(autoVoiceSeen&&lastActiveVoiceMs!==null&&elapsed>=conf.minimumMs
+    &&now-lastActiveVoiceMs>=conf.silenceAfterMs)requestRecordingStop('silence_after_speech');
+}
+function beginAutoMonitor(task){
+  stopAutoMonitor();
+  activeRecordingTask=task;
+  autoStopReason=null;
+  noiseFloor=.003;
+  const conf=RECORD_LIMITS[task];
+  const start=performance.now();
+  // Use a polling timer independent of animation frames: mobile browsers can
+  // throttle requestAnimationFrame, especially when audio route changes.
+  const tick=()=>{
+    if(recorder?.state!=='recording'||activeRecordingTask!==task)return;
+    const elapsed=performance.now()-start;
+    if(task==='vowel'){
+      const remain=Math.max(0,(conf.maxMs-elapsed)/1000);
+      el('signal-label').textContent='아— 소리를 유지해 주세요 · '+remain.toFixed(1)+'초 남음';
+    }
+    if(elapsed>=conf.maxMs){
+      requestRecordingStop(task==='vowel'?'vowel_time':'maximum_duration');
+      return;
+    }
+    autoStopTimer=setTimeout(tick,80);
+  };
+  autoStopTimer=setTimeout(tick,80);
+}
 function stopClock(){
   if(clockInterval)clearInterval(clockInterval);
   clockInterval=0;
@@ -133,6 +206,7 @@ function setAudio(blob){
   }
 }
 function closeMicrophone(){
+  stopAutoMonitor();
   stream?.getTracks().forEach(track=>track.stop());
   stream=null;endMeter();stopClock();setRecordingState(false);
   el('record').disabled=busy;
@@ -182,6 +256,8 @@ function showStage(i){
   el('progressFill').style.width=((i+1)/3*100)+'%';
   el('stage-title').textContent=(i+1)+'단계 · '+stageNames[i];
   el('prompt').textContent=prompts[task];
+  el('signal-label').textContent=task==='vowel'?'5.5초 동안 아— 소리를 내면 자동으로 종료됩니다.':
+    task==='response'?'답변을 마치면 자동으로 녹음이 종료됩니다.':'문장을 읽고 잠시 멈추면 자동으로 종료됩니다.';
   el('question-guide').hidden=task!=='response';
   el('record').hidden=task==='response';
   el('stop').hidden=task==='response';
@@ -449,9 +525,11 @@ async function startRecording(playback='none'){
       beginMeter(stream);
       setRecordingState(true);
       startClock();
+      beginAutoMonitor(currentTask());
       el('stop').hidden=false;
       el('stop').disabled=false;
-      setStatus('● 녹음 중 · 답변을 마치면 녹음 종료를 눌러주세요.');
+      setStatus(currentTask()==='vowel'?'● 녹음 중 · 5.5초 후 자동 종료':
+        '● 녹음 중 · 발화를 마치면 자동 종료됩니다.');
     };
     recorder.onstop=()=>{
       if(session!==recordingSession)return;
@@ -495,8 +573,7 @@ el('play-question').addEventListener('click',()=>startRecording(questionPlayback
 el('repeat-question').addEventListener('click',()=>startRecording(questionPlaybackMode()==='audio'?'audio':'tts'));
 el('stop').addEventListener('click',()=>{
   if(recorder?.state==='recording'){
-    el('stop').disabled=true;
-    recorder.stop();
+    requestRecordingStop('manual');
   }
 });
 el('quick-analyze').addEventListener('click',analyze);
