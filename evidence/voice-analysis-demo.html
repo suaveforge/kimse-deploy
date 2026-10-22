@@ -10,13 +10,13 @@ h2{font-size:17px;margin:0 0 8px}h3{font-size:14px;margin:8px 0}
 a{color:#08776b}
 p,small{color:#536e71;line-height:1.5}p{margin:7px 0}
 .card{background:#fff;border:1px solid #d1e2dd;border-radius:13px;padding:14px}
-.results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:13px 0}
-.result strong{font-size:14px}.result .value{font-size:20px;font-weight:800;color:#175b59;min-height:25px;margin:10px 0 5px}
-.result .note{font-size:12px;color:#627a7a;overflow-wrap:anywhere}
-.layout{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+[hidden]{display:none!important}.method-actions button{min-width:45%;font-size:clamp(18px,3vw,24px);padding:18px 14px}.results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:13px 0}
+#self-panel{max-width:720px;margin:auto;min-height:380px;padding:clamp(18px,4vw,36px)}#prompt{font-size:clamp(23px,4vw,36px);line-height:1.55!important;margin:26px 0!important;text-align:center}#progress{font-size:17px;float:right;color:#127467}.result strong{font-size:18px}.result .value{font-size:clamp(24px,4vw,36px);font-weight:800;color:#175b59;min-height:25px;margin:10px 0 5px}
+.result .note{font-size:15px;color:#627a7a;overflow-wrap:anywhere}
+.layout{display:block;max-width:780px;margin:auto}
 button,select,input{font:inherit}button,select,input[type=file],input[type=text]{border-radius:8px;border:1px solid #aac8bf;padding:10px;max-width:100%;min-height:40px}
 button{background:#e8f4ef;color:#174740;font-weight:750;cursor:pointer}button.primary{color:#fff;background:#0c756a;border-color:#0c756a}.secondary{background:#e9efed;color:#345553}.lab-link{display:inline-block;background:#e8f4ef;color:#174740;font-weight:750;padding:11px 14px;border-radius:8px;text-decoration:none}
-button:disabled{opacity:.52;cursor:not-allowed}
+#self-panel button{min-height:52px;font-size:17px}button:disabled{opacity:.52;cursor:not-allowed}
 .actions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
 select,input[type=file],input[type=text]{width:100%}
 .status{font-size:13px;min-height:21px;margin-top:8px}
@@ -29,35 +29,41 @@ details{margin-top:9px}
 </style></head><body><main>
 <header><h1>낌새 · 통합 음성 분석</h1><a href="./collection.html?view=ai">Evidence 돌아가기</a></header>
 <p class="expl"><strong>에비던스 빠른 음성 테스트는 로그인 없이 사용할 수 있습니다.</strong> 음성 전송 동의와 공용 이용 한도는 적용됩니다. Retell의 개인 상담 기록만 소유자 인증이 필요합니다. 검증되지 않은 임상 판정이나 가상의 점수는 표시하지 않습니다.</p>
-<div class="results" aria-label="상담사 요청 3가지 결과">
+<div class="results" id="results" hidden aria-label="측정 결과">
 <section class="card result" aria-labelledby="pron-label"><strong id="pron-label">① 발음 정확도</strong><div class="value" id="out-pron">미측정</div><div class="note" id="why-pron">기준 문장 읽기와 공식 발음 평가 결과 필요</div></section>
 <section class="card result" aria-labelledby="delay-label"><strong id="delay-label">② 생각의 지연 관련 지표</strong><div class="value" id="out-delay">미측정</div><div class="note" id="why-delay">질문 종료와 답변 시작의 같은 시간축 기록 필요</div></section>
 <section class="card result" aria-labelledby="tremor-label"><strong id="tremor-label">③ 목소리 떨림 관련 지표</strong><div class="value" id="out-tremor">미측정</div><div class="note" id="why-tremor">4초 이상의 모음 발성·Praat 분석 필요</div></section>
 </div>
+<div id="method-picker" class="card">
+<h2>측정 방법 선택</h2>
+<p class="expl">로그인 없이 셀프 테스트를 진행하거나, Retell 상담 통화로 검증할 수 있습니다.</p>
+<div class="actions method-actions"><button type="button" id="choose-self" class="primary">셀프 테스트</button><button type="button" id="choose-retell">Retell AI 통화</button></div>
+</div>
 <div class="layout">
-<section class="card"><h2>1–2. 문장 읽기와 모음 분석 · 로그인 불필요</h2>
-<p class="expl">같은 사람이 문장 읽기와 '아' 발성을 순서대로 테스트하면 이 화면에서 두 실측 결과를 함께 표시합니다. 다른 사람이 평가할 때에는 '새 평가 시작'을 누르세요.</p>
-<label for="task">측정 과제</label><select id="task">
+<section class="card" id="self-panel" hidden><h2>셀프 테스트 <span id="progress">1 / 3</span></h2>
+<p class="expl">한 화면에 한 과제만 표시하며, 분석을 마치면 자동으로 다음 단계로 넘어갑니다.</p>
+<label for="task" hidden>측정 과제</label><select id="task" hidden>
 <option value="read">문장 읽기 · Azure 발음 평가</option>
+<option value="response">질문 듣고 답하기 · 시작 및 답변 중 무음 분석</option>
 <option value="vowel">모음 ‘아’ 4~6초 · Praat 음향 변조 분석</option>
-<option value="free">자유발화 · 수집 테스트(판정 항목 없음)</option>
+
 </select>
 <p id="prompt" style="font-weight:650">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</p>
-<input id="audio-file" type="file" accept="audio/*" aria-label="기존 음성 파일 불러오기">
-<div class="actions"><button id="record" type="button">녹음 시작</button><button id="stop" type="button" disabled>녹음 정지</button></div>
+<details class="expl"><summary>기존 음성 파일로 테스트</summary><input id="audio-file" type="file" accept="audio/*" aria-label="기존 음성 파일 불러오기"></details>
+<div class="actions"><button class="primary" id="record" type="button">녹음 시작</button><button id="stop" type="button" disabled>녹음 종료</button></div>
 <audio id="preview" controls hidden preload="none"></audio>
 <label class="check"><input id="server-consent" type="checkbox"><span>이 녹음을 낌새 서버에서 분석하는 데 동의합니다. 분석 결과만 반환하며 녹음 파일을 별도로 저장하지 않습니다.</span></label>
 <label class="check"><input id="azure-consent" type="checkbox"><span>문장 읽기인 경우에만 Microsoft Azure로 음성을 추가 전송하여 발음 평가받는 데 동의합니다.</span></label>
-<div class="actions"><button class="primary" id="quick-analyze" type="button">선택 과제 분석</button><button class="secondary" id="new-session" type="button">새 평가 시작</button></div>
+<div class="actions"><button class="primary" id="quick-analyze" type="button">현재 과제 분석</button><button class="secondary" id="new-session" type="button">처음부터 다시</button></div>
 <p class="status" id="quick-status" role="status">음성을 녹음하거나 파일을 선택하세요.</p>
 </section>
-<section class="card"><h2>3. 상담 응답시간 · Retell Evidence</h2>
-<p class="expl">AI 상담의 질문 종료부터 첫 답변 단어까지 걸린 시간을 별도 검증실에서 계산합니다. 단어별 시각은 공급자 추정값이며 인지 처리 지연이나 질환 판정이 아닙니다.</p>
+<section class="card" id="retell-panel" hidden><h2>Retell AI 통화</h2>
+<p class="expl">한 번의 AI 통화에서 세 과제를 진행하도록 검증 중입니다. 현재 질문→답변 시각과 답변 중 단어 간 공백은 공급자 추정값이며, 실제 침묵으로 확정하지 않습니다.</p>
 <p class="expl">개인 낌새 앱 계정 로그인은 필요하지 않습니다. 실제 통화 내용 보호와 유료 통화 발급을 위해 Evidence 운영자 접근 코드와 음성 수집 동의가 필요합니다.</p>
-<div class="actions"><a href="./retell-lab.html" class="lab-link">Retell Evidence 검증실 열기 ↗</a></div>
+<div class="actions"><a href="./retell-lab.html" class="lab-link">Retell Evidence 검증실 열기 ↗</a><button id="back-method" type="button">방법 다시 선택</button></div>
 <p class="expl">검증실에서 통화 종료 후 '수신 확인'을 누르면 질문→답변 대기시간이 표시됩니다. 같은 사람의 평가인지 확인하기 전에는 다른 녹음의 점수를 임의로 합치지 않습니다.</p>
 </section>
 </div>
 <details class="card" id="details"><summary>분석 근거·측정 품질·한계 보기</summary><pre id="evidence" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">아직 분석 결과 없음</pre><button id="download" disabled>분석 JSON 저장</button></details>
 <p class="expl">동일한 분석 결과 구조를 사용하되, 과제·음원·시각 정보가 다르면 서로 다른 항목이 측정될 수 있습니다. 의료용 확진·치매 위험 점수는 산출하지 않습니다. <a href="./speech-demo.html">기존 기초 음성 계측 보기 ↗</a></p>
-</main><script type="module" src="./voice-analysis-demo.js?v=20261022c"></script></body></html>
+</main><script type="module" src="./voice-analysis-demo.js?v=20261022d"></script></body></html>
