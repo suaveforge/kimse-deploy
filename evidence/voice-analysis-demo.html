@@ -140,16 +140,16 @@ main{min-width:0}
 <div id="question-guide" hidden>
 <p class="small" style="text-align:center;margin:0 0 12px">질문을 소리로 들은 뒤 답변해 주세요.</p>
 <audio id="question-audio" preload="auto" playsinline></audio>
-<button id="play-question" class="primary question-play" type="button">🔊 질문 듣고 답변하기</button>
+<button id="play-question" class="primary question-play" type="button">🔊 1. 질문 듣기</button>
 <button id="repeat-question" class="secondary" type="button" style="width:100%;margin-top:8px" hidden>🔊 질문 다시 듣기</button>
-<button id="manual-response" class="primary" type="button" style="width:100%;margin-top:8px" hidden>🎙 답변 녹음 시작</button>
-<p class="small" id="question-hint" style="text-align:center;margin:10px 0">질문이 끝나면 답변 녹음이 자동으로 시작됩니다.</p>
+<button id="manual-response" class="primary" type="button" style="width:100%;min-height:76px;font-size:21px;margin-top:12px" hidden>🎙 2. 답변 녹음 시작</button>
+<p class="small" id="question-hint" style="text-align:center;margin:10px 0">질문을 들은 다음 녹음 시작을 직접 눌러주세요.</p>
 </div>
 <select id="task" hidden aria-label="측정 과제"><option value="read">읽기</option><option value="response">질문 응답</option><option value="vowel">모음</option></select>
 <div id="meter-wrap" aria-live="off"><div class="liveheader"><span id="record-state"><span class="dot"></span><span id="record-label">녹음 대기</span></span><span id="elapsed">00:00</span></div><canvas id="levelCanvas" width="560" height="100" aria-label="마이크 입력 음량 표시"></canvas><p id="signal-label">녹음을 시작하면 목소리에 따라 움직입니다.</p></div>
 <label class="consent"><input id="server-consent" type="checkbox"><span>음성 분석에 동의합니다.</span></label>
 <label class="consent" id="azure-row"><input id="azure-consent" type="checkbox"><span>발음 평가를 위해 Microsoft Azure로 음성을 전송하는 데 동의합니다.</span></label>
-<div class="actions" id="recording-actions"><button id="record" class="primary" type="button">🎙 녹음 시작</button><button id="stop" class="secondary" type="button" disabled>■ 직접 종료</button></div>
+<div class="actions" id="recording-actions"><button id="record" class="primary" type="button">🎙 녹음 시작</button><button id="stop" class="secondary" type="button" disabled>■ 녹음 종료</button></div>
 <audio id="preview" controls hidden preload="none" aria-label="녹음 확인"></audio>
 <div id="quick-status" role="status" aria-live="polite">분석 서버 상태를 확인하고 있습니다.</div><button id="check-connection" type="button" class="secondary" hidden style="width:100%;margin-top:6px">서버 연결 다시 확인</button>
 <div id="after-actions" class="actions" hidden><button id="quick-analyze" type="button" class="primary">다시 분석</button><button id="skip-stage" type="button" class="secondary">측정 없이 다음</button></div>
@@ -183,4 +183,4 @@ main{min-width:0}
 <div class="footer-actions"><button id="restart-from-result" class="primary" type="button">다시 검사하기</button><button id="download" type="button" class="secondary" disabled>결과 저장</button></div>
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></section>
-</main><script type="module" src="./voice-analysis-demo.js?v=20261022s"></script></body></html>
+</main><script type="module" src="./voice-analysis-demo.js?v=20261022t"></script></body></html>
