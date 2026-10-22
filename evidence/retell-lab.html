@@ -1,0 +1,142 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Retell 음성 수집 검증실 | KIMSE Evidence</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#183b42;background:#eff5f4}*{box-sizing:border-box}
+body{margin:0;padding:20px 14px}main{max-width:850px;margin:auto}
+h1{font-size:1.7rem;margin:10px 0 6px}h2{font-size:1.1rem;margin:0 0 12px}
+p{line-height:1.6;color:#50646a}a{color:#136271}
+.card{padding:20px;border-radius:17px;border:1px solid #d8e6e3;background:#fff;margin:16px 0}
+input[type=password]{display:block;width:100%;height:46px;border:1px solid #9bb7b6;border-radius:10px;padding:11px;font:inherit}
+label{font-weight:650}label.check{display:flex;gap:9px;align-items:start;line-height:1.6;font-weight:450;margin:15px 0}
+.check input{height:20px;width:20px;flex:none}
+button{border:0;background:#126370;color:white;font:650 .97rem system-ui;padding:12px 15px;border-radius:10px;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}.muted{color:#62797d;font-size:.91rem}
+.secondary{background:#e5efef;color:#14515a}.danger{background:#a43e43}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin:13px 0}.actions button{min-height:44px}
+.notice{padding:12px;background:#fff2de;border-radius:10px;font-size:.88rem;line-height:1.5;margin:10px 0}
+#status{padding:12px;background:#edf5f4;border-radius:10px;font-weight:650}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
+.metric{background:#f2f7f6;border-radius:8px;padding:11px;font-size:.84rem}
+.metric b{display:block;margin-top:4px;overflow-wrap:anywhere}
+.turn{padding:9px 11px;border-radius:9px;margin:8px 0;background:#eef4f3;white-space:pre-wrap;overflow-wrap:anywhere}
+.turn.agent{border-left:4px solid #227d75}.turn.user{border-left:4px solid #bb884d}
+.turn small{display:block;color:#4e7178;margin-bottom:4px}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:190px;overflow:auto;background:#f1f6f5;padding:12px;border-radius:9px}
+audio{width:100%}[hidden]{display:none!important}
+</style></head><body><main>
+<a href="./collection.html">← 데이터 수집 Evidence</a>
+<h1>Retell AI 음성 수집 검증실</h1>
+<p class="muted">Evidence 단계에서 실제 통화, 문답, 발화별 시간, 녹음 저장·재생, 동의 철회를 검증합니다. 낌새 앱에는 연결하지 않습니다.</p>
+<section class="card">
+<h2>1. 시험 통화</h2>
+<label for="admin">낌새 서버 운영자 접근 코드</label>
+<input id="admin" type="password" autocomplete="off" placeholder="운영자 접근 코드">
+<p class="muted">인증코드는 브라우저 저장소에 보관하지 않습니다. 새로운 통화에는 별도 Retell 요금이 발생할 수 있습니다.</p>
+<div class="notice">반드시 본인 목소리와 가상의 대화 소재만 사용하세요. 이 시험의 음성·문답은 외부 Retell에서도 처리되며, Evidence 저장 자료는 48시간 후 삭제 대상입니다. Retell 원본 보존은 별도입니다.</div>
+<label class="check"><input id="consent" type="checkbox"><span>시험 음성, 문답, 시간 정보와 AI 응답을 Retell 및 낌새 Evidence 서버에서 수집·검증하는 데 동의합니다.</span></label>
+<div class="actions"><button id="start">통화 시작</button><button id="stop" class="danger" disabled>통화 종료</button></div>
+<p id="status" role="status" aria-live="polite">동의 후 통화를 시작하세요.</p>
+</section>
+<section class="card" id="result" hidden>
+<h2>2. 저장 검증</h2><p class="muted" id="call-label"></p>
+<div class="grid">
+<div class="metric">통화 이벤트<b id="events">—</b></div>
+<div class="metric">발화 횟수<b id="turn-count">—</b></div>
+<div class="metric">시간 정보<b id="timing">—</b></div>
+<div class="metric">음성 사본<b id="audio-status">—</b></div>
+</div>
+<div class="actions"><button class="secondary" id="refresh">수신 확인</button><button class="secondary" id="sync">수집 다시 시도</button><button class="secondary" id="play">녹음 확인</button><button class="danger" id="delete">시험 자료 삭제</button></div>
+<audio id="recording" controls hidden></audio>
+<h2>시간순 문답</h2><div id="turns" class="muted">문답 수신 전입니다.</div>
+<h2>원문·AI 분석 정보</h2><pre id="details">자료 수신 전입니다.</pre>
+<p class="muted">Retell의 사후 분석 결과는 임상 검증 점수가 아닙니다. 음성·전사 정합성은 별도로 검증합니다.</p>
+</section>
+<script type="module">
+const API="https://api-kimse.suaveforge.com/api/v1/admin/integrations/retell/evidence";
+const by=id=>document.getElementById(id);
+let secret="",callId="",client=null,live=false,deleted=false,audioUrl="";
+function report(t){by("status").textContent=t;}
+function headers(){return {"X-KIMSE-ADMIN-TOKEN":secret};}
+async function errorText(r){const j=await r.json().catch(()=>({}));return String(j.detail||"HTTP "+r.status);}
+function renderTurns(list){
+ const node=by("turns");node.replaceChildren();
+ if(!Array.isArray(list)||!list.length){node.textContent="구조화된 문답이 아직 없습니다.";return;}
+ for(const t of list){
+  const wrap=document.createElement("div");wrap.className="turn "+(t.role==="agent"?"agent":"user");
+  const head=document.createElement("small");
+  const words=Array.isArray(t.words)?t.words:[];
+  const st=words.length?Number(words[0].start):NaN;
+  const en=words.length?Number(words[words.length-1].end):NaN;
+  head.textContent=(t.role==="agent"?"AI 상담원":"사용자")+(Number.isFinite(st)?" · "+st.toFixed(2)+"-"+en.toFixed(2)+"초":"");
+  const body=document.createElement("div");body.textContent=String(t.content||t.text||"");
+  wrap.append(head,body);node.appendChild(wrap);
+ }
+}
+async function refresh(){
+ if(!callId||deleted)return;
+ try{
+  const r=await fetch(API+"/calls/"+encodeURIComponent(callId),{headers:headers(),cache:"no-store"});
+  if(!r.ok)throw Error(await errorText(r));
+  const d=await r.json(),mask=Number(d.event_mask||0);
+  by("events").textContent=[(mask&1)?"시작 ✓":"시작 —",(mask&2)?"종료 ✓":"종료 —",(mask&4)?"분석 ✓":"분석 —"].join(" / ");
+  by("turn-count").textContent=Array.isArray(d.transcript_object)?String(d.transcript_object.length):"미수신";
+  const hasTimes=Array.isArray(d.transcript_object)&&d.transcript_object.some(x=>Array.isArray(x.words)&&x.words.some(w=>typeof w.start==="number"&&typeof w.end==="number"));
+  by("timing").textContent=hasTimes?"단어별 시간 있음":"확인 필요";
+  by("audio-status").textContent=d.recording_status==="STORED"?"저장 "+String(d.recording_bytes||0)+"B":String(d.recording_status||"대기");
+  renderTurns(d.transcript_object);
+  by("details").textContent="동의 버전: "+d.consent_version+"\n만료: "+d.expires_at+"\n\n대화 전문:\n"+(d.transcript||"미수신")+"\n\nRetell 사후분석:\n"+(d.call_analysis?JSON.stringify(d.call_analysis,null,2):"미수신");
+ }catch(e){report("조회 오류: "+String(e.message||e));}
+}
+by("start").addEventListener("click",async()=>{
+ if(callId)return;
+ if(!by("consent").checked){report("녹음 동의가 필요합니다.");return;}
+ secret=by("admin").value.trim();
+ if(!secret){report("운영자 코드를 입력해주세요.");return;}
+ by("start").disabled=true;report("시험 통화 ID 발급 중");
+ try{
+  const r=await fetch(API+"/calls",{method:"POST",headers:{"Content-Type":"application/json",...headers()},body:JSON.stringify({consent:true}),cache:"no-store"});
+  if(!r.ok)throw Error(await errorText(r));
+  const d=await r.json();callId=d.call_id;
+  by("admin").value="";by("result").hidden=false;by("call-label").textContent="통화 ID "+callId;
+  const sdk=await import("https://esm.sh/retell-client-js-sdk@2.0.8");
+  client=new sdk.RetellWebClient();
+  client.on("call_started",()=>{live=true;by("stop").disabled=false;report("통화 중입니다.");});
+  client.on("call_ended",()=>{live=false;by("stop").disabled=true;report("통화 종료. 아래에서 수집을 확인하세요.");setTimeout(refresh,1500);});
+  client.on("error",e=>{live=false;by("stop").disabled=true;report("Retell 오류: "+String(e?.message||e));});
+  await client.startCall({accessToken:d.access_token});
+  live=true;by("stop").disabled=false;report("AI 음성 통화 연결 중");
+ }catch(e){report("통화 실패: "+String(e.message||e));if(!callId)by("start").disabled=false;}
+});
+by("stop").addEventListener("click",async()=>{if(client){by("stop").disabled=true;await client.stopCall();live=false;setTimeout(refresh,1800);}});
+by("refresh").addEventListener("click",refresh);
+by("sync").addEventListener("click",async()=>{
+ if(!callId||deleted)return;
+ report("Retell 데이터 수집 시도 중");
+ const r=await fetch(API+"/calls/"+encodeURIComponent(callId)+"/sync",{method:"POST",headers:headers()}).catch(()=>null);
+ if(!r){report("네트워크 오류");return;}
+ if(!r.ok){report("재수집 오류: "+await errorText(r));return;}
+ const d=await r.json();
+ report(d.recording_saved?"음성 저장 확인":"통화 분석 또는 녹음 파일 준비를 확인해주세요.");
+ await refresh();
+});
+by("play").addEventListener("click",async()=>{
+ if(!callId||deleted)return;
+ const r=await fetch(API+"/calls/"+encodeURIComponent(callId)+"/audio",{headers:headers(),cache:"no-store"}).catch(()=>null);
+ if(!r){report("네트워크 오류");return;}
+ if(!r.ok){report("녹음 확인 실패: "+await errorText(r));return;}
+ if(audioUrl)URL.revokeObjectURL(audioUrl);
+ audioUrl=URL.createObjectURL(await r.blob());
+ by("recording").src=audioUrl;by("recording").hidden=false;report("녹음을 불러왔습니다.");
+});
+by("delete").addEventListener("click",async()=>{
+ if(!callId||deleted||!confirm("낌새 Evidence 서버의 이 통화 자료를 삭제할까요? Retell 보관분은 별도입니다."))return;
+ const r=await fetch(API+"/calls/"+encodeURIComponent(callId),{method:"DELETE",headers:headers()}).catch(()=>null);
+ if(!r||!r.ok){report("삭제 실패: "+(r?await errorText(r):"네트워크 오류"));return;}
+ deleted=true;if(audioUrl)URL.revokeObjectURL(audioUrl);
+ by("recording").hidden=true;by("recording").removeAttribute("src");
+ by("details").textContent="낌새 Evidence 사본 삭제 완료";by("turns").textContent="삭제됨";
+ for(const id of ["refresh","sync","play","delete"])by(id).disabled=true;
+ report("낌새 Evidence 음성 및 문답 데이터 삭제 완료");
+});
+</script></main></body></html>
