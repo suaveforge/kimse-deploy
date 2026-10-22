@@ -588,7 +588,7 @@ async function analyze(){
   }finally{
     busy=false;el('quick-analyze').disabled=false;
     if(el('self-panel').hidden===false)el('record').disabled=!serviceReady;
-    el('play-question').disabled=!serviceReady;
+    el('play-question').disabled=!serviceReady||responseMicPreparing;
     el('quick-status').setAttribute('aria-busy','false');
   }
 }
