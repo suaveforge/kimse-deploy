@@ -486,8 +486,13 @@ el('back-method').addEventListener('click',()=>{
   el('retell-panel').hidden=true;el('method-picker').hidden=false;
 });
 el('record').addEventListener('click',()=>startRecording('none'));
-el('play-question').addEventListener('click',()=>startRecording('audio'));
-el('repeat-question').addEventListener('click',()=>startRecording('tts'));
+// MP3 is preferred when ready. Until the API deploys (or if it fails),
+ // directly user-activated Korean browser TTS is the immediate fallback.
+function questionPlaybackMode(){
+  return el('question-audio').readyState>=2?'audio':'tts';
+}
+el('play-question').addEventListener('click',()=>startRecording(questionPlaybackMode()));
+el('repeat-question').addEventListener('click',()=>startRecording(questionPlaybackMode()==='audio'?'audio':'tts'));
 el('stop').addEventListener('click',()=>{
   if(recorder?.state==='recording'){
     el('stop').disabled=true;
