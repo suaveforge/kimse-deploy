@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>Retell 음성 수집 검증실 | KIMSE Evidence</title>
+<title>AI 통화 테스트 | 낌새</title>
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#183b42;background:#eff5f4}*{box-sizing:border-box}
 body{margin:0;padding:20px 14px}main{max-width:850px;margin:auto}
@@ -24,34 +24,43 @@ button:disabled{opacity:.55;cursor:default}.muted{color:#62797d;font-size:.91rem
 .turn.agent{border-left:4px solid #227d75}.turn.user{border-left:4px solid #bb884d}
 .turn small{display:block;color:#4e7178;margin-bottom:4px}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:190px;overflow:auto;background:#f1f6f5;padding:12px;border-radius:9px}
 audio{width:100%}[hidden]{display:none!important}
+.card{padding:clamp(22px,4vw,34px);border-radius:22px;box-shadow:0 10px 30px rgba(20,68,63,.04)}
+main{max-width:730px}h1{font-size:clamp(27px,5vw,35px);letter-spacing:-1px}
+h2{font-size:22px}label{font-size:17px}
+input[type=password]{height:56px;font-size:18px}button{min-height:57px;font-size:17px;font-weight:750;border-radius:13px}
+.actions{gap:12px}.actions button{flex:1;min-height:57px}
+#start{background:#0b7669}.key-metric{background:#f1f8f5;padding:25px;border-radius:17px;margin:14px 0}
+.key-metric span{display:block;font-size:17px;color:#3c6256}
+.key-metric b{display:block;font-size:clamp(26px,5vw,38px);color:#0e7567;margin:10px 0}
+.key-metric small{font-size:14px;color:#637d72;line-height:1.4}
+details{margin:16px 0}summary{font-weight:680;color:#42675e;cursor:pointer;padding:8px 0}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.card{padding:22px}body{padding:12px}}
 </style></head><body><main>
 <a href="./collection.html">← 데이터 수집 Evidence</a>
-<h1>Retell AI 음성 수집 검증실</h1>
-<p class="muted">Evidence 단계에서 실제 통화, 문답, 발화별 시간, 녹음 저장·재생, 동의 철회를 검증합니다. 낌새 앱에는 연결하지 않습니다.</p>
+<h1>AI 통화 테스트</h1>
+<p class="muted">AI와 대화한 뒤 목소리와 응답시간을 확인할 수 있습니다.</p>
 <section class="card">
-<h2>1. 시험 통화</h2>
-<label for="admin">낌새 서버 운영자 접근 코드</label>
+<h2>통화 시작하기</h2>
+<label for="admin">접근 코드</label>
 <input id="admin" type="password" autocomplete="off" placeholder="운영자 접근 코드">
-<p class="muted">인증코드는 브라우저 저장소에 보관하지 않습니다. 새로운 통화에는 별도 Retell 요금이 발생할 수 있습니다.</p>
-<div class="notice">반드시 본인 목소리와 가상의 대화 소재만 사용하세요. 이 시험의 음성·문답은 외부 Retell에서도 처리되며, Evidence 저장 자료는 48시간 후 삭제 대상입니다. Retell 원본 보존은 별도입니다.</div>
-<label class="check"><input id="consent" type="checkbox"><span>시험 음성, 문답, 시간 정보와 AI 응답을 Retell 및 낌새 Evidence 서버에서 수집·검증하는 데 동의합니다.</span></label>
+<p class="muted">접근 코드는 저장되지 않습니다. 통화 비용이 발생할 수 있습니다.</p>
+<div class="notice">본인 목소리로 시험해 주세요. 통화는 Retell과 낌새 서버에서 처리됩니다. 낌새 서버 자료는 48시간 보관하며 Retell 보관은 별도입니다.</div>
+<label class="check"><input id="consent" type="checkbox"><span>통화 음성과 대화 내용을 분석·보관하는 데 동의합니다.</span></label>
 <div class="actions"><button id="start">통화 시작</button><button id="stop" class="danger" disabled>통화 종료</button></div>
 <p id="status" role="status" aria-live="polite">동의 후 통화를 시작하세요.</p>
 </section>
 <section class="card" id="result" hidden>
-<h2>2. 저장 검증</h2><p class="muted" id="call-label"></p>
-<div class="grid">
+<h2>통화 분석 결과</h2><p class="muted" id="call-label"></p>
+<div class="key-metric"><span>질문 후 답변 시작까지</span><b id="response-delay">미측정</b><small>음성 단어의 시각을 바탕으로 한 근사값입니다.</small></div><details><summary>수집 상태 및 기술 정보</summary><div class="grid">
 <div class="metric">통화 이벤트<b id="events">—</b></div>
 <div class="metric">발화 횟수<b id="turn-count">—</b></div>
 <div class="metric">시간 정보<b id="timing">—</b></div>
-<div class="metric">질문→응답 대기시간<b id="response-delay">미측정</b></div>
+
 <div class="metric">음성 사본<b id="audio-status">—</b></div>
-</div>
-<div class="actions"><button class="secondary" id="refresh">수신 확인</button><button class="secondary" id="sync">수집 다시 시도</button><button class="secondary" id="play">녹음 확인</button><button class="danger" id="delete">시험 자료 삭제</button></div>
+</div></details>
+<div class="actions"><button class="secondary" id="refresh">결과 새로고침</button><button class="secondary" id="play">녹음 듣기</button></div><details><summary>수집 관리</summary><div class="actions"><button class="secondary" id="sync">수집 다시 시도</button><button class="danger" id="delete">통화 자료 삭제</button></div></details>
 <audio id="recording" controls hidden></audio>
-<h2>시간순 문답</h2><div id="turns" class="muted">문답 수신 전입니다.</div>
-<h2>원문·AI 분석 정보</h2><pre id="details">자료 수신 전입니다.</pre>
-<p class="muted">Retell의 사후 분석 결과는 임상 검증 점수가 아닙니다. 음성·전사 정합성은 별도로 검증합니다.</p>
+<details><summary>대화 기록 보기</summary><div id="turns" class="muted">대화 내용이 아직 도착하지 않았습니다.</div></details><details><summary>상세 분석 데이터</summary><pre id="details">자료 수신 전입니다.</pre></details>
 </section>
 <script type="module">
 const API="https://api-kimse.suaveforge.com/api/v1/admin/integrations/retell/evidence";
