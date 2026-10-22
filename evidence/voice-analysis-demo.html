@@ -64,6 +64,14 @@ input[type=file]{max-width:100%;font-size:15px;margin-top:12px}
 #question-guide{margin:4px 0 18px}.question-play{width:100%;min-height:74px;font-size:clamp(19px,3vw,25px)}#question-guide button:focus-visible{outline-offset:4px}#question-hint{line-height:1.5}
 
 /* Mobile-first measured-data report: no horizontal scrolling, no dummy curves. */
+body{overflow-x:clip;padding-bottom:calc(38px + env(safe-area-inset-bottom,0px))}
+main{min-width:0}
+#result-view,.results,.result,.timeline-viz{min-width:0;max-width:100%}
+@media(max-width:480px){
+  body{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+  .word-list{max-width:100%;overflow-wrap:anywhere}
+  .result-head{gap:9px}
+}
 #result-view{max-width:780px;margin:0 auto}
 .report-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:8px 2px 0}
 .report-heading h1{margin:5px 0 6px;font-size:clamp(27px,5.3vw,34px)}
@@ -173,4 +181,4 @@ input[type=file]{max-width:100%;font-size:15px;margin-top:12px}
 <div class="footer-actions"><button id="restart-from-result" class="primary" type="button">다시 검사하기</button><button id="download" type="button" class="secondary" disabled>결과 저장</button></div>
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></section>
-</main><script type="module" src="./voice-analysis-demo.js?v=20261022k"></script></body></html>
+</main><script type="module" src="./voice-analysis-demo.js?v=20261022m"></script></body></html>
