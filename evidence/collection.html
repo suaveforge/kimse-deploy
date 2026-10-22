@@ -234,14 +234,14 @@ main{padding-bottom:70px}.eyebrow{color:var(--teal);letter-spacing:.09em;font-si
 <footer>검사 시행/진단을 대체하지 않는, 공식 채점규칙 재현용 독립 실험실</footer>
 </article>
 <article class="reg-card" id="ai-retell-voice-demo">
-<header class="kimse-demo-head"><div><small>10 · 외부 AI 음성 상담 연결 · 기술 테스트</small><h3>Retell AI 상담 음성 통화 테스트</h3></div><a class="kimse-demo-action" href="/retell-test.html" aria-label="Retell AI 상담 음성 통화 테스트 열기">테스트</a></header>
-<div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-phone-call"></i><span>RETELL<br>CALL</span></div>
-<div><p class="kimse-vision-desc">전화번호 없이 브라우저로 Retell 음성 상담원에 연결하는 시험입니다. 공개용 Voice Key와 Voice Agent ID가 필요하며, 실제 환자 정보는 사용하지 않습니다.</p></div></div>
-<dl><dt>목적</dt><dd>문답 음성 수집·대화 진행 채널 검증 · 검사지 채점과 인지저하 판단은 별도</dd>
-<dt>필요 항목</dt><dd>Retell Voice Public Key, Voice Agent ID, 테스트 음성 동의</dd>
-<dt>연동 상태</dt><dd>브라우저 위젯 테스트 페이지 공개 · 실제 통화 및 낌새 DB 문답 수집 연동 미검증</dd>
-<dt>개인정보</dt><dd>사용자가 말한 시험 음성은 외부 Retell에서 처리될 수 있습니다. 실제 민감정보 입력 금지</dd></dl>
-<footer><a href="https://docs.retellai.com/deploy/chat-widget" target="_blank" rel="noopener noreferrer">Retell 공식 위젯 설명 ↗</a></footer>
+<header class="kimse-demo-head"><div><small>10 · Retell AI 음성 데이터 수집 · Evidence 검증 단계</small><h3>Retell AI 음성 수집 검증실</h3></div><a class="kimse-demo-action" href="./retell-lab.html" aria-label="Retell AI 음성 수집 검증실 열기">수집 검증</a></header>
+<div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-phone-call"></i><span>RETELL<br>LAB</span></div>
+<div><p class="kimse-vision-desc">낌새 앱 적용 전에 Evidence에서 실제 음성 통화와 문답 저장, 발화별 시간, 녹음 재생, 삭제를 확인합니다. 운영자 인증 및 별도 녹음 동의가 필요합니다. 환자 정보 대신 가상 대화만 사용합니다.</p></div></div>
+<dl><dt>현재 통과</dt><dd>Retell Webhook 서명 인증 및 시작·종료·사후 분석 이벤트 수신. 운영 DB 누적 2건의 연결 시험 통화 수신 확인</dd>
+<dt>검증 대기</dt><dd>Evidence 전용 동의 기반 통화에서 대화 전문·발화 시간·녹음 파일 실제 저장·재생, 삭제 및 실패 복구 검증</dd>
+<dt>분리 원칙</dt><dd>Evidence 시험 기록은 낌새 앱 사용자 데이터와 연결하지 않음. 앱 이식은 Evidence 전 항목 통과 후 진행</dd>
+<dt>시험 데이터 보존</dt><dd>낌새 Evidence 저장 자료 최대 48시간. Retell 원본 보존·삭제는 별도 설정·검증 필요</dd></dl>
+<footer><a href="/retell-test.html" aria-label="기존 Retell 단순 연결 시험 열기">기존 연결 테스트</a> · <a href="https://docs.retellai.com/api-references/create-web-call" target="_blank" rel="noopener noreferrer">Retell Web Call 문서 ↗</a></footer>
 </article></div><div class="collection-caution">AI의 구매 가치는 ① 수집 품질 ② 불필요한 알림 감소 ③ 보호자 확인시간 ④ 기관 검토시간·비용 절감으로 검증합니다. 아직 치매 예측 정확도를 주장할 수 없습니다.</div></section>
 <section role="tabpanel" id="collection-api" class="collection-technical" aria-labelledby="collection-tab-api" data-collection-panel="api" tabindex="0" hidden>
 <div class="eyebrow">KIMSE / API &amp; ACCESS REGISTER</div><h2>API: 누가 어떤 데이터를 허용해야 받을 수 있나</h2>
