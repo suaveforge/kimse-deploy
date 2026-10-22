@@ -40,8 +40,14 @@ const anonymousClientId=(()=>{
 const number=n=>typeof n==='number'&&Number.isFinite(n);
 const currentTask=()=>tasks[index];
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+let lastAnalysisError=null; // diagnostic codes only; never retains or logs audio, transcript, browser identifiers
 const shortReason={
-  EVIDENCE_GUEST_DAILY_QUOTA_REACHED:'오늘 이용 가능한 분석 횟수를 초과했습니다.',
+  EVIDENCE_GUEST_DAILY_QUOTA_REACHED:'오늘 이용 가능한 분석 횟수를 초과했습니다. 재분석을 반복해도 바로 풀리지 않습니다.',
+  AUDIO_SIZE_INVALID:'녹음 길이 또는 파일 크기가 허용 범위를 초과했습니다.',
+  AUDIO_MUST_BE_RIFF_WAV:'서버가 녹음 파일 형식을 읽지 못했습니다.',
+  AUDIO_REQUIRES_16K_MONO_PCM16:'서버가 녹음 형식을 지원하지 않습니다.',
+  AUDIO_DURATION_MUST_BE_1_TO_30_SECONDS:'녹음은 1~30초까지만 분석할 수 있습니다.',
+  AUDIO_WAV_CORRUPTED:'녹음 파일이 손상됐습니다.',
   EVIDENCE_GUEST_QUOTA_UNAVAILABLE:'일시적으로 분석 서버를 사용할 수 없습니다.',
   AUDIO_FORMAT_INVALID:'녹음 파일을 읽을 수 없습니다.',
   AUDIO_BASE64_INVALID:'녹음 파일 변환에 실패했습니다.',
@@ -56,8 +62,44 @@ const shortReason={
 };
 function friendlyError(e){
   const raw=String(e?.message||e||'알 수 없는 오류');
+  const http=e?.httpStatus;
+  if(http===429)return shortReason.EVIDENCE_GUEST_DAILY_QUOTA_REACHED;
+  if(http===413)return '녹음 데이터가 서버 허용 크기를 초과했습니다.';
+  if(http===422){
+    if(raw.includes('audio_base64')||raw.includes('string_too_long'))
+      return '녹음 데이터 크기가 허용 범위를 초과했습니다.';
+    if(raw.includes('question_end_to_capture_start_ms'))
+      return '응답 시작시간 정보가 잘못됐습니다.';
+    return shortReason[raw]||'녹음 요청값을 서버에서 거절했습니다.';
+  }
+  if(http>=500)return '분석 서버가 요청을 처리하지 못했습니다.';
+  if(e?.phase==='decode')return '이 아이폰에서 녹음 파일 변환에 실패했습니다. 녹음 파일은 남아 있으니 다시 분석을 시도할 수 있습니다.';
   return shortReason[raw]||(/Failed to fetch|NetworkError|Load failed|fetch failed/i.test(raw)?
       '서버 연결에 실패했습니다. 인터넷 연결을 확인하고 다시 시도하세요.':raw);
+}
+function apiError(response,data){
+  const detail=data?.detail;
+  let code=typeof detail==='string'?detail:'HTTP_'+response.status;
+  if(Array.isArray(detail)){
+    // Pydantic error items can echo the entire user audio as .input.
+    // Only use field names and error types, never serialize the payload.
+    const minimal=detail.slice(0,3).map(d=>
+      String(d?.loc?.[d.loc.length-1]||'body')+':'+String(d?.type||'invalid')
+    );
+    code=minimal.join(',');
+  }
+  const err=new Error(code);
+  err.httpStatus=response.status;
+  return err;
+}
+function errorDiagnostic(err,phase,pcmLength=0){
+  return {
+    stage:currentTask(),phase:String(phase).slice(0,25),
+    httpStatus:Number.isInteger(err?.httpStatus)?err.httpStatus:null,
+    errorCode:String(err?.message||'unknown').slice(0,90),
+    recordedAudioType:sound?.type||'',
+    pcmDurationMs:pcmLength?Math.round(pcmLength/16):null
+  };
 }
 function setStatus(message,mode=''){
   const node=el('quick-status');
@@ -276,6 +318,7 @@ async function primeResponseMicrophone(){
 function showStage(i){
   cancelCapture();
   index=i;questionEnd=null;questionOffset=null;setAudio(null);
+  lastAnalysisError=null;el('error-copy').hidden=true;
   const task=currentTask();
   el('self-panel').hidden=false;
   el('result-view').hidden=true;
@@ -547,30 +590,46 @@ function wav16kBase64(audio){
 async function analyze(){
   if(busy||!sound||!checkConsent())return;
   const task=currentTask(),stageIndex=index,session=recordingSession;
-  busy=true;el('record').disabled=true;el('quick-analyze').disabled=true;
-  setStatus('분석 중입니다…');
+  let phase='decode',pcmLength=0;
+  busy=true;lastAnalysisError=null;
+  el('error-copy').hidden=true;
+  el('record').disabled=true;el('quick-analyze').disabled=true;
+  setStatus('녹음 파일을 분석 가능한 형식으로 변환하고 있습니다…');
   el('quick-status').setAttribute('aria-busy','true');
   try{
-    const pcm=await to16k(sound);
-    // Keep the server's documented 1-30 second PCM16 limit.
+    let pcm;
+    try{pcm=await to16k(sound);}
+    catch(e){e.phase='decode';throw e;}
+    pcmLength=pcm.length;
+    // On mobile the playback/recorder clock can have a large unexpected gap.
+    // Never reject the entire voice analysis for an invalid initial-latency
+    // offset: mark it unmeasured instead of supplying an invented interval.
+    const safeOffset=(number(questionOffset)&&questionOffset>=0&&questionOffset<=30000)?questionOffset:null;
+    phase='encode';
     const audio=wav16kBase64(pcm);
+    phase='request';
+    setStatus('분석 서버에서 음성의 발화·침묵 구간을 확인하고 있습니다…');
     const response=await fetch(API+'/guest',{
       method:'POST',cache:'no-store',headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
       body:JSON.stringify({
         task,audio_base64:audio,consent_server_audio_processing:true,
         consent_azure_transfer:task==='read'&&el('azure-consent').checked,
-        question_end_to_capture_start_ms:task==='response'?questionOffset:null
+        question_end_to_capture_start_ms:task==='response'?safeOffset:null
       })
     });
-    let data=await response.json().catch(()=>({}));
-    if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:'HTTP '+response.status);
+    phase='response';
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw apiError(response,data);
     if(stageIndex!==index||session!==recordingSession)return;
+    phase='measurement';
     const feature=task==='read'?data.pronunciation:task==='response'?data.responseDelay:data.vocalTremor;
-    const good=task==='read'?feature?.status==='assessed':
-      task==='response'?feature?.status==='measured':feature?.status==='measured';
+    const good=task==='read'?feature?.status==='assessed':feature?.status==='measured';
     if(!good){
-      mergeResult(task,data,Math.round(pcm.length/16)); // preserve unavailable, no false curves
-      setStatus('측정값을 얻지 못했습니다. 다시 녹음하거나 다음 단계로 진행할 수 있습니다.','error');
+      mergeResult(task,data,Math.round(pcm.length/16));
+      lastAnalysisError={stage:task,phase:'measurement',httpStatus:200,
+        errorCode:String(feature?.status||'feature_not_returned'),pcmDurationMs:Math.round(pcm.length/16)};
+      el('error-copy').hidden=false;
+      setStatus('음성 구간을 충분히 추출하지 못했습니다. 재분석하거나 다시 녹음해주세요.','error');
       el('after-actions').hidden=false;
       return;
     }
@@ -579,11 +638,13 @@ async function analyze(){
     finishStage();
   }catch(e){
     if(session!==recordingSession)return;
-    if(/HTTP 50[0234]|Failed to fetch|NetworkError|Load failed|fetch failed/i.test(String(e?.message||e))){
-      serviceReady=false;
-      el('check-connection').hidden=false;
+    lastAnalysisError=errorDiagnostic(e,phase,pcmLength);
+    el('error-copy').hidden=false;
+    if((e?.httpStatus>=500)||/Failed to fetch|NetworkError|Load failed|fetch failed/i.test(String(e?.message||e))){
+      serviceReady=false;el('check-connection').hidden=false;
     }
-    setStatus('분석 실패: '+friendlyError(e)+' 다시 분석하거나 녹음해주세요.','error');
+    const code=e?.httpStatus?'HTTP '+e.httpStatus:phase==='decode'?'녹음 변환':'요청 오류';
+    setStatus('분석 실패 ('+code+'): '+friendlyError(e)+' 녹음 파일은 유지됩니다.','error');
     el('after-actions').hidden=false;
   }finally{
     busy=false;el('quick-analyze').disabled=false;
@@ -775,6 +836,16 @@ el('stop').addEventListener('click',()=>{
   }
 });
 el('quick-analyze').addEventListener('click',analyze);
+el('error-copy').addEventListener('click',async()=>{
+  if(!lastAnalysisError)return;
+  const detail=JSON.stringify(lastAnalysisError);
+  try{
+    await navigator.clipboard.writeText(detail);
+    setStatus('오류 정보가 복사됐습니다. 원음이나 대화 내용은 포함되지 않습니다.','success');
+  }catch{
+    setStatus('오류 정보: '+detail,'error');
+  }
+});
 el('skip-stage').addEventListener('click',()=>{
   if(busy)return;
   const key=currentTask()==='read'?'pronunciation':currentTask()==='response'?'responseDelay':'vocalTremor';
