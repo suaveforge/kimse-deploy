@@ -61,6 +61,7 @@ input[type=file]{max-width:100%;font-size:15px;margin-top:12px}
 .footer-actions>*{flex:1}
 @media(max-width:620px){body{padding:0 14px 25px}header{min-height:64px}.panel{border-radius:20px}.method-grid{grid-template-columns:1fr;gap:12px}.method{min-height:125px;flex-direction:row;align-items:center;flex-wrap:wrap;gap:12px;padding:21px}.method svg{width:40px;height:40px}.method strong{font-size:21px}.method span{flex-basis:100%}#self-panel{min-height:0}.actions{gap:9px}.actions button{font-size:16px}.results{gap:10px}}
 @media(prefers-reduced-motion:reduce){.dot{animation:none!important}*{scroll-behavior:auto!important;transition:none!important}}
+#question-guide{margin:4px 0 18px}.question-play{width:100%;min-height:74px;font-size:clamp(19px,3vw,25px)}#question-guide button:focus-visible{outline-offset:4px}#question-hint{line-height:1.5}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석</span></div><a class="back" href="./collection.html?view=ai">← 돌아가기</a></header>
 <section id="method-picker" class="panel">
@@ -74,11 +75,18 @@ input[type=file]{max-width:100%;font-size:15px;margin-top:12px}
 <div class="topline"><h2>셀프 테스트</h2><span id="progress">1 / 3</span></div><div class="progressTrack"><div id="progressFill"></div></div>
 <p id="stage-title" class="small" style="text-align:center;font-weight:750">1단계 · 문장 읽기</p>
 <p id="prompt">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</p>
+<div id="question-guide" hidden>
+<p class="small" style="text-align:center;margin:0 0 12px">질문을 소리로 들은 뒤 답변해 주세요.</p>
+<audio id="question-audio" preload="auto" playsinline></audio>
+<button id="play-question" class="primary question-play" type="button">🔊 질문 듣고 답변하기</button>
+<button id="repeat-question" class="secondary" type="button" style="width:100%;margin-top:8px" hidden>🔊 질문 다시 듣기</button>
+<p class="small" id="question-hint" style="text-align:center;margin:10px 0">질문이 끝나면 답변 녹음이 자동으로 시작됩니다.</p>
+</div>
 <select id="task" hidden aria-label="측정 과제"><option value="read">읽기</option><option value="response">질문 응답</option><option value="vowel">모음</option></select>
 <div id="meter-wrap" aria-live="off"><div class="liveheader"><span id="record-state"><span class="dot"></span><span id="record-label">녹음 대기</span></span><span id="elapsed">00:00</span></div><canvas id="levelCanvas" width="560" height="100" aria-label="마이크 입력 음량 표시"></canvas><p id="signal-label">녹음을 시작하면 목소리에 따라 움직입니다.</p></div>
 <label class="consent"><input id="server-consent" type="checkbox"><span>음성 분석에 동의합니다.</span></label>
 <label class="consent" id="azure-row"><input id="azure-consent" type="checkbox"><span>발음 평가를 위해 Microsoft Azure로 음성을 전송하는 데 동의합니다.</span></label>
-<div class="actions"><button id="record" class="primary" type="button">🎙 녹음 시작</button><button id="stop" class="secondary" type="button" disabled>■ 녹음 종료</button></div>
+<div class="actions" id="recording-actions"><button id="record" class="primary" type="button">🎙 녹음 시작</button><button id="stop" class="secondary" type="button" disabled>■ 녹음 종료</button></div>
 <audio id="preview" controls hidden preload="none" aria-label="녹음 확인"></audio>
 <div id="quick-status" role="status" aria-live="polite">분석 서버 상태를 확인하고 있습니다.</div><button id="check-connection" type="button" class="secondary" hidden style="width:100%;margin-top:6px">서버 연결 다시 확인</button>
 <div id="after-actions" class="actions" hidden><button id="quick-analyze" type="button" class="primary">다시 분석</button><button id="skip-stage" type="button" class="secondary">측정 없이 다음</button></div>
@@ -93,4 +101,4 @@ input[type=file]{max-width:100%;font-size:15px;margin-top:12px}
 <div class="footer-actions"><button id="restart-from-result" class="primary" type="button">다시 검사하기</button><button id="download" type="button" class="secondary" disabled>결과 저장</button></div>
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></section>
-</main><script type="module" src="./voice-analysis-demo.js?v=20261022g"></script></body></html>
+</main><script type="module" src="./voice-analysis-demo.js?v=20261022h"></script></body></html>
