@@ -682,7 +682,9 @@ async function startRecording(playback='none'){
     // Never play a question that cannot be recorded. A new click after mic
     // permission keeps playback within an actual user gesture on iPhone.
     await primeResponseMicrophone();
-    if(stream?.active)setStatus('마이크 준비 완료. 질문 듣고 답변하기를 눌러주세요.','success');
+    if(stream?.active)setStatus(playback==='manual_answer'?
+      '마이크 준비 완료. 답변 녹음 시작을 다시 눌러주세요.':
+      '마이크 준비 완료. 질문 듣고 답변하기를 눌러주세요.','success');
     else setStatus('마이크 권한을 확인해주세요.','error');
     return;
   }
@@ -717,10 +719,9 @@ async function startRecording(playback='none'){
       }
       recorder=null;closeMicrophone();
       resetPlayButton();
-      if(isResponse&&questionEnd!==null){
-        // Graceful iPhone fallback: the question was heard but automated
-        // media recorder activation was interrupted. A direct tap captures
-        // the answer, with unknown initial latency (never fabricated).
+      if(isResponse){
+        // Direct user-gesture recording remains possible after mobile
+        // capture interruption. It cannot supply initial response latency.
         el('manual-response').hidden=false;
       }
       setStatus(reason||'녹음 시작에 실패했습니다. 질문 다시 듣기를 눌러주세요.','error');
