@@ -7,15 +7,23 @@ const prompts = {
   free: '최근에 있었던 일을 편하게 이야기해주세요.'
 };
 let stream=null, recorder=null, sound=null, previewUrl=null, report=null;
-function identity(){
-  try {
-    const state=JSON.parse(localStorage.getItem('kimse.p0.state')||'{}');
-    return state?.remote?.accountId && state?.remote?.token ?
-      {accountId: state.remote.accountId, token:state.remote.token}:null;
-  }catch{return null;}
-}
+let quickSession=null;
 const number = n => typeof n === 'number' && Number.isFinite(n);
 function output(r){
+  // Keep only the two separately measured quick-test features from this open
+  // browser session. Never merge private Retell calls, people or raw recordings.
+  if(r?.source==='evidence_guest'){
+    const earlier=quickSession;
+    const tasks=new Set(earlier?.completedTasks||[]);
+    if(r.task==='read'||r.task==='vowel')tasks.add(r.task);
+    quickSession={...r,
+      task:tasks.size>1?'multi_task_evidence_session':r.task,
+      completedTasks:[...tasks],
+      pronunciation:r.task==='read'||!earlier?r.pronunciation:earlier.pronunciation,
+      vocalTremor:r.task==='vowel'||!earlier?r.vocalTremor:earlier.vocalTremor
+    };
+    r=quickSession;
+  }
   report=r;
   const p=r.pronunciation || {},d=r.responseDelay || {},t=r.vocalTremor || {};
   const score=p.scores?.accuracy;
@@ -44,7 +52,7 @@ function cleanupPreview(){
   previewUrl=null; const a=el('preview');a.pause();a.removeAttribute('src');a.hidden=true;
 }
 function newSound(blob){
-  sound=blob;report=null;el('download').disabled=true;cleanupPreview();
+  sound=blob;el('download').disabled=!report;cleanupPreview();
   if(blob){previewUrl=URL.createObjectURL(blob);el('preview').src=previewUrl;el('preview').hidden=false;}
 }
 el('task').addEventListener('change',()=>{
@@ -133,22 +141,27 @@ el('quick-analyze').addEventListener('click',async()=>{
         consent_server_audio_processing:true,
         consent_azure_transfer:el('task').value==='read'&&el('azure-consent').checked
       })});
-    output(result);status.textContent='통합 분석 완료 · 실제로 산출된 지표만 표시했습니다.';
+    output(result);status.textContent='과제 분석 완료 · 같은 사람의 다른 과제를 측정하면 기존 실측 결과를 유지합니다.';
   }catch(error){status.textContent='통합 분석 실패: '+(error.message||error);}
   finally{button.disabled=false;}
 });
-el('retell-analyze').addEventListener('click',async()=>{
-  const person=identity(),callId=el('call-id').value.trim(),status=el('retell-status'),button=el('retell-analyze');
-  if(!person){status.textContent='개인 Retell 통화 기록은 소유자 인증이 필요합니다. 로그인 없는 에비던스는 왼쪽 빠른 음성 테스트를 사용하세요.';return;}
-  if(!/^[A-Za-z0-9_-]{4,128}$/.test(callId)){status.textContent='정상적인 낌새 Retell 통화 ID를 입력하세요.';return;}
-  button.disabled=true;
-  try{
-    status.textContent='동의된 통화 기록과 타임스탬프 조회 중…';
-    const result=await apiCall(API+'/retell/'+encodeURIComponent(callId)+'?account_id='+encodeURIComponent(person.accountId),
-      {headers:{'X-KIMSE-ACCOUNT-TOKEN':person.token}});
-    output(result);status.textContent='Retell 통합 결과 표시 완료 · 시각은 공급자 근사치입니다.';
-  }catch(error){status.textContent='Retell 분석 실패: '+(error.message||error);}
-  finally{button.disabled=false;}
+el('new-session').addEventListener('click',()=>{
+  quickSession=null;report=null;
+  newSound(null);
+  el('audio-file').value='';
+  el('server-consent').checked=false;
+  el('azure-consent').checked=false;
+  el('task').value='read';
+  el('prompt').textContent=prompts.read;
+  el('out-pron').textContent='미측정';
+  el('out-delay').textContent='미측정';
+  el('out-tremor').textContent='미측정';
+  el('why-pron').textContent='새 기준 문장 읽기 녹음을 입력하세요.';
+  el('why-delay').textContent='실제 Retell Evidence 검증실에서 별도로 평가합니다.';
+  el('why-tremor').textContent='새 모음 지속 발성 녹음을 입력하세요.';
+  el('evidence').textContent='새 평가가 시작되었습니다.';
+  el('download').disabled=true;
+  el('quick-status').textContent='새 평가 시작 · 문장 읽기 → 모음 ‘아’ 순서로 측정하세요.';
 });
 el('download').addEventListener('click',()=>{
   if(!report)return;
@@ -157,25 +170,21 @@ el('download').addEventListener('click',()=>{
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 async function checkUnifiedEngine(){
- const quick=el('quick-analyze'),retell=el('retell-analyze');
- quick.disabled=true;retell.disabled=true;
+ const quick=el('quick-analyze');
+ quick.disabled=true;
  try{
   const r=await fetch(API+'/status',{cache:'no-store'});
   if(!r.ok)throw Error('HTTP '+r.status);
   const data=await r.json();
   if(!data.ready||!data.evidenceGuestQuickEnabled||!Array.isArray(data.resultCategories)||data.resultCategories.length!==3)
     throw Error('분석 서버 응답 형식 오류');
-  quick.disabled=false;retell.disabled=false;
+  quick.disabled=false;
   el('quick-status').textContent='에비던스 비로그인 체험 · 녹음 또는 파일 선택 후 동의하고 바로 분석하세요. (공용 사용량 제한 적용)';
-  el('retell-status').textContent='Retell 통화 기록은 개인정보 보호를 위해 통화 소유자 인증이 필요합니다. 왼쪽 빠른 음성 테스트는 로그인 없이 가능합니다.';
+
  }catch(e){
   el('quick-status').textContent='공통 분석 서버가 아직 준비되지 않았습니다: '+(e?.message||String(e));
-  el('retell-status').textContent='공통 분석 서버 대기 중 · 서버 배포를 확인하세요.';
+
  }
 }
 checkUnifiedEngine();
 window.addEventListener('pagehide',()=>{cleanupPreview();stream?.getTracks().forEach(t=>t.stop());});
-const callId=new URLSearchParams(location.search).get('call_id');
-if(callId&&/^[A-Za-z0-9_-]{4,128}$/.test(callId)){
-  el('call-id').value=callId;el('retell-status').textContent='통화 ID가 연결됐습니다. 통화 종료 후 상담 기록 분석을 누르세요.';
-}
