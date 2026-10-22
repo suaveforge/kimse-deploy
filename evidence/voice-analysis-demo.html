@@ -15,7 +15,7 @@ p,small{color:#536e71;line-height:1.5}p{margin:7px 0}
 .result .note{font-size:12px;color:#627a7a;overflow-wrap:anywhere}
 .layout{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button,select,input{font:inherit}button,select,input[type=file],input[type=text]{border-radius:8px;border:1px solid #aac8bf;padding:10px;max-width:100%;min-height:40px}
-button{background:#e8f4ef;color:#174740;font-weight:750;cursor:pointer}button.primary{color:#fff;background:#0c756a;border-color:#0c756a}
+button{background:#e8f4ef;color:#174740;font-weight:750;cursor:pointer}button.primary{color:#fff;background:#0c756a;border-color:#0c756a}.secondary{background:#e9efed;color:#345553}.lab-link{display:inline-block;background:#e8f4ef;color:#174740;font-weight:750;padding:11px 14px;border-radius:8px;text-decoration:none}
 button:disabled{opacity:.52;cursor:not-allowed}
 .actions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
 select,input[type=file],input[type=text]{width:100%}
@@ -35,7 +35,8 @@ details{margin-top:9px}
 <section class="card result" aria-labelledby="tremor-label"><strong id="tremor-label">③ 목소리 떨림 관련 지표</strong><div class="value" id="out-tremor">미측정</div><div class="note" id="why-tremor">4초 이상의 모음 발성·Praat 분석 필요</div></section>
 </div>
 <div class="layout">
-<section class="card"><h2>빠른 음성 테스트 · 로그인 불필요</h2>
+<section class="card"><h2>1–2. 문장 읽기와 모음 분석 · 로그인 불필요</h2>
+<p class="expl">같은 사람이 문장 읽기와 '아' 발성을 순서대로 테스트하면 이 화면에서 두 실측 결과를 함께 표시합니다. 다른 사람이 평가할 때에는 '새 평가 시작'을 누르세요.</p>
 <label for="task">측정 과제</label><select id="task">
 <option value="read">문장 읽기 · Azure 발음 평가</option>
 <option value="vowel">모음 ‘아’ 4~6초 · Praat 음향 변조 분석</option>
@@ -47,17 +48,16 @@ details{margin-top:9px}
 <audio id="preview" controls hidden preload="none"></audio>
 <label class="check"><input id="server-consent" type="checkbox"><span>이 녹음을 낌새 서버에서 분석하는 데 동의합니다. 분석 결과만 반환하며 녹음 파일을 별도로 저장하지 않습니다.</span></label>
 <label class="check"><input id="azure-consent" type="checkbox"><span>문장 읽기인 경우에만 Microsoft Azure로 음성을 추가 전송하여 발음 평가받는 데 동의합니다.</span></label>
-<button class="primary" id="quick-analyze" type="button">세 항목 통합 분석</button>
+<div class="actions"><button class="primary" id="quick-analyze" type="button">선택 과제 분석</button><button class="secondary" id="new-session" type="button">새 평가 시작</button></div>
 <p class="status" id="quick-status" role="status">음성을 녹음하거나 파일을 선택하세요.</p>
 </section>
-<section class="card"><h2>Retell AI 상담 기록</h2>
-<p class="expl">Retell 상담 기록에는 민감한 개인정보가 포함됩니다. 이 기능만 통화 소유자의 낌새 계정 인증이 필요합니다. 로그인 없이 분석하려면 왼쪽 빠른 음성 테스트를 이용하세요.</p>
-<label for="call-id">낌새 Retell 통화 ID</label><input id="call-id" type="text" placeholder="call_...">
-<div class="actions"><button id="retell-analyze" class="primary" type="button">상담 기록 분석</button><a href="/retell-collect.html">Retell 상담 수집 ↗</a></div>
-<p class="status" id="retell-status" role="status">통화 후 단어별 시각 기록으로 응답 지연을 계산합니다.</p>
-<p class="expl">Retell의 단어 시각은 근사치이며, 모음 발성·기준 문장 읽기 구간이 별도로 확인되지 않으면 발음과 떨림은 미측정입니다.</p>
+<section class="card"><h2>3. 상담 응답시간 · Retell Evidence</h2>
+<p class="expl">AI 상담의 질문 종료부터 첫 답변 단어까지 걸린 시간을 별도 검증실에서 계산합니다. 단어별 시각은 공급자 추정값이며 인지 처리 지연이나 질환 판정이 아닙니다.</p>
+<p class="expl">개인 낌새 앱 계정 로그인은 필요하지 않습니다. 실제 통화 내용 보호와 유료 통화 발급을 위해 Evidence 운영자 접근 코드와 음성 수집 동의가 필요합니다.</p>
+<div class="actions"><a href="./retell-lab.html" class="lab-link">Retell Evidence 검증실 열기 ↗</a></div>
+<p class="expl">검증실에서 통화 종료 후 '수신 확인'을 누르면 질문→답변 대기시간이 표시됩니다. 같은 사람의 평가인지 확인하기 전에는 다른 녹음의 점수를 임의로 합치지 않습니다.</p>
 </section>
 </div>
 <details class="card" id="details"><summary>분석 근거·측정 품질·한계 보기</summary><pre id="evidence" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">아직 분석 결과 없음</pre><button id="download" disabled>분석 JSON 저장</button></details>
 <p class="expl">동일한 분석 결과 구조를 사용하되, 과제·음원·시각 정보가 다르면 서로 다른 항목이 측정될 수 있습니다. 의료용 확진·치매 위험 점수는 산출하지 않습니다. <a href="./speech-demo.html">기존 기초 음성 계측 보기 ↗</a></p>
-</main><script type="module" src="./voice-analysis-demo.js?v=20261022b"></script></body></html>
+</main><script type="module" src="./voice-analysis-demo.js?v=20261022c"></script></body></html>
