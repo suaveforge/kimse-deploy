@@ -148,6 +148,15 @@ function meterTick(){
  raf=requestAnimationFrame(meterTick);
 }
 function beginMeter(){meterRunning=true;if(!raf)raf=requestAnimationFrame(meterTick);}
+function primeMeterAudio(){
+ // Must be called synchronously inside a tap for iOS Safari WebAudio.
+ const C=window.AudioContext||window.webkitAudioContext;
+ if(!C)return;
+ try{
+  if(!meterCtx||meterCtx.state==='closed')meterCtx=new C();
+  meterCtx.resume().catch(()=>{});
+ }catch(error){meterCtx=null;}
+}
 function stopMeter(){
  meterRunning=false;if(raf)cancelAnimationFrame(raf);raf=0;
  if(trackRetry)clearTimeout(trackRetry);trackRetry=0;
@@ -269,6 +278,7 @@ async function beginCall(){
  if(creating||live||taskBusy||!serviceReady)return;
  if(!$('consent').checked){message('음성 처리에 동의해야 통화할 수 있습니다',true);return;}
  if(!window.isSecureContext){message('HTTPS 환경에서만 통화할 수 있습니다',true);return;}
+ primeMeterAudio();
  creating=true;$('start').disabled=true;connection('연결 중');
  try{
   // A previous call token stays local only until the next session is created.
@@ -397,6 +407,7 @@ async function recordTask(){
   message('발음 평가를 위해 Azure Speech 전송 동의가 필요합니다',true);return;
  }
  const name=task,allowed=$('azure-consent').checked;
+ primeMeterAudio();
  taskBusy=true;$('task-record').disabled=true;
  try{
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('마이크 녹음을 지원하지 않습니다');
