@@ -28,14 +28,14 @@ details{margin-top:9px}
 @media(max-width:700px){.results,.layout{grid-template-columns:1fr}.result{min-height:90px}.result .value{margin:4px 0}body{padding:9px}}
 </style></head><body><main>
 <header><h1>낌새 · 통합 음성 분석</h1><a href="./collection.html?view=ai">Evidence 돌아가기</a></header>
-<p class="expl">수집은 두 경로, 분석 엔진과 출력은 하나입니다. 검증되지 않은 임상 판정이나 가상의 점수는 표시하지 않습니다.</p>
+<p class="expl"><strong>에비던스 빠른 음성 테스트는 로그인 없이 사용할 수 있습니다.</strong> 음성 전송 동의와 공용 이용 한도는 적용됩니다. Retell의 개인 상담 기록만 소유자 인증이 필요합니다. 검증되지 않은 임상 판정이나 가상의 점수는 표시하지 않습니다.</p>
 <div class="results" aria-label="상담사 요청 3가지 결과">
 <section class="card result" aria-labelledby="pron-label"><strong id="pron-label">① 발음 정확도</strong><div class="value" id="out-pron">미측정</div><div class="note" id="why-pron">기준 문장 읽기와 공식 발음 평가 결과 필요</div></section>
 <section class="card result" aria-labelledby="delay-label"><strong id="delay-label">② 생각의 지연 관련 지표</strong><div class="value" id="out-delay">미측정</div><div class="note" id="why-delay">질문 종료와 답변 시작의 같은 시간축 기록 필요</div></section>
 <section class="card result" aria-labelledby="tremor-label"><strong id="tremor-label">③ 목소리 떨림 관련 지표</strong><div class="value" id="out-tremor">미측정</div><div class="note" id="why-tremor">4초 이상의 모음 발성·Praat 분석 필요</div></section>
 </div>
 <div class="layout">
-<section class="card"><h2>빠른 음성 테스트</h2>
+<section class="card"><h2>빠른 음성 테스트 · 로그인 불필요</h2>
 <label for="task">측정 과제</label><select id="task">
 <option value="read">문장 읽기 · Azure 발음 평가</option>
 <option value="vowel">모음 ‘아’ 4~6초 · Praat 음향 변조 분석</option>
@@ -51,7 +51,7 @@ details{margin-top:9px}
 <p class="status" id="quick-status" role="status">음성을 녹음하거나 파일을 선택하세요.</p>
 </section>
 <section class="card"><h2>Retell AI 상담 기록</h2>
-<p class="expl">이 기능은 낌새에서 동의 후 생성한 Retell 통화만 분석합니다. 외부 Retell 단독 테스트의 임의 통화 ID는 연결되지 않습니다.</p>
+<p class="expl">Retell 상담 기록에는 민감한 개인정보가 포함됩니다. 이 기능만 통화 소유자의 낌새 계정 인증이 필요합니다. 로그인 없이 분석하려면 왼쪽 빠른 음성 테스트를 이용하세요.</p>
 <label for="call-id">낌새 Retell 통화 ID</label><input id="call-id" type="text" placeholder="call_...">
 <div class="actions"><button id="retell-analyze" class="primary" type="button">상담 기록 분석</button><a href="/retell-collect.html">Retell 상담 수집 ↗</a></div>
 <p class="status" id="retell-status" role="status">통화 후 단어별 시각 기록으로 응답 지연을 계산합니다.</p>
@@ -60,4 +60,4 @@ details{margin-top:9px}
 </div>
 <details class="card" id="details"><summary>분석 근거·측정 품질·한계 보기</summary><pre id="evidence" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">아직 분석 결과 없음</pre><button id="download" disabled>분석 JSON 저장</button></details>
 <p class="expl">동일한 분석 결과 구조를 사용하되, 과제·음원·시각 정보가 다르면 서로 다른 항목이 측정될 수 있습니다. 의료용 확진·치매 위험 점수는 산출하지 않습니다. <a href="./speech-demo.html">기존 기초 음성 계측 보기 ↗</a></p>
-</main><script type="module" src="./voice-analysis-demo.js?v=20261022a"></script></body></html>
+</main><script type="module" src="./voice-analysis-demo.js?v=20261022b"></script></body></html>
