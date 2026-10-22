@@ -76,6 +76,7 @@ async function beginMeter(inputStream){
   try{
     meterContext=new Constructor();
     await meterContext.resume();
+    if(!inputStream.active){endMeter();return;}
     analyser=meterContext.createAnalyser();
     analyser.fftSize=1024;
     analyser.smoothingTimeConstant=.62;
@@ -126,7 +127,7 @@ function closeMicrophone(){
 function cancelCapture(){
   ++recordingSession;
   if(recorder?.state==='recording'){recorder.onstop=null;recorder.stop();}
-  recorder=null;closeMicrophone();speechSynthesis?.cancel?.();
+  recorder=null;closeMicrophone();window.speechSynthesis?.cancel?.();
 }
 function showStage(i){
   cancelCapture();
