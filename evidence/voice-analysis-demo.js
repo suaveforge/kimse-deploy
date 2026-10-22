@@ -12,6 +12,7 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let busy=false,recordingSession=0,serviceReady=false;
+let responseMicPreparing=false;
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
 let noiseFloor=.003,autoStopReason=null;
 // UI capture duration parameters only. These ARE NOT speech-disorder thresholds.
@@ -236,6 +237,7 @@ async function checkService(){
     serviceReady=true;
     el('record').disabled=false;
     el('play-question').disabled=false;
+    if(currentTask()==='response')void primeResponseMicrophone();
     setStatus('연결 완료 · 동의 후 녹음을 시작해 주세요.','success');
   }catch(e){
     serviceReady=false;
@@ -244,6 +246,32 @@ async function checkService(){
     el('check-connection').hidden=false;
     setStatus('분석 서버에 연결할 수 없습니다. 녹음 전에 다시 연결해주세요.','error');
   }
+}
+async function primeResponseMicrophone(){
+  // Request microphone on entering stage 2, before playback. Stage 1 has
+  // already requested audio consent and microphone permission.
+  // Merely opening the MediaStream NEVER records/transmits audio.
+  if(currentTask()!=='response'||!serviceReady||
+     !navigator.mediaDevices?.getUserMedia||responseMicPreparing)return;
+  if(stream?.active)return;
+  const token=recordingSession;
+  responseMicPreparing=true;
+  el('play-question').disabled=true;
+  setStatus('마이크 준비 중 · 아직 녹음하지 않습니다.');
+  try{
+    const prepared=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    if(token!==recordingSession||currentTask()!=='response'){
+      prepared.getTracks().forEach(t=>t.stop());return;
+    }
+    stream=prepared;
+    el('play-question').disabled=false;
+    setStatus('🔊 질문을 들으면 답변 녹음이 자동 시작됩니다.');
+  }catch(_e){
+    if(token===recordingSession){
+      el('play-question').disabled=false;
+      setStatus('마이크 사용을 허용한 뒤 질문을 들을 수 있습니다.','error');
+    }
+  }finally{responseMicPreparing=false;}
 }
 function showStage(i){
   cancelCapture();
@@ -279,6 +307,7 @@ function showStage(i){
   busy=false;
   setStatus(serviceReady?(task==='response'?'🔊 질문 듣고 답변하기를 눌러주세요.':
     i===0?'동의 후 녹음을 시작해 주세요.':'준비되면 녹음 시작을 눌러주세요.'):'분석 서버 연결을 확인해주세요.');
+  if(task==='response'&&serviceReady)void primeResponseMicrophone();
 }
 function newAssessment(){
   completed={};report=null;
@@ -568,6 +597,19 @@ async function startRecording(playback='none'){
   if(!serviceReady){await checkService();if(!serviceReady)return;}
   if(!checkConsent())return;
   const isResponse=currentTask()==='response';
+  if(isResponse&&responseMicPreparing){
+    setStatus('마이크 준비가 끝난 뒤 질문을 들어주세요.');return;
+  }
+  if(isResponse&&!stream?.active){
+    // A denied or slow pre-warm must not start the question before recording is
+    // possible. Require an explicit tap again to preserve mobile media gestures.
+    await primeResponseMicrophone();
+    if(stream?.active){
+      el('play-question').disabled=false;
+      setStatus('마이크 준비 완료. 🔊 질문 듣고 답변하기를 다시 눌러주세요.','success');
+    }else setStatus('마이크를 사용할 수 없습니다. 브라우저 권한을 확인해주세요.','error');
+    return;
+  }
   if(isResponse&&playback==='none'){
     setStatus('🔊 질문 듣고 답변하기 버튼을 눌러주세요.','error');
     return;
@@ -601,11 +643,10 @@ async function startRecording(playback='none'){
       setStatus('질문 재생에 실패했습니다. 다시 듣기를 눌러주세요.','error');
     }
     function questionDone(){
-      if(session!==recordingSession||playbackFailure)return;
-      questionFinished=true;
+      if(session!==recordingSession||playbackFailure||questionFinished)return;
       if(speakingTimer)clearTimeout(speakingTimer);
       questionEnd=performance.now();
-      if(!microphoneReady||!recorder||recorder.state!=='inactive'){
+      if(!microphoneReady||!stream?.active||!recorder||recorder.state!=='inactive'){
         // If the mic was not ready, the first speech sample could be lost.
         // Do not fabricate a response-onset time; require a fresh play.
         closeMicrophone();
@@ -615,8 +656,13 @@ async function startRecording(playback='none'){
       }
       try{
         recorder.start();
+        questionFinished=true;
         el('question-hint').textContent='질문이 끝났습니다. 이제 답변해 주세요.';
-      }catch(e){questionFailed();}
+      }catch(e){
+        // Do not mark playback successful if iOS rejected MediaRecorder.start().
+        questionFailed();
+        setStatus('질문은 재생됐지만 녹음 시작에 실패했습니다. 다시 듣기를 눌러주세요.','error');
+      }
     }
     if(isResponse){
       // Start the audio inside the direct tap BEFORE awaiting microphone permission.
@@ -659,14 +705,14 @@ async function startRecording(playback='none'){
     if(navigator.audioSession && !isResponse){
       try{navigator.audioSession.type='play-and-record';}catch{}
     }
-    stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    if(!isResponse){
+      stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    }
     if(session!==recordingSession){closeMicrophone();return;}
     if(playbackFailure||questionFinished){
       closeMicrophone();
-      if(!playbackFailure){
-        resetPlayButton();
-        setStatus('마이크 연결이 늦었습니다. 질문을 다시 재생해주세요.','error');
-      }
+      resetPlayButton();
+      setStatus('질문 재생 중 녹음 연결에 실패했습니다. 다시 시도해주세요.','error');
       return;
     }
     recorder=new MediaRecorder(stream);
