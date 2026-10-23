@@ -175,7 +175,11 @@ async function apiStatus(){
     const res=await fetch(BASE+"/status",{cache:"no-store"});
     const body=await res.json();
     if(!res.ok||body?.ready!==true){throw Error("베타 API 미배포 또는 비활성화")}
-    state.ready=true;setStatus("azure-status","베타 서버 준비됨 · 동의 후 같은 음원의 원본/무음 추가본을 비교할 수 있습니다.");
+    if(body?.onsetAzureEnabled!==true){
+      state.ready=false;setStatus("azure-status","베타 서버는 연결됐지만 첫 단어 Azure 비교 기능이 비활성화돼 있습니다. 로컬 A/B 파형은 사용할 수 있습니다.",true);
+    }else{
+      state.ready=true;setStatus("azure-status","베타 Azure 분석 준비됨 · 동의 후 동일 음원 원본/무음 추가본을 비교할 수 있습니다.");
+    }
   }catch{
     state.ready=false;setStatus("azure-status","베타 API가 아직 연결되지 않았습니다. 현재 A/B 녹음과 파형 비교만 사용할 수 있습니다. 안정판 API로 우회 전송하지 않습니다.",true)
   }finally{buttons()}
