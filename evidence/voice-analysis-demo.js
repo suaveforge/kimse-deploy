@@ -15,6 +15,7 @@ let responsePreRollMs=0,responseSoundHasPreRoll=false;
 let busy=false,recordingSession=0,serviceReady=false;
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
 let noiseFloor=.003,autoStopReason=null;
+let captureStartConfirmed=false,captureStartWatchdog=0;
 // UI capture duration parameters only. These ARE NOT speech-disorder thresholds.
 // A fixed 5.5s vowel recording provides >=5s samples as used by tremor research.
 // For unstructured answers, a generous silence window protects interior hesitations.
@@ -252,6 +253,8 @@ function setAudio(blob){
   }
 }
 function closeMicrophone(){
+  if(captureStartWatchdog)clearTimeout(captureStartWatchdog);
+  captureStartWatchdog=0;
   stopAutoMonitor();
   stream?.getTracks().forEach(track=>track.stop());
   stream=null;endMeter();stopClock();setRecordingState(false);
@@ -402,6 +405,11 @@ function renderDelay(d){
     Math.max(0,d.initialResponseLatencyMs-d.firstSpeechFromWavStartMs):0;
   const total=Math.max(ms+offset,1);
   const all=[];
+  const hasPromptClock=number(d.initialResponseLatencyMs);
+  // No verified cross-clock mapping on iOS yet. The leading silence remains
+  // genuine PCM evidence, but is NOT confirmed stimulus-to-response latency.
+  if(!hasPromptClock&&number(d.firstSpeechFromWavStartMs)&&d.firstSpeechFromWavStartMs>0)
+    all.push({start:0,end:d.firstSpeechFromWavStartMs,type:'initial'});
   if(offset>0)all.push({start:0,end:offset,type:'initial'});
   for(const voice of slices)all.push({start:voice.startMs+offset,end:voice.endMs+offset,type:'speech'});
   const gaps=d.withinResponse?.silentPauses||[];
@@ -434,10 +442,10 @@ function renderDelay(d){
     bars+'</div>'+axis(total,knownInitial?'질문 종료 기준, 근사 정렬':'녹음 시작 기준')+
     '<div class="time-legend"><span><i class="time-dot"></i>발화</span>'+
     '<span><i class="time-dot pause"></i>답변 중 무음</span>'+
-    (knownInitial?'<span><i class="time-dot initial"></i>답변 시작 전</span>':'')+
+    ((knownInitial||number(d.firstSpeechFromWavStartMs))?'<span><i class="time-dot initial"></i>첫 발화 전 무음</span>':'')+
     '</div><div class="viz-insight">'+escapeText(startInfo+pauseInfo)+'</div>'+
     '<div class="viz-notice">'+(knownInitial?'브라우저 질문 종료 시각과 음성 구간의 근사 정렬':
-      '첫 발화 이전 무음은 녹음 시작 기준이며 질문 종료시간은 미확정')+
+      '첫 발화 이전 무음은 녹음 시작 기준이며 질문 표시 시각과 PCM 정합성은 미검증')+
     ' · VAD 구간 자체는 임상 판정 아님</div>';
 }
 function renderTremor(v){
@@ -483,10 +491,10 @@ function output(){
   const onset=number(d.initialResponseLatencyMs)?d.initialResponseLatencyMs:null;
   const fromRecordStart=number(d.firstSpeechFromWavStartMs)?d.firstSpeechFromWavStartMs:null;
   const pauses=d.withinResponse||{};
-  el('out-delay').textContent=onset!==null?(onset/1000).toFixed(2)+'초':
-    fromRecordStart!==null?(fromRecordStart/1000).toFixed(2)+'초':d.status==='measured'?'내부 휴지 측정':'미측정';
+  el('out-delay').textContent=onset!==null?'~'+(onset/1000).toFixed(2)+'초':
+    fromRecordStart!==null?'~'+(fromRecordStart/1000).toFixed(2)+'초':d.status==='measured'?'내부 휴지 측정':'미측정';
   el('why-delay').textContent=d.status==='measured'?
-    (onset!==null?'질문 종료 기준 시작 간격':'녹음 시작~첫 발화 간격(질문 종료 지연 아님)')+
+    (onset!==null?'질문 종료 시각 기준 추정':'녹음 시작~첫 발화(화면 질문 표시와 PCM 시각 정합 미검증)')+
     ' · 내부 무음 '+(number(pauses.silentPauseCount)?pauses.silentPauseCount+'회':'미측정')+
     ' · 총 '+(number(pauses.totalSilentPauseMs)?(pauses.totalSilentPauseMs/1000).toFixed(2)+'초':'미측정'):
     '답변 음성 분석 자료가 없습니다.';
@@ -630,6 +638,7 @@ async function startRecording(){
   const task=currentTask(),isResponse=task==='response';
   if(!serviceReady){await checkService();if(!serviceReady)return;}
   const session=++recordingSession;
+  captureStartConfirmed=false;
   questionEnd=null;questionOffset=null;
   responsePreRollMs=0;responseSoundHasPreRoll=false;
   el('after-actions').hidden=true;
@@ -651,6 +660,14 @@ async function startRecording(){
     recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};
     recorder.onstart=()=>{
       if(session!==recordingSession)return;
+      // Reject the UI start state when the audio track has already ended.
+      // Otherwise, the prompt could be shown without any usable recording.
+      if(!stream?.getTracks().some(track=>track.readyState!=='ended')){
+        recorder?.stop();return;
+      }
+      captureStartConfirmed=true;
+      if(captureStartWatchdog)clearTimeout(captureStartWatchdog);
+      captureStartWatchdog=0;
       // The question is hidden until the recorder confirms a live capture.
       // Audio onset is relative to capture zero, NOT the end of an audible question.
       if(isResponse)el('prompt').textContent=RESPONSE_QUESTION;
@@ -667,7 +684,14 @@ async function startRecording(){
     recorder.onstop=()=>{
       if(session!==recordingSession)return;
       const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
+      const confirmed=captureStartConfirmed;
       closeMicrophone();recorder=null;
+      if(!confirmed){
+        if(blob.size)setAudio(blob); // preserve any capture for local diagnosis; do not analyze it
+        el('record').disabled=false;
+        setStatus('마이크가 실제 녹음을 시작했는지 확인할 수 없습니다. 다시 시도해 주세요.','error');
+        return;
+      }
       if(!blob.size){
         el('record').disabled=false;
         setStatus('녹음 데이터가 없습니다. 다시 녹음해주세요.','error');
@@ -685,6 +709,16 @@ async function startRecording(){
       setStatus('녹음 장치에서 오류가 발생했습니다. 다시 녹음해 주세요.','error');
     };
     recorder.start();
+    // Safari may neither reject start() nor dispatch onstart. Never leave
+    // stage two silently stuck or reveal the stimulus before confirmation.
+    if(!captureStartConfirmed)captureStartWatchdog=setTimeout(()=>{
+      if(session!==recordingSession||captureStartConfirmed)return;
+      if(recorder?.state==='recording')recorder.stop();
+      else{
+        closeMicrophone();recorder=null;el('record').disabled=false;
+        setStatus('녹음 시작 확인 시간이 초과됐습니다. 다시 시도해 주세요.','error');
+      }
+    },6000);
   }catch(e){
     if(session!==recordingSession)return;
     recorder=null;closeMicrophone();
