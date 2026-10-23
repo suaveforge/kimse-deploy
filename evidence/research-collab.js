@@ -68,7 +68,21 @@
 
   function modal(id){const d=$(id);if(!d.open)d.showModal();return d;}
   function close(id){const d=$(id);if(d.open)d.close();}
-  function gate(msg){$('app').hidden=true;$('gate').hidden=false;$('gate-status').textContent=msg||'초대 링크가 필요합니다.';who=null;}
+  function gate(msg){$('app').hidden=true;$('gate').hidden=false;$('gate-status').textContent=msg||'연구 공간 연결을 확인해 주세요.';who=null;}
+
+  async function createGuestSession(){
+    const response=await fetch(BASE+'/guest-session',{method:'POST',cache:'no-store'});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok){
+      const reason=response.status===429?'접속 요청이 많아 잠시 제한됐습니다. 잠시 뒤 다시 열어주세요.':
+        result.detail==='RESEARCH_GUEST_ACCESS_DISABLED'?'현재 간편 접속이 중지됐습니다. 전문가 초대 링크를 사용해주세요.':
+        '간편 접속에 실패했습니다. ('+response.status+')';
+      throw Error(reason);
+    }
+    if(!result.token||result.role!=='guest')throw Error('접속 정보를 받지 못했습니다.');
+    token=result.token;
+    try{sessionStorage.setItem(TKEY,token);}catch(err){}
+  }
 
   async function enter(){
     // Invite code is in URL fragment only, not in GET requests, Referer or server logs.
@@ -80,14 +94,27 @@
     }else{
       try{token=sessionStorage.getItem(TKEY)||'';}catch(err){token='';}
     }
-    if(!token){gate('연구 책임자가 발급한 개별 초대 링크로 접속하세요.');return;}
-    $('gate-status').textContent='초대 권한을 확인하고 있습니다.';
+    $('gate-status').textContent='공동연구 공간에 연결하는 중입니다.';
     try{
-      who=await api('/session');
+      if(!token)await createGuestSession();
+      try{who=await api('/session');}
+      catch(err){
+        if(err.status!==401||match)throw err;
+        try{sessionStorage.removeItem(TKEY);}catch(e){}
+        await createGuestSession();
+        who=await api('/session');
+      }
       $('gate').hidden=true;$('app').hidden=false;
-      $('identity').textContent=who.name+' · '+who.affiliation+(who.role==='operator'?' · 운영자':'');
+      $('identity').textContent=who.name+' · '+who.affiliation+
+        (who.role==='operator'?' · 운영자':who.role==='guest'?' · 간편 접속':'');
       $('new-thread').disabled=false;
-      $('manage-invites').hidden=who.role!=='operator';
+      // The admin panel still enforces server-side operator authentication.
+      $('manage-invites').hidden=false;
+      $('board-list-heading').textContent=who.role==='guest'?'내 연구 기록':'연구 기록';
+      $('guest-notice').hidden=who.role!=='guest';
+      $('attachments-guide').textContent=who.role==='guest'?
+        '최대 5개 · 파일당 8MB · 총 20MB. 다른 사용자의 비공개 자료는 볼 수 없습니다. 민감정보는 올리지 마세요.':
+        '최대 5개 · 파일당 12MB · 총 36MB. 환자 식별정보·민감 자료는 업로드하지 마세요.';
       await loadThreads();
     }catch(err){
       try{sessionStorage.removeItem(TKEY);}catch(e){}
@@ -250,12 +277,13 @@
   }
   function validateFiles(files,already=0){
     const allowed=/\.(png|jpe?g|webp|pdf|docx|txt|mp4|wav)$/i;
+    const guest=who?.role==='guest',perFile=guest?8:12,totalLimit=guest?20:36;
     if(files.length+already>5){toast('첨부 파일은 게시글당 5개까지 가능합니다.',true);return false;}
-    if(files.some(f=>f.size>12*1048576||!allowed.test(f.name))){
-      toast('허용한 형식과 파일당 12MB 이하 조건을 확인해주세요.',true);return false;
+    if(files.some(f=>f.size>perFile*1048576||!allowed.test(f.name))){
+      toast('허용한 형식과 파일당 '+perFile+'MB 이하 조건을 확인해주세요.',true);return false;
     }
     const total=files.reduce((s,f)=>s+f.size,0);
-    if(total>36*1048576){toast('선택한 첨부파일 총합은 36MB 이하여야 합니다.',true);return false;}
+    if(total>totalLimit*1048576){toast('첨부파일은 총 '+totalLimit+'MB 이하여야 합니다.',true);return false;}
     return true;
   }
   async function uploadFiles(id,files){
