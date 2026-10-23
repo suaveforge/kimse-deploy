@@ -287,7 +287,7 @@ async function checkService(){
     serviceReady=false;
     el('record').disabled=true;
     el('check-connection').hidden=false;
-    setStatus('분석 서버에 연결할 수 없습니다. 녹음 전에 다시 연결해주세요.','error');
+    setStatus('베타 분석 서버 준비 중입니다. 현재는 안정판 테스트를 이용해주세요.','error');
   }
 }
 function showStage(i){
