@@ -80,7 +80,7 @@ body[data-task=active] .stage #speaker-name{font-size:16px;margin-top:3px}
   <button class="cancel" id="task-close" type="button">닫기</button>
  </div>
 </section>
-<footer><details><summary>개인정보·측정 안내 <span aria-hidden="true">⌄</span></summary><p>본인 음성만 테스트해 주세요. 통화 자료는 Retell과 낌새 서버에서 처리되며 낌새의 시험 저장 기간은 최대 48시간입니다. Retell 보관 기간은 별도입니다. 통화에서 응답 지연, 별도 읽기에서 발음 평가, 모음 발성에서 기본주파수(F0) 변조를 측정합니다. 치매·질환 진단은 하지 않습니다.</p><button type="button" id="delete" class="btn danger" style="height:34px;font-size:12px" disabled>시험 통화 자료 삭제</button></details></footer>
+<footer><a id="research-feedback" hidden class="research-note-link" href="./research-collab.html?target=voice-retell&amp;origin=retell-result">이 통화 결과에 의견 남기기 ↗</a><details><summary>개인정보·측정 안내 <span aria-hidden="true">⌄</span></summary><p>본인 음성만 테스트해 주세요. 통화 자료는 Retell과 낌새 서버에서 처리되며 낌새의 시험 저장 기간은 최대 48시간입니다. Retell 보관 기간은 별도입니다. 통화에서 응답 지연, 별도 읽기에서 발음 평가, 모음 발성에서 기본주파수(F0) 변조를 측정합니다. 치매·질환 진단은 하지 않습니다.</p><button type="button" id="delete" class="btn danger" style="height:34px;font-size:12px" disabled>시험 통화 자료 삭제</button></details></footer>
 </div>
 <script type="module">
 const ROOT='https://api-kimse.suaveforge.com/api/v1/evidence';
@@ -254,7 +254,7 @@ function callEnded(){
  viewSpeaker('ended','통화 종료','측정 결과를 확인하고 있어요');
  connection('분석 확인 중');
  $('start').disabled=false;$('start').textContent='새 통화 시작';
- $('end').disabled=true;showExtraTasks();startPolling();
+ $('end').disabled=true;showExtraTasks();$('research-feedback').hidden=false;startPolling();
  message('응답 지연 확인 중 · 발음과 음성 변조는 아래에서 추가 측정');
 }
 async function refresh(){
@@ -468,7 +468,7 @@ try{
   callId=String(prev.callId);sessionToken=String(prev.sessionToken);
   ended=true;viewSpeaker('ended','이전 통화','마지막 통화 분석값을 불러옵니다');
   $('start').disabled=false;$('start').textContent='새 통화 시작';
-  $('delete').disabled=false;showExtraTasks();refresh();
+  $('delete').disabled=false;showExtraTasks();$('research-feedback').hidden=false;refresh();
  }
 }catch(error){}
 async function checkVoice(){
