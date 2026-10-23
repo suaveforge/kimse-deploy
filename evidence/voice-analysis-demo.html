@@ -124,7 +124,7 @@ main{min-width:0}
  .footer-actions{position:relative;flex-wrap:wrap;gap:8px}
  .footer-actions>button{flex:1 1 100%}
 }
-</style></head><body><main>
+.result-title-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.result-title-row h2{margin:0 0 2px}.result-title-row .kimse-evidence-help{width:24px;height:24px;min-width:24px}</style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석</span></div><a class="back" href="./collection.html?view=ai">← 돌아가기</a></header>
 <section id="method-picker" class="panel">
 <h1>어떤 방식으로 검사할까요?</h1>
@@ -156,19 +156,19 @@ main{min-width:0}
 <p class="report-intro">측정 결과를 시간 순서대로 확인해 보세요.</p>
 <div class="results" id="results" aria-label="음성 분석 결과">
 <article class="result" aria-labelledby="pron-head">
-<div class="result-head"><span class="result-icon" aria-hidden="true">Aa</span><div class="result-name"><h2 id="pron-head">발음 정확도</h2><span>01 · 문장 읽기</span></div><div class="value" id="out-pron">미측정</div></div>
+<div class="result-head"><span class="result-icon" aria-hidden="true">Aa</span><div class="result-name"><div class="result-title-row"><h2 id="pron-head">발음 정확도</h2><button type="button" class="kimse-evidence-help" data-evidence-method="pronunciation" aria-label="발음 정확도 측정 근거 설명 보기" title="발음 정확도 측정 근거">?</button></div><span>01 · 문장 읽기</span></div><div class="value" id="out-pron">미측정</div></div>
 <div class="viz-description" id="pron-caption">단어별 측정 위치</div>
 <div class="timeline-viz" id="viz-pron" aria-label="실제 발음 단어별 측정 시간축"></div>
 <div class="note" id="why-pron"></div>
 </article>
 <article class="result" aria-labelledby="delay-head">
-<div class="result-head"><span class="result-icon" aria-hidden="true">◷</span><div class="result-name"><h2 id="delay-head">응답 지연</h2><span>02 · 질문에 답하기</span></div><div class="value" id="out-delay">미측정</div></div>
+<div class="result-head"><span class="result-icon" aria-hidden="true">◷</span><div class="result-name"><div class="result-title-row"><h2 id="delay-head">응답 지연</h2><button type="button" class="kimse-evidence-help" data-evidence-method="self-delay" aria-label="응답 지연 측정 근거 설명 보기" title="응답 지연 측정 근거">?</button></div><span>02 · 질문에 답하기</span></div><div class="value" id="out-delay">미측정</div></div>
 <div class="viz-description" id="delay-caption">질문 후 답변의 발화 및 침묵 구간</div>
 <div class="timeline-viz" id="viz-delay" aria-label="실제 답변 발화와 무음 구간"></div>
 <div class="note" id="why-delay"></div>
 </article>
 <article class="result" aria-labelledby="tremor-head">
-<div class="result-head"><span class="result-icon" aria-hidden="true">∿</span><div class="result-name"><h2 id="tremor-head">목소리 주기적 변조</h2><span>03 · 아— 발성</span></div><div class="value" id="out-tremor">미측정</div></div>
+<div class="result-head"><span class="result-icon" aria-hidden="true">∿</span><div class="result-name"><div class="result-title-row"><h2 id="tremor-head">목소리 주기적 변조</h2><button type="button" class="kimse-evidence-help" data-evidence-method="modulation" aria-label="목소리 주기적 변조 측정 근거 설명 보기" title="목소리 주기적 변조 측정 근거">?</button></div><span>03 · 아— 발성</span></div><div class="value" id="out-tremor">미측정</div></div>
 <div class="viz-description" id="tremor-caption">기본주파수(F0)의 시간에 따른 변화</div>
 <div class="timeline-viz" id="viz-tremor" aria-label="실제 모음 발성의 주파수 추적"></div>
 <div class="note" id="why-tremor"></div>
@@ -176,4 +176,4 @@ main{min-width:0}
 <div class="footer-actions"><button id="restart-from-result" class="primary" type="button">다시 검사하기</button><button id="download" type="button" class="secondary" disabled>결과 저장</button></div>
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></section>
-</main><script type="module" src="./voice-analysis-demo.js?v=20261023a"></script></body></html>
+</main><script type="module" src="./voice-analysis-demo.js?v=20261023a"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
