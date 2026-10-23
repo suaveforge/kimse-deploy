@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>낌새 | 첫 단어 녹음 진단 (베타)</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;color:#193b35;background:#f4f8f6}
+*{box-sizing:border-box}body{margin:0;padding:16px max(14px,env(safe-area-inset-right)) 40px max(14px,env(safe-area-inset-left))}
+main{max-width:700px;margin:auto}header{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:9px 0 18px}
+a{color:#116b5c}header a{font-size:14px;font-weight:680}
+h1{font-size:clamp(24px,6vw,32px);line-height:1.35;margin:10px 0}h2{font-size:19px;margin:0 0 9px}
+p{line-height:1.55;margin:0 0 10px;color:#526e65}
+article{border:1px solid #d9e7df;background:white;border-radius:20px;padding:clamp(17px,4vw,27px);margin:13px 0}
+.lead{font-size:15px}.sub{color:#6b8279;font-size:13px}.task{font-weight:790;font-size:clamp(18px,5vw,25px);color:#163f39;line-height:1.5}
+button{font:inherit;border:0;border-radius:13px;padding:14px 15px;min-height:55px;cursor:pointer;font-weight:750}
+button:focus-visible,a:focus-visible{outline:3px solid #2a9a85;outline-offset:3px}
+button:disabled{opacity:.50;cursor:not-allowed}
+.primary{background:#087567;color:white;width:100%;font-size:17px}
+.secondary{background:#e7f2ed;color:#134c41}
+.danger{background:#9c3337;color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+@media(max-width:410px){.grid{grid-template-columns:1fr}}
+.mode{border:1px solid #cbded5;border-radius:15px;padding:14px;display:grid;gap:9px}
+.mode h3{font-size:17px;margin:0}.mode p{font-size:13px;margin:0}
+.status{border-radius:10px;padding:12px;background:#edf6f1;color:#145e50;font-size:14px;margin-top:12px}
+.status.error{background:#fff0ee;color:#9a342d}.status.info{background:#f2f3f8;color:#4f6072}
+#go-signal{font-size:clamp(23px,7vw,34px);font-weight:850;text-align:center;border-radius:15px;padding:18px 10px;background:#f0f3f0;margin:12px 0;color:#637d73}
+#go-signal.ready{background:#ccebdc;color:#116747}
+.wave{width:100%;height:126px;display:block;border-radius:12px;background:#f2f7f4}
+.wave-label{font-size:12px;color:#667e74;margin-top:4px}
+audio{width:100%;margin:8px 0 3px}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 5px;border-bottom:1px solid #e2ede7}th{font-weight:730}td{word-break:keep-all}
+input[type=checkbox]{width:19px;height:19px;vertical-align:middle}
+#azure-status{font-size:14px}.warning{padding:10px 12px;background:#fff7e8;border-radius:11px;color:#775621;font-size:13px}
+.results{display:grid;gap:12px}.result{border:1px solid #d8e9e1;border-radius:15px;padding:13px}
+small{font-size:12px;color:#668175}
+</style></head><body><main>
+<header><strong>낌새 · 에비던스 베타</strong><a href="./voice-analysis-beta.html">← 베타로 돌아가기</a></header>
+<article><h1>첫 단어가 낮게 나오는 이유 확인</h1>
+<p class="lead">같은 문장을 두 번 읽어 녹음 첫부분을 비교합니다. 이후 동일 음원에 0.5초 무음을 붙여 Azure 점수가 달라지는지 확인할 수 있습니다.</p>
+<p class="warning">이 검사는 발음 능력이나 질환을 판정하지 않습니다. 원본 음성은 분석 요청을 누르기 전까지 서버에 전송하지 않습니다.</p>
+<p class="sub">검사 문장은 녹음 시작이 확인된 뒤 화면에 나타납니다.</p>
+</article>
+<article>
+<h2>1. 녹음 시점 비교</h2>
+<div class="grid">
+<div class="mode"><h3>A · 즉시 읽기</h3><p>녹음 시작 확인과 동시에 문장이 보입니다.</p><button class="primary" id="record-a" type="button">A 녹음 시작</button></div>
+<div class="mode"><h3>B · 기다렸다 읽기</h3><p>녹음 시작 확인 후 1.5초가 지나면 문장이 보입니다.</p><button class="primary" id="record-b" type="button">B 녹음 시작</button></div>
+</div>
+<div id="go-signal" aria-live="polite">녹음 방식을 선택해 주세요</div><div id="read-stimulus" class="task" aria-live="polite" hidden style="text-align:center;margin:12px 0 18px">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</div>
+<canvas class="wave" id="live-wave" width="620" height="125" aria-label="녹음 중 마이크 입력 강도"></canvas>
+<div class="wave-label">녹음이 실제 시작되면 마이크 막대가 반응합니다. 둘 다 같은 문장을 읽으세요.</div>
+<button id="record-stop" class="danger" type="button" disabled style="width:100%;margin-top:12px">녹음 종료</button>
+<div id="capture-status" class="status" role="status" aria-live="polite">기존 테스트와 별도 녹음입니다.</div>
+</article>
+<article><h2>2. 녹음 앞부분 확인</h2>
+<div class="results">
+<div class="result"><strong>A · 즉시 읽기</strong><canvas class="wave" id="wave-a" width="620" height="126" aria-label="A 녹음 앞부분 파형"></canvas>
+<div id="stats-a" class="sub">녹음 전</div><audio id="audio-a" controls hidden preload="none"></audio></div>
+<div class="result"><strong>B · 1.5초 후 읽기</strong><canvas class="wave" id="wave-b" width="620" height="126" aria-label="B 녹음 앞부분 파형"></canvas>
+<div id="stats-b" class="sub">녹음 전</div><audio id="audio-b" controls hidden preload="none"></audio></div>
+</div>
+<p class="sub" style="margin-top:12px">파형은 첫 2.5초의 실제 PCM 음압을 표시합니다. 시작 위치 후보는 단순 음량 기준이므로 음성 시작 정답은 아닙니다. A와 B는 서로 다른 발화라 점수 비교만으로 녹음 결함을 확정할 수 없습니다.</p>
+</article>
+<article>
+<h2>3. 동일 음원 Azure 비교</h2>
+<p>선택한 한 녹음을 원본과 <strong>앞에 0.5초 무음이 추가된 복사본</strong>으로 각각 분석합니다. 원본 발화의 표본은 바꾸지 않습니다.</p>
+<div class="grid">
+<button class="secondary" type="button" id="use-a" disabled>A 녹음으로 비교</button>
+<button class="secondary" type="button" id="use-b" disabled>B 녹음으로 비교</button>
+</div>
+<p id="which-audio" class="sub" style="margin-top:10px">비교할 녹음을 선택해 주세요.</p>
+<label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:12px 0"><input id="azure-consent" type="checkbox"><span>베타 분석을 위해 선택한 음성을 서버와 Microsoft Azure에 전송하는 데 동의합니다. 한 번 누르면 Azure 평가가 최대 2회 실행됩니다.</span></label>
+<button class="primary" id="run-azure" type="button" disabled>동일 음원 · Azure 점수 비교</button>
+<div id="azure-status" class="status info" role="status" aria-live="polite">베타 분석 서버 상태를 확인 중입니다.</div>
+<div id="azure-result" hidden style="margin-top:13px"></div>
+</article>
+<article><h2>확인 기준</h2>
+<p class="sub">A에서만 첫부분이 잘리고 B에서는 정상이라면 녹음 시작 구간을 추가 검증합니다. 같은 음원을 앞에 무음만 붙였는데 첫 단어 점수나 정렬이 크게 달라지면 Azure 시작 경계에 민감할 수 있습니다. 두 현상 모두 단 한 번의 검사로 원인을 확정하지 않습니다.</p>
+<button class="secondary" id="clear-all" type="button" style="width:100%">녹음 삭제하고 다시 시작</button>
+</article>
+</main><script src="./voice-pronunciation-onset.js?v=20261023-onset2" defer></script></body></html>
