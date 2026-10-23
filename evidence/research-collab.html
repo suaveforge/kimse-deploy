@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f8f7">
+<title>공동연구 검토실 | KIMSE Evidence</title>
+<meta name="description" content="초대받은 공동연구 전문가가 검사 의견과 증거를 제출하고 수정 및 검증 이력을 확인하는 비공개 협업 공간입니다.">
+<style>
+:root{font:14px/1.52 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#183d40;background:#f5f8f7;--ink:#183d40;--muted:#5d7378;--accent:#087669;--line:#d8e5df;--surface:#fff;--soft:#edf5f1}
+*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}a{color:#087669;text-decoration:none}a:hover{text-decoration:underline}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #79bdad;outline-offset:2px}[hidden]{display:none!important}
+.top{background:#fff;border-bottom:1px solid var(--line)}.top-inner{max-width:1280px;margin:auto;min-height:62px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:850;letter-spacing:-.02em;font-size:15px}.brand small{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#69867e;display:block;font-weight:760}.top nav{display:flex;align-items:center;gap:14px;font-size:12px;font-weight:750}.top nav a{color:#456a67}
+main{max-width:1280px;margin:auto;padding:24px 24px 55px}h1{font-size:clamp(24px,3vw,31px);line-height:1.2;letter-spacing:-.05em;margin:4px 0 9px}h2{font-size:19px;letter-spacing:-.03em;margin:0}h3{font-size:15px;margin:0}p{margin:0}.eyebrow{font-weight:850;color:#168073;font-size:11px;letter-spacing:.1em}.muted{color:var(--muted)}.intro{font-size:13px;max-width:780px}
+.hero{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:19px}.identity{font-size:12px;color:var(--muted);padding:10px 13px;border:1px solid #d1e3db;border-radius:9px;background:#fff}
+.primary,.secondary,.tertiary{border:1px solid var(--accent);border-radius:9px;padding:10px 16px;font-size:13px;font-weight:800;min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.primary{background:var(--accent);color:white}.primary:hover{background:#06675c}.secondary{background:white;color:var(--accent)}.tertiary{border-color:var(--line);background:white;color:#3d6566}.danger{color:#a14949}
+.gate{max-width:620px;margin:5vh auto;background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px}.gate h1{margin:5px 0 13px}.gate .lead{font-size:14px;color:var(--muted);margin-bottom:21px}.quiet{background:#f3f8f5;border:1px solid #e1ebe5;border-radius:11px;padding:13px 14px;font-size:12px;color:#526c6e}.gate details{margin-top:27px;border-top:1px solid var(--line);padding-top:18px}.gate summary{cursor:pointer;color:#55726e;font-size:12px;font-weight:750}
+.field{display:grid;gap:6px;margin:12px 0}.field>label,.field>.label{font-size:12px;color:#395d5a;font-weight:800}.field input:not([type=file]),.field textarea,.field select,.toolbar select{width:100%;border:1px solid #cfdfd7;background:#fff;color:var(--ink);border-radius:8px;padding:10px 12px;min-height:40px}.field textarea{min-height:130px;resize:vertical}.field small{font-size:11px;color:var(--muted)}
+.info{border-radius:10px;padding:11px 13px;font-size:12px;color:#506d65;background:#edf5f1;margin:11px 0}.info.error{background:#fff0eb;color:#9e483b}.ok{color:#08776a}
+.workspace{display:grid;grid-template-columns:minmax(330px,460px) minmax(0,1fr);gap:15px;align-items:start}.list-panel,.detail-panel{border:1px solid var(--line);background:#fff;border-radius:14px;min-height:580px;overflow:hidden}.panel-top{padding:17px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-top small{color:var(--muted);font-size:12px}.toolbar{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:7px}.toolbar select{flex:1;min-width:0;font-size:12px;padding:9px 7px}
+.thread-list{max-height:70vh;overflow:auto}.thread-row{display:block;width:100%;border:0;border-bottom:1px solid #e9efeb;background:white;text-align:left;padding:15px 17px}.thread-row:hover,.thread-row[aria-selected=true]{background:#f2f8f5}.thread-row[aria-selected=true]{box-shadow:inset 3px 0 #087669}.thread-row .meta{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px;font-size:11px;color:#687e7b}.thread-row strong{display:block;font-size:14px;line-height:1.35;margin-bottom:7px}.thread-row .bottom{color:#668079;font-size:11px}.empty{color:#748681;font-size:13px;text-align:center;padding:56px 24px}.badge{font-size:10px;border-radius:6px;padding:3px 6px;background:#eaf4ef;color:#126d60;font-weight:850;white-space:nowrap}.badge[data-state=in_progress]{background:#e9f0fb;color:#28598e}.badge[data-state=ready_to_verify]{background:#fff3d7;color:#8d691f}.badge[data-state=reopened]{background:#fff1e8;color:#ad5b35}.badge[data-state=verified]{background:#e0f5e8;color:#167d52}
+.detail-panel{padding:0}.detail-body{padding:21px 23px}.detail-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:#768681;font-size:12px}.detail-body h2{font-size:clamp(20px,2.4vw,25px);margin:11px 0;line-height:1.25}.detail-body .body{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;color:#36585a}.section-title{font-size:13px;color:#37585b;font-weight:850;margin:21px 0 9px}.attachment-list{display:grid;gap:7px}.attachment{display:flex;gap:9px;align-items:center;justify-content:space-between;border:1px solid #e2ebe6;border-radius:9px;padding:10px 12px;font-size:12px;background:#fcfefd}.attachment button{border:0;background:transparent;color:var(--accent);font-weight:800;padding:5px}.event{position:relative;border-left:2px solid #d9e8e1;margin-left:5px;padding:0 0 18px 17px}.event:last-child{padding-bottom:0}.event:before{content:"";position:absolute;left:-5px;top:3px;width:8px;height:8px;border-radius:50%;background:#83baa8;border:1px solid white}.event-head{color:#53716e;font-size:11px;margin-bottom:3px}.event .copy{white-space:pre-wrap;overflow-wrap:anywhere;color:#365659;font-size:13px}.event .status-change{font-size:11px;font-weight:800;color:#08776a}
+.reply{border-top:1px solid #edf1ee;padding-top:15px;margin-top:18px}.reply textarea{min-height:75px}.reply .buttons{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}.review-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}
+.notice{margin-top:18px;font-size:11px;color:#657b7e}.back-mobile{display:none;border:none;background:none;color:var(--accent);font-weight:800;margin-bottom:11px;padding:0}
+dialog{border:1px solid #dae7e2;border-radius:15px;box-shadow:0 24px 65px #142d3642;width:min(94vw,680px);max-height:88dvh;padding:0;overflow:auto;color:var(--ink)}dialog::backdrop{background:#102c35a8}.dialog-inner{padding:24px}.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.dialog-head button{border:0;background:#f3f7f5;color:#5d7670;border-radius:7px;width:36px;height:36px;font-size:17px}.dialog-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:20px}.upload{display:block;border:1px dashed #b4d0c5;border-radius:10px;background:#f9fcfa;padding:16px;text-align:center;cursor:pointer}.upload input{max-width:100%;margin:8px auto 0;display:block;font-size:12px}.file-preview{margin:8px 0;color:var(--muted);font-size:11px}
+#toaster{position:fixed;z-index:40;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(94vw,530px);background:#193a39;color:white;border-radius:10px;padding:12px 16px;font-size:13px;box-shadow:0 7px 24px #183e3e33}.admin-links{overflow-wrap:anywhere;background:#f1f7f3;border-radius:8px;padding:12px;font-size:12px}
+@media(max-width:820px){main{padding:18px 13px 46px}.top-inner{padding:0 15px}.workspace{grid-template-columns:1fr}.list-panel,.detail-panel{min-height:0}.list-panel .thread-list{max-height:none}.detail-panel{display:none}body[data-view=detail] .list-panel{display:none}body[data-view=detail] .detail-panel{display:block}.back-mobile{display:block}.hero{align-items:start}.identity{display:none}}
+@media(max-width:480px){.hero{display:block}.hero .primary{margin-top:12px;width:100%}.dialog-inner{padding:17px}.panel-top{padding:14px}.detail-body{padding:17px}}
+</style>
+<script defer src="./research-collab.js?v=20261023a"></script>
+</head>
+<body>
+<header class="top"><div class="top-inner"><div class="brand"><small>KIMSE / EVIDENCE</small>공동연구 검토실</div><nav><a href="./collection.html?view=ai">AI 실험</a><a href="./index.html">Evidence</a></nav></div></header>
+<main>
+<section id="gate" class="gate">
+  <div class="eyebrow">INVITATION ONLY</div>
+  <h1>연구 의견을 기록하고 함께 검증합니다.</h1>
+  <p class="lead">외부 공동연구 전문가 전용 공간입니다. 참여자별 초대 링크로 접속하며, 게시글과 첨부파일은 초대받은 참여자만 볼 수 있습니다.</p>
+  <div class="quiet">초대받은 링크를 열면 별도 가입 없이 접근됩니다. 초대 링크가 없다면 연구 담당자에게 요청해 주세요.</div>
+  <p id="gate-status" class="info" role="status">초대 링크를 확인하고 있습니다.</p>
+  <details id="operator-panel">
+    <summary>연구 운영자 · 전문가 초대 관리</summary>
+    <div class="field"><label for="admin-secret">운영자 인증</label><input id="admin-secret" autocomplete="off" type="password" placeholder="운영자 전용 인증 정보"><small>참여 전문가에게 입력받는 항목이 아닙니다.</small></div>
+    <div class="field"><label for="invite-name">초대할 연구자 이름</label><input id="invite-name" maxlength="80" autocomplete="off" placeholder="성함"></div>
+    <div class="field"><label for="invite-org">소속 기관</label><input id="invite-org" maxlength="120" autocomplete="off" placeholder="기관 또는 연구팀"></div>
+    <div class="field"><label for="invite-role">권한</label><select id="invite-role"><option value="expert">공동연구 전문가 (의견·재검증)</option><option value="operator">운영자 (수정·검토 상태 관리)</option></select></div>
+    <button id="issue-invite" class="secondary" type="button">개별 초대 링크 발급</button>
+    <div id="invite-output" hidden class="field"><div class="label">새 초대 링크 · 이 화면에서만 다시 볼 수 있습니다</div><div id="invite-link" class="admin-links"></div><button id="copy-invite" class="secondary" type="button">초대 링크 복사</button></div>
+  </details>
+</section>
+
+<section id="app" hidden>
+  <div class="hero">
+    <div><div class="eyebrow">EXPERT COLLABORATION / REVIEW LOG</div><h1>연구 의견 및 수정 검토</h1><p class="intro muted">검사 결과와 연구 근거를 연결하고, 조치 내역과 재검증 결과까지 하나의 기록으로 관리합니다.</p></div>
+    <div><div id="identity" class="identity"></div><button id="new-thread" class="primary" type="button" style="margin-top:9px">+ 의견 등록</button></div>
+  </div>
+  <div class="workspace">
+    <section class="list-panel" aria-label="공동연구 게시글">
+      <div class="panel-top"><h2>연구 기록</h2><small id="thread-count">—건</small></div>
+      <div class="toolbar"><select id="filter-status" aria-label="처리 상태"><option value="all">전체 상태</option><option value="received">접수</option><option value="in_review">검토 중</option><option value="in_progress">수정 중</option><option value="ready_to_verify">재검증 요청</option><option value="verified">전문가 확인</option><option value="reopened">재검토</option><option value="closed">종료</option></select><select id="filter-kind" aria-label="의견 종류"><option value="all">모든 종류</option><option value="issue">오류 제보</option><option value="improvement">개선 요청</option><option value="research">연구 제안</option><option value="validation">검증 결과</option></select></div>
+      <div id="thread-list" class="thread-list"><div class="empty">공동연구 기록을 불러오고 있습니다.</div></div>
+    </section>
+    <section class="detail-panel" aria-label="게시글 및 검증 이력">
+      <div class="detail-body"><button id="back-list" class="back-mobile" type="button">← 목록으로</button><div id="thread-detail"><div class="empty">왼쪽에서 기록을 선택해 상세 내용과 처리 이력을 확인하세요.</div></div></div>
+    </section>
+  </div>
+  <p class="notice">관찰 기록과 연구 제안을 위한 공간입니다. 의료·치매 진단이나 환자 기록 공유를 위한 게시판이 아닙니다. 자료에 개인정보가 포함되지 않았는지 제출 전에 확인해 주세요.</p>
+</section>
+</main>
+
+<dialog id="compose" aria-labelledby="compose-heading">
+  <form id="compose-form" class="dialog-inner">
+    <div class="dialog-head"><div><div class="eyebrow">NEW RESEARCH ITEM</div><h2 id="compose-heading">연구 의견 등록</h2></div><button data-close="compose" type="button" aria-label="닫기">×</button></div>
+    <p class="muted" style="font-size:12px;margin-top:7px">사실과 제안을 구분해 적으면 검토 속도가 빨라집니다.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label for="post-kind">의견 구분</label><select id="post-kind"><option value="issue">오류 제보</option><option value="improvement">개선 요청</option><option value="research">연구 제안</option><option value="validation">검증 결과</option></select></div>
+      <div class="field"><label for="post-target">대상 기능</label><select id="post-target"><option value="general">전체·공통</option><option value="voice-self">발음·응답 지연 자가테스트</option><option value="voice-retell">Retell AI 통화</option><option value="eye">눈 감김 분석</option><option value="cognition">인지 평가</option><option value="report">보고서·자료</option><option value="other">기타</option></select></div>
+    </div>
+    <div class="field"><label for="post-title">제목</label><input id="post-title" required maxlength="160" minlength="5" placeholder="무엇을 검토하거나 수정해야 하는지 적어 주세요"></div>
+    <div class="field"><label for="post-detail">내용 및 근거</label><textarea id="post-detail" required minlength="12" maxlength="6000" placeholder="관찰한 상황, 현재 결과, 기대했던 결과 또는 연구 근거를 구체적으로 작성해 주세요."></textarea></div>
+    <div class="field"><span class="label">근거 파일 (선택)</span><label class="upload">이미지·PDF·문서·텍스트·동영상·음성 파일 첨부<input id="post-files" type="file" multiple accept=".png,.jpg,.jpeg,.webp,.pdf,.docx,.txt,.mp4,.wav"></label><small>최대 5개, 파일당 12MB, 전체 36MB. 파일은 참여자 전용으로 보관됩니다. 환자 식별정보·민감 자료는 업로드하지 마세요.</small><div id="file-preview" class="file-preview"></div></div>
+    <div id="post-error" class="info error" hidden role="alert"></div>
+    <div class="dialog-actions"><button class="tertiary" data-close="compose" type="button">취소</button><button id="submit-post" class="primary" type="submit">의견 등록</button></div>
+  </form>
+</dialog>
+<dialog id="status-dialog" aria-labelledby="status-heading"><form id="status-form" class="dialog-inner"><div class="dialog-head"><h2 id="status-heading">검토 상태 변경</h2><button data-close="status-dialog" type="button" aria-label="닫기">×</button></div><p id="status-description" class="info"></p><div class="field"><label for="status-rationale">판단 근거 또는 수정 내용</label><textarea id="status-rationale" maxlength="1000" minlength="3" required placeholder="왜 이 상태로 변경하는지, 무엇을 확인했는지 적어 주세요."></textarea></div><div class="dialog-actions"><button data-close="status-dialog" class="tertiary" type="button">취소</button><button class="primary" type="submit">이력 기록</button></div></form></dialog>
+<div id="toaster" hidden role="status" aria-live="polite"></div>
+</body></html>
