@@ -87,6 +87,7 @@
       $('gate').hidden=true;$('app').hidden=false;
       $('identity').textContent=who.name+' · '+who.affiliation+(who.role==='operator'?' · 운영자':'');
       $('new-thread').disabled=false;
+      $('manage-invites').hidden=who.role!=='operator';
       await loadThreads();
     }catch(err){
       try{sessionStorage.removeItem(TKEY);}catch(e){}
@@ -110,10 +111,46 @@
       if(!resp.ok)throw Error(value.detail||'초대 발급 실패');
       $('invite-link').textContent=value.link;
       $('invite-output').hidden=false;
-      $('admin-secret').value='';
       toast('개별 초대 링크가 발급됐습니다. 보안 채널로 전달하세요.');
     }catch(err){toast(err.message,true);}
     finally{$('issue-invite').disabled=false;}
+  }
+
+  async function listInvites(){
+    const secret=$('admin-secret').value;
+    if(!secret){toast('초대 현황을 보려면 운영자 인증을 입력하세요.',true);return;}
+    try{
+      const response=await fetch(BASE+'/admin/invitations',{headers:{'X-KIMSE-ADMIN-TOKEN':secret},cache:'no-store'});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok)throw Error(data.detail||'초대 이력을 가져오지 못했습니다.');
+      $('invite-history').hidden=false;
+      $('invite-history').innerHTML=(data.items||[]).map(x=>
+        '<div class="invite-entry"><div><strong>'+esc(x.name)+'</strong> · '+esc(x.affiliation)+
+        '<small>'+esc(x.role==='operator'?'운영자':'연구 전문가')+' · '+esc(fdate(x.expires_at))+(x.revoked_at?' · 접근 차단':'')+'</small></div>'+
+        (!x.revoked_at?'<button type="button" data-revoke="'+esc(x.id)+'">접근 차단</button>':'')+'</div>'
+      ).join('')||'<div class="muted" style="font-size:12px">발급된 초대가 없습니다.</div>';
+    }catch(err){toast(err.message,true);}
+  }
+  async function revokeInvite(id){
+    if(!window.confirm('이 연구자의 게시판 접근을 중지할까요? 작성된 연구 기록은 보존됩니다.'))return;
+    const secret=$('admin-secret').value;
+    if(!secret){toast('운영자 인증을 다시 입력해주세요.',true);return;}
+    try{
+      const response=await fetch(BASE+'/admin/invitations/'+encodeURIComponent(id)+'/revoke',{
+        method:'POST',headers:{'X-KIMSE-ADMIN-TOKEN':secret},cache:'no-store'});
+      if(!response.ok)throw Error('접근 차단에 실패했습니다.');
+      toast('초대 접근을 차단했습니다.');await listInvites();
+    }catch(err){toast(err.message,true);}
+  }
+  function manageInvites(){
+    $('app').hidden=true;$('gate').hidden=false;
+    $('return-workspace').hidden=false;$('operator-panel').open=true;
+    $('gate-status').textContent='운영자 전용 · 초대 링크는 연구자별로 발급됩니다.';
+  }
+  function returnWorkspace(){
+    if(!who)return;
+    $('admin-secret').value='';$('invite-output').hidden=true;$('invite-history').hidden=true;
+    $('return-workspace').hidden=true;$('gate').hidden=true;$('app').hidden=false;
   }
   async function loadThreads(){
     if(!who)return;
@@ -310,6 +347,12 @@
 
   document.addEventListener('click',delegate);
   $('issue-invite').addEventListener('click',issueInvite);
+  $('list-invites').addEventListener('click',listInvites);
+  $('manage-invites').addEventListener('click',manageInvites);
+  $('return-workspace').addEventListener('click',returnWorkspace);
+  $('invite-history').addEventListener('click',e=>{
+    const b=e.target.closest('[data-revoke]');if(b)revokeInvite(b.dataset.revoke);
+  });
   $('copy-invite').addEventListener('click',async()=>{
     try{await navigator.clipboard.writeText($('invite-link').textContent);toast('초대 링크를 복사했습니다.');}
     catch(err){toast('복사 권한이 없어 링크를 직접 선택해야 합니다.',true);}
