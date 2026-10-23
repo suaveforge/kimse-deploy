@@ -30,6 +30,7 @@
   };
   const prettyBytes = n => n >= 1048576 ? (n/1048576).toFixed(1)+'MB' : Math.ceil(n/1024)+'KB';
   const TKEY='kimse-research-invite-v1';
+  const GKEY='kimse-research-guest-v1';
   let token='',who=null,threads=[],selected='',current=null,threadRequest=0,detailRequest=0,toastTimer=0;
   let intentStatus='',sending=false,sourceTarget='',sourceOrigin='';
   const query = new URLSearchParams(location.search);
@@ -81,7 +82,7 @@
     }
     if(!result.token||result.role!=='guest')throw Error('접속 정보를 받지 못했습니다.');
     token=result.token;
-    try{sessionStorage.setItem(TKEY,token);}catch(err){}
+    try{localStorage.setItem(GKEY,token);}catch(err){try{sessionStorage.setItem(TKEY,token);}catch(e){}}
   }
 
   async function enter(){
@@ -92,7 +93,7 @@
       try{sessionStorage.setItem(TKEY,token);}catch(err){}
       history.replaceState(null,'',location.pathname+location.search);
     }else{
-      try{token=sessionStorage.getItem(TKEY)||'';}catch(err){token='';}
+      try{token=sessionStorage.getItem(TKEY)||localStorage.getItem(GKEY)||'';}catch(err){token='';}
     }
     $('gate-status').textContent='공동연구 공간에 연결하는 중입니다.';
     try{
@@ -100,7 +101,7 @@
       try{who=await api('/session');}
       catch(err){
         if(err.status!==401||match)throw err;
-        try{sessionStorage.removeItem(TKEY);}catch(e){}
+        try{sessionStorage.removeItem(TKEY);localStorage.removeItem(GKEY);}catch(e){}
         await createGuestSession();
         who=await api('/session');
       }
@@ -117,7 +118,7 @@
         '최대 5개 · 파일당 12MB · 총 36MB. 환자 식별정보·민감 자료는 업로드하지 마세요.';
       await loadThreads();
     }catch(err){
-      try{sessionStorage.removeItem(TKEY);}catch(e){}
+      try{sessionStorage.removeItem(TKEY);localStorage.removeItem(GKEY);}catch(e){}
       token='';gate(err.message);
     }
   }
