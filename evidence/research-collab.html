@@ -26,7 +26,7 @@ dialog{border:1px solid #dae7e2;border-radius:15px;box-shadow:0 24px 65px #142d3
 @media(max-width:820px){main{padding:18px 13px 46px}.top-inner{padding:0 15px}.workspace{grid-template-columns:1fr}.list-panel,.detail-panel{min-height:0}.list-panel .thread-list{max-height:none}.detail-panel{display:none}body[data-view=detail] .list-panel{display:none}body[data-view=detail] .detail-panel{display:block}.back-mobile{display:block}.hero{align-items:start}.identity{display:none}}
 @media(max-width:480px){.hero{display:block}.hero .primary{margin-top:12px;width:100%}.dialog-inner{padding:17px}.panel-top{padding:14px}.detail-body{padding:17px}}
 .invite-history{margin-top:13px;display:grid;gap:7px}.invite-entry{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #e0ebe6;padding:9px 0;font-size:12px}.invite-entry button{color:#9b534a;border:1px solid #ebc5ba;border-radius:7px;padding:6px 8px;background:white;font-weight:800}.invite-entry small{display:block;color:#69827e}.guest-intro{margin-top:9px;font-size:12px;color:#34675d;background:#eaf6ee;border:1px solid #cde7d8;border-radius:8px;padding:8px 11px}@media(max-width:480px){.guest-intro{font-size:11px}}</style>
-<script defer src="./research-collab.js?v=20261023-guest1"></script>
+<script defer src="./research-collab.js?v=20261023-guest2"></script>
 </head>
 <body>
 <header class="top"><div class="top-inner"><div class="brand"><small>KIMSE / EVIDENCE</small>공동연구 검토실</div><nav><a href="./collection.html?view=ai">AI 실험</a><a href="./index.html">Evidence</a></nav></div></header>
@@ -51,7 +51,7 @@ dialog{border:1px solid #dae7e2;border-radius:15px;box-shadow:0 24px 65px #142d3
 <section id="app" hidden>
   <div class="hero">
     <div><div class="eyebrow">EXPERT COLLABORATION / REVIEW LOG</div><h1>연구 의견 및 수정 검토</h1><p class="intro muted">검사 결과와 연구 근거를 연결하고, 조치 내역과 재검증 결과까지 하나의 기록으로 관리합니다.</p>
-    <p id="guest-notice" class="guest-intro" hidden>간편 접속 중 · 내가 작성한 의견만 표시됩니다. 초대 없이 글과 파일을 올릴 수 있습니다.</p></div>
+    <p id="guest-notice" class="guest-intro" hidden>간편 접속 중 · 내 게시글만 표시됩니다. 같은 브라우저에서 14일 동안 다시 확인할 수 있습니다.</p></div>
     <div><div id="identity" class="identity"></div><button id="manage-invites" class="tertiary" type="button" hidden style="margin-top:9px;margin-right:7px">운영자·초대 관리</button><button id="new-thread" class="primary" type="button" style="margin-top:9px">+ 의견 등록</button></div>
   </div>
   <div class="workspace">
