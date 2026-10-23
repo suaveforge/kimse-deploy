@@ -67,9 +67,9 @@ body[data-task=active] .stage #speaker-name{font-size:16px;margin-top:3px}
  <button class="btn danger secondary" id="end" type="button" disabled>통화 종료</button>
 </div>
 <section class="metrics" aria-label="3종 음성 지표">
- <div class="metric"><span class="metric-name">응답 지연</span><strong class="metric-value" id="delay">—</strong><span class="metric-sub" id="delay-detail">통화 후 계산</span></div>
- <div class="metric"><span class="metric-name">발음 정확도</span><strong class="metric-value" id="pronunciation">—</strong><span class="metric-sub" id="pronunciation-detail">문장 읽기 필요</span><button id="read-test" type="button" disabled hidden>문장 읽기</button></div>
- <div class="metric"><span class="metric-name">음성 주기 변조</span><strong class="metric-value" id="tremor">—</strong><span class="metric-sub" id="tremor-detail">모음 발성 필요</span><button id="vowel-test" type="button" disabled hidden>모음 발성</button></div>
+ <div class="metric"><span class="metric-label-row"><span class="metric-name">응답 지연</span><button type="button" class="kimse-evidence-help" data-evidence-method="retell-delay" aria-label="응답 지연 측정 근거 설명 보기" title="응답 지연 측정 근거">?</button></span><strong class="metric-value" id="delay">—</strong><span class="metric-sub" id="delay-detail">통화 후 계산</span></div>
+ <div class="metric"><span class="metric-label-row"><span class="metric-name">발음 정확도</span><button type="button" class="kimse-evidence-help" data-evidence-method="pronunciation" aria-label="발음 정확도 측정 근거 설명 보기" title="발음 정확도 측정 근거">?</button></span><strong class="metric-value" id="pronunciation">—</strong><span class="metric-sub" id="pronunciation-detail">문장 읽기 필요</span><button id="read-test" type="button" disabled hidden>문장 읽기</button></div>
+ <div class="metric"><span class="metric-label-row"><span class="metric-name">음성 주기 변조</span><button type="button" class="kimse-evidence-help" data-evidence-method="modulation" aria-label="음성 주기 변조 측정 근거 설명 보기" title="음성 주기 변조 측정 근거">?</button></span><strong class="metric-value" id="tremor">—</strong><span class="metric-sub" id="tremor-detail">모음 발성 필요</span><button id="vowel-test" type="button" disabled hidden>모음 발성</button></div>
 </section>
 <section id="task-area" hidden>
  <div class="task-title" id="task-title">추가 측정</div>
@@ -480,4 +480,4 @@ async function checkVoice(){
  }catch(error){$('pronunciation-detail').textContent='발음 평가 연결 확인 불가';}
 }
 checkVoice();checkReady();
-</script></body></html>
+</script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
