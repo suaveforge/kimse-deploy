@@ -54,7 +54,7 @@
         RESEARCH_OPERATOR_UNAUTHORIZED:'운영자 인증이 올바르지 않습니다.',
         RESEARCH_OPERATOR_UNCONFIGURED:'운영자 초대 발급 설정이 아직 준비되지 않았습니다.',
         RESEARCH_RATE_LIMIT:'짧은 시간에 등록할 수 있는 글 수를 초과했습니다.',
-        RESEARCH_ATTACHMENT_TOO_LARGE:'첨부파일은 12MB 이하만 가능합니다.',
+        RESEARCH_ATTACHMENT_TOO_LARGE:'선택한 파일이 허용 크기를 초과했습니다.',
         RESEARCH_THREAD_ATTACHMENT_LIMIT:'게시글의 첨부 용량·개수 한도를 초과했습니다.',
         RESEARCH_ATTACHMENT_FILE_TYPE_INVALID:'선택한 파일의 실제 형식을 확인할 수 없습니다.',
         RESEARCH_ATTACHMENT_TYPE_NOT_ALLOWED:'이 형식은 첨부할 수 없습니다.',
@@ -283,8 +283,9 @@
     if(files.some(f=>f.size>perFile*1048576||!allowed.test(f.name))){
       toast('허용한 형식과 파일당 '+perFile+'MB 이하 조건을 확인해주세요.',true);return false;
     }
-    const total=files.reduce((s,f)=>s+f.size,0);
-    if(total>totalLimit*1048576){toast('첨부파일은 총 '+totalLimit+'MB 이하여야 합니다.',true);return false;}
+    const existingBytes=already && current?.attachments ? current.attachments.reduce((sum,f)=>sum+f.bytes,0) : 0;
+    const total=existingBytes+files.reduce((sum,f)=>sum+f.size,0);
+    if(total>totalLimit*1048576){toast('기존 첨부를 포함해 총 '+totalLimit+'MB 이하여야 합니다.',true);return false;}
     return true;
   }
   async function uploadFiles(id,files){
