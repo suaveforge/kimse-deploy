@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko" data-bs-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="KIMSE 설문 응답 영수증의 Merkle proof와 블록체인 앵커 상태를 확인합니다.">
+<title>설문 응답 검증 | 낌새 Evidence</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.5.1/dist/css/tabler.min.css">
+<style>
+body{background:#f7faf9}.wrap{max-width:900px;margin:0 auto;padding:42px 18px 90px}.card{border:1px solid #dce8e7}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;overflow-wrap:anywhere}.state{font-size:1.05rem;font-weight:800}.ok{color:#087d74}.pending{color:#a16b00}.bad{color:#b42318}.kv{display:grid;grid-template-columns:180px 1fr;gap:8px 14px}.kv div{padding:7px 0;border-bottom:1px solid #edf2f1}.muted{color:#647783}.proof{background:#f2f7f6;border-radius:12px;padding:14px}.nav{padding:16px 18px;background:white;border-bottom:1px solid #e3eceb}.nav a{text-decoration:none;font-weight:700}@media(max-width:640px){.kv{grid-template-columns:1fr}.kv div:nth-child(odd){font-weight:700;padding-bottom:0}.kv div:nth-child(even){padding-top:0}}}
+</style>
+</head>
+<body>
+<div class="nav"><a href="./">낌새 Evidence Registry</a></div>
+<main class="wrap">
+<div class="mb-4"><div class="text-uppercase fw-bold text-azure small">KIMSE TRUST &amp; PROVENANCE</div><h1 class="mt-2">설문 응답 검증</h1><p class="text-secondary">영수증 코드를 입력하면 해당 응답이 어떤 배치에 포함되었는지, Merkle proof가 유효한지, 블록체인 앵커가 완료되었는지 확인합니다. 설문 답변 원문은 이 화면에서 공개하지 않습니다.</p></div>
+<div class="card mb-3"><div class="card-body">
+<label class="form-label fw-bold" for="receipt">응답 영수증 코드</label>
+<div class="input-group"><input id="receipt" class="form-control mono" autocomplete="off" placeholder="KIMSE-R-XXXXXXXXXXXXXX"><button id="verify" class="btn btn-primary">검증</button></div>
+<div class="form-hint mt-2">설문 완료 화면에서 받은 코드입니다.</div>
+</div></div>
+<div id="result" aria-live="polite"></div>
+</main>
+<script>
+(function(){
+'use strict';
+const API=(window.KIMSE_SURVEY_API||'https://api-kimse.suaveforge.com').replace(/\/$/,'');
+const input=document.getElementById('receipt'),button=document.getElementById('verify'),result=document.getElementById('result');
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function label(status){
+ const map={
+  BLOCKCHAIN_VERIFIED:['블록체인 검증 완료','ok'],
+  CHAIN_SUBMITTED:['블록체인 제출됨 · 확인 대기','pending'],
+  MERKLE_VERIFIED_CHAIN_PENDING:['Merkle 검증 완료 · 블록체인 기록 대기','pending'],
+  PENDING_BATCH:['접수 완료 · 배치 생성 대기','pending'],
+  PROOF_INVALID:['검증 실패','bad']
+ };
+ return map[status]||[status||'확인 불가','bad'];
+}
+function row(k,v,mono){return '<div>'+esc(k)+'</div><div class="'+(mono?'mono':'')+'">'+esc(v||'-')+'</div>'}
+async function verify(){
+ const code=input.value.trim();
+ if(!code){result.innerHTML='<div class="alert alert-warning">영수증 코드를 입력하세요.</div>';return}
+ button.disabled=true; result.innerHTML='<div class="card"><div class="card-body">검증 중...</div></div>';
+ try{
+  const r=await fetch(API+'/api/v1/public/survey-receipts/'+encodeURIComponent(code),{cache:'no-store'});
+  if(r.status===404){result.innerHTML='<div class="alert alert-danger">등록된 영수증을 찾지 못했습니다.</div>';return}
+  if(!r.ok)throw new Error('VERIFY_FAILED');
+  const x=await r.json(),st=label(x.proof_status),b=x.batch||{},a=x.anchor||{};
+  let html='<div class="card"><div class="card-body"><div class="state '+st[1]+'">'+esc(st[0])+'</div><div class="kv mt-3">'
+    +row('영수증',x.receipt_code,true)+row('설문',x.survey_id+' / '+x.survey_version,false)
+    +row('캠페인',x.campaign_id,true)+row('접수 순번',x.sequence_no,false)+row('접수 시각',x.received_at,false)
+    +row('응답 commitment',x.commitment,true);
+  if(x.batch){
+    html+=row('배치',b.batch_id,true)+row('배치 범위',b.sequence_start+'–'+b.sequence_end+' / '+b.response_count+'건',false)
+      +row('Merkle root',b.merkle_root,true)+row('Manifest hash',b.manifest_hash,true)
+      +row('Merkle proof',b.local_merkle_verified?'정상':'실패',false);
+  }
+  if(x.anchor){
+    html+=row('체인',a.chain+(a.cluster?' · '+a.cluster:''),false)+row('앵커 상태',a.status,false)
+      +row('Transaction',a.transaction_signature||'아직 없음',true);
+  }
+  html+='</div>';
+  if(a.explorer_url&&/^https:\/\//.test(a.explorer_url)){
+    html+='<a class="btn btn-outline-primary mt-3" target="_blank" rel="noopener noreferrer" href="'+esc(a.explorer_url)+'">블록체인 탐색기에서 확인</a>';
+  }
+  html+='<div class="proof mt-4 small"><strong>이 검증이 뜻하는 것</strong><br>이 응답의 commitment가 해당 Merkle batch에 포함됐는지와, 배치 root가 블록체인에 기록됐는지를 확인합니다. 응답 내용이 사실인지 또는 통계적 결론이 타당한지를 블록체인이 보증하는 것은 아닙니다.</div></div></div>';
+  result.innerHTML=html;
+ }catch(e){result.innerHTML='<div class="alert alert-danger">현재 검증 서버에 연결할 수 없습니다.</div>'}
+ finally{button.disabled=false}
+}
+button.addEventListener('click',verify);input.addEventListener('keydown',e=>{if(e.key==='Enter')verify()});
+const q=new URLSearchParams(location.search).get('receipt');if(q){input.value=q;verify()}
+})();
+</script>
+</body></html>
