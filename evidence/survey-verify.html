@@ -28,6 +28,7 @@ const input=document.getElementById('receipt'),button=document.getElementById('v
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function label(status){
  const map={
+  DEVNET_VERIFIED:['Solana Devnet 테스트 기록 확인','ok'],
   BLOCKCHAIN_VERIFIED:['블록체인 검증 완료','ok'],
   CHAIN_SUBMITTED:['블록체인 제출됨 · 확인 대기','pending'],
   MERKLE_VERIFIED_CHAIN_PENDING:['Merkle 검증 완료 · 블록체인 기록 대기','pending'],
@@ -46,7 +47,9 @@ async function verify(){
   if(r.status===404){result.innerHTML='<div class="alert alert-danger">등록된 영수증을 찾지 못했습니다.</div>';return}
   if(!r.ok)throw new Error('VERIFY_FAILED');
   const x=await r.json(),st=label(x.proof_status),b=x.batch||{},a=x.anchor||{};
-  let html='<div class="card"><div class="card-body"><div class="state '+st[1]+'">'+esc(st[0])+'</div><div class="kv mt-3">'
+  let html='<div class="card"><div class="card-body"><div class="state '+st[1]+'">'+esc(st[0])+'</div>'+
+    (a.cluster==='devnet'?'<div class="alert alert-warning mt-3 mb-2">Solana Devnet 테스트망입니다. 무료 검증 시연용이며, 네트워크 기록이 초기화될 수 있어 영구적인 제3자 증빙을 보장하지 않습니다.</div>':'')+
+    '<div class="kv mt-3">'
     +row('영수증',x.receipt_code,true)+row('설문',x.survey_id+' / '+x.survey_version,false)
     +row('캠페인',x.campaign_id,true)+row('접수 순번',x.sequence_no,false)+row('접수 시각',x.received_at,false)
     +row('응답 commitment',x.commitment,true);
