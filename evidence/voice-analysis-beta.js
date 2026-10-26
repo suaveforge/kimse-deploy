@@ -13,11 +13,23 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let assessmentGeneration=0; // Ignore delayed server results after restarting a self-test.
-let voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,startedAt:0,history:[]};
+let voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,percent:0,startedAt:0,history:[]};
 let analysisTimer=0,transitionTimer=0;
 const voiceCheckpoints=['audio_accepted','webrtc_completed','silero_completed','research_completed','extended_completed','report_completed'];
 const voicePhaseMessages={audio_accepted:'녹음된 음성의 파일 형식 확인 완료',webrtc_completed:'WebRTC 발화 경계 측정 완료',silero_completed:'Silero 발화·침묵 구간 검증 완료',research_completed:'Pitt AD/CN 분류 완료',extended_completed:'추가 사전학습 모델 추론 완료',report_completed:'보고서 데이터 결합 완료'};
-const voiceDetailMessages={pitt_imports:'Pitt 음성 특징 추출 도구를 불러오고 있습니다',pitt_weights:'검증된 Pitt 분류 가중치를 준비하고 있습니다',pitt_features:'녹음된 답변에서 음향 특징을 실제 추출하고 있습니다',pitt_scoring:'추출된 특징을 정규화하고 AD/CN 분류를 계산 중입니다',pitt_finished:'Pitt 분류 계산이 완료되어 결과를 확인하고 있습니다'};
+const voiceDetailMessages={
+  pitt_imports:'AD/CN 음향 분석 라이브러리 불러오기',
+  pitt_weights:'검증된 AD/CN 모델 가중치 로딩',
+  pitt_features:'녹음된 목소리에서 실제 음향 특징을 추출 중',
+  pitt_scoring:'음향 특징 추출 완료 · 가중치 정규화와 AD/CN 계산',
+  pitt_finished:'AD/CN 분류 계산 완료',
+  extended_pitt_full_started:'전체 융합 모델 · 네 가지 음향 스트림 병렬 분석 시작',
+  extended_aihub217_started:'한국어 VGG16 · 두 가중치 모델 분석 시작',
+  extended_pitt_full_completed:'Pitt 전체 융합 · 실제 추론 결과 수신',
+  extended_aihub217_completed:'한국어 VGG16 · 실제 추론 결과 수신',
+  extended_pitt_full_failed:'Pitt 전체 융합 · 추론 실패 확인',
+  extended_aihub217_failed:'AI-Hub VGG16 · 추론 실패 확인'
+};
 const mmss=seconds=>String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
 function eventProgress(label){
   if(!label||voiceProgress.history.at(-1)?.label===label)return;
@@ -303,6 +315,7 @@ function closeMicrophone(){
   stream=null;endMeter();stopClock();setRecordingState(false);
   el('record').disabled=busy;
   el('stop').disabled=true;
+  el('record').hidden=false;
   if(currentTask()==='response')el('stop').hidden=true;
 }
 function cancelCapture(){
@@ -346,7 +359,8 @@ function renderVoiceProgress(){
     (voiceProgress.research||step!=='research_completed')&&
     (voiceProgress.extended||step!=='extended_completed'));
   const confirmed=voiceProgress.completed, total=voiceProgress.total||visibleSteps.length;
-  const pct=voiceProgress.connected&&total>0?Math.floor(confirmed/total*100):null;
+  // Use only server-confirmed integer percentages, never a timer-driven fake.
+  const pct=voiceProgress.connected?voiceProgress.percent:null;
   const last=voiceProgress.phase;
   const elapsed=voiceProgress.startedAt?Math.floor((Date.now()-voiceProgress.startedAt)/1000):0;
   const message=voiceProgress.status==='failed'?'분석을 완료하지 못했습니다. 다른 측정 결과는 유지됩니다.':
@@ -382,7 +396,8 @@ function renderVoiceProgress(){
     el(prefix+'-progress-fill').style.width=(pct||0)+'%';
     const ring=el(prefix+'-progress-ring');
     ring.style['--analysis-pct']=(pct||0)+'%';
-    el(prefix+'-progress-count').textContent=pct===null?'서버 확인 대기':confirmed+' / '+total+'단계 완료';
+    el(prefix+'-progress-count').textContent=pct===null?'서버 확인 대기':
+    '실제 서버 완료 '+confirmed+' / '+total+'단계';
     for(let i=0;i<voiceCheckpoints.length;i++){
       const step=voiceCheckpoints[i],node=el(prefix+'-step-'+step);
       if(!node)continue;
@@ -399,7 +414,7 @@ function startVoiceProgress(research,extended=false){
   if(analysisTimer)clearInterval(analysisTimer);
   voiceProgress={status:'pending',research:!!research,extended:!!extended,completed:0,
     total:(research?5:4)+(extended?1:0),phase:null,connected:false,
-    detail:null,startedAt:Date.now(),history:[]};
+    detail:null,percent:0,startedAt:Date.now(),history:[]};
   eventProgress('분석 요청 시작');
   analysisTimer=setInterval(()=>{
     if(voiceProgress.status!=='pending'){clearInterval(analysisTimer);analysisTimer=0;return;}
@@ -414,6 +429,9 @@ function recordVoiceCheckpoint(event){
   if(!Number.isInteger(n)||t!==expected||n<1||n>t||n<voiceProgress.completed)return;
   voiceProgress.connected=true;
   voiceProgress.completed=n;voiceProgress.phase=event.phase;
+  if(Number.isInteger(event.percent)&&event.percent>=0&&event.percent<=100)
+    voiceProgress.percent=Math.max(voiceProgress.percent,event.percent);
+  else voiceProgress.percent=Math.max(voiceProgress.percent,Math.floor(n/t*100));
   voiceProgress.detail=null;
   eventProgress(voicePhaseMessages[event.phase]||'분석 단계 완료');
   renderVoiceProgress();
@@ -422,11 +440,14 @@ function recordVoiceDetail(event){
   if(voiceProgress.status!=='pending'||!event||!voiceDetailMessages[event.stage])return;
   voiceProgress.connected=true;
   voiceProgress.detail=event.stage;
+  if(Number.isInteger(event.percent)&&event.percent>=0&&event.percent<=100)
+    voiceProgress.percent=Math.max(voiceProgress.percent,event.percent);
   eventProgress(voiceDetailMessages[event.stage]);
   renderVoiceProgress();
 }
 function finishVoiceProgress(success){
   voiceProgress.status=success?'done':'failed';
+  if(success)voiceProgress.percent=100;
   if(analysisTimer){clearInterval(analysisTimer);analysisTimer=0;}
   eventProgress(success?'측정 결과 수신 완료':'측정 요청 종료');
   if(success){
@@ -463,10 +484,14 @@ function showTaskTransition(i){
   clearTaskTransition();
   const screen=el('task-transition');
   if(!screen||!transitionLines[i])return;
-  if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
   el('transition-message').textContent=transitionLines[i];
+  // No time limit. A cognitively accessible transition lasts until touch/keyboard.
   screen.hidden=false;
-  transitionTimer=setTimeout(()=>{screen.hidden=true;transitionTimer=0;},850);
+}
+function finishTaskTransition(){
+  if(el('task-transition').hidden)return;
+  clearTaskTransition();
+  el('record')?.focus?.({preventScroll:true});
 }
 function showStage(i){
   cancelCapture();
@@ -479,24 +504,27 @@ function showStage(i){
   el('progress').textContent=(i+1)+' / 3';
   el('progressFill').style.width=((i+1)/3*100)+'%';
   el('stage-title').textContent=(i+1)+'단계 · '+stageNames[i];
-  el('prompt').textContent=task==='response'?'녹음 시작을 누르면 질문이 나타납니다.':prompts[task];
-  el('response-question').textContent='녹음을 시작하면 질문이 나타나요';
+  // Show the question BEFORE recording. The visible task is to ANSWER, not read it aloud.
+  el('prompt').textContent=prompts[task];
+  el('response-question').textContent=RESPONSE_QUESTION;
   renderTaskCards();
   el('signal-label').textContent=task==='vowel'?'아— 소리를 일정하게 유지하면 자동으로 녹음을 마칩니다.':
-    task==='response'?'녹음 시작 시 질문이 공개됩니다. 답변을 마치면 자동 종료됩니다.':'문장을 읽고 잠시 멈추면 자동으로 종료됩니다.';
+    task==='response'?'질문을 확인하고 직접 대답하세요. 답변 뒤 조용히 기다리면 종료됩니다.':
+    '문장을 읽고 잠시 멈추면 자동으로 종료됩니다.';
   el('record').hidden=false;
   el('stop').hidden=true;
   el('task-other-actions').hidden=i!==0;
   el('skip-pron').hidden=i!==0;
   el('after-actions').hidden=true;
   el('elapsed').textContent='00:00';
-  el('record').textContent=task==='response'?'● 나의 답변 말하기 시작':task==='vowel'?'● 아—— 소리 시작':'● 이 문장 읽기 시작';
+  el('record').textContent=task==='response'?'🎙 내 답변 녹음 시작':task==='vowel'?'🎙 아—— 소리 녹음 시작':'🎙 문장 읽기 녹음 시작';
   el('record').disabled=!serviceReady;
   busy=false;
   updateResponseProgress();
 
-  setStatus(serviceReady?(task==='response'?'녹음 시작 후 질문이 나타납니다. 내 말로 대답하세요.':
-    i===0?'아래 문장을 그대로 소리 내어 읽으세요.':'아—— 소리 하나를 길게 내세요.'):'분석 서버 연결을 확인해주세요.');
+  setStatus(serviceReady?(task==='response'?'질문을 읽어 보고, 준비되면 내 경험으로 답하세요.':
+    i===0?'보이는 문장을 그대로 읽으세요.':'아—— 소리를 길고 일정하게 내세요.'):
+    '마이크 분석 서버 연결을 확인해주세요.');
   showTaskTransition(i);
 }
 function newAssessment(){
@@ -508,7 +536,7 @@ function newAssessment(){
   assessmentGeneration++;
   completed={};report=null;
   if(analysisTimer){clearInterval(analysisTimer);analysisTimer=0;}
-  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,startedAt:0,history:[]};
+  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,percent:0,startedAt:0,history:[]};
   // Consent is collected explicitly once before recording, not reset between tasks.
   el('method-picker').hidden=true;
   showStage(0);
@@ -715,7 +743,9 @@ function showResearchBinary(){
     note.textContent='Pitt 분류가 끝나면 결과를 표시합니다.';
   }else if(x.status==='unavailable'||x.status==='insufficient_data'){
     value.textContent='분류 불가';
-    note.textContent='유효한 분류 결과가 확보되지 않았습니다.';
+    note.textContent=x.status==='insufficient_data'?
+      '답변 음성이 5초 미만이거나 실제 발성 구간이 2.5초 미만이어서 분류하지 못했습니다.':
+      '모델 계산 오류: '+String(x.reason||'알 수 없는 실행 문제');
   }else{
     value.textContent='미측정';
     note.textContent='별도 AI 분류에 동의하지 않았거나 측정하지 않았습니다.';
@@ -743,26 +773,40 @@ function renderExtendedResearch(){
   card.hidden=x.status==='not_requested';
   if(card.hidden)return;
   const running=x.status==='pending',models=x.models||{};
+  const failures={
+    WORKER_TIMED_OUT:'모델 분석 제한 시간 초과',
+    WORKER_UNREACHABLE_OR_INVALID_RESPONSE:'분석 서버 연결 또는 응답 오류'
+  };
   el('extended-research-status').textContent=running?
-    '추가 연구용 모델 실행 중 · 완료된 실제 추론만 표시합니다.':
+    '각 모델이 실제 음성을 분석하고 있습니다. 완료되는 대로 결과를 표시합니다.':
     x.status==='completed_research_only'?
-      '사전학습 모델의 실제 연구용 추론 결과입니다. 진단이나 위험 확률은 제공하지 않습니다.':
-      '사전학습 모델 추론을 완료하지 못했습니다. 결과를 만들어 표시하지 않습니다.';
+    '실제로 완료된 모델의 결과입니다. 모델별 상태와 세부 수치를 확인하세요.':
+    '추가 모델 분석에 실패했습니다. 원인을 모델별로 표시합니다.';
   const pitt=models.pitt_full||{};
-  el('extended-pitt-value').textContent=running?'분석 중':pitt.status==='executed_research_only'?
-    '학습 클래스 '+String(pitt.rawTrainingClassId||'확인 불가'):'실행 결과 없음';
+  el('extended-pitt-value').textContent=running?'실제 분석 중':
+    pitt.status==='executed_research_only'?
+      ((pitt.binaryTrainingPattern==='CN'||pitt.binaryTrainingPattern==='AD')?
+      pitt.binaryTrainingPattern:'학습 클래스 '+(pitt.rawTrainingClassId??'확인 불가')):
+    '분석 실패';
   el('extended-pitt-note').textContent=pitt.status==='executed_research_only'?
-    '4개 스트림 융합 성공 · 학습 클래스 ID는 한국어 MCI/치매 단계가 아닙니다.':
-    '별도 Pitt 전체 융합 모델의 실제 출력이 확보되지 않았습니다.';
+    '4개 스트림 융합 · 학습 그룹 '+String(pitt.rawTrainingClassId??'?')+
+    ' · 한국어 임상 판정 아님':
+    running?'Pitt 융합 가중치의 응답을 기다리고 있습니다.':
+    (failures[pitt.reason]||pitt.reason||'모델이 유효한 결과를 반환하지 못했습니다.');
   const hub=models.aihub217||{};
-  el('extended-aihub-value').textContent=running?'분석 중':hub.status==='executed_research_only'?
-    '공식 VGG16 2종 실행 완료':'실행 결과 없음';
-  el('extended-aihub-note').textContent=hub.status==='executed_research_only'?
-    'SCIvsOTHERS·MCIvsAD 각각 계산 완료 · 최종 ANN 미확보 · 3단계 합산 판정 없음.':
-    'AI-Hub 217 사전학습 모델의 실제 출력이 확보되지 않았습니다.';
-  // Raw outputs only inside the collapsed evidence section; never a risk gauge.
-  el('extended-research-raw').textContent=running?
-    '실제 서버 결과 대기 중':JSON.stringify(x,null,2);
+  const heads=hub.candidateHeads||{},sci=heads.SCIvsOTHERS,mci=heads.MCIvsAD;
+  const valid=hub.status==='executed_research_only'&&
+    Number.isFinite(sci?.rawModelOutput)&&Number.isFinite(mci?.rawModelOutput);
+  el('extended-aihub-value').textContent=running?'실제 분석 중':
+    valid?'SCI '+Number(sci.rawModelOutput).toFixed(3)+
+      ' · MCI '+Number(mci.rawModelOutput).toFixed(3):
+    '분석 실패';
+  el('extended-aihub-note').textContent=valid?
+    '공식 VGG16 2개 원시 출력 · 진단 확률이나 3분류 결과가 아닙니다.':
+    running?'SCIvsOTHERS·MCIvsAD 두 가중치 모델의 응답을 기다리고 있습니다.':
+    (failures[hub.reason]||hub.reason||'모델이 유효한 결과를 반환하지 못했습니다.');
+  el('extended-research-raw').textContent=running?'서버의 실제 추론 결과 대기 중':
+    JSON.stringify(x,null,2);
 }
 function output(shouldScroll=true){
   const p=completed.pronunciation||{},d=completed.responseDelay||{},v=completed.vocalTremor||{};
@@ -1081,19 +1125,16 @@ async function startRecording(){
       captureStartConfirmed=true;
       if(captureStartWatchdog)clearTimeout(captureStartWatchdog);
       captureStartWatchdog=0;
-      // The question is hidden until the recorder confirms a live capture.
-      // Audio onset is relative to capture zero, NOT the end of an audible question.
-      if(isResponse){
-        el('prompt').textContent=RESPONSE_QUESTION;
-        el('response-question').textContent=RESPONSE_QUESTION;
-      }
+      // The question was already available for as much reading time as needed.
+      // The recorder's clock measures only the answer; it is not prompt-to-speech latency.
       beginMeter(stream);
       setRecordingState(true);
       startClock();
       beginAutoMonitor(task);
       el('stop').hidden=false;
       el('stop').disabled=false;
-      if(isResponse)el('record-label').textContent='● 답변 녹음 중';
+      if(isResponse)el('record-label').textContent='● 내 대답 녹음 중';
+      el('record').hidden=true;
       setStatus(task==='vowel'?'● 녹음 중 · 아— 소리를 유지하면 자동 종료':
         '● 녹음 중 · 말하기를 마치면 자동 종료됩니다.');
     };
@@ -1188,7 +1229,10 @@ el('choose-retell').addEventListener('click',()=>{
 el('back-method').addEventListener('click',()=>{
   el('retell-panel').hidden=true;el('method-picker').hidden=false;
 });
-el('task-transition').addEventListener('click',clearTaskTransition);
+el('task-transition').addEventListener('click',finishTaskTransition);
+el('task-transition').addEventListener('keydown',event=>{
+  if(event.key==='Enter'||event.key===' '){event.preventDefault();finishTaskTransition();}
+});
 el('record').addEventListener('click',startRecording);
 el('view-partial').addEventListener('click',()=>{
   if(el('analysis-view').hidden===false){
