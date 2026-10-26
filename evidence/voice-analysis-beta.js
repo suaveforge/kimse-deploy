@@ -12,6 +12,9 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let assessmentGeneration=0; // Ignore delayed server results after restarting a self-test.
+let voiceProgress={status:'idle',research:false,completed:0,total:0,phase:null,connected:false};
+const voiceCheckpoints=['audio_accepted','webrtc_completed','silero_completed','research_completed','report_completed'];
+const voicePhaseMessages={audio_accepted:'음성 형식 확인 및 분석 요청 수락',webrtc_completed:'발화와 침묵의 기본 구간 추출 완료',silero_completed:'비교 음성 구간 분석 완료',research_completed:'Pitt 연구용 음향 패턴 분류 완료',report_completed:'수신한 실제 측정 결과 정리 완료'};
 let responsePreRollMs=0,responseSoundHasPreRoll=false;
 let busy=false,recordingSession=0,serviceReady=false,researchReady=false;
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
@@ -297,16 +300,69 @@ async function checkService(){
     setStatus('베타 분석 서버 준비 중입니다. 현재는 안정판 테스트를 이용해주세요.','error');
   }
 }
-function updateResponseProgress(){
-  const status=completed.responseDelay?.status;
-  const pending=status==='pending';
-  const failed=completed.responseQuality?.serverStatus==='failed';
-  const message=pending?'2단계 답변 분석 중입니다. 3단계 검사는 계속할 수 있으며 결과에 자동 반영됩니다.':
-    failed?'2단계 분석에 실패했습니다. 해당 값은 미측정이며 다른 검사 결과는 유지됩니다.':'';
-  for(const id of ['response-progress','result-response-progress']){
-    const node=el(id);node.hidden=!message;node.textContent=message;
+function renderVoiceProgress(){
+  const active=voiceProgress.status!=='idle';
+  const visibleSteps=voiceCheckpoints.filter(step=>voiceProgress.research||step!=='research_completed');
+  const confirmed=voiceProgress.completed, total=voiceProgress.total||visibleSteps.length;
+  const pct=voiceProgress.connected&&total>0?Math.floor(confirmed/total*100):null;
+  const last=voiceProgress.phase;
+  const message=voiceProgress.status==='failed'?'분석을 완료하지 못했습니다. 기존 측정 결과는 유지됩니다.':
+    voiceProgress.status==='done'?'서버 분석 완료 · 측정된 결과를 보고서에 반영했습니다.':
+    pct===null?'서버 처리 단계 확인 중 · 3단계 검사를 계속하세요.':
+    confirmed===0?'서버 분석 요청 수신 중 · 3단계 검사를 계속하세요.':
+    (voicePhaseMessages[last]||'음성 분석 진행 중')+' · 다음 단계 처리 중';
+  for(const prefix of ['response','result-response']){
+    const card=el(prefix+'-progress');
+    if(!card)continue;
+    const stageVisible=prefix==='response'&&index===2&&el('self-panel').hidden===false;
+    const resultVisible=prefix==='result-response'&&el('result-view').hidden===false;
+    card.hidden=!active||!(stageVisible||resultVisible);
+    if(card.hidden)continue;
+    card.setAttribute('data-mode',voiceProgress.status);
+    const value=el(prefix+'-progress-value');
+    value.textContent=pct===null?'—':pct+'%';
+    el(prefix+'-progress-message').textContent=message;
+    const bar=el(prefix+'-progress-bar');
+    if(pct===null)bar.removeAttribute('aria-valuenow');
+    else bar.setAttribute('aria-valuenow',String(pct));
+    el(prefix+'-progress-fill').style.width=(pct||0)+'%';
+    const ring=el(prefix+'-progress-ring');
+    ring.style['--analysis-pct']=(pct||0)+'%';
+    el(prefix+'-progress-count').textContent=pct===null?'서버 확인 대기':confirmed+' / '+total+'단계 완료';
+    for(let i=0;i<voiceCheckpoints.length;i++){
+      const step=voiceCheckpoints[i],node=el(prefix+'-step-'+step);
+      if(!node)continue;
+      node.hidden=!visibleSteps.includes(step);
+      if(node.hidden)continue;
+      const seq=visibleSteps.indexOf(step);
+      const mode=voiceProgress.status==='done'||seq<confirmed?'done':
+        voiceProgress.status==='pending'&&seq===confirmed?'active':'waiting';
+      node.setAttribute('data-state',mode);
+    }
   }
 }
+function startVoiceProgress(research){
+  voiceProgress={status:'pending',research:!!research,completed:0,total:research?5:4,phase:null,connected:false};
+  renderVoiceProgress();
+}
+function recordVoiceCheckpoint(event){
+  if(voiceProgress.status!=='pending'||!event||!voiceCheckpoints.includes(event.phase))return;
+  const n=event.completed,t=event.total,expected=voiceProgress.research?5:4;
+  if(!Number.isInteger(n)||t!==expected||n<1||n>t||n<voiceProgress.completed)return;
+  voiceProgress.connected=true;
+  voiceProgress.completed=n;voiceProgress.phase=event.phase;
+  renderVoiceProgress();
+}
+function finishVoiceProgress(success){
+  voiceProgress.status=success?'done':'failed';
+  if(success){
+    voiceProgress.connected=true;
+    voiceProgress.completed=voiceProgress.total;
+    voiceProgress.phase='report_completed';
+  }
+  renderVoiceProgress();
+}
+function updateResponseProgress(){renderVoiceProgress();}
 function showStage(i){
   cancelCapture();
   index=i;questionEnd=null;questionOffset=null;responsePreRollMs=0;responseSoundHasPreRoll=false;setAudio(null);
@@ -338,6 +394,7 @@ function showStage(i){
 function newAssessment(){
   assessmentGeneration++;
   completed={};report=null;
+  voiceProgress={status:'idle',research:false,completed:0,total:0,phase:null,connected:false};
   el('server-consent').checked=false;el('azure-consent').checked=false;
   el('pitt-consent').checked=false;
   el('method-picker').hidden=true;
@@ -536,17 +593,17 @@ function showResearchBinary(){
   const value=el('research-binary-result'),note=el('research-binary-note');
   if(x.status==='classified_research_only' && x.outOfDomain===true &&
      (x.researchClassOnly==='CN'||x.researchClassOnly==='AD')){
-    value.textContent=x.researchClassOnly==='AD'?'AD 패턴 (연구용)':'CN 패턴 (연구용)';
-    note.textContent='실제 학습된 영어 Pitt 음향 분류기가 선택한 패턴입니다. 한국어 검사·MCI 선별의 정확도는 검증되지 않았으며 치매 여부나 위험 확률이 아닙니다.';
+    value.textContent=x.researchClassOnly==='AD'?'AD 관련 음향 패턴':'정상군(CN) 음향 패턴';
+    note.textContent='Pitt 사전학습 연구 모델이 이번 음성에서 분류한 패턴입니다. 결과는 이진 분류(CN/AD)로 제한되며 한국어에서의 정확도는 검증되지 않았습니다.';
   }else if(x.status==='pending'){
-    value.textContent='연구용 분류 진행 중';
-    note.textContent='서버 응답이 도착하면 결과가 자동 반영됩니다. 다른 검사는 계속 진행할 수 있습니다.';
+    value.textContent='음성 패턴 분석 중';
+    note.textContent='2단계에서 선택한 연구용 분류를 처리하고 있습니다. 진행 상황은 아래 분석 단계 카드에서 확인할 수 있습니다.';
   }else if(x.status==='unavailable'||x.status==='insufficient_data'){
-    value.textContent='판별 불가';
-    note.textContent='유효한 음성 특징이 부족하거나 연구 모델 추론에 실패했습니다. 결과를 임의로 채우지 않습니다.';
+    value.textContent='음성 패턴 분류 불가';
+    note.textContent='음성 자료 부족 또는 연구 모델 처리 실패로 분류값이 없습니다. 정상이나 AD로 추정해서 표시하지 않습니다.';
   }else{
-    value.textContent='연구용 분류 미진행';
-    note.textContent='2단계에서 별도 동의한 경우에만 영어 Pitt 학습 모델이 연구용 정상/AD 음성 패턴을 분류합니다. 기본 검사 결과에는 영향을 주지 않습니다.';
+    value.textContent='연구용 AI 분류 미진행';
+    note.textContent='2단계의 별도 연구용 분류 동의가 없거나 분석 결과가 제출되지 않았습니다. 기본 음성 측정과는 별도입니다.';
   }
 }
 function output(shouldScroll=true){
@@ -667,20 +724,69 @@ async function analyze(){
     const requestJob=async()=>{
       const controller=typeof AbortController==='function'?new AbortController():null;
       let timeoutId=0;
+      const payload=JSON.stringify({
+        task,audio_base64:audio,consent_server_audio_processing:true,
+        consent_azure_transfer:task==='read'&&el('azure-consent').checked,
+        consent_research_classification:researchRequested,
+        question_end_to_capture_start_ms:task==='response'?safeOffset:null
+      });
+      const request=async(endpoint)=>{
+        const response=await fetch(API+endpoint,{
+          method:'POST',cache:'no-store',signal:controller?.signal,
+          headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
+          body:payload
+        });
+        return response;
+      };
+      const readStream=async(response)=>{
+        if(!response.body?.getReader)throw Error('VOICE_PROGRESS_STREAM_UNSUPPORTED');
+        const reader=response.body.getReader(),decoder=new TextDecoder();
+        let buffer='',finalResult=null;
+        for(;;){
+          const {done,value}=await reader.read();
+          if(done)break;
+          buffer+=decoder.decode(value,{stream:true});
+          // Only parse event payloads after a complete SSE frame has arrived.
+          let boundary;
+          while((boundary=buffer.indexOf('\n\n'))!==-1){
+            const frame=buffer.slice(0,boundary).replace(/\r/g,'');
+            buffer=buffer.slice(boundary+2);
+            const dataLine=frame.split('\n').find(line=>line.startsWith('data: '));
+            if(!dataLine)continue; // heartbeat
+            let event;
+            try{event=JSON.parse(dataLine.slice(6));}
+            catch{throw Error('VOICE_PROGRESS_EVENT_INVALID');}
+            if(event.type==='checkpoint'){
+              if(generation===assessmentGeneration)recordVoiceCheckpoint(event);
+            }else if(event.type==='error'){
+              const err=new Error(String(event.code||'VOICE_ANALYSIS_PROCESSING_FAILED').slice(0,90));
+              err.httpStatus=Number(event.status)||503;
+              throw err;
+            }else if(event.type==='result'){
+              finalResult=event.result;
+            }
+          }
+        }
+        if(!finalResult||typeof finalResult!=='object')
+          throw Error('VOICE_PROGRESS_INCOMPLETE');
+        return finalResult;
+      };
       try{
-        const {response,data}=await Promise.race([
+        return await Promise.race([
           (async()=>{
-            const response=await fetch(API+'/guest',{
-              method:'POST',cache:'no-store',signal:controller?.signal,
-              headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
-              body:JSON.stringify({
-                task,audio_base64:audio,consent_server_audio_processing:true,
-                consent_azure_transfer:task==='read'&&el('azure-consent').checked,
-                consent_research_classification:researchRequested,
-                question_end_to_capture_start_ms:task==='response'?safeOffset:null
-              })
-            });
-            return {response,data:await response.json().catch(()=>({}))};
+            // Old beta nodes may briefly lack the streaming endpoint during deploy.
+            // A 404 is the ONLY fallback: no audio was processed or quota consumed.
+            if(task==='response'&&typeof TextDecoder==='function'&&typeof ReadableStream==='function'){
+              const response=await request('/guest/stream');
+              if(response.status!==404){
+                if(!response.ok)throw apiError(response,await response.json().catch(()=>({})));
+                return await readStream(response);
+              }
+            }
+            const response=await request('/guest');
+            const data=await response.json().catch(()=>({}));
+            if(!response.ok)throw apiError(response,data);
+            return data;
           })(),
           new Promise((_,reject)=>{
             timeoutId=setTimeout(()=>{
@@ -689,11 +795,10 @@ async function analyze(){
             },researchRequested?95000:35000);
           })
         ]);
-        if(!response.ok)throw apiError(response,data);
-        return data;
       }finally{if(timeoutId)clearTimeout(timeoutId);}
     };
     if(task==='response'){
+      startVoiceProgress(researchRequested);
       completed.responseDelay={status:'pending',reason:'VOICE_ANALYSIS_IN_PROGRESS'};
       completed.responseDelayComparison=null;
       completed.researchBinary=researchRequested?{status:'pending'}:{status:'not_requested'};
@@ -703,6 +808,7 @@ async function analyze(){
       void requestJob().then(data=>{
         if(generation!==assessmentGeneration)return;
         mergeResult('response',data,Math.round(pcmLength/16));
+        finishVoiceProgress(true);
         if(completed.responseDelay?.status!=='measured'){
           completed.responseQuality.serverStatus='unmeasured';
         }
@@ -714,6 +820,7 @@ async function analyze(){
         completed.responseDelayComparison=null;
         completed.researchBinary=researchRequested?
           {status:'unavailable',reason:'VOICE_ANALYSIS_REQUEST_FAILED'}:{status:'not_requested'};
+        finishVoiceProgress(false);
         completed.responseQuality={serverStatus:'failed',
           errorCode:String(error?.message||'VOICE_ANALYSIS_REQUEST_FAILED').slice(0,90)};
         updateResponseProgress();
