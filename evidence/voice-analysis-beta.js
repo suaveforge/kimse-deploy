@@ -11,6 +11,7 @@ const prompts={
 let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarted=0;
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
+let assessmentGeneration=0; // Ignore delayed server results after restarting a self-test.
 let responsePreRollMs=0,responseSoundHasPreRoll=false;
 let busy=false,recordingSession=0,serviceReady=false,researchReady=false;
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
@@ -296,6 +297,16 @@ async function checkService(){
     setStatus('베타 분석 서버 준비 중입니다. 현재는 안정판 테스트를 이용해주세요.','error');
   }
 }
+function updateResponseProgress(){
+  const status=completed.responseDelay?.status;
+  const pending=status==='pending';
+  const failed=completed.responseQuality?.serverStatus==='failed';
+  const message=pending?'2단계 답변 분석 중입니다. 3단계 검사는 계속할 수 있으며 결과에 자동 반영됩니다.':
+    failed?'2단계 분석에 실패했습니다. 해당 값은 미측정이며 다른 검사 결과는 유지됩니다.':'';
+  for(const id of ['response-progress','result-response-progress']){
+    const node=el(id);node.hidden=!message;node.textContent=message;
+  }
+}
 function showStage(i){
   cancelCapture();
   index=i;questionEnd=null;questionOffset=null;responsePreRollMs=0;responseSoundHasPreRoll=false;setAudio(null);
@@ -320,10 +331,12 @@ function showStage(i){
   el('record').textContent=task==='response'?'🎙 질문 열고 녹음 시작':'🎙 녹음 시작';
   el('record').disabled=!serviceReady;
   busy=false;
+  updateResponseProgress();
   setStatus(serviceReady?(task==='response'?'녹음 시작을 누르면 질문이 나타납니다.':
     i===0?'동의 후 녹음을 시작해 주세요.':'준비되면 녹음 시작을 눌러주세요.'):'분석 서버 연결을 확인해주세요.');
 }
 function newAssessment(){
+  assessmentGeneration++;
   completed={};report=null;
   el('server-consent').checked=false;el('azure-consent').checked=false;
   el('pitt-consent').checked=false;
@@ -525,6 +538,9 @@ function showResearchBinary(){
      (x.researchClassOnly==='CN'||x.researchClassOnly==='AD')){
     value.textContent=x.researchClassOnly==='AD'?'AD 패턴 (연구용)':'CN 패턴 (연구용)';
     note.textContent='실제 학습된 영어 Pitt 음향 분류기가 선택한 패턴입니다. 한국어 검사·MCI 선별의 정확도는 검증되지 않았으며 치매 여부나 위험 확률이 아닙니다.';
+  }else if(x.status==='pending'){
+    value.textContent='연구용 분류 진행 중';
+    note.textContent='서버 응답이 도착하면 결과가 자동 반영됩니다. 다른 검사는 계속 진행할 수 있습니다.';
   }else if(x.status==='unavailable'||x.status==='insufficient_data'){
     value.textContent='판별 불가';
     note.textContent='유효한 음성 특징이 부족하거나 연구 모델 추론에 실패했습니다. 결과를 임의로 채우지 않습니다.';
@@ -533,7 +549,7 @@ function showResearchBinary(){
     note.textContent='2단계에서 별도 동의한 경우에만 영어 Pitt 학습 모델이 연구용 정상/AD 음성 패턴을 분류합니다. 기본 검사 결과에는 영향을 주지 않습니다.';
   }
 }
-function output(){
+function output(shouldScroll=true){
   const p=completed.pronunciation||{},d=completed.responseDelay||{},v=completed.vocalTremor||{};
   const score=p.scores?.accuracy;
   el('out-pron').textContent=p.status==='assessed'&&number(score)?score.toFixed(1)+'/100':'미측정';
@@ -542,9 +558,9 @@ function output(){
   const onset=number(d.initialResponseLatencyMs)?d.initialResponseLatencyMs:null;
   const fromRecordStart=number(d.firstSpeechFromWavStartMs)?d.firstSpeechFromWavStartMs:null;
   const pauses=d.withinResponse||{};
-  el('out-delay').textContent=onset!==null?'~'+(onset/1000).toFixed(2)+'초':
+  el('out-delay').textContent=d.status==='pending'?'분석 중':onset!==null?'~'+(onset/1000).toFixed(2)+'초':
     fromRecordStart!==null?'~'+(fromRecordStart/1000).toFixed(2)+'초':d.status==='measured'?'내부 휴지 측정':'미측정';
-  el('why-delay').textContent=d.status==='measured'?
+  el('why-delay').textContent=d.status==='pending'?'2단계 분석 결과가 도착하면 자동으로 표시됩니다.':d.status==='measured'?
     (onset!==null?'질문 종료 시각 기준 추정':'녹음 시작~첫 발화(화면 질문 표시와 PCM 시각 정합 미검증)')+
     ' · 내부 무음 '+(number(pauses.silentPauseCount)?pauses.silentPauseCount+'회':'미측정')+
     ' · 총 '+(number(pauses.totalSilentPauseMs)?(pauses.totalSilentPauseMs/1000).toFixed(2)+'초':'미측정'):
@@ -554,7 +570,7 @@ function output(){
   el('why-tremor').textContent=v.status==='measured'?
     '목소리 주기적 변조의 측정값 · 떨림 질환 판정 아님':
     '품질 기준을 충족한 모음 발성 자료가 없습니다.';
-  report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,researchOnlyBinary:completed.researchBinary||{status:'not_requested'},cognitiveScreening:{status:'not_available',reason:'NO_KOREAN_CLINICALLY_VALIDATED_MODEL_CONNECTED',clinicalDecision:null},completedStages:tasks.filter(x=>completed[x+'Quality']),measuredAt:new Date().toISOString()};
+  report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,researchOnlyBinary:completed.researchBinary||{status:'not_requested'},cognitiveScreening:{status:'not_available',reason:'NO_KOREAN_CLINICALLY_VALIDATED_MODEL_CONNECTED',clinicalDecision:null},completedStages:tasks.filter(x=>completed[x+'Quality']?.serverStatus!=='pending'&&completed[x+'Quality']),measuredAt:new Date().toISOString()};
   renderPronunciation(p);
   renderDelay(d);
   renderTremor(v);
@@ -563,7 +579,8 @@ function output(){
   el('evidence').textContent=JSON.stringify(report,null,2);
   el('download').disabled=false;
   el('self-panel').hidden=true;el('result-view').hidden=false;el('results').hidden=false;
-  el('result-view').scrollIntoView({block:'start',behavior:'smooth'});
+  updateResponseProgress();
+  if(shouldScroll)el('result-view').scrollIntoView({block:'start',behavior:'smooth'});
 }
 function finishStage(){
   el('after-actions').hidden=true;
@@ -617,6 +634,8 @@ function wav16kBase64(audio){
 async function analyze(){
   if(busy||!sound||!checkConsent())return;
   const task=currentTask(),stageIndex=index,session=recordingSession;
+  const generation=assessmentGeneration;
+  const researchRequested=task==='response'&&researchReady&&el('pitt-consent').checked;
   let phase='decode',pcmLength=0;
   busy=true;lastAnalysisError=null;
   el('error-copy').hidden=true;
@@ -642,34 +661,69 @@ async function analyze(){
     setStatus(task==='response'&&researchReady&&el('pitt-consent').checked?
       '음성 구간 및 학습 완료 연구용 AD/CN 분류기를 실행하고 있습니다…':
       '분석 서버에서 음성의 발화·침묵 구간을 확인하고 있습니다…');
-    const controller=typeof AbortController==='function'?new AbortController():null;
-    let timeoutId=0,response,data;
-    try{
-      ({response,data}=await Promise.race([
-        (async()=>{
-          const response=await fetch(API+'/guest',{
-      method:'POST',cache:'no-store',signal:controller?.signal,
-      headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
-      body:JSON.stringify({
-        task,audio_base64:audio,consent_server_audio_processing:true,
-        consent_azure_transfer:task==='read'&&el('azure-consent').checked,
-        consent_research_classification:task==='response'&&researchReady&&el('pitt-consent').checked,
-        question_end_to_capture_start_ms:task==='response'?safeOffset:null
-      })
-          });
-          return {response,data:await response.json().catch(()=>({}))};
-        })(),
-        new Promise((_,reject)=>{
-          timeoutId=setTimeout(()=>{
-            reject(new Error('VOICE_ANALYSIS_TIMEOUT'));
-            controller?.abort();
-          },task==='response'&&researchReady&&el('pitt-consent').checked?95000:35000);
-        })
-      ]));
-    }finally{if(timeoutId)clearTimeout(timeoutId);}
-    phase='response';
-    if(!response.ok)throw apiError(response,data);
-    if(stageIndex!==index||session!==recordingSession)return;
+    // The response stage is analyzed independently: 3rd-stage capture does not
+    // wait for Silero/Pitt processing. Only the same consented response audio
+    // is sent once; no synthetic score, duplicate call or persisted recording.
+    const requestJob=async()=>{
+      const controller=typeof AbortController==='function'?new AbortController():null;
+      let timeoutId=0;
+      try{
+        const {response,data}=await Promise.race([
+          (async()=>{
+            const response=await fetch(API+'/guest',{
+              method:'POST',cache:'no-store',signal:controller?.signal,
+              headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
+              body:JSON.stringify({
+                task,audio_base64:audio,consent_server_audio_processing:true,
+                consent_azure_transfer:task==='read'&&el('azure-consent').checked,
+                consent_research_classification:researchRequested,
+                question_end_to_capture_start_ms:task==='response'?safeOffset:null
+              })
+            });
+            return {response,data:await response.json().catch(()=>({}))};
+          })(),
+          new Promise((_,reject)=>{
+            timeoutId=setTimeout(()=>{
+              reject(new Error('VOICE_ANALYSIS_TIMEOUT'));
+              controller?.abort();
+            },researchRequested?95000:35000);
+          })
+        ]);
+        if(!response.ok)throw apiError(response,data);
+        return data;
+      }finally{if(timeoutId)clearTimeout(timeoutId);}
+    };
+    if(task==='response'){
+      completed.responseDelay={status:'pending',reason:'VOICE_ANALYSIS_IN_PROGRESS'};
+      completed.responseDelayComparison=null;
+      completed.researchBinary=researchRequested?{status:'pending'}:{status:'not_requested'};
+      completed.responseQuality={serverStatus:'pending',at:new Date().toISOString()};
+      // The response promise can finish before or after the vowel stage.
+      // Never use recordingSession here: showStage() deliberately changes it.
+      void requestJob().then(data=>{
+        if(generation!==assessmentGeneration)return;
+        mergeResult('response',data,Math.round(pcmLength/16));
+        if(completed.responseDelay?.status!=='measured'){
+          completed.responseQuality.serverStatus='unmeasured';
+        }
+        updateResponseProgress();
+        if(el('result-view').hidden===false)output(false);
+      }).catch(error=>{
+        if(generation!==assessmentGeneration)return;
+        completed.responseDelay={status:'unavailable',reason:'VOICE_ANALYSIS_REQUEST_FAILED'};
+        completed.responseDelayComparison=null;
+        completed.researchBinary=researchRequested?
+          {status:'unavailable',reason:'VOICE_ANALYSIS_REQUEST_FAILED'}:{status:'not_requested'};
+        completed.responseQuality={serverStatus:'failed',
+          errorCode:String(error?.message||'VOICE_ANALYSIS_REQUEST_FAILED').slice(0,90)};
+        updateResponseProgress();
+        if(el('result-view').hidden===false)output(false);
+      });
+      finishStage();
+      setStatus('2단계 녹음 완료 · 분석은 별도로 진행됩니다. 3단계를 시작해 주세요.','success');
+      return;
+    }
+    const data=await requestJob();
     phase='measurement';
     const feature=task==='read'?data.pronunciation:task==='response'?data.responseDelay:data.vocalTremor;
     const good=task==='read'?feature?.status==='assessed':feature?.status==='measured';
