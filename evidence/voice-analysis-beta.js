@@ -12,7 +12,7 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let responsePreRollMs=0,responseSoundHasPreRoll=false;
-let busy=false,recordingSession=0,serviceReady=false;
+let busy=false,recordingSession=0,serviceReady=false,researchReady=false;
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
 let noiseFloor=.003,autoStopReason=null;
 let captureStartConfirmed=false,captureStartWatchdog=0;
@@ -281,10 +281,13 @@ async function checkService(){
     const status=await response.json();
     if(status.ready!==true||status.evidenceGuestQuickEnabled!==true)throw Error('API_NOT_READY');
     serviceReady=true;
+    researchReady=status.researchBinaryAvailable===true;
+    el('pitt-row').hidden=index!==1||!researchReady;
     el('record').disabled=false;
       setStatus('연결 완료 · 동의 후 녹음을 시작해 주세요.','success');
   }catch(e){
-    serviceReady=false;
+    serviceReady=false;researchReady=false;
+    el('pitt-row').hidden=true;
     el('record').disabled=true;
     el('check-connection').hidden=false;
     setStatus('베타 분석 서버 준비 중입니다. 현재는 안정판 테스트를 이용해주세요.','error');
@@ -307,6 +310,8 @@ function showStage(i){
   el('record').hidden=false;
   el('stop').hidden=true;
   el('azure-row').hidden=i!==0;
+  el('skip-pron').hidden=i!==0;
+  el('pitt-row').hidden=i!==1||!researchReady;
   el('after-actions').hidden=true;
   el('elapsed').textContent='00:00';
   el('record').textContent=task==='response'?'🎙 질문 열고 녹음 시작':'🎙 녹음 시작';
@@ -318,6 +323,7 @@ function showStage(i){
 function newAssessment(){
   completed={};report=null;
   el('server-consent').checked=false;el('azure-consent').checked=false;
+  el('pitt-consent').checked=false;
   el('method-picker').hidden=true;
   showStage(0);
   return checkService();
@@ -327,6 +333,7 @@ function mergeResult(task,data,audioDurationMs=null){
   if(task==='response'){
     completed.responseDelay=data.responseDelay;
     completed.responseDelayComparison=data.responseDelayComparison||null;
+    completed.researchBinary=data.researchBinary||{status:'not_requested'};
   }
   if(task==='vowel')completed.vocalTremor=data.vocalTremor;
   if(number(audioDurationMs)&&audioDurationMs>0)completed[task+'AudioDurationMs']=audioDurationMs;
@@ -508,6 +515,21 @@ function renderBetaComparison(){
     rows.map(r=>'<tr>'+r.map((v,i)=>'<td style="padding:9px 4px;border-top:1px solid #e0ebe7;'+(i?'text-align:center':'')+'">'+escapeText(v)+'</td>').join('')+'</tr>').join('')+
     '</tbody></table>';
 }
+function showResearchBinary(){
+  const x=completed.researchBinary||{status:'not_requested'};
+  const value=el('research-binary-result'),note=el('research-binary-note');
+  if(x.status==='classified_research_only' && x.outOfDomain===true &&
+     (x.researchClassOnly==='CN'||x.researchClassOnly==='AD')){
+    value.textContent=x.researchClassOnly==='AD'?'AD 패턴 (연구용)':'CN 패턴 (연구용)';
+    note.textContent='실제 학습된 영어 Pitt 음향 분류기가 선택한 패턴입니다. 한국어 검사·MCI 선별의 정확도는 검증되지 않았으며 치매 여부나 위험 확률이 아닙니다.';
+  }else if(x.status==='unavailable'||x.status==='insufficient_data'){
+    value.textContent='판별 불가';
+    note.textContent='유효한 음성 특징이 부족하거나 연구 모델 추론에 실패했습니다. 결과를 임의로 채우지 않습니다.';
+  }else{
+    value.textContent='연구용 분류 미진행';
+    note.textContent='2단계에서 별도 동의한 경우에만 영어 Pitt 학습 모델이 연구용 정상/AD 음성 패턴을 분류합니다. 기본 검사 결과에는 영향을 주지 않습니다.';
+  }
+}
 function output(){
   const p=completed.pronunciation||{},d=completed.responseDelay||{},v=completed.vocalTremor||{};
   const score=p.scores?.accuracy;
@@ -529,11 +551,12 @@ function output(){
   el('why-tremor').textContent=v.status==='measured'?
     '목소리 주기적 변조의 측정값 · 떨림 질환 판정 아님':
     '품질 기준을 충족한 모음 발성 자료가 없습니다.';
-  report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,completedStages:tasks.filter(x=>completed[x+'Quality']),measuredAt:new Date().toISOString()};
+  report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,researchOnlyBinary:completed.researchBinary||{status:'not_requested'},cognitiveScreening:{status:'not_available',reason:'NO_KOREAN_CLINICALLY_VALIDATED_MODEL_CONNECTED',clinicalDecision:null},completedStages:tasks.filter(x=>completed[x+'Quality']),measuredAt:new Date().toISOString()};
   renderPronunciation(p);
   renderDelay(d);
   renderTremor(v);
   renderBetaComparison();
+  showResearchBinary();
   el('evidence').textContent=JSON.stringify(report,null,2);
   el('download').disabled=false;
   el('self-panel').hidden=true;el('result-view').hidden=false;el('results').hidden=false;
@@ -547,9 +570,6 @@ function finishStage(){
 function checkConsent(){
   if(!el('server-consent').checked){
     setStatus('음성 분석 동의를 체크해주세요.','error');return false;
-  }
-  if(currentTask()==='read'&&!el('azure-consent').checked){
-    setStatus('발음 평가를 위해 Azure 전송 동의를 체크해주세요.','error');return false;
   }
   return true;
 }
@@ -616,12 +636,15 @@ async function analyze(){
     phase='encode';
     const audio=wav16kBase64(pcm);
     phase='request';
-    setStatus('분석 서버에서 음성의 발화·침묵 구간을 확인하고 있습니다…');
+    setStatus(task==='response'&&researchReady&&el('pitt-consent').checked?
+      '음성 구간 및 학습 완료 연구용 AD/CN 분류기를 실행하고 있습니다…':
+      '분석 서버에서 음성의 발화·침묵 구간을 확인하고 있습니다…');
     const response=await fetch(API+'/guest',{
       method:'POST',cache:'no-store',headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
       body:JSON.stringify({
         task,audio_base64:audio,consent_server_audio_processing:true,
         consent_azure_transfer:task==='read'&&el('azure-consent').checked,
+        consent_research_classification:task==='response'&&researchReady&&el('pitt-consent').checked,
         question_end_to_capture_start_ms:task==='response'?safeOffset:null
       })
     });
@@ -632,6 +655,12 @@ async function analyze(){
     phase='measurement';
     const feature=task==='read'?data.pronunciation:task==='response'?data.responseDelay:data.vocalTremor;
     const good=task==='read'?feature?.status==='assessed':feature?.status==='measured';
+    if(task==='read'&&!el('azure-consent').checked&&feature?.status==='not_measured'){
+      mergeResult(task,data,Math.round(pcm.length/16));
+      setStatus('발음 평가는 미측정으로 남겨두고 질문 응답으로 진행합니다.','success');
+      finishStage();
+      return;
+    }
     if(!good){
       mergeResult(task,data,Math.round(pcm.length/16));
       lastAnalysisError={stage:task,phase:'measurement',httpStatus:200,
@@ -778,6 +807,13 @@ el('error-copy').addEventListener('click',async()=>{
   }catch{
     setStatus('오류 정보: '+detail,'error');
   }
+});
+el('skip-pron').addEventListener('click',()=>{
+  if(busy||currentTask()!=='read')return;
+  completed.pronunciation={status:'not_measured',reason:'OPTIONAL_AZURE_PRONUNCIATION_SKIPPED'};
+  completed.readQuality={serverStatus:'skipped_by_user'};
+  setStatus('발음 평가 없이 질문 응답으로 진행합니다.','success');
+  finishStage();
 });
 el('skip-stage').addEventListener('click',()=>{
   if(busy)return;
