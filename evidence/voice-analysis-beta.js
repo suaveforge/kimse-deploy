@@ -13,7 +13,7 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let assessmentGeneration=0; // Ignore delayed server results after restarting a self-test.
-let voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,percent:0,startedAt:0,history:[]};
+let voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,percent:0,confirmedPercent:0,lastServerHeartbeat:null,startedAt:0,history:[]};
 let analysisTimer=0,transitionTimer=0;
 const voiceCheckpoints=['audio_accepted','webrtc_completed','silero_completed','research_completed','extended_completed','report_completed'];
 const voicePhaseMessages={audio_accepted:'녹음된 음성의 파일 형식 확인 완료',webrtc_completed:'WebRTC 발화 경계 측정 완료',silero_completed:'Silero 발화·침묵 구간 검증 완료',research_completed:'Pitt AD/CN 분류 완료',extended_completed:'추가 사전학습 모델 추론 완료',report_completed:'보고서 데이터 결합 완료'};
@@ -359,7 +359,7 @@ function renderVoiceProgress(){
     (voiceProgress.research||step!=='research_completed')&&
     (voiceProgress.extended||step!=='extended_completed'));
   const confirmed=voiceProgress.completed, total=voiceProgress.total||visibleSteps.length;
-  // Use only server-confirmed integer percentages, never a timer-driven fake.
+  // Display ≤ the already confirmed percentage, revealed one point per tick.
   const pct=voiceProgress.connected?voiceProgress.percent:null;
   const last=voiceProgress.phase;
   const elapsed=voiceProgress.startedAt?Math.floor((Date.now()-voiceProgress.startedAt)/1000):0;
@@ -368,7 +368,10 @@ function renderVoiceProgress(){
     voiceProgress.detail&&voiceDetailMessages[voiceProgress.detail]?
       voiceDetailMessages[voiceProgress.detail]:
     pct===null?'실제 서버 처리 상태를 확인하고 있습니다':
-    (voicePhaseMessages[last]||'응답 음성 처리 중')+' · 다음 작업 진행 중';
+    (voicePhaseMessages[last]||'응답 음성 처리 중')+' · 다음 작업 확인 중';
+  const live=voiceProgress.status==='pending'&&voiceProgress.lastServerHeartbeat!==null&&
+    Date.now()-voiceProgress.lastServerHeartbeat<=8000?
+    ' · 서버 응답 수신': '' ;
   for(const prefix of ['response','result-response']){
     const card=el(prefix+'-progress');
     if(!card)continue;
@@ -378,7 +381,7 @@ function renderVoiceProgress(){
     card.setAttribute('data-mode',voiceProgress.status);
     const value=el(prefix+'-progress-value');
     value.textContent=pct===null?'—':pct+'%';
-    el(prefix+'-progress-message').textContent=message+
+    el(prefix+'-progress-message').textContent=message+live+
       (voiceProgress.status==='pending'?' · 경과 '+mmss(elapsed):'');
     const log=el('analysis-events');
     if(log&&prefix==='result-response'){
@@ -410,16 +413,34 @@ function renderVoiceProgress(){
     }
   }
 }
+function advanceVerifiedProgress(){
+  // Never infer work from clock time or heartbeat. The next visible 1%
+  // was ALREADY verified by the server in a successful checkpoint/detail.
+  if(voiceProgress.status!=='pending')return;
+  if(voiceProgress.percent<voiceProgress.confirmedPercent){
+    voiceProgress.percent++;
+    renderVoiceProgress();
+  }
+}
+function recordVoiceHeartbeat(event){
+  if(voiceProgress.status!=='pending'||event?.serverActive!==true)return;
+  // A heartbeat only means the request handler is responsive and work is
+  // pending. It NEVER increases the completed-work percent.
+  voiceProgress.connected=true;
+  voiceProgress.lastServerHeartbeat=Date.now();
+  renderVoiceProgress();
+}
 function startVoiceProgress(research,extended=false){
   if(analysisTimer)clearInterval(analysisTimer);
   voiceProgress={status:'pending',research:!!research,extended:!!extended,completed:0,
     total:(research?5:4)+(extended?1:0),phase:null,connected:false,
-    detail:null,percent:0,startedAt:Date.now(),history:[]};
+    detail:null,percent:0,confirmedPercent:0,lastServerHeartbeat:null,startedAt:Date.now(),history:[]};
   eventProgress('분석 요청 시작');
   analysisTimer=setInterval(()=>{
     if(voiceProgress.status!=='pending'){clearInterval(analysisTimer);analysisTimer=0;return;}
+    advanceVerifiedProgress();
     if(el('analysis-view').hidden===false)renderVoiceProgress();
-  },1000);
+  },1900);
   renderVoiceProgress();
 }
 function recordVoiceCheckpoint(event){
@@ -430,8 +451,8 @@ function recordVoiceCheckpoint(event){
   voiceProgress.connected=true;
   voiceProgress.completed=n;voiceProgress.phase=event.phase;
   if(Number.isInteger(event.percent)&&event.percent>=0&&event.percent<=100)
-    voiceProgress.percent=Math.max(voiceProgress.percent,event.percent);
-  else voiceProgress.percent=Math.max(voiceProgress.percent,Math.floor(n/t*100));
+    voiceProgress.confirmedPercent=Math.max(voiceProgress.confirmedPercent,event.percent);
+  else voiceProgress.confirmedPercent=Math.max(voiceProgress.confirmedPercent,Math.floor(n/t*100));
   voiceProgress.detail=null;
   eventProgress(voicePhaseMessages[event.phase]||'분석 단계 완료');
   renderVoiceProgress();
@@ -441,13 +462,13 @@ function recordVoiceDetail(event){
   voiceProgress.connected=true;
   voiceProgress.detail=event.stage;
   if(Number.isInteger(event.percent)&&event.percent>=0&&event.percent<=100)
-    voiceProgress.percent=Math.max(voiceProgress.percent,event.percent);
+    voiceProgress.confirmedPercent=Math.max(voiceProgress.confirmedPercent,event.percent);
   eventProgress(voiceDetailMessages[event.stage]);
   renderVoiceProgress();
 }
 function finishVoiceProgress(success){
   voiceProgress.status=success?'done':'failed';
-  if(success)voiceProgress.percent=100;
+  if(success){voiceProgress.confirmedPercent=100;voiceProgress.percent=100;}
   if(analysisTimer){clearInterval(analysisTimer);analysisTimer=0;}
   eventProgress(success?'측정 결과 수신 완료':'측정 요청 종료');
   if(success){
@@ -536,7 +557,7 @@ function newAssessment(){
   assessmentGeneration++;
   completed={};report=null;
   if(analysisTimer){clearInterval(analysisTimer);analysisTimer=0;}
-  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,percent:0,startedAt:0,history:[]};
+  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,percent:0,confirmedPercent:0,lastServerHeartbeat:null,startedAt:0,history:[]};
   // Consent is collected explicitly once before recording, not reset between tasks.
   el('method-picker').hidden=true;
   showStage(0);
@@ -971,6 +992,8 @@ async function analyze(){
               if(generation===assessmentGeneration)recordVoiceCheckpoint(event);
             }else if(event.type==='detail'){
               if(generation===assessmentGeneration)recordVoiceDetail(event);
+            }else if(event.type==='heartbeat'){
+              if(generation===assessmentGeneration)recordVoiceHeartbeat(event);
             }else if(event.type==='error'){
               const err=new Error(String(event.code||'VOICE_ANALYSIS_PROCESSING_FAILED').slice(0,90));
               err.httpStatus=Number(event.status)||503;
