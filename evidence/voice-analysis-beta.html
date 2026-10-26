@@ -395,7 +395,7 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <section class="voice-consents" aria-labelledby="consent-heading">
 <div class="voice-consent-top"><h2 id="consent-heading">검사 시작 전 준비</h2></div>
 <p class="voice-consent-summary">세 가지 목소리 검사와 분석에 사용할 마이크를 <strong>지금 한 번만 연결</strong>합니다. 검사 중에는 다시 허용을 요청하지 않습니다.</p>
-<p class="voice-consent-summary">기본 분석과 선택 AI 분석을 함께 준비합니다. 분석 범위는 아래에서 변경할 수 있습니다.</p>
+<p id="consent-scope-summary" class="voice-consent-summary">기본 음성 분석, Microsoft Azure 발음 평가(음성 전송), Pitt·AI-Hub 연구용 AI 비교가 선택되어 있습니다. 아래에서 변경할 수 있습니다.</p>
 <details class="voice-consent-extra" id="analysis-consent-settings">
 <summary>분석 범위 변경 · 동의 내용 보기 <span aria-hidden="true">?</span></summary>
 <label class="consent voice-consent-choice voice-consent-required"><input id="server-consent" type="checkbox" checked><span><strong>기본 음성 분석</strong><small>녹음한 음성을 서버에서 분석합니다. 원음은 저장하지 않습니다.</small></span></label>
@@ -524,4 +524,4 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></details>
 </section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261027-mic-first1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-mic-first2"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
