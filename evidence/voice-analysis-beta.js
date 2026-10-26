@@ -3,6 +3,7 @@ const el=id=>document.getElementById(id);
 const API='https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis/beta';
 const tasks=['read','response','vowel'];
 const stageNames=['문장 읽기','질문 듣고 답하기','모음 발성'];
+const transitionLines=['보이는 문장을 그대로 읽어요','이번에는 읽지 말고 내 말로 대답해요','마지막으로 아—— 소리를 길게 내요'];
 const prompts={
   read:'오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.',
   response:'어제 하루 동안 기억에 남는 일은 무엇이었나요?',
@@ -12,9 +13,18 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let assessmentGeneration=0; // Ignore delayed server results after restarting a self-test.
-let voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false};
+let voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,startedAt:0,history:[]};
+let analysisTimer=0,transitionTimer=0;
 const voiceCheckpoints=['audio_accepted','webrtc_completed','silero_completed','research_completed','extended_completed','report_completed'];
-const voicePhaseMessages={audio_accepted:'음성 형식 확인 및 분석 요청 수락',webrtc_completed:'발화와 침묵의 기본 구간 추출 완료',silero_completed:'비교 음성 구간 분석 완료',research_completed:'Pitt 연구용 음향 패턴 분류 완료',extended_completed:'별도 사전학습 AI 모델 비교 처리 완료',report_completed:'수신한 실제 측정 결과 정리 완료'};
+const voicePhaseMessages={audio_accepted:'녹음된 음성의 파일 형식 확인 완료',webrtc_completed:'WebRTC 발화 경계 측정 완료',silero_completed:'Silero 발화·침묵 구간 검증 완료',research_completed:'Pitt AD/CN 분류 완료',extended_completed:'추가 사전학습 모델 추론 완료',report_completed:'보고서 데이터 결합 완료'};
+const voiceDetailMessages={pitt_imports:'Pitt 음성 특징 추출 도구를 불러오고 있습니다',pitt_weights:'검증된 Pitt 분류 가중치를 준비하고 있습니다',pitt_features:'녹음된 답변에서 음향 특징을 실제 추출하고 있습니다',pitt_scoring:'추출된 특징을 정규화하고 AD/CN 분류를 계산 중입니다',pitt_finished:'Pitt 분류 계산이 완료되어 결과를 확인하고 있습니다'};
+const mmss=seconds=>String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+function eventProgress(label){
+  if(!label||voiceProgress.history.at(-1)?.label===label)return;
+  const seconds=Math.max(0,Math.floor((Date.now()-voiceProgress.startedAt)/1000));
+  voiceProgress.history.push({label,seconds});
+  if(voiceProgress.history.length>9)voiceProgress.history.shift();
+}
 let responsePreRollMs=0,responseSoundHasPreRoll=false;
 let busy=false,recordingSession=0,serviceReady=false,researchReady=false;
 let extendedReady=false,extendedModelNames=[];
@@ -338,11 +348,13 @@ function renderVoiceProgress(){
   const confirmed=voiceProgress.completed, total=voiceProgress.total||visibleSteps.length;
   const pct=voiceProgress.connected&&total>0?Math.floor(confirmed/total*100):null;
   const last=voiceProgress.phase;
-  const message=voiceProgress.status==='failed'?'분석을 완료하지 못했습니다. 기존 측정 결과는 유지됩니다.':
-    voiceProgress.status==='done'?'서버 분석 완료 · 측정된 결과를 보고서에 반영했습니다.':
-    pct===null?'분석 서버가 확인한 처리 단계 대기 중':
-    confirmed===0?'분석 요청 처리 중':
-    (voicePhaseMessages[last]||'음성 분석 진행 중')+' · 다음 단계 처리 중';
+  const elapsed=voiceProgress.startedAt?Math.floor((Date.now()-voiceProgress.startedAt)/1000):0;
+  const message=voiceProgress.status==='failed'?'분석을 완료하지 못했습니다. 다른 측정 결과는 유지됩니다.':
+    voiceProgress.status==='done'?'2단계 계산을 끝내고 결과를 반영했습니다.':
+    voiceProgress.detail&&voiceDetailMessages[voiceProgress.detail]?
+      voiceDetailMessages[voiceProgress.detail]:
+    pct===null?'실제 서버 처리 상태를 확인하고 있습니다':
+    (voicePhaseMessages[last]||'응답 음성 처리 중')+' · 다음 작업 진행 중';
   for(const prefix of ['response','result-response']){
     const card=el(prefix+'-progress');
     if(!card)continue;
@@ -352,7 +364,18 @@ function renderVoiceProgress(){
     card.setAttribute('data-mode',voiceProgress.status);
     const value=el(prefix+'-progress-value');
     value.textContent=pct===null?'—':pct+'%';
-    el(prefix+'-progress-message').textContent=message;
+    el(prefix+'-progress-message').textContent=message+
+      (voiceProgress.status==='pending'?' · 경과 '+mmss(elapsed):'');
+    const log=el('analysis-events');
+    if(log&&prefix==='result-response'){
+      log.textContent='';
+      for(const entry of voiceProgress.history.slice(-4)){
+        const line=document.createElement('li');
+        line.textContent=mmss(entry.seconds)+'  '+entry.label;
+        if(typeof log.appendChild==='function')log.appendChild(line);
+        else log.textContent+=(line.textContent+'\n');
+      }
+    }
     const bar=el(prefix+'-progress-bar');
     if(pct===null)bar.removeAttribute('aria-valuenow');
     else bar.setAttribute('aria-valuenow',String(pct));
@@ -373,8 +396,15 @@ function renderVoiceProgress(){
   }
 }
 function startVoiceProgress(research,extended=false){
+  if(analysisTimer)clearInterval(analysisTimer);
   voiceProgress={status:'pending',research:!!research,extended:!!extended,completed:0,
-    total:(research?5:4)+(extended?1:0),phase:null,connected:false};
+    total:(research?5:4)+(extended?1:0),phase:null,connected:false,
+    detail:null,startedAt:Date.now(),history:[]};
+  eventProgress('분석 요청 시작');
+  analysisTimer=setInterval(()=>{
+    if(voiceProgress.status!=='pending'){clearInterval(analysisTimer);analysisTimer=0;return;}
+    if(el('analysis-view').hidden===false)renderVoiceProgress();
+  },1000);
   renderVoiceProgress();
 }
 function recordVoiceCheckpoint(event){
@@ -384,10 +414,21 @@ function recordVoiceCheckpoint(event){
   if(!Number.isInteger(n)||t!==expected||n<1||n>t||n<voiceProgress.completed)return;
   voiceProgress.connected=true;
   voiceProgress.completed=n;voiceProgress.phase=event.phase;
+  voiceProgress.detail=null;
+  eventProgress(voicePhaseMessages[event.phase]||'분석 단계 완료');
+  renderVoiceProgress();
+}
+function recordVoiceDetail(event){
+  if(voiceProgress.status!=='pending'||!event||!voiceDetailMessages[event.stage])return;
+  voiceProgress.connected=true;
+  voiceProgress.detail=event.stage;
+  eventProgress(voiceDetailMessages[event.stage]);
   renderVoiceProgress();
 }
 function finishVoiceProgress(success){
   voiceProgress.status=success?'done':'failed';
+  if(analysisTimer){clearInterval(analysisTimer);analysisTimer=0;}
+  eventProgress(success?'측정 결과 수신 완료':'측정 요청 종료');
   if(success){
     voiceProgress.connected=true;
     voiceProgress.completed=voiceProgress.total;
@@ -412,6 +453,20 @@ function renderTaskCards(){
   // Position exactly one microphone panel inside the active card.
   // All task cards remain present in the DOM and in their numbered order.
   if(currentCard?.appendChild&&controls)currentCard.appendChild(controls);
+}
+function clearTaskTransition(){
+  if(transitionTimer){clearTimeout(transitionTimer);transitionTimer=0;}
+  const screen=el('task-transition');
+  if(screen)screen.hidden=true;
+}
+function showTaskTransition(i){
+  clearTaskTransition();
+  const screen=el('task-transition');
+  if(!screen||!transitionLines[i])return;
+  if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+  el('transition-message').textContent=transitionLines[i];
+  screen.hidden=false;
+  transitionTimer=setTimeout(()=>{screen.hidden=true;transitionTimer=0;},850);
 }
 function showStage(i){
   cancelCapture();
@@ -440,17 +495,20 @@ function showStage(i){
   busy=false;
   updateResponseProgress();
 
-  setStatus(serviceReady?(task==='response'?'이제 녹음을 시작하면 질문이 공개됩니다. 내 말로 대답하세요.':
+  setStatus(serviceReady?(task==='response'?'녹음 시작 후 질문이 나타납니다. 내 말로 대답하세요.':
     i===0?'아래 문장을 그대로 소리 내어 읽으세요.':'아—— 소리 하나를 길게 내세요.'):'분석 서버 연결을 확인해주세요.');
+  showTaskTransition(i);
 }
 function newAssessment(){
+  clearTaskTransition();
   if(!el('server-consent').checked){
     el('consent-message').textContent='시작하려면 필수 음성 분석 동의를 선택해 주세요.';
     return;
   }
   assessmentGeneration++;
   completed={};report=null;
-  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false};
+  if(analysisTimer){clearInterval(analysisTimer);analysisTimer=0;}
+  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,startedAt:0,history:[]};
   // Consent is collected explicitly once before recording, not reset between tasks.
   el('method-picker').hidden=true;
   showStage(0);
@@ -647,20 +705,37 @@ function renderBetaComparison(){
 function showResearchBinary(){
   const x=completed.researchBinary||{status:'not_requested'};
   const value=el('research-binary-result'),note=el('research-binary-note');
-  if(x.status==='classified_research_only' && x.outOfDomain===true &&
-     (x.researchClassOnly==='CN'||x.researchClassOnly==='AD')){
-    value.textContent=x.researchClassOnly==='AD'?'AD 관련 음향 패턴':'정상군(CN) 음향 패턴';
-    note.textContent='Pitt 사전학습 연구 모델이 이번 음성에서 분류한 패턴입니다. 결과는 이진 분류(CN/AD)로 제한되며 한국어에서의 정확도는 검증되지 않았습니다.';
+  const valid=x.status==='classified_research_only'&&x.outOfDomain===true&&
+    (x.researchClassOnly==='CN'||x.researchClassOnly==='AD');
+  if(valid){
+    value.textContent=x.researchClassOnly; // Exact model label, no invented qualifier.
+    note.textContent=x.researchClassOnly==='AD'?'Pitt 모델의 AD 분류':'Pitt 모델의 CN 분류';
   }else if(x.status==='pending'){
-    value.textContent='음성 패턴 분석 중';
-    note.textContent='2단계에서 선택한 연구용 분류를 처리하고 있습니다. 진행 상황은 아래 분석 단계 카드에서 확인할 수 있습니다.';
+    value.textContent='분석 중';
+    note.textContent='Pitt 분류가 끝나면 결과를 표시합니다.';
   }else if(x.status==='unavailable'||x.status==='insufficient_data'){
-    value.textContent='음성 패턴 분류 불가';
-    note.textContent='음성 자료 부족 또는 연구 모델 처리 실패로 분류값이 없습니다. 정상이나 AD로 추정해서 표시하지 않습니다.';
+    value.textContent='분류 불가';
+    note.textContent='유효한 분류 결과가 확보되지 않았습니다.';
   }else{
-    value.textContent='연구용 AI 분류 미진행';
-    note.textContent='2단계의 별도 연구용 분류 동의가 없거나 분석 결과가 제출되지 않았습니다. 기본 음성 측정과는 별도입니다.';
+    value.textContent='미측정';
+    note.textContent='별도 AI 분류에 동의하지 않았거나 측정하지 않았습니다.';
   }
+  const baseline=completed.responseDelay||{};
+  const comparison=completed.responseDelayComparison||{};
+  const verifiedSegments=Array.isArray(comparison.candidate?.segments)?
+    comparison.candidate.segments:[];
+  const voicedMs=verifiedSegments.reduce((sum,item)=>sum+
+    Math.max(0,Number(item.endMs||0)-Number(item.startMs||0)),0);
+  const used=valid?
+    '실제 처리 순서: 2단계 질문 답변 음성 → WebRTC 발화 경계 확인'+
+    (comparison.candidate?.status==='measured'?' → Silero 음성 구간 비교':'')+
+    ' → voxmarkers 음향 특징 추출 → 가중치 정규화 → Pitt LightGBM의 CN/AD 분류.':
+    '실제 분류가 수행되지 않았거나 유효한 출력이 없어 AD/CN을 지정하지 않았습니다.';
+  el('ai-result-evidence').textContent=used+
+    (voicedMs>0?' 검증된 음성 구간 약 '+(voicedMs/1000).toFixed(1)+'초.':'')+
+    (x.checkpointSha256?' 사용 가중치 SHA256: '+x.checkpointSha256+'.':'')+
+    (baseline.status==='measured'?' 발화 시점 분석 완료.':'')+
+    ' 이 항목은 영어 학습 모델의 한국어 음성 적용 결과로 임상 진단이 아닙니다.';
 }
 function renderExtendedResearch(){
   const x=completed.researchComparisons||{status:'not_requested',models:{}};
@@ -850,6 +925,8 @@ async function analyze(){
             catch{throw Error('VOICE_PROGRESS_EVENT_INVALID');}
             if(event.type==='checkpoint'){
               if(generation===assessmentGeneration)recordVoiceCheckpoint(event);
+            }else if(event.type==='detail'){
+              if(generation===assessmentGeneration)recordVoiceDetail(event);
             }else if(event.type==='error'){
               const err=new Error(String(event.code||'VOICE_ANALYSIS_PROCESSING_FAILED').slice(0,90));
               err.httpStatus=Number(event.status)||503;
@@ -1111,6 +1188,7 @@ el('choose-retell').addEventListener('click',()=>{
 el('back-method').addEventListener('click',()=>{
   el('retell-panel').hidden=true;el('method-picker').hidden=false;
 });
+el('task-transition').addEventListener('click',clearTaskTransition);
 el('record').addEventListener('click',startRecording);
 el('view-partial').addEventListener('click',()=>{
   if(el('analysis-view').hidden===false){
@@ -1168,5 +1246,7 @@ el('download').addEventListener('click',()=>{
   anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 window.addEventListener('pagehide',()=>{
+  clearTaskTransition();
+  if(analysisTimer)clearInterval(analysisTimer);
   cancelCapture();cleanupAudio();
 });
