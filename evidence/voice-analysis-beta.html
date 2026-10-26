@@ -147,7 +147,7 @@ main{min-width:0}
 <label class="consent" id="pitt-row" hidden><input id="pitt-consent" type="checkbox"><span><strong>별도 선택 · 연구용 AI 정상/AD 패턴 분류</strong><span style="display:block;font-size:12px;font-weight:400;line-height:1.5;margin-top:4px">영어 Pitt 학습 모델을 이 답변 음성에 시험 적용합니다. 한국어 임상 정확도 미검증·MCI 미지원·치매 진단 불가. 원음은 분석 후 폐기됩니다.</span></span></label>
 <div class="actions" id="recording-actions"><button id="record" class="primary" type="button">🎙 녹음 시작</button><button id="stop" class="secondary" type="button" disabled>■ 녹음 종료</button></div>
 <audio id="preview" controls hidden preload="none" aria-label="녹음 확인"></audio>
-<div id="quick-status" role="status" aria-live="polite">분석 서버 상태를 확인하고 있습니다.</div><button id="check-connection" type="button" class="secondary" hidden style="width:100%;margin-top:6px">서버 연결 다시 확인</button>
+<div id="quick-status" role="status" aria-live="polite">분석 서버 상태를 확인하고 있습니다.</div><p id="response-progress" role="status" aria-live="polite" hidden style="padding:10px 12px;background:#eef8f4;border:1px solid #d4e9e0;border-radius:10px;font-size:13px;color:#275d51"></p><button id="check-connection" type="button" class="secondary" hidden style="width:100%;margin-top:6px">서버 연결 다시 확인</button>
 <div id="after-actions" class="actions" hidden><button id="quick-analyze" type="button" class="primary">다시 분석</button><button id="skip-stage" type="button" class="secondary">측정 없이 다음</button></div>
 <button id="error-copy" class="secondary" type="button" hidden style="font-size:14px;min-height:43px;width:100%;margin-top:8px">오류 정보 복사 (음성 미포함)</button>
 <details><summary>녹음 파일을 직접 선택하려면</summary><input id="audio-file" type="file" accept="audio/*" aria-label="녹음 파일 선택"></details>
@@ -157,7 +157,7 @@ main{min-width:0}
 <section id="result-view" hidden>
 <div class="report-heading"><div><span class="eyebrow">KIMSE · EVIDENCE</span><h1>음성 분석 결과</h1></div><span class="report-subtag">3가지 측정</span></div>
 <p class="report-intro">측정 결과를 시간 순서대로 확인해 보세요.</p><article class="result" id="cognitive-screening-status" role="status" aria-label="연구용 AI 분류 결과"><h2 style="margin:0 0 10px">정상·AD 음성 패턴 · 연구용 AI</h2><div id="research-binary-result" class="value" style="font-size:clamp(20px,4.6vw,27px)">연구용 분류 미진행</div><p id="research-binary-note" style="color:#465f5a">영어 Pitt 기반 AD/CN 분류기는 한국어 임상 검증 전이므로 질병 판정을 제공하지 않습니다.</p><p class="small" style="margin-top:10px">기존 학습 가중치: <a target="_blank" rel="noopener noreferrer" href="https://huggingface.co/sivdma/acophenotype-pitt-models">Sviderski, acophenotype Pitt (2026)</a> · CC BY-NC-SA 4.0 · 비상업적 연구용. 임상적 진단, MCI 판정, 위험률 또는 의학적 조언이 아닙니다.</p></article>
-<div class="results" id="results" aria-label="음성 분석 결과">
+<p id="result-response-progress" role="status" aria-live="polite" hidden style="padding:10px 12px;background:#eef8f4;border-radius:10px;font-size:13px;color:#275d51"></p><div class="results" id="results" aria-label="음성 분석 결과">
 <article class="result" aria-labelledby="pron-head">
 <div class="result-head"><span class="result-icon" aria-hidden="true">Aa</span><div class="result-name"><div class="result-title-row"><h2 id="pron-head">발음 정확도</h2><button type="button" class="kimse-evidence-help" data-evidence-method="pronunciation" aria-label="발음 정확도 측정 근거 설명 보기" title="발음 정확도 측정 근거">?</button></div><span>01 · 문장 읽기</span></div><div class="value" id="out-pron">미측정</div></div>
 <div class="viz-description" id="pron-caption">단어별 측정 위치</div>
@@ -181,4 +181,4 @@ main{min-width:0}
 <article id="beta-comparison" class="result beta-compare" aria-live="polite"><h2>음성 구간 모델 비교</h2><p>2단계 응답 분석 후 확인할 수 있습니다.</p></article>
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261026-voice-recovery1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-stage2-async1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
