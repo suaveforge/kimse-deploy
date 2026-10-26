@@ -296,6 +296,40 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 #analysis-view .kimse-analysis__title{font-size:clamp(19px,2.7vw,24px)}
 @media(max-width:600px){.ai-result-disclosure__body{max-height:55dvh;padding:14px}.voice-summary-actions{gap:7px}.voice-summary-actions>.primary{min-height:49px}.voice-analysis-events li{font-size:11px}}
 @media(max-height:650px){#analysis-view .voice-analysis-events{max-height:87px}#result-view .kimse-finding__result{font-size:clamp(35px,8vh,60px)!important}}
+
+.voice-transition{min-height:100dvh;grid-template-rows:1fr auto;align-items:stretch;justify-items:stretch;padding:clamp(20px,5vw,60px);background:radial-gradient(ellipse at 45% 40%,#164953,#06252c)}
+.voice-transition__center{display:grid;place-items:center;height:100%}
+.voice-transition__message{font-size:clamp(40px,8vw,95px);max-width:1000px;line-height:1.28;font-weight:870;letter-spacing:-.05em;animation:calm-voice 3.4s ease-in-out infinite}
+.voice-transition__hint{justify-self:center;margin:0 0 max(20px,3vh);font-size:clamp(18px,3vw,28px);border:1px solid #539b98;padding:16px 25px;border-radius:999px;color:#d3fff7;animation:calm-hint 3.1s ease-in-out infinite}
+@keyframes calm-voice{0%,100%{opacity:.74;transform:scale(.989)}50%{opacity:1;transform:scale(1.009)}}
+@keyframes calm-hint{0%,100%{opacity:.68}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.voice-transition__message,.voice-transition__hint{animation:none}}
+body:has(#self-panel:not([hidden])) header{display:none!important}
+body:has(#self-panel:not([hidden])) main{max-width:none;margin:0;padding:0}
+#self-panel{position:fixed;inset:0;z-index:110;box-sizing:border-box;height:100dvh;max-height:100dvh;border:none;border-radius:0;box-shadow:none;display:flex;flex-direction:column;padding:clamp(12px,3vh,30px) max(16px,4vw) max(16px,env(safe-area-inset-bottom)) max(16px,4vw);background:radial-gradient(ellipse at 50% 20%,#f4fcf8,#e7f3ee)}
+#self-panel .voice-test-header,#self-panel .voice-current-step,#self-panel>.progressTrack{max-width:1000px;width:100%;margin:0 auto 8px;flex-shrink:0}
+#self-panel .voice-test-header h2{font-size:clamp(18px,3vh,26px)}
+#task-overview{max-width:1050px;width:100%;margin:0 auto;min-height:0;flex:1;display:flex;overflow:hidden}
+#task-overview>.voice-task-card{height:100%;width:100%;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(5px,1vh,13px);padding:clamp(13px,2.6vh,30px);background:#fff;border-radius:clamp(20px,3vh,35px);box-shadow:0 20px 48px rgba(17,65,52,.09)}
+#task-overview .voice-task-action{font-size:clamp(24px,4vh,36px);font-weight:860}
+#task-overview .voice-task-sub{font-size:clamp(13px,2.2vh,19px)}
+#task-overview .voice-read-stimulus,#task-overview .voice-vowel-stimulus,#task-overview .voice-response-pair{max-width:940px;width:100%;margin:clamp(4px,1.5vh,20px) auto}
+#task-overview .voice-read-stimulus strong{font-size:clamp(27px,5vw,58px)!important;line-height:1.4}
+#task-overview .voice-vowel-stimulus strong{font-size:clamp(65px,13vw,155px)!important}
+#task-overview .voice-response-pair{display:block;grid-template-columns:none}
+#task-overview .voice-question-bubble{min-height:0;padding:clamp(16px,3vh,38px);text-align:center;border-radius:22px}
+#task-overview .voice-question-bubble strong{font-size:clamp(30px,5.5vw,58px);line-height:1.43;font-weight:850}
+#voice-live-controls{width:100%;max-width:940px;margin:clamp(4px,1.2vh,16px) auto 0;padding:0;min-height:0;overflow:visible;flex:0 1 auto}
+#voice-live-controls #meter-wrap{margin:0 0 8px;padding:clamp(8px,1.3vh,14px);border-radius:16px}
+#voice-live-controls .liveheader{font-size:clamp(15px,2.6vh,21px)}
+#voice-live-controls #levelCanvas{height:clamp(25px,6vh,66px)}
+#voice-live-controls #signal-label{font-size:clamp(13px,2vh,17px);line-height:1.4}
+#voice-live-controls .actions{display:flex;margin:5px 0}
+#voice-live-controls #record,#voice-live-controls #stop{flex:1;min-height:clamp(56px,10vh,90px);font-size:clamp(19px,3.2vh,27px);font-weight:860;border-radius:18px}
+#voice-live-controls #quick-status{font-size:clamp(12px,1.8vh,16px);max-height:100px;min-height:0;margin:7px 0}
+#voice-live-controls #after-actions button{min-height:45px;font-size:14px}
+@media(max-height:660px){#self-panel{padding:8px 12px}#task-overview>.voice-task-card{padding:9px}#task-overview .voice-task-bar{display:none}#task-overview .voice-read-stimulus,#task-overview .voice-response-pair{margin:3px auto}#voice-live-controls #levelCanvas{height:19px}#voice-live-controls #record,#voice-live-controls #stop{min-height:55px}}
+@media(max-width:560px){#task-overview .voice-task-bar .voice-task-state{display:none}#task-overview .voice-read-stimulus strong{font-size:clamp(25px,6vw,38px)!important}#task-overview .voice-question-bubble strong{font-size:clamp(27px,6vw,42px)}#task-overview .voice-vowel-stimulus strong{font-size:clamp(75px,20vw,128px)!important}#task-overview>.voice-task-card{padding:clamp(10px,2.4vh,20px)}}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석 · 베타</span></div><a class="back" href="./voice-analysis-demo.html">← 안정판으로</a></header>
 <section id="method-picker" class="panel">
@@ -319,9 +353,10 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 <button type="button" id="choose-retell" class="secondary" disabled aria-disabled="true">AI 통화 검사 · 준비 중</button>
 </details>
 </section>
-<div id="task-transition" class="voice-transition" hidden role="status" aria-live="polite" tabindex="-1"><span id="transition-message" class="voice-transition__message">다음 과제를 준비합니다</span></div>
+<div id="task-transition" class="voice-transition" hidden role="button" aria-label="화면을 터치하여 다음 단계로" tabindex="0">
+<div class="voice-transition__center"><span id="transition-message" class="voice-transition__message">다음 과제를 준비합니다</span></div><span class="voice-transition__hint">화면을 터치하면 다음 ›</span></div>
 <section id="self-panel" class="panel" hidden>
-<div class="voice-test-header"><div><span class="voice-eyebrow">KIMSE / VOICE EXAM</span><h2>목소리 검사</h2></div><span id="progress" class="voice-task-count">1 / 3</span></div>
+<div class="voice-test-header"><div><h2>목소리 검사</h2></div><span id="progress" class="voice-task-count">1 / 3</span></div>
 <div class="progressTrack"><div id="progressFill"></div></div>
 <p id="stage-title" class="voice-current-step" aria-live="polite">1단계 · 문장 읽기</p>
 <div id="task-overview" class="voice-task-stack" aria-label="세 단계의 음성 과제">
@@ -330,10 +365,10 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 <div class="voice-task-stimulus voice-read-stimulus"><span class="voice-stimulus-tag">읽을 문장</span><strong id="read-text">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</strong><span class="voice-read-arrow" aria-hidden="true">↳ 소리 내어 그대로</span></div>
 </article>
 <article id="task-card-response" class="voice-task-card" data-state="upcoming">
-<div class="voice-task-bar"><span class="voice-number">02</span><div><div class="voice-task-action">내 이야기로 대답하기</div><div class="voice-task-sub">글자를 따라 읽지 않고 직접 말해요</div></div><span id="task-state-response" class="voice-task-state">다음 차례</span></div>
+<div class="voice-task-bar"><span class="voice-number">02</span><div><div class="voice-task-action">내 말로 대답하기</div><div class="voice-task-sub">질문을 눈으로 읽고 내 경험을 말해요</div></div><span id="task-state-response" class="voice-task-state">다음 차례</span></div>
 <div class="voice-response-pair">
-<div class="voice-question-bubble"><span class="voice-stimulus-tag">낌새의 질문 <span aria-hidden="true">?</span></span><strong id="response-question">녹음을 시작하면 질문이 나타나요</strong></div>
-<div class="voice-answer-bubble"><span class="voice-stimulus-tag">내가 할 일</span><strong>질문에 대한 내 경험을 말하기</strong><span class="voice-answer-mic" aria-hidden="true">● ━━━ ≋ ━━━</span></div>
+<div class="voice-question-bubble"><span class="voice-stimulus-tag">질문을 읽지 말고 대답하세요</span><strong id="response-question">어제 하루 동안 기억에 남는 일은 무엇이었나요?</strong></div>
+
 </div>
 </article>
 <article id="task-card-vowel" class="voice-task-card" data-state="upcoming">
@@ -428,4 +463,4 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></details>
 </section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261027-uxresearch-speed1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-immersive-real1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
