@@ -330,6 +330,47 @@ body:has(#self-panel:not([hidden])) main{max-width:none;margin:0;padding:0}
 #voice-live-controls #after-actions button{min-height:45px;font-size:14px}
 @media(max-height:660px){#self-panel{padding:8px 12px}#task-overview>.voice-task-card{padding:9px}#task-overview .voice-task-bar{display:none}#task-overview .voice-read-stimulus,#task-overview .voice-response-pair{margin:3px auto}#voice-live-controls #levelCanvas{height:19px}#voice-live-controls #record,#voice-live-controls #stop{min-height:55px}}
 @media(max-width:560px){#task-overview .voice-task-bar .voice-task-state{display:none}#task-overview .voice-read-stimulus strong{font-size:clamp(25px,6vw,38px)!important}#task-overview .voice-question-bubble strong{font-size:clamp(27px,6vw,42px)}#task-overview .voice-vowel-stimulus strong{font-size:clamp(75px,20vw,128px)!important}#task-overview>.voice-task-card{padding:clamp(10px,2.4vh,20px)}}
+
+/* CONTINUOUS IMMERSIVE EXAM: the introduction is NOT the only fullscreen view.
+   Step content and microphone share the SAME visual surface throughout. */
+body:has(#self-panel:not([hidden])){background:#082832!important;overflow:hidden!important}
+body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!important;padding:0!important}
+#self-panel{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;z-index:500!important;margin:0!important;border:0!important;border-radius:0!important;padding:clamp(16px,3vh,32px) clamp(17px,5vw,60px) max(15px,env(safe-area-inset-bottom))!important;box-shadow:none!important;background:radial-gradient(ellipse at 45% 30%,#164952 0%,#0d343e 55%,#06242f 100%)!important;color:#f6fffc!important;align-items:center;justify-content:center;gap:0}
+#self-panel .voice-test-header,#self-panel>.progressTrack,#self-panel .voice-current-step{display:none!important}
+#task-overview{display:flex!important;width:min(100%,1100px)!important;max-width:1100px!important;flex:1 1 0!important;min-height:0!important;justify-content:center!important;align-items:center!important;margin:0 auto!important;overflow:hidden!important}
+#task-overview>.voice-task-card{width:100%!important;height:100%!important;min-height:0!important;padding:clamp(8px,2vh,30px)!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;gap:clamp(12px,2vh,25px)!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;text-align:center!important;color:#f6fffc!important}
+#task-overview>.voice-task-card[hidden]{display:none!important}
+#task-overview .voice-task-bar{display:block!important;flex:none!important;margin:0!important;width:100%!important;min-height:0!important}
+#task-overview .voice-task-bar .voice-number,#task-overview .voice-task-bar .voice-task-state{display:none!important}
+#task-overview .voice-task-action{font-size:clamp(17px,2.7vh,26px)!important;color:#b4e9dc!important;letter-spacing:-.02em!important;font-weight:750!important}
+#task-overview .voice-task-sub{display:none!important}
+#task-overview .voice-task-stimulus,#task-overview .voice-read-stimulus,#task-overview .voice-vowel-stimulus,#task-overview .voice-response-pair,#task-overview .voice-question-bubble{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 auto!important;width:100%!important;max-width:1000px!important;min-height:0!important;text-align:center!important}
+#task-overview .voice-read-stimulus strong,#task-overview .voice-question-bubble strong,#task-overview .voice-vowel-stimulus strong{color:#fff!important;font-size:clamp(31px,5.2vw,68px)!important;line-height:1.42!important;letter-spacing:-.042em!important;font-weight:840!important;word-break:keep-all!important;text-wrap:balance!important}
+#task-overview .voice-vowel-stimulus strong{font-size:clamp(82px,16vw,185px)!important;line-height:1.2!important}
+#task-overview .voice-stimulus-tag,#task-overview .voice-read-arrow,#task-overview .voice-vowel-stimulus>span{color:#b5dcd6!important;background:transparent!important;border:0!important;font-size:clamp(14px,2.2vh,19px)!important}
+#task-overview .voice-response-pair{display:block!important}
+#task-overview .voice-question-bubble{display:block!important}
+#voice-live-controls{display:flex!important;flex-direction:column!important;justify-content:flex-end!important;flex:0 0 auto!important;max-width:840px!important;width:100%!important;margin:0 auto!important;padding:0 0 clamp(12px,3vh,35px)!important;overflow:visible!important;gap:clamp(4px,1.1vh,12px)!important;color:#f6fffc!important}
+#voice-live-controls #meter-wrap{background:transparent!important;border:0!important;box-shadow:none!important;margin:0!important;padding:0!important;text-align:center!important;min-height:0!important}
+#voice-live-controls .liveheader{font-size:clamp(16px,2.7vh,24px)!important;justify-content:center!important;gap:18px!important;color:#d6f6ed!important}
+#voice-live-controls #record-label,#voice-live-controls #elapsed{color:#e4fff8!important;font-weight:750!important}
+#voice-live-controls #levelCanvas{display:block!important;width:min(100%,460px)!important;height:clamp(25px,5vh,58px)!important;margin:5px auto!important;opacity:.95}
+#voice-live-controls #signal-label{color:#d2ede6!important;text-align:center!important;font-size:clamp(14px,2.1vh,19px)!important;line-height:1.45!important}
+#voice-live-controls #recording-actions{display:flex!important;justify-content:center!important;gap:15px!important;margin:5px auto!important;width:100%!important}
+#voice-live-controls #record,#voice-live-controls #stop{flex:1!important;max-width:540px!important;min-height:clamp(62px,9vh,94px)!important;border-radius:22px!important;font-size:clamp(19px,3vh,27px)!important;font-weight:850!important}
+#voice-live-controls #record{background:#dbfff3!important;color:#093b34!important;border:1px solid #dbfff3!important}
+#voice-live-controls #stop:not([hidden]){background:#ffeadf!important;color:#633820!important;border:1px solid #ffeadf!important}
+#voice-live-controls #record[hidden],#voice-live-controls #stop[hidden]{display:none!important}
+#voice-live-controls #quick-status{background:transparent!important;border:0!important;box-shadow:none!important;color:#c8e7df!important;text-align:center!important;font-size:clamp(12px,1.9vh,17px)!important;max-height:70px!important;margin:0!important;padding:0!important}
+#voice-live-controls details{color:#c3ded7!important;font-size:12px!important;max-width:800px}
+#voice-live-controls summary{color:#c3ded7!important;font-size:12px!important}
+#voice-live-controls #after-actions{justify-content:center!important;margin:2px auto!important}
+#voice-live-controls #after-actions button{min-height:50px!important}
+#self-panel .secondary{border-color:#8cc3b7!important;color:#e9fff8!important;background:rgba(255,255,255,.1)!important}
+#voice-live-controls #preview{max-height:40px}
+@media(max-height:650px){#self-panel{padding:8px 18px!important}#task-overview .voice-task-bar{display:none!important}#task-overview .voice-read-stimulus strong,#task-overview .voice-question-bubble strong{font-size:clamp(25px,4.6vw,42px)!important}#voice-live-controls #levelCanvas{height:23px!important}#voice-live-controls #record,#voice-live-controls #stop{min-height:52px!important}#voice-live-controls #quick-status{font-size:12px!important}}
+@media(max-width:560px){#task-overview .voice-read-stimulus strong,#task-overview .voice-question-bubble strong{font-size:clamp(29px,7vw,43px)!important}#voice-live-controls #record,#voice-live-controls #stop{font-size:20px!important}#self-panel{padding:14px 19px max(15px,env(safe-area-inset-bottom))!important}}
+@media(prefers-reduced-motion:reduce){#self-panel *{scroll-behavior:auto!important}}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석 · 베타</span></div><a class="back" href="./voice-analysis-demo.html">← 안정판으로</a></header>
 <section id="method-picker" class="panel">
@@ -463,4 +504,4 @@ body:has(#self-panel:not([hidden])) main{max-width:none;margin:0;padding:0}
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></details>
 </section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261027-verified-percent1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-continuous-immersive1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
