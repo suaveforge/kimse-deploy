@@ -371,6 +371,19 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 @media(max-height:650px){#self-panel{padding:8px 18px!important}#task-overview .voice-task-bar{display:none!important}#task-overview .voice-read-stimulus strong,#task-overview .voice-question-bubble strong{font-size:clamp(25px,4.6vw,42px)!important}#voice-live-controls #levelCanvas{height:23px!important}#voice-live-controls #record,#voice-live-controls #stop{min-height:52px!important}#voice-live-controls #quick-status{font-size:12px!important}}
 @media(max-width:560px){#task-overview .voice-read-stimulus strong,#task-overview .voice-question-bubble strong{font-size:clamp(29px,7vw,43px)!important}#voice-live-controls #record,#voice-live-controls #stop{font-size:20px!important}#self-panel{padding:14px 19px max(15px,env(safe-area-inset-bottom))!important}}
 @media(prefers-reduced-motion:reduce){#self-panel *{scroll-behavior:auto!important}}
+
+/* Single compact consent, no checklist-form experience. The explicit start
+   click is the consent confirmation; optional choices remain independently editable. */
+.voice-consents{padding:clamp(15px,2.4vw,24px)!important}
+.voice-consent-summary{font-size:clamp(15px,2.4vw,19px);line-height:1.56;color:#284d45;margin:8px 0}
+.voice-consent-extra{margin-top:12px!important}
+.voice-consent-extra>summary{font-size:clamp(14px,2vw,16px);font-weight:790;color:#166454;cursor:pointer;padding:9px 0}
+#microphone-preflight{border:0;background:transparent;color:#165b52;font-weight:780;font-size:15px}
+#microphone-preflight[hidden]{display:none!important}
+#task-overview #task-card-response .voice-task-action{display:none!important}
+#task-overview #task-card-response .voice-task-sub{display:none!important}
+#task-overview #task-card-response .voice-stimulus-tag{display:none!important}
+#task-overview #task-card-response .voice-question-bubble strong{font-size:clamp(32px,5.6vw,70px)!important}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석 · 베타</span></div><a class="back" href="./voice-analysis-demo.html">← 안정판으로</a></header>
 <section id="method-picker" class="panel">
@@ -380,15 +393,22 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <div class="voice-intro-path" aria-label="세 가지 검사 과제"><span>01 <b>그대로 읽기</b></span><span>02 <b>내 말로 답하기</b></span><span>03 <b>아—— 발성</b></span></div>
 </div>
 <section class="voice-consents" aria-labelledby="consent-heading">
-<div class="voice-consent-top"><h2 id="consent-heading">시작 전에 한 번만 동의</h2><button id="consent-all" type="button" class="voice-consent-all">전체 동의</button></div>
-<label class="consent voice-consent-choice voice-consent-required"><input id="server-consent" type="checkbox"><span><strong>필수 · 음성 분석</strong><small>녹음한 목소리를 서버에서 분석하고 원본은 보존하지 않습니다.</small></span></label>
-<label class="consent voice-consent-choice" id="azure-row"><input id="azure-consent" type="checkbox"><span><strong>선택 · 발음 정확도 평가</strong><small>1단계 음성을 Microsoft Azure에 전송하여 발음을 평가합니다.</small></span></label>
-<label class="consent voice-consent-choice" id="pitt-row"><input id="pitt-consent" type="checkbox"><span><strong>선택 · AI 연구용 음향 패턴 분류</strong><small>2단계 음성을 Pitt 기반 연구 모델에 적용합니다. 한국어 임상 검증 전이며 질병 진단이 아닙니다.</small></span></label>
-<label class="consent voice-consent-choice" id="extended-row" hidden><input id="extended-consent" type="checkbox"><span><strong>선택 · 추가 사전학습 AI 비교</strong><small>Pitt 전체 융합 및 AI-Hub 217 공개 VGG16 중 서버에 설치·검증된 연구용 모델만 실행합니다. 긴 분석 시간이 추가될 수 있습니다. 모델의 원시 출력은 치매 위험도나 한국어 임상 판정이 아닙니다.</small></span></label>
-<p id="consent-message" class="voice-consent-message" role="status" aria-live="polite">원하는 항목을 직접 선택하세요. 선택 동의 없이도 2·3단계를 진행할 수 있습니다.</p>
-<details class="voice-consent-extra"><summary>동의 범위와 분석 방식 자세히 보기 <span aria-hidden="true">?</span></summary><p>필수 동의는 서버 음성 분석을 위한 동의입니다. Azure 및 Pitt 연구용 분류는 각각 독립된 선택 항목으로 미동의 시 해당 결과를 ‘미측정’으로 표시합니다. 원본 음성 및 대화 내용은 오류 로그에 기록하지 않습니다.</p></details>
+<div class="voice-consent-top"><h2 id="consent-heading">검사 시작 전 준비</h2></div>
+<p class="voice-consent-summary">세 가지 목소리 검사와 분석에 사용할 마이크를 <strong>지금 한 번만 연결</strong>합니다. 검사 중에는 다시 허용을 요청하지 않습니다.</p>
+<p class="voice-consent-summary">기본 분석과 선택 AI 분석을 함께 준비합니다. 분석 범위는 아래에서 변경할 수 있습니다.</p>
+<details class="voice-consent-extra" id="analysis-consent-settings">
+<summary>분석 범위 변경 · 동의 내용 보기 <span aria-hidden="true">?</span></summary>
+<label class="consent voice-consent-choice voice-consent-required"><input id="server-consent" type="checkbox" checked><span><strong>기본 음성 분석</strong><small>녹음한 음성을 서버에서 분석합니다. 원음은 저장하지 않습니다.</small></span></label>
+<label class="consent voice-consent-choice" id="azure-row"><input id="azure-consent" type="checkbox" checked><span><strong>발음 평가 · 선택</strong><small>첫 번째 녹음을 Microsoft Azure로 전송합니다.</small></span></label>
+<label class="consent voice-consent-choice" id="pitt-row"><input id="pitt-consent" type="checkbox" checked><span><strong>AD/CN AI 비교 · 선택</strong><small>두 번째 음성을 Pitt 학습 모델로 분석합니다. 실제 치매 진단은 아닙니다.</small></span></label>
+<label class="consent voice-consent-choice" id="extended-row" hidden><input id="extended-consent" type="checkbox" checked><span><strong>추가 AI 모델 · 선택</strong><small>두 번째 음성을 Pitt 전체 융합 및 AI-Hub 217 모델에 적용합니다. 분석이 길어질 수 있습니다.</small></span></label>
+<button id="consent-all" type="button" class="voice-consent-all">전체 분석 다시 선택</button>
+<p class="voice-consent-message">선택 항목은 언제든 검사 시작 전에 끌 수 있습니다. 분석 결과는 의료 진단이 아닙니다. 위 내용을 확인하고 아래 버튼을 누를 때 선택된 분석에 동의합니다.</p>
+</details>
+<p id="consent-message" class="voice-consent-message" role="status" aria-live="polite">선택한 분석 범위를 확인한 뒤 마이크를 연결하세요. 검사 중 동의 창은 다시 나오지 않습니다.</p>
+<p id="microphone-preflight" class="voice-consent-message" role="status" aria-live="polite" hidden></p>
 </section>
-<button type="button" id="choose-self" class="primary voice-start" disabled>필수 동의를 선택하고 검사 시작 <span aria-hidden="true">→</span></button>
+<button type="button" id="choose-self" class="primary voice-start">위 항목에 동의하고 마이크 연결 <span aria-hidden="true">→</span></button>
 <details class="voice-secondary-tools"><summary>다른 검사 방식 <span aria-hidden="true">?</span></summary>
 <a href="./voice-pronunciation-onset.html">첫 단어 녹음·발음 오류 확인</a>
 <button type="button" id="choose-retell" class="secondary" disabled aria-disabled="true">AI 통화 검사 · 준비 중</button>
@@ -406,9 +426,9 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <div class="voice-task-stimulus voice-read-stimulus"><span class="voice-stimulus-tag">읽을 문장</span><strong id="read-text">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</strong><span class="voice-read-arrow" aria-hidden="true">↳ 소리 내어 그대로</span></div>
 </article>
 <article id="task-card-response" class="voice-task-card" data-state="upcoming">
-<div class="voice-task-bar"><span class="voice-number">02</span><div><div class="voice-task-action">내 말로 대답하기</div><div class="voice-task-sub">질문을 눈으로 읽고 내 경험을 말해요</div></div><span id="task-state-response" class="voice-task-state">다음 차례</span></div>
+<div class="voice-task-bar"><span class="voice-number">02</span><div><div class="voice-task-action">질문</div><div class="voice-task-sub">마음속으로 답을 생각한 뒤 녹음하세요</div></div><span id="task-state-response" class="voice-task-state">다음 차례</span></div>
 <div class="voice-response-pair">
-<div class="voice-question-bubble"><span class="voice-stimulus-tag">질문을 읽지 말고 대답하세요</span><strong id="response-question">어제 하루 동안 기억에 남는 일은 무엇이었나요?</strong></div>
+<div class="voice-question-bubble"><span class="voice-stimulus-tag" aria-hidden="true">02</span><strong id="response-question">어제 하루 동안 기억에 남는 일은 무엇이었나요?</strong></div>
 
 </div>
 </article>
@@ -504,4 +524,4 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></details>
 </section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261027-continuous-immersive1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-mic-first1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
