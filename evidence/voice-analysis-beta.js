@@ -58,12 +58,15 @@ const shortReason={
   UNKNOWN_VOICE_TASK:'분석 서버가 아직 새 버전으로 업데이트되지 않았습니다.',
   SERVER_AUDIO_PROCESSING_CONSENT_REQUIRED:'음성 분석 동의가 필요합니다.',
   AZURE_AUDIO_TRANSFER_CONSENT_REQUIRED:'Azure 발음 평가 동의가 필요합니다.',
+  VOICE_ANALYSIS_TIMEOUT:'분석 응답 시간이 초과됐습니다. 녹음 파일을 유지했으니 다시 분석해 주세요.',
   Failed_to_fetch:'분석 서버에 연결할 수 없습니다.'
 };
 function friendlyError(e){
   const raw=String(e?.message||e||'알 수 없는 오류');
   const http=e?.httpStatus;
-  if(http===429)return shortReason.EVIDENCE_GUEST_DAILY_QUOTA_REACHED;
+  if(http===429)return raw==='BETA_HOURLY_QUOTA_REACHED'?
+    '베타 분석의 시간당 사용 한도에 도달했습니다. 잠시 뒤 다시 시도하거나 안정판을 이용해 주세요.':
+    shortReason.EVIDENCE_GUEST_DAILY_QUOTA_REACHED;
   if(http===413)return '녹음 데이터가 서버 허용 크기를 초과했습니다.';
   if(http===422){
     if(raw.includes('audio_base64')||raw.includes('string_too_long'))
@@ -639,17 +642,32 @@ async function analyze(){
     setStatus(task==='response'&&researchReady&&el('pitt-consent').checked?
       '음성 구간 및 학습 완료 연구용 AD/CN 분류기를 실행하고 있습니다…':
       '분석 서버에서 음성의 발화·침묵 구간을 확인하고 있습니다…');
-    const response=await fetch(API+'/guest',{
-      method:'POST',cache:'no-store',headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
+    const controller=typeof AbortController==='function'?new AbortController():null;
+    let timeoutId=0,response,data;
+    try{
+      ({response,data}=await Promise.race([
+        (async()=>{
+          const response=await fetch(API+'/guest',{
+      method:'POST',cache:'no-store',signal:controller?.signal,
+      headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':anonymousClientId},
       body:JSON.stringify({
         task,audio_base64:audio,consent_server_audio_processing:true,
         consent_azure_transfer:task==='read'&&el('azure-consent').checked,
         consent_research_classification:task==='response'&&researchReady&&el('pitt-consent').checked,
         question_end_to_capture_start_ms:task==='response'?safeOffset:null
       })
-    });
+          });
+          return {response,data:await response.json().catch(()=>({}))};
+        })(),
+        new Promise((_,reject)=>{
+          timeoutId=setTimeout(()=>{
+            reject(new Error('VOICE_ANALYSIS_TIMEOUT'));
+            controller?.abort();
+          },task==='response'&&researchReady&&el('pitt-consent').checked?95000:35000);
+        })
+      ]));
+    }finally{if(timeoutId)clearTimeout(timeoutId);}
     phase='response';
-    const data=await response.json().catch(()=>({}));
     if(!response.ok)throw apiError(response,data);
     if(stageIndex!==index||session!==recordingSession)return;
     phase='measurement';
@@ -713,8 +731,12 @@ async function startRecording(){
     stream=captured;
     const chunks=[];
     recorder=new MediaRecorder(stream);
-    recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};
-    recorder.onstart=()=>{
+    // Keep the capture's own recorder reference: an error may clear the
+    // mutable global before the browser dispatches the trailing stop event.
+    const captureRecorder=recorder;
+    let captureFailed=false;
+    captureRecorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};
+    captureRecorder.onstart=()=>{
       if(session!==recordingSession)return;
       // Reject the UI start state when the audio track has already ended.
       // Otherwise, the prompt could be shown without any usable recording.
@@ -737,9 +759,9 @@ async function startRecording(){
       setStatus(task==='vowel'?'● 녹음 중 · 5.5초 후 자동 종료':
         '● 녹음 중 · 말하기를 마치면 자동 종료됩니다.');
     };
-    recorder.onstop=()=>{
-      if(session!==recordingSession)return;
-      const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
+    captureRecorder.onstop=()=>{
+      if(session!==recordingSession||captureFailed)return;
+      const blob=new Blob(chunks,{type:captureRecorder.mimeType||chunks[0]?.type||'audio/webm'});
       const confirmed=captureStartConfirmed;
       closeMicrophone();recorder=null;
       if(!confirmed){
@@ -758,11 +780,16 @@ async function startRecording(){
       setStatus('녹음 완료 · 분석 중입니다…');
       analyze();
     };
-    recorder.onerror=()=>{
+    captureRecorder.onerror=event=>{
       if(session!==recordingSession)return;
+      captureFailed=true;
       recorder=null;closeMicrophone();
       el('record').disabled=false;
-      setStatus('녹음 장치에서 오류가 발생했습니다. 다시 녹음해 주세요.','error');
+      lastAnalysisError={stage:task,phase:'capture',httpStatus:null,
+        errorCode:String(event?.error?.name||'MEDIA_RECORDER_ERROR').slice(0,90),
+        recordedAudioType:captureRecorder.mimeType||'',pcmDurationMs:null};
+      el('error-copy').hidden=false;
+      setStatus('녹음 장치 오류로 중단됐습니다. 마이크를 확인하고 다시 녹음해 주세요.','error');
     };
     recorder.start();
     // Safari may neither reject start() nor dispatch onstart. Never leave
