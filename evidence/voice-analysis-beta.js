@@ -12,11 +12,12 @@ let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarte
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let assessmentGeneration=0; // Ignore delayed server results after restarting a self-test.
-let voiceProgress={status:'idle',research:false,completed:0,total:0,phase:null,connected:false};
-const voiceCheckpoints=['audio_accepted','webrtc_completed','silero_completed','research_completed','report_completed'];
-const voicePhaseMessages={audio_accepted:'음성 형식 확인 및 분석 요청 수락',webrtc_completed:'발화와 침묵의 기본 구간 추출 완료',silero_completed:'비교 음성 구간 분석 완료',research_completed:'Pitt 연구용 음향 패턴 분류 완료',report_completed:'수신한 실제 측정 결과 정리 완료'};
+let voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false};
+const voiceCheckpoints=['audio_accepted','webrtc_completed','silero_completed','research_completed','extended_completed','report_completed'];
+const voicePhaseMessages={audio_accepted:'음성 형식 확인 및 분석 요청 수락',webrtc_completed:'발화와 침묵의 기본 구간 추출 완료',silero_completed:'비교 음성 구간 분석 완료',research_completed:'Pitt 연구용 음향 패턴 분류 완료',extended_completed:'별도 사전학습 AI 모델 비교 처리 완료',report_completed:'수신한 실제 측정 결과 정리 완료'};
 let responsePreRollMs=0,responseSoundHasPreRoll=false;
 let busy=false,recordingSession=0,serviceReady=false,researchReady=false;
+let extendedReady=false,extendedModelNames=[];
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
 let noiseFloor=.003,autoStopReason=null;
 let captureStartConfirmed=false,captureStartWatchdog=0;
@@ -289,6 +290,7 @@ async function checkService(){
     if(status.ready!==true||status.evidenceGuestQuickEnabled!==true)throw Error('API_NOT_READY');
     serviceReady=true;
     researchReady=status.researchBinaryAvailable===true;
+    setExtendedAvailability(status);
     if(!researchReady && el('pitt-consent').checked){
       el('pitt-consent').checked=false;
       setStatus('연구용 AI 분류를 사용할 수 없어 해당 항목은 미측정으로 진행합니다.','error');
@@ -297,6 +299,7 @@ async function checkService(){
       setStatus('연결 완료 · 동의 후 녹음을 시작해 주세요.','success');
   }catch(e){
     serviceReady=false;researchReady=false;
+    setExtendedAvailability({});
     el('record').disabled=true;
     el('check-connection').hidden=false;
     setStatus('베타 분석 서버 준비 중입니다. 현재는 안정판 테스트를 이용해주세요.','error');
@@ -304,7 +307,9 @@ async function checkService(){
 }
 function renderVoiceProgress(){
   const active=voiceProgress.status!=='idle';
-  const visibleSteps=voiceCheckpoints.filter(step=>voiceProgress.research||step!=='research_completed');
+  const visibleSteps=voiceCheckpoints.filter(step=>
+    (voiceProgress.research||step!=='research_completed')&&
+    (voiceProgress.extended||step!=='extended_completed'));
   const confirmed=voiceProgress.completed, total=voiceProgress.total||visibleSteps.length;
   const pct=voiceProgress.connected&&total>0?Math.floor(confirmed/total*100):null;
   const last=voiceProgress.phase;
@@ -343,13 +348,15 @@ function renderVoiceProgress(){
     }
   }
 }
-function startVoiceProgress(research){
-  voiceProgress={status:'pending',research:!!research,completed:0,total:research?5:4,phase:null,connected:false};
+function startVoiceProgress(research,extended=false){
+  voiceProgress={status:'pending',research:!!research,extended:!!extended,completed:0,
+    total:(research?5:4)+(extended?1:0),phase:null,connected:false};
   renderVoiceProgress();
 }
 function recordVoiceCheckpoint(event){
   if(voiceProgress.status!=='pending'||!event||!voiceCheckpoints.includes(event.phase))return;
-  const n=event.completed,t=event.total,expected=voiceProgress.research?5:4;
+  const n=event.completed,t=event.total,
+    expected=(voiceProgress.research?5:4)+(voiceProgress.extended?1:0);
   if(!Number.isInteger(n)||t!==expected||n<1||n>t||n<voiceProgress.completed)return;
   voiceProgress.connected=true;
   voiceProgress.completed=n;voiceProgress.phase=event.phase;
@@ -420,7 +427,7 @@ function newAssessment(){
   }
   assessmentGeneration++;
   completed={};report=null;
-  voiceProgress={status:'idle',research:false,completed:0,total:0,phase:null,connected:false};
+  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false};
   // Consent is collected explicitly once before recording, not reset between tasks.
   el('method-picker').hidden=true;
   showStage(0);
@@ -432,6 +439,7 @@ function mergeResult(task,data,audioDurationMs=null){
     completed.responseDelay=data.responseDelay;
     completed.responseDelayComparison=data.responseDelayComparison||null;
     completed.researchBinary=data.researchBinary||{status:'not_requested'};
+    completed.researchComparisons=data.researchComparisons||{status:'not_requested',models:{}};
   }
   if(task==='vowel')completed.vocalTremor=data.vocalTremor;
   if(number(audioDurationMs)&&audioDurationMs>0)completed[task+'AudioDurationMs']=audioDurationMs;
@@ -631,6 +639,33 @@ function showResearchBinary(){
     note.textContent='2단계의 별도 연구용 분류 동의가 없거나 분석 결과가 제출되지 않았습니다. 기본 음성 측정과는 별도입니다.';
   }
 }
+function renderExtendedResearch(){
+  const x=completed.researchComparisons||{status:'not_requested',models:{}};
+  const card=el('extended-research-card');
+  card.hidden=x.status==='not_requested';
+  if(card.hidden)return;
+  const running=x.status==='pending',models=x.models||{};
+  el('extended-research-status').textContent=running?
+    '추가 연구용 모델 실행 중 · 완료된 실제 추론만 표시합니다.':
+    x.status==='completed_research_only'?
+      '사전학습 모델의 실제 연구용 추론 결과입니다. 진단이나 위험 확률은 제공하지 않습니다.':
+      '사전학습 모델 추론을 완료하지 못했습니다. 결과를 만들어 표시하지 않습니다.';
+  const pitt=models.pitt_full||{};
+  el('extended-pitt-value').textContent=running?'분석 중':pitt.status==='executed_research_only'?
+    '학습 클래스 '+String(pitt.rawTrainingClassId||'확인 불가'):'실행 결과 없음';
+  el('extended-pitt-note').textContent=pitt.status==='executed_research_only'?
+    '4개 스트림 융합 성공 · 학습 클래스 ID는 한국어 MCI/치매 단계가 아닙니다.':
+    '별도 Pitt 전체 융합 모델의 실제 출력이 확보되지 않았습니다.';
+  const hub=models.aihub217||{};
+  el('extended-aihub-value').textContent=running?'분석 중':hub.status==='executed_research_only'?
+    '공식 VGG16 2종 실행 완료':'실행 결과 없음';
+  el('extended-aihub-note').textContent=hub.status==='executed_research_only'?
+    'SCIvsOTHERS·MCIvsAD 각각 계산 완료 · 최종 ANN 미확보 · 3단계 합산 판정 없음.':
+    'AI-Hub 217 사전학습 모델의 실제 출력이 확보되지 않았습니다.';
+  // Raw outputs only inside the collapsed evidence section; never a risk gauge.
+  el('extended-research-raw').textContent=running?
+    '실제 서버 결과 대기 중':JSON.stringify(x,null,2);
+}
 function output(shouldScroll=true){
   const p=completed.pronunciation||{},d=completed.responseDelay||{},v=completed.vocalTremor||{};
   const score=p.scores?.accuracy;
@@ -652,12 +687,13 @@ function output(shouldScroll=true){
   el('why-tremor').textContent=v.status==='measured'?
     '목소리 주기적 변조의 측정값 · 떨림 질환 판정 아님':
     '품질 기준을 충족한 모음 발성 자료가 없습니다.';
-  report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,researchOnlyBinary:completed.researchBinary||{status:'not_requested'},cognitiveScreening:{status:'not_available',reason:'NO_KOREAN_CLINICALLY_VALIDATED_MODEL_CONNECTED',clinicalDecision:null},completedStages:tasks.filter(x=>completed[x+'Quality']?.serverStatus!=='pending'&&completed[x+'Quality']),measuredAt:new Date().toISOString()};
+  report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,researchOnlyBinary:completed.researchBinary||{status:'not_requested'},researchComparisons:completed.researchComparisons||{status:'not_requested'},cognitiveScreening:{status:'not_available',reason:'NO_KOREAN_CLINICALLY_VALIDATED_MODEL_CONNECTED',clinicalDecision:null},completedStages:tasks.filter(x=>completed[x+'Quality']?.serverStatus!=='pending'&&completed[x+'Quality']),measuredAt:new Date().toISOString()};
   renderPronunciation(p);
   renderDelay(d);
   renderTremor(v);
   renderBetaComparison();
   showResearchBinary();
+  renderExtendedResearch();
   el('evidence').textContent=JSON.stringify(report,null,2);
   el('download').disabled=false;
   el('self-panel').hidden=true;el('result-view').hidden=false;el('results').hidden=false;
@@ -718,6 +754,7 @@ async function analyze(){
   const task=currentTask(),stageIndex=index,session=recordingSession;
   const generation=assessmentGeneration;
   const researchRequested=task==='response'&&researchReady&&el('pitt-consent').checked;
+  const extendedRequested=task==='response'&&extendedReady&&el('extended-consent').checked;
   let phase='decode',pcmLength=0;
   busy=true;lastAnalysisError=null;
   el('error-copy').hidden=true;
@@ -753,6 +790,7 @@ async function analyze(){
         task,audio_base64:audio,consent_server_audio_processing:true,
         consent_azure_transfer:task==='read'&&el('azure-consent').checked,
         consent_research_classification:researchRequested,
+        consent_extended_model_comparison:extendedRequested,
         question_end_to_capture_start_ms:task==='response'?safeOffset:null
       });
       const request=async(endpoint)=>{
@@ -817,16 +855,17 @@ async function analyze(){
             timeoutId=setTimeout(()=>{
               reject(new Error('VOICE_ANALYSIS_TIMEOUT'));
               controller?.abort();
-            },researchRequested?95000:35000);
+            },extendedRequested?195000:researchRequested?95000:35000);
           })
         ]);
       }finally{if(timeoutId)clearTimeout(timeoutId);}
     };
     if(task==='response'){
-      startVoiceProgress(researchRequested);
+      startVoiceProgress(researchRequested,extendedRequested);
       completed.responseDelay={status:'pending',reason:'VOICE_ANALYSIS_IN_PROGRESS'};
       completed.responseDelayComparison=null;
       completed.researchBinary=researchRequested?{status:'pending'}:{status:'not_requested'};
+      completed.researchComparisons=extendedRequested?{status:'pending',models:{}}:{status:'not_requested',models:{}};
       completed.responseQuality={serverStatus:'pending',at:new Date().toISOString()};
       // The response promise can finish before or after the vowel stage.
       // Never use recordingSession here: showStage() deliberately changes it.
@@ -845,6 +884,8 @@ async function analyze(){
         completed.responseDelayComparison=null;
         completed.researchBinary=researchRequested?
           {status:'unavailable',reason:'VOICE_ANALYSIS_REQUEST_FAILED'}:{status:'not_requested'};
+        completed.researchComparisons=extendedRequested?
+          {status:'unavailable',models:{}}:{status:'not_requested',models:{}};
         finishVoiceProgress(false);
         completed.responseQuality={serverStatus:'failed',
           errorCode:String(error?.message||'VOICE_ANALYSIS_REQUEST_FAILED').slice(0,90)};
@@ -999,6 +1040,20 @@ async function startRecording(){
   }
 }
 el('check-connection').addEventListener('click',checkService);
+function setExtendedAvailability(status){
+  const models=Array.isArray(status?.extendedResearchModels)?status.extendedResearchModels:[];
+  extendedModelNames=models.filter(x=>x==='pitt_full'||x==='aihub217');
+  extendedReady=status?.extendedResearchAvailable===true&&extendedModelNames.length>0;
+  el('extended-row').hidden=!extendedReady;
+  if(!extendedReady)el('extended-consent').checked=false;
+  updateConsentStart();
+}
+async function probeResearchAvailability(){
+  try{
+    const response=await fetch(API+'/status',{cache:'no-store'});
+    if(response.ok)setExtendedAvailability(await response.json());
+  }catch{setExtendedAvailability({});}
+}
 function updateConsentStart(){
   const required=el('server-consent').checked;
   el('choose-self').disabled=!required;
@@ -1007,14 +1062,16 @@ function updateConsentStart(){
     '동의 확인 완료 · 검사 중 추가 동의 화면은 나타나지 않습니다.':
     '원하는 항목을 직접 선택하세요. 선택 동의 없이도 2·3단계를 진행할 수 있습니다.';
 }
-for(const id of ['server-consent','azure-consent','pitt-consent']){
+for(const id of ['server-consent','azure-consent','pitt-consent','extended-consent']){
   el(id).addEventListener('change',updateConsentStart);
 }
 el('consent-all').addEventListener('click',()=>{
   for(const id of ['server-consent','azure-consent','pitt-consent'])el(id).checked=true;
+  if(extendedReady)el('extended-consent').checked=true;
   updateConsentStart();
 });
 updateConsentStart();
+void probeResearchAvailability();
 el('choose-self').addEventListener('click',newAssessment);
 el('choose-retell').addEventListener('click',()=>{
   cancelCapture();el('method-picker').hidden=true;
