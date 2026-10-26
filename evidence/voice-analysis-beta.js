@@ -3,13 +3,14 @@ const el=id=>document.getElementById(id);
 const API='https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis/beta';
 const tasks=['read','response','vowel'];
 const stageNames=['문장 읽기','질문 듣고 답하기','모음 발성'];
-const transitionLines=['보이는 문장을 그대로 읽어요','이번에는 읽지 말고 내 말로 대답해요','마지막으로 아—— 소리를 길게 내요'];
+const transitionLines=['보이는 문장을 그대로 읽어요','잠시 후, 어제의 일을 떠올려 보세요','마지막으로 아—— 소리를 길게 내요'];
 const prompts={
   read:'오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.',
   response:'어제 하루 동안 기억에 남는 일은 무엇이었나요?',
   vowel:"'아' 소리를 4~6초간 일정하게 내주세요."
 };
-let index=0,stream=null,recorder=null,sound=null,previewUrl=null,recordingStarted=0;
+let index=0,stream=null,preparedMicrophone=null,recorder=null,sound=null,previewUrl=null,recordingStarted=0;
+let preparingAssessment=false;
 let meterContext=null,analyser=null,meterSource=null,meterFrame=0,clockInterval=0;
 let questionEnd=null,questionOffset=null,report=null,completed={};
 let assessmentGeneration=0; // Ignore delayed server results after restarting a self-test.
@@ -307,21 +308,30 @@ function setAudio(blob){
     el('preview').src=previewUrl;el('preview').hidden=false;
   }
 }
-function closeMicrophone(){
+function liveMicrophone(){
+  return preparedMicrophone?.getAudioTracks?.().some(track=>track.readyState==='live')===true;
+}
+function closeMicrophone(release=false){
   if(captureStartWatchdog)clearTimeout(captureStartWatchdog);
   captureStartWatchdog=0;
   stopAutoMonitor();
-  stream?.getTracks().forEach(track=>track.stop());
-  stream=null;endMeter();stopClock();setRecordingState(false);
-  el('record').disabled=busy;
+  endMeter();stopClock();setRecordingState(false);
+  if(release){
+    preparedMicrophone?.getTracks()?.forEach(track=>track.stop());
+    preparedMicrophone=null;stream=null;
+  }else{
+    // Reuse the ONE permission grant until stage three is finished.
+    stream=preparedMicrophone;
+  }
+  el('record').disabled=busy||!serviceReady||!liveMicrophone();
   el('stop').disabled=true;
   el('record').hidden=false;
   if(currentTask()==='response')el('stop').hidden=true;
 }
-function cancelCapture(){
+function cancelCapture(release=false){
   ++recordingSession;
   if(recorder?.state==='recording'){recorder.onstop=null;recorder.stop();}
-  recorder=null;closeMicrophone();
+  recorder=null;closeMicrophone(release);
 }
 async function checkService(){
   serviceReady=false;
@@ -530,38 +540,85 @@ function showStage(i){
   el('response-question').textContent=RESPONSE_QUESTION;
   renderTaskCards();
   el('signal-label').textContent=task==='vowel'?'아— 소리를 일정하게 유지하면 자동으로 녹음을 마칩니다.':
-    task==='response'?'질문을 확인하고 직접 대답하세요. 답변 뒤 조용히 기다리면 종료됩니다.':
-    '문장을 읽고 잠시 멈추면 자동으로 종료됩니다.';
+    task==='response'?'':'문장을 읽고 잠시 멈추면 자동으로 종료됩니다.';
   el('record').hidden=false;
   el('stop').hidden=true;
   el('task-other-actions').hidden=i!==0;
   el('skip-pron').hidden=i!==0;
   el('after-actions').hidden=true;
   el('elapsed').textContent='00:00';
-  el('record').textContent=task==='response'?'🎙 내 답변 녹음 시작':task==='vowel'?'🎙 아—— 소리 녹음 시작':'🎙 문장 읽기 녹음 시작';
-  el('record').disabled=!serviceReady;
+  el('record').textContent=task==='response'?'🎙 녹음 시작':task==='vowel'?'🎙 아—— 소리 녹음 시작':'🎙 문장 읽기 녹음 시작';
+  el('record').disabled=!serviceReady||!liveMicrophone();
   busy=false;
   updateResponseProgress();
 
-  setStatus(serviceReady?(task==='response'?'질문을 읽어 보고, 준비되면 내 경험으로 답하세요.':
-    i===0?'보이는 문장을 그대로 읽으세요.':'아—— 소리를 길고 일정하게 내세요.'):
-    '마이크 분석 서버 연결을 확인해주세요.');
+  setStatus(!serviceReady?'분석 서버 연결을 확인해주세요.':
+    task==='response'?'':i===0?'':'');
+  // In question mode the stimulus is ONLY the question, not a sentence to repeat.
   showTaskTransition(i);
 }
-function newAssessment(){
+async function newAssessment(){
   clearTaskTransition();
+  if(preparingAssessment)return;
   if(!el('server-consent').checked){
-    el('consent-message').textContent='시작하려면 필수 음성 분석 동의를 선택해 주세요.';
+    el('consent-message').textContent='기본 음성 분석을 선택해야 검사할 수 있습니다.';
+    el('analysis-consent-settings').open=true;
     return;
   }
-  assessmentGeneration++;
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
+    el('method-picker').hidden=false;
+    el('microphone-preflight').hidden=false;
+    el('microphone-preflight').textContent='이 브라우저는 마이크 녹음을 지원하지 않습니다. Chrome 또는 Safari에서 다시 시도해 주세요.';
+    return;
+  }
+  preparingAssessment=true;
+  const generation=++assessmentGeneration;
+  // Restart also discards an already prepared microphone, so the permission
+  // lifecycle belongs to assessment setup, NEVER to a question/record click.
+  cancelCapture(true);
   completed={};report=null;
   if(analysisTimer){clearInterval(analysisTimer);analysisTimer=0;}
-  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,connected:false,detail:null,percent:0,confirmedPercent:0,lastServerHeartbeat:null,startedAt:0,history:[]};
-  // Consent is collected explicitly once before recording, not reset between tasks.
-  el('method-picker').hidden=true;
-  showStage(0);
-  return checkService();
+  voiceProgress={status:'idle',research:false,extended:false,completed:0,total:0,phase:null,
+    connected:false,detail:null,percent:0,confirmedPercent:0,lastServerHeartbeat:null,
+    startedAt:0,history:[]};
+  el('choose-self').disabled=true;
+  el('method-picker').hidden=false;
+  const notice=el('microphone-preflight');
+  notice.hidden=false;
+  notice.textContent='마이크 사용을 허용해 주세요. 지금 한 번만 확인합니다.';
+  try{
+    // Request browser permission directly inside the explicit button action,
+    // BEFORE the first full-screen stimulus or transition is shown.
+    const micRequest=navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    const statusRequest=checkService();
+    const captured=await micRequest;
+    if(generation!==assessmentGeneration){captured.getTracks().forEach(t=>t.stop());return;}
+    if(!captured.getAudioTracks?.().some(t=>t.readyState==='live')){
+      captured.getTracks().forEach(t=>t.stop());
+      throw Error('AUDIO_INPUT_NOT_LIVE');
+    }
+    preparedMicrophone=captured;stream=captured;
+    notice.textContent='마이크 준비 완료 · 분석 서버 확인 중';
+    await statusRequest;
+    if(generation!==assessmentGeneration)return;
+    if(!serviceReady)throw Error('ANALYSIS_SERVER_NOT_READY');
+    notice.textContent='마이크 및 분석 서버 준비 완료';
+    el('method-picker').hidden=true;
+    showStage(0);
+  }catch(e){
+    if(generation!==assessmentGeneration)return;
+    cancelCapture(true);
+    el('method-picker').hidden=false;
+    el('self-panel').hidden=true;
+    notice.hidden=false;
+    notice.textContent=e?.name==='NotAllowedError'||e?.name==='PermissionDeniedError'?
+      '마이크 권한이 거부됐습니다. 브라우저 주소창에서 마이크를 허용하고 다시 누르세요.':
+      e?.message==='ANALYSIS_SERVER_NOT_READY'?'분석 서버에 연결되지 않았습니다. 다시 시도해 주세요.':
+      '마이크를 준비하지 못했습니다. 기기 연결과 브라우저 권한을 확인한 뒤 다시 누르세요.';
+  }finally{
+    preparingAssessment=false;
+    updateConsentStart();
+  }
 }
 function mergeResult(task,data,audioDurationMs=null){
   if(task==='read')completed.pronunciation=data.pronunciation;
@@ -871,7 +928,7 @@ function output(shouldScroll=true){
 }
 function finishStage(){
   el('after-actions').hidden=true;
-  if(index===2){output();return;}
+  if(index===2){closeMicrophone(true);output();return;}
   showStage(index+1);
 }
 function checkConsent(){
@@ -1122,15 +1179,10 @@ async function startRecording(){
   el('record').disabled=true;
   setStatus('마이크 연결 중…');
   try{
-    if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)
-      throw Error('이 브라우저에서 마이크 녹음을 지원하지 않습니다.');
-    // The same direct microphone-capture code is used for all three tasks.
-    // No TTS or speaker route change occurs while capturing the answer.
-    const captured=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-    if(session!==recordingSession){
-      captured.getTracks().forEach(track=>track.stop());return;
-    }
-    stream=captured;
+    if(!liveMicrophone())throw Error('MICROPHONE_PREPARATION_LOST');
+    // No getUserMedia here: all browser permission and device setup finished
+    // before showing the very first full-screen task.
+    stream=preparedMicrophone;
     const chunks=[];
     recorder=new MediaRecorder(stream);
     // Keep the capture's own recorder reference: an error may clear the
@@ -1156,9 +1208,10 @@ async function startRecording(){
       beginAutoMonitor(task);
       el('stop').hidden=false;
       el('stop').disabled=false;
-      if(isResponse)el('record-label').textContent='● 내 대답 녹음 중';
+      if(isResponse)el('record-label').textContent='● 녹음 중';
       el('record').hidden=true;
-      setStatus(task==='vowel'?'● 녹음 중 · 아— 소리를 유지하면 자동 종료':
+      setStatus(task==='response'?'':task==='vowel'?
+        '● 녹음 중 · 아— 소리를 유지하면 자동 종료':
         '● 녹음 중 · 말하기를 마치면 자동 종료됩니다.');
     };
     captureRecorder.onstop=()=>{
@@ -1207,8 +1260,8 @@ async function startRecording(){
   }catch(e){
     if(session!==recordingSession)return;
     recorder=null;closeMicrophone();
-    el('record').disabled=false;
-    setStatus('마이크 녹음 시작 실패: '+friendlyError(e),'error');
+    el('record').disabled=!liveMicrophone();
+    setStatus('녹음을 시작하지 못했습니다. 처음 검사 화면에서 마이크를 다시 연결해 주세요.','error');
   }
 }
 el('check-connection').addEventListener('click',checkService);
@@ -1228,11 +1281,12 @@ async function probeResearchAvailability(){
 }
 function updateConsentStart(){
   const required=el('server-consent').checked;
-  el('choose-self').disabled=!required;
-  el('choose-self').textContent=required?'선택한 항목으로 검사 시작 →':'필수 동의를 선택하고 검사 시작 →';
+  el('choose-self').disabled=preparingAssessment||!required;
+  el('choose-self').textContent=preparingAssessment?'마이크 준비 중…':
+    required?'위 항목에 동의하고 마이크 연결 →':'기본 음성 분석을 선택해 주세요';
   el('consent-message').textContent=required?
-    '동의 확인 완료 · 검사 중 추가 동의 화면은 나타나지 않습니다.':
-    '원하는 항목을 직접 선택하세요. 선택 동의 없이도 2·3단계를 진행할 수 있습니다.';
+    '검사 시작 전에 필요한 동의와 마이크 권한을 끝냅니다.':
+    '기본 음성 분석을 선택해야 진행할 수 있습니다.';
 }
 for(const id of ['server-consent','azure-consent','pitt-consent','extended-consent']){
   el(id).addEventListener('change',updateConsentStart);
@@ -1246,7 +1300,7 @@ updateConsentStart();
 void probeResearchAvailability();
 el('choose-self').addEventListener('click',newAssessment);
 el('choose-retell').addEventListener('click',()=>{
-  cancelCapture();el('method-picker').hidden=true;
+  cancelCapture(true);el('method-picker').hidden=true;
   el('self-panel').hidden=true;el('result-view').hidden=true;el('retell-panel').hidden=false;
 });
 el('back-method').addEventListener('click',()=>{
@@ -1315,5 +1369,5 @@ el('download').addEventListener('click',()=>{
 window.addEventListener('pagehide',()=>{
   clearTaskTransition();
   if(analysisTimer)clearInterval(analysisTimer);
-  cancelCapture();cleanupAudio();
+  cancelCapture(true);cleanupAudio();
 });
