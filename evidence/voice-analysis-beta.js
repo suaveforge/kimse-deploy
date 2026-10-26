@@ -1281,6 +1281,15 @@ async function probeResearchAvailability(){
 }
 function updateConsentStart(){
   const required=el('server-consent').checked;
+  const scope=[];
+  if(required)scope.push('기본 음성 분석');
+  if(el('azure-consent').checked)scope.push('Microsoft Azure 발음 평가(음성 전송)');
+  if(el('pitt-consent').checked)scope.push('Pitt AD/CN 연구 모델');
+  if(extendedReady&&el('extended-consent').checked)scope.push('Pitt 전체 융합·AI-Hub 추가 연구 AI');
+  el('consent-scope-summary').textContent=scope.length?
+    '선택한 분석: '+scope.join(' · ')+'. 아래에서 변경할 수 있습니다.':
+    '아직 선택된 분석이 없습니다.';
+
   el('choose-self').disabled=preparingAssessment||!required;
   el('choose-self').textContent=preparingAssessment?'마이크 준비 중…':
     required?'위 항목에 동의하고 마이크 연결 →':'기본 음성 분석을 선택해 주세요';
