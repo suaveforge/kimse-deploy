@@ -162,27 +162,102 @@ main{min-width:0}
 @keyframes kimse-scan{to{background-position:-220% 0}}
 @media(max-width:540px){.kimse-analysis{padding:15px 14px}.kimse-analysis__orb{width:78px;height:78px;flex-basis:78px}.kimse-analysis__pct{font-size:20px}.kimse-analysis__phases{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.kimse-analysis__phase{font-size:10px;min-height:51px}.kimse-analysis__title{font-size:16px}.kimse-finding{padding:17px 16px}}
 @media(prefers-reduced-motion:reduce){.kimse-analysis::before,.kimse-analysis__orb::after,.kimse-analysis__phase::before{animation:none!important}.kimse-analysis__fill{transition:none}}
+
+/* Three tasks stay visible. Strong verb-first cards; no extra countdown before capture. */
+.voice-eyebrow{display:block;font-size:10px;letter-spacing:.14em;font-weight:850;color:#267f71}
+.voice-intro h1{font-size:clamp(26px,4vw,33px);margin:10px 0}.voice-intro-sub{font-size:14px;color:#556e69}
+.voice-intro-path{display:flex;gap:7px;flex-wrap:wrap;margin:17px 0 24px}.voice-intro-path span{background:#eff7f4;border:1px solid #d8ebe3;color:#3b675f;border-radius:8px;padding:9px 12px;font-size:12px}.voice-intro-path b{color:#125d51}
+.voice-consents{padding:17px;border:1px solid #d9e8e2;border-radius:17px;background:#fbfefd;margin-top:12px}
+.voice-consent-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.voice-consent-top h2{font-size:19px;margin:0}
+.voice-consent-all{min-height:38px;border:1px solid #b5d8cc;color:#126957;background:#e8f6ef;border-radius:10px;font-weight:800;padding:7px 13px}
+.voice-consent-choice{background:white;border:1px solid #e0ede7;padding:12px;border-radius:12px;margin:9px 0;align-items:center}
+.voice-consent-choice strong{font-weight:830}.voice-consent-choice small{display:block;font-size:12px;color:#677e75;margin-top:3px;line-height:1.5}
+.voice-consent-required{border-color:#91cab8}.voice-consent-message{font-size:12px;color:#58746b;margin:8px 3px 0}
+.voice-consent-extra{margin-top:6px;font-size:12px}.voice-consent-extra p{font-size:12px;margin-top:8px}
+.voice-start{width:100%;margin-top:17px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.voice-start:disabled{opacity:.6}
+.voice-secondary-tools{margin-top:18px}.voice-secondary-tools a{display:block;font-size:14px;margin:12px 0}.voice-secondary-tools button{width:100%}
+.voice-test-header{display:flex;align-items:center;justify-content:space-between;gap:8px}.voice-test-header h2{font-size:25px;margin:4px 0}
+.voice-current-step{font-size:13px;font-weight:800;color:#115e51;margin:-14px 0 12px}
+.voice-task-count{font-variant-numeric:tabular-nums}.voice-task-stack{display:grid;grid-template-columns:1fr;gap:11px}
+.voice-task-card{background:#f8fbfa;border:1px solid #dce8e4;border-radius:18px;padding:15px 16px;opacity:.78;transition:border-color .2s,background .2s,box-shadow .2s,opacity .2s}
+.voice-task-card[data-state="current"]{border:2px solid #117667;background:#f8fefa;box-shadow:0 7px 21px rgba(18,96,78,.09);opacity:1}
+.voice-task-card[data-state="done"]{background:#f4f8f6;opacity:.77;border-color:#d4e5de}
+.voice-task-bar{display:flex;align-items:center;gap:11px}.voice-number{display:grid;place-items:center;width:37px;height:37px;flex:none;border-radius:12px;background:#deeee7;color:#226e5d;font-weight:850;font-size:17px}
+.voice-task-card[data-state="current"] .voice-number{background:#106f61;color:white}.voice-task-bar>div{flex:1;min-width:0}
+.voice-task-action{font-size:clamp(17px,3.2vw,21px);font-weight:870;letter-spacing:-.035em;color:#1c4d44}
+.voice-task-sub{font-size:12px;color:#68827a;margin-top:3px;line-height:1.35}
+.voice-task-state{display:inline-flex;flex:none;border:1px solid #d6e6de;border-radius:20px;padding:5px 8px;font-size:10px;color:#47766b;font-weight:800}
+.voice-task-card[data-state="current"] .voice-task-state{color:#fff;background:#106f61;border-color:#106f61}
+.voice-task-stimulus,.voice-response-pair,.voice-vowel-stimulus{margin-top:13px}
+.voice-read-stimulus{display:flex;flex-direction:column;gap:6px;padding:15px 16px;border-radius:13px;background:#fff;border:1px solid #d6e6e1}
+.voice-stimulus-tag{font-size:11px;font-weight:800;letter-spacing:.02em;color:#217a6a}
+.voice-read-stimulus strong{font-size:clamp(20px,4vw,29px);line-height:1.6;font-weight:760;word-break:keep-all;color:#1c4542}
+.voice-read-arrow{color:#117668;font-size:12px;font-weight:800}
+.voice-response-pair{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.voice-question-bubble,.voice-answer-bubble{border-radius:13px;min-height:106px;padding:13px}
+.voice-question-bubble{background:white;border:1px solid #d3e7dd}.voice-answer-bubble{background:#dff4ed;border:1px solid #b8e1d2}
+.voice-question-bubble strong,.voice-answer-bubble strong{display:block;font-size:clamp(15px,3vw,18px);line-height:1.5;margin-top:6px;word-break:keep-all}
+.voice-question-bubble strong{color:#334f4d}.voice-answer-bubble strong{color:#126052}
+.voice-answer-mic{display:block;letter-spacing:.2em;color:#249480;margin-top:9px}
+.voice-vowel-stimulus{text-align:center;background:linear-gradient(90deg,#ecf8f3,#f9fffc);border:1px solid #d8eae0;border-radius:13px;padding:11px}
+.voice-vowel-stimulus strong{display:block;font-size:clamp(32px,6vw,48px);line-height:1.5;color:#086f64;font-weight:850;letter-spacing:.055em}
+.voice-vowel-stimulus>span:last-child{display:block;color:#547c70;font-size:12px;font-weight:700}
+.voice-live-controls{margin-top:14px;padding-top:8px;border-top:1px solid #dcebe5}
+.voice-live-controls .actions{margin-top:8px}
+.voice-task-help{margin-top:14px}.voice-task-help summary{font-size:13px}
+#meter-wrap{margin:10px 0}
+#self-panel>.progressTrack{margin:12px 0 20px}
+@media(max-width:540px){.voice-task-card{padding:12px}.voice-task-bar{gap:8px}.voice-number{width:33px;height:33px;font-size:15px}.voice-task-state{font-size:9px;padding:4px 6px}.voice-response-pair{grid-template-columns:1fr}.voice-question-bubble,.voice-answer-bubble{min-height:76px}.voice-read-stimulus{padding:12px}.voice-consents{padding:12px}.voice-intro-path{gap:5px}.voice-intro-path span{padding:8px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){.voice-task-card{transition:none}}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석 · 베타</span></div><a class="back" href="./voice-analysis-demo.html">← 안정판으로</a></header>
 <section id="method-picker" class="panel">
-<h1>베타 음성 분석 테스트</h1>
-<p class="beta-mode-note">안정판과 분리된 실험 환경입니다. 동일 녹음의 WebRTC·Silero 음성 구간을 비교하며, 정확도 우열은 판단하지 않습니다.</p>
-<p>먼저 셀프 테스트로 세 과제를 진행합니다.</p><p class="small" style="margin-top:10px">현재 베타는 음성 특징 3종을 측정하며, 2단계에서 별도 동의 시 학습 완료된 영어 Pitt AD/CN 분류기의 연구용 결과를 확인할 수 있습니다. 한국어 임상 검증이나 치매 진단 기능은 아닙니다.</p><p style="font-size:12px;margin-top:8px;color:#718d84">Updated 2026.10.26 · 연구용 판별 Beta 2</p><a href="./voice-pronunciation-onset.html" class="primary" style="display:block;min-height:56px;text-decoration:none;text-align:center;margin-top:14px;padding:15px;background:#126f62">첫 단어 녹음·발음 오류 진단 ↗</a>
-<div class="method-grid">
-<button type="button" id="choose-self" class="method"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg><strong>셀프 테스트</strong><span>3단계 · 직접 녹음</span></button>
-<button type="button" id="choose-retell" class="method" disabled aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16.6v2.8a2 2 0 0 1-2.2 2.1A18.6 18.6 0 0 1 2.5 5.2 2 2 0 0 1 4.6 3h2.8a2 2 0 0 1 2 1.7l.5 2.9a2 2 0 0 1-.6 1.8L7.6 11a15 15 0 0 0 5.4 5.4l1.6-1.7a2 2 0 0 1 1.8-.6l2.9.5a2 2 0 0 1 1.7 2.1Z"/></svg><strong>AI 통화</strong><span>베타 통화 분석 준비 중</span></button>
-</div></section>
+<div class="voice-intro"><span class="voice-eyebrow">KIMSE · VOICE EVIDENCE</span>
+<h1>목소리로 하는 3가지 검사</h1>
+<p class="voice-intro-sub">읽기 → 내 이야기로 답하기 → ‘아—’ 소리 내기. 검사 순서와 방법은 다음 화면에서도 계속 보입니다.</p>
+<div class="voice-intro-path" aria-label="세 가지 검사 과제"><span>01 <b>그대로 읽기</b></span><span>02 <b>내 말로 답하기</b></span><span>03 <b>아—— 발성</b></span></div>
+</div>
+<section class="voice-consents" aria-labelledby="consent-heading">
+<div class="voice-consent-top"><h2 id="consent-heading">시작 전에 한 번만 동의</h2><button id="consent-all" type="button" class="voice-consent-all">전체 동의</button></div>
+<label class="consent voice-consent-choice voice-consent-required"><input id="server-consent" type="checkbox"><span><strong>필수 · 음성 분석</strong><small>녹음한 목소리를 서버에서 분석하고 원본은 보존하지 않습니다.</small></span></label>
+<label class="consent voice-consent-choice" id="azure-row"><input id="azure-consent" type="checkbox"><span><strong>선택 · 발음 정확도 평가</strong><small>1단계 음성을 Microsoft Azure에 전송하여 발음을 평가합니다.</small></span></label>
+<label class="consent voice-consent-choice" id="pitt-row"><input id="pitt-consent" type="checkbox"><span><strong>선택 · AI 연구용 음향 패턴 분류</strong><small>2단계 음성을 Pitt 기반 연구 모델에 적용합니다. 한국어 임상 검증 전이며 질병 진단이 아닙니다.</small></span></label>
+<p id="consent-message" class="voice-consent-message" role="status" aria-live="polite">원하는 항목을 직접 선택하세요. 선택 동의 없이도 2·3단계를 진행할 수 있습니다.</p>
+<details class="voice-consent-extra"><summary>동의 범위와 분석 방식 자세히 보기 <span aria-hidden="true">?</span></summary><p>필수 동의는 서버 음성 분석을 위한 동의입니다. Azure 및 Pitt 연구용 분류는 각각 독립된 선택 항목으로 미동의 시 해당 결과를 ‘미측정’으로 표시합니다. 원본 음성 및 대화 내용은 오류 로그에 기록하지 않습니다.</p></details>
+</section>
+<button type="button" id="choose-self" class="primary voice-start" disabled>필수 동의를 선택하고 검사 시작 <span aria-hidden="true">→</span></button>
+<details class="voice-secondary-tools"><summary>다른 검사 방식 <span aria-hidden="true">?</span></summary>
+<a href="./voice-pronunciation-onset.html">첫 단어 녹음·발음 오류 확인</a>
+<button type="button" id="choose-retell" class="secondary" disabled aria-disabled="true">AI 통화 검사 · 준비 중</button>
+</details>
+</section>
 <section id="self-panel" class="panel" hidden>
-<div class="topline"><h2>셀프 테스트</h2><span id="progress">1 / 3</span></div><div class="progressTrack"><div id="progressFill"></div></div>
-<p id="stage-title" class="small" style="text-align:center;font-weight:750">1단계 · 문장 읽기</p>
-<p id="prompt">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</p>
-
+<div class="voice-test-header"><div><span class="voice-eyebrow">3 TASKS · SINGLE SCREEN</span><h2>목소리 검사</h2></div><span id="progress" class="voice-task-count">1 / 3</span></div>
+<div class="progressTrack"><div id="progressFill"></div></div>
+<p id="stage-title" class="voice-current-step" aria-live="polite">1단계 · 문장 읽기</p>
+<div id="task-overview" class="voice-task-stack" aria-label="세 단계의 음성 과제">
+<article id="task-card-read" class="voice-task-card" data-state="current" aria-current="step">
+<div class="voice-task-bar"><span class="voice-number">01</span><div><div class="voice-task-action">그대로 읽기</div><div class="voice-task-sub">보이는 글자를 소리 내어 읽어요</div></div><span id="task-state-read" class="voice-task-state">지금 할 차례</span></div>
+<div class="voice-task-stimulus voice-read-stimulus"><span class="voice-stimulus-tag">읽을 문장</span><strong id="read-text">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</strong><span class="voice-read-arrow" aria-hidden="true">↳ 소리 내어 그대로</span></div>
+</article>
+<article id="task-card-response" class="voice-task-card" data-state="upcoming">
+<div class="voice-task-bar"><span class="voice-number">02</span><div><div class="voice-task-action">내 이야기로 대답하기</div><div class="voice-task-sub">글자를 따라 읽지 않고 직접 말해요</div></div><span id="task-state-response" class="voice-task-state">다음 차례</span></div>
+<div class="voice-response-pair">
+<div class="voice-question-bubble"><span class="voice-stimulus-tag">낌새의 질문 <span aria-hidden="true">?</span></span><strong id="response-question">녹음을 시작하면 질문이 나타나요</strong></div>
+<div class="voice-answer-bubble"><span class="voice-stimulus-tag">내가 할 일</span><strong>질문에 대한 내 경험을 말하기</strong><span class="voice-answer-mic" aria-hidden="true">● ━━━ ≋ ━━━</span></div>
+</div>
+</article>
+<article id="task-card-vowel" class="voice-task-card" data-state="upcoming">
+<div class="voice-task-bar"><span class="voice-number">03</span><div><div class="voice-task-action">‘아—’ 길게 소리 내기</div><div class="voice-task-sub">문장을 읽지 않고 한 소리만 내요</div></div><span id="task-state-vowel" class="voice-task-state">마지막 차례</span></div>
+<div class="voice-vowel-stimulus"><span class="voice-stimulus-tag">낼 소리</span><strong aria-label="아 소리를 길게">아————</strong><span>한 번에 길게 · 자동 종료</span></div>
+</article>
+</div>
+<p id="prompt" hidden>오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</p>
+<div class="voice-live-controls" id="voice-live-controls">
 <select id="task" hidden aria-label="측정 과제"><option value="read">읽기</option><option value="response">질문 응답</option><option value="vowel">모음</option></select>
 <div id="meter-wrap" aria-live="off"><div class="liveheader"><span id="record-state"><span class="dot"></span><span id="record-label">녹음 대기</span></span><span id="elapsed">00:00</span></div><canvas id="levelCanvas" width="560" height="100" aria-label="마이크 입력 음량 표시"></canvas><p id="signal-label">녹음을 시작하면 목소리에 따라 움직입니다.</p></div>
-<label class="consent"><input id="server-consent" type="checkbox"><span>음성 분석에 동의합니다.</span></label>
-<label class="consent" id="azure-row"><input id="azure-consent" type="checkbox"><span>선택 사항: 발음 평가를 위해 Microsoft Azure로 음성을 전송하는 데 동의합니다. 동의하지 않아도 나머지 검사에 참여할 수 있습니다.</span></label>
-<button id="skip-pron" type="button" class="secondary" style="width:100%;margin-bottom:12px">발음 평가 건너뛰고 질문 응답으로</button>
-<label class="consent" id="pitt-row" hidden><input id="pitt-consent" type="checkbox"><span><strong>별도 선택 · 연구용 AI 정상/AD 패턴 분류</strong><span style="display:block;font-size:12px;font-weight:400;line-height:1.5;margin-top:4px">영어 Pitt 학습 모델을 이 답변 음성에 시험 적용합니다. 한국어 임상 정확도 미검증·MCI 미지원·치매 진단 불가. 원음은 분석 후 폐기됩니다.</span></span></label>
+<details id="task-other-actions" class="voice-task-help"><summary>재검사·단계 건너뛰기 <span aria-hidden="true">?</span></summary><button id="skip-pron" type="button" class="secondary" style="width:100%">발음 평가 건너뛰기</button></details>
 <div class="actions" id="recording-actions"><button id="record" class="primary" type="button">🎙 녹음 시작</button><button id="stop" class="secondary" type="button" disabled>■ 녹음 종료</button></div>
 <audio id="preview" controls hidden preload="none" aria-label="녹음 확인"></audio>
 <div id="quick-status" role="status" aria-live="polite">분석 서버 상태를 확인하고 있습니다.</div><section class="kimse-analysis" id="response-progress" data-mode="pending" hidden aria-label="2단계 음성 분석 진행 정보">
@@ -193,7 +268,8 @@ main{min-width:0}
 <div id="after-actions" class="actions" hidden><button id="quick-analyze" type="button" class="primary">다시 분석</button><button id="skip-stage" type="button" class="secondary">측정 없이 다음</button></div>
 <button id="error-copy" class="secondary" type="button" hidden style="font-size:14px;min-height:43px;width:100%;margin-top:8px">오류 정보 복사 (음성 미포함)</button>
 <details><summary>녹음 파일을 직접 선택하려면</summary><input id="audio-file" type="file" accept="audio/*" aria-label="녹음 파일 선택"></details>
-<button id="new-session" type="button" class="secondary" style="margin-top:24px;width:100%">처음부터 다시</button>
+<details class="voice-task-help"><summary>검사 다시 시작하기 <span aria-hidden="true">?</span></summary><button id="new-session" type="button" class="secondary" style="width:100%">처음부터 다시</button></details>
+</div>
 </section>
 <section id="retell-panel" class="panel" hidden><h1>AI 통화로 검사</h1><p>AI와 대화하며 음성을 분석합니다.</p><div style="margin-top:24px"><a class="primary" href="./retell-guest.html">AI 통화 시작하기</a></div><p class="retell-note">동의 후 바로 통화할 수 있습니다. 운영자 코드가 필요하지 않습니다. 통화에서 측정 가능한 지표만 표시합니다.</p><button id="back-method" type="button" class="secondary" style="margin-top:26px;width:100%">다른 방법 선택</button></section>
 <section id="result-view" hidden>
@@ -234,4 +310,4 @@ main{min-width:0}
 <article id="beta-comparison" class="result beta-compare" aria-live="polite"><h2>음성 구간 모델 비교</h2><p>2단계 응답 분석 후 확인할 수 있습니다.</p></article>
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261027-clinical-progress1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-tasks1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
