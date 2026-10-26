@@ -19,6 +19,7 @@ let responsePreRollMs=0,responseSoundHasPreRoll=false;
 let busy=false,recordingSession=0,serviceReady=false,researchReady=false;
 let extendedReady=false,extendedModelNames=[];
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
+let vowelOnsetMs=null,vowelLastVoiceMs=null,vowelVoiceFrames=0;
 let noiseFloor=.003,autoStopReason=null;
 let captureStartConfirmed=false,captureStartWatchdog=0;
 // UI capture duration parameters only. These ARE NOT speech-disorder thresholds.
@@ -27,7 +28,7 @@ let captureStartConfirmed=false,captureStartWatchdog=0;
 const RECORD_LIMITS={
   read:{minimumMs:3500,silenceAfterMs:2600,maxMs:25000},
   response:{minimumMs:6500,silenceAfterMs:5000,maxMs:29000},
-  vowel:{minimumMs:5500,silenceAfterMs:null,maxMs:5500}
+  vowel:{minimumMs:5500,silenceAfterMs:null,maxMs:11000}
 };
 const RESPONSE_QUESTION='어제 하루 동안 기억에 남는 일은 무엇이었나요?';
 // Anonymous per-browser quota scope, not an identity or a login token.
@@ -179,13 +180,15 @@ function stopAutoMonitor(){
   if(autoStopTimer)clearTimeout(autoStopTimer);
   autoStopTimer=0;
   autoVoiceSeen=false;lastActiveVoiceMs=null;voiceAboveFrames=0;
+  vowelOnsetMs=null;vowelLastVoiceMs=null;vowelVoiceFrames=0;
   activeRecordingTask=null;
 }
 function requestRecordingStop(reason){
   if(recorder?.state!=='recording')return false;
   autoStopReason=reason;
   el('stop').disabled=true;
-  setStatus(reason==='vowel_time'?'5.5초 발성 녹음 완료 · 분석을 시작합니다.':
+  setStatus(reason==='vowel_time'?'연속 발성 녹음 완료 · 분석을 시작합니다.':
+    reason==='vowel_timeout'?'녹음 종료 · 유효한 발성 구간을 확인합니다.':
     reason==='silence_after_speech'?'발화 종료 감지 · 분석을 시작합니다.':
     reason==='maximum_duration'?'최대 녹음 시간에 도달했습니다. 분석을 시작합니다.':
     '녹음 종료 · 분석을 시작합니다.');
@@ -195,7 +198,24 @@ function requestRecordingStop(reason){
 function watchRecordingActivity(rms){
   if(!activeRecordingTask||recorder?.state!=='recording')return;
   const task=activeRecordingTask;
-  if(task==='vowel')return; // vowel stops by elapsed samples, not volume.
+  if(task==='vowel'){
+    const now=performance.now();
+    const threshold=Math.max(.014,Math.min(.07,noiseFloor*3.5));
+    if(rms<threshold*.55)noiseFloor=noiseFloor*.99+rms*.01;
+    if(rms>threshold){
+      vowelVoiceFrames++;
+      if(vowelVoiceFrames>=4){
+        if(vowelOnsetMs===null)vowelOnsetMs=now;
+        vowelLastVoiceMs=now;
+      }
+    }else{
+      vowelVoiceFrames=0;
+      if(vowelOnsetMs!==null && vowelLastVoiceMs!==null && now-vowelLastVoiceMs>650){
+        vowelOnsetMs=null;vowelLastVoiceMs=null;
+      }
+    }
+    return;
+  }
   const now=performance.now();
   const elapsed=now-recordingStarted;
   // Slowly estimate ambient noise only in quiet frames. This detector decides
@@ -226,11 +246,16 @@ function beginAutoMonitor(task){
     if(recorder?.state!=='recording'||activeRecordingTask!==task)return;
     const elapsed=performance.now()-start;
     if(task==='vowel'){
-      const remain=Math.max(0,(conf.maxMs-elapsed)/1000);
-      el('signal-label').textContent='아— 소리를 유지해 주세요 · '+remain.toFixed(1)+'초 남음';
+      const voicedMs=vowelOnsetMs===null?0:Math.max(0,performance.now()-vowelOnsetMs);
+      el('signal-label').textContent=vowelOnsetMs===null?
+        '아— 소리를 내면 발성 길이를 자동으로 확인합니다.':
+        '아— 소리를 그대로 유지해 주세요 · '+(Math.max(0,conf.minimumMs-voicedMs)/1000).toFixed(1)+'초';
+      if(voicedMs>=conf.minimumMs&&vowelLastVoiceMs!==null&&performance.now()-vowelLastVoiceMs<650){
+        requestRecordingStop('vowel_time');return;
+      }
     }
     if(elapsed>=conf.maxMs){
-      requestRecordingStop(task==='vowel'?'vowel_time':'maximum_duration');
+      requestRecordingStop(task==='vowel'?'vowel_timeout':'maximum_duration');
       return;
     }
     autoStopTimer=setTimeout(tick,80);
@@ -315,15 +340,14 @@ function renderVoiceProgress(){
   const last=voiceProgress.phase;
   const message=voiceProgress.status==='failed'?'분석을 완료하지 못했습니다. 기존 측정 결과는 유지됩니다.':
     voiceProgress.status==='done'?'서버 분석 완료 · 측정된 결과를 보고서에 반영했습니다.':
-    pct===null?'서버 처리 단계 확인 중 · 3단계 검사를 계속하세요.':
-    confirmed===0?'서버 분석 요청 수신 중 · 3단계 검사를 계속하세요.':
+    pct===null?'분석 서버가 확인한 처리 단계 대기 중':
+    confirmed===0?'분석 요청 처리 중':
     (voicePhaseMessages[last]||'음성 분석 진행 중')+' · 다음 단계 처리 중';
   for(const prefix of ['response','result-response']){
     const card=el(prefix+'-progress');
     if(!card)continue;
-    const stageVisible=prefix==='response'&&index===2&&el('self-panel').hidden===false;
-    const resultVisible=prefix==='result-response'&&el('result-view').hidden===false;
-    card.hidden=!active||!(stageVisible||resultVisible);
+    const postCapture=prefix==='result-response'&&el('analysis-view').hidden===false;
+    card.hidden=!active||!postCapture;
     if(card.hidden)continue;
     card.setAttribute('data-mode',voiceProgress.status);
     const value=el(prefix+'-progress-value');
@@ -379,6 +403,7 @@ function renderTaskCards(){
     if(!card)continue;
     const state=i<index?'done':i===index?'current':'upcoming';
     card.setAttribute('data-state',state);
+    card.hidden=i!==index;
     if(i===index)card.setAttribute('aria-current','step');
     else card.removeAttribute('aria-current');
     el('task-state-'+task).textContent=state==='done'?'완료':state==='current'?'지금 할 차례':'다음 차례';
@@ -402,7 +427,7 @@ function showStage(i){
   el('prompt').textContent=task==='response'?'녹음 시작을 누르면 질문이 나타납니다.':prompts[task];
   el('response-question').textContent='녹음을 시작하면 질문이 나타나요';
   renderTaskCards();
-  el('signal-label').textContent=task==='vowel'?'5.5초 동안 아— 소리를 내면 자동으로 종료됩니다.':
+  el('signal-label').textContent=task==='vowel'?'아— 소리를 일정하게 유지하면 자동으로 녹음을 마칩니다.':
     task==='response'?'녹음 시작 시 질문이 공개됩니다. 답변을 마치면 자동 종료됩니다.':'문장을 읽고 잠시 멈추면 자동으로 종료됩니다.';
   el('record').hidden=false;
   el('stop').hidden=true;
@@ -414,9 +439,7 @@ function showStage(i){
   el('record').disabled=!serviceReady;
   busy=false;
   updateResponseProgress();
-  if(i>0&&el('task-card-'+task)?.scrollIntoView){
-    el('task-card-'+task).scrollIntoView({block:'center',behavior:'smooth'});
-  }
+
   setStatus(serviceReady?(task==='response'?'이제 녹음을 시작하면 질문이 공개됩니다. 내 말로 대답하세요.':
     i===0?'아래 문장을 그대로 소리 내어 읽으세요.':'아—— 소리 하나를 길게 내세요.'):'분석 서버 연결을 확인해주세요.');
 }
@@ -695,10 +718,16 @@ function output(shouldScroll=true){
   showResearchBinary();
   renderExtendedResearch();
   el('evidence').textContent=JSON.stringify(report,null,2);
+  el('summary-pron').textContent=el('out-pron').textContent;
+  el('summary-delay').textContent=el('out-delay').textContent;
+  el('summary-vowel').textContent=el('out-tremor').textContent;
   el('download').disabled=false;
-  el('self-panel').hidden=true;el('result-view').hidden=false;el('results').hidden=false;
+  el('self-panel').hidden=true;el('results').hidden=false;
+  const unfinished=voiceProgress.status==='pending';
+  el('analysis-view').hidden=!unfinished;
+  el('result-view').hidden=unfinished;
   updateResponseProgress();
-  if(shouldScroll)el('result-view').scrollIntoView({block:'start',behavior:'smooth'});
+  // Each view fits the screen without moving the page or displaying another task.
 }
 function finishStage(){
   el('after-actions').hidden=true;
@@ -877,7 +906,7 @@ async function analyze(){
           completed.responseQuality.serverStatus='unmeasured';
         }
         updateResponseProgress();
-        if(el('result-view').hidden===false)output(false);
+        if(el('result-view').hidden===false||el('analysis-view').hidden===false)output(false);
       }).catch(error=>{
         if(generation!==assessmentGeneration)return;
         completed.responseDelay={status:'unavailable',reason:'VOICE_ANALYSIS_REQUEST_FAILED'};
@@ -890,7 +919,7 @@ async function analyze(){
         completed.responseQuality={serverStatus:'failed',
           errorCode:String(error?.message||'VOICE_ANALYSIS_REQUEST_FAILED').slice(0,90)};
         updateResponseProgress();
-        if(el('result-view').hidden===false)output(false);
+        if(el('result-view').hidden===false||el('analysis-view').hidden===false)output(false);
       });
       finishStage();
       setStatus('2단계 녹음 완료 · 분석은 별도로 진행됩니다. 3단계를 시작해 주세요.','success');
@@ -911,7 +940,9 @@ async function analyze(){
       lastAnalysisError={stage:task,phase:'measurement',httpStatus:200,
         errorCode:String(feature?.status||'feature_not_returned'),pcmDurationMs:Math.round(pcm.length/16)};
       el('error-copy').hidden=false;
-      setStatus('음성 구간을 충분히 추출하지 못했습니다. 재분석하거나 다시 녹음해주세요.','error');
+      setStatus(task==='vowel'?
+        '아— 소리의 연속 구간을 확인하지 못했어요. 마이크 가까이에서 일정하게 5초 이상 내고 다시 녹음해 주세요.':
+        '음성 분석 품질이 부족합니다. 재분석하거나 다시 녹음해주세요.','error');
       el('after-actions').hidden=false;
       return;
     }
@@ -986,7 +1017,7 @@ async function startRecording(){
       el('stop').hidden=false;
       el('stop').disabled=false;
       if(isResponse)el('record-label').textContent='● 답변 녹음 중';
-      setStatus(task==='vowel'?'● 녹음 중 · 5.5초 후 자동 종료':
+      setStatus(task==='vowel'?'● 녹음 중 · 아— 소리를 유지하면 자동 종료':
         '● 녹음 중 · 말하기를 마치면 자동 종료됩니다.');
     };
     captureRecorder.onstop=()=>{
@@ -1081,6 +1112,14 @@ el('back-method').addEventListener('click',()=>{
   el('retell-panel').hidden=true;el('method-picker').hidden=false;
 });
 el('record').addEventListener('click',startRecording);
+el('view-partial').addEventListener('click',()=>{
+  if(el('analysis-view').hidden===false){
+    el('analysis-view').hidden=true;
+    el('result-view').hidden=false;
+    // Results can be viewed without inventing the pending analysis values.
+    el('summary-delay').textContent=el('out-delay').textContent;
+  }
+});
 el('stop').addEventListener('click',()=>{
   if(recorder?.state==='recording'){
     requestRecordingStop('manual');
