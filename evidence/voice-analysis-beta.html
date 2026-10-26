@@ -275,6 +275,27 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 @media(max-width:430px){#task-overview .voice-response-pair{grid-template-columns:1fr}#task-overview .voice-question-bubble,#task-overview .voice-answer-bubble{padding:7px}#task-overview .voice-answer-mic{display:none}}
 @media(max-height:630px){#self-panel .voice-task-sub{display:none}#self-panel .voice-current-step{font-size:11px}#self-panel>.progressTrack{margin:4px 0}#self-panel .voice-read-stimulus{padding:7px}#self-panel .voice-read-stimulus strong{font-size:19px}#voice-live-controls #levelCanvas{height:18px}#voice-live-controls #meter-wrap{padding:5px}#result-view .kimse-finding__scope{display:none}}
 @media(max-height:510px){#voice-live-controls #levelCanvas{display:none}#voice-live-controls #signal-label{display:none}#result-view .kimse-finding__legal,#result-view .kimse-finding__detail{display:none}}
+
+.voice-transition{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:linear-gradient(145deg,#0b2731,#113b43);color:#f5fffb;cursor:pointer;padding:30px;text-align:center}.voice-transition[hidden]{display:none!important}
+.voice-transition__message{font-size:clamp(31px,6vw,64px);line-height:1.3;font-weight:830;letter-spacing:-.052em;word-break:keep-all;animation:kimse-breathe .85s ease-in-out both}
+@keyframes kimse-breathe{0%{opacity:.15;transform:translateY(7px)}55%{opacity:1;transform:translateY(0)}100%{opacity:.92;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.voice-transition__message{animation:none}}
+#result-view .kimse-finding{overflow:visible;z-index:2;position:relative}
+#result-view .kimse-finding__top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#result-view .kimse-finding__title{font-size:clamp(16px,2.4vh,20px);font-weight:820;margin:0;color:#246659}
+#result-view .kimse-finding__result{font-size:clamp(46px,8.7vh,82px)!important;font-weight:880;line-height:1.16!important;letter-spacing:-.065em;color:#0c5c50!important;margin:6px 0 0}
+.ai-result-disclosure{margin:0;position:static;flex:none}.ai-result-disclosure>summary{list-style:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:2px solid #5cafa0;background:#f0f9f5;color:#0a5f50;font-size:22px;font-weight:850;cursor:pointer}
+.ai-result-disclosure>summary::-webkit-details-marker{display:none}
+.ai-result-disclosure__body{position:absolute;top:48px;right:7px;width:min(520px,calc(100% - 14px));max-height:min(66dvh,460px);overflow:auto;background:#fff;box-shadow:0 18px 42px rgba(8,50,45,.24);border:1px solid #b8ded2;border-radius:16px;padding:19px;z-index:30;text-align:left}
+.ai-result-disclosure__body>strong{display:block;margin:5px 0 7px;color:#125e53;font-size:14px}.ai-result-disclosure__body p{font-size:13px;line-height:1.6;color:#344f49;margin:0 0 14px}.ai-result-disclosure__body a{color:#09675b;font-weight:800;font-size:13px}
+.voice-summary-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.voice-summary-actions>.primary{width:100%;min-height:clamp(51px,7vh,65px);display:flex;justify-content:center;align-items:center;font-size:clamp(15px,2.6vh,19px);border-radius:12px;font-weight:850;text-align:center;text-decoration:none}
+.voice-summary-actions .voice-feedback-primary{background:#104d55;border:1px solid #104d55;color:#fff}.voice-summary-actions .voice-feedback-primary:focus-visible{outline:3px solid #8bf0d5;outline-offset:3px}
+#result-details #download{width:100%;margin:6px 0 13px}
+.voice-analysis-events{list-style:none;display:flex;flex-direction:column;gap:7px;margin:12px 0 0;padding:0;max-height:145px;overflow:auto}
+.voice-analysis-events li{font-size:12px;color:#e2f7f0;line-height:1.4;border-left:2px solid #65d6c3;padding:3px 0 3px 11px}
+#analysis-view .kimse-analysis__title{font-size:clamp(19px,2.7vw,24px)}
+@media(max-width:600px){.ai-result-disclosure__body{max-height:55dvh;padding:14px}.voice-summary-actions{gap:7px}.voice-summary-actions>.primary{min-height:49px}.voice-analysis-events li{font-size:11px}}
+@media(max-height:650px){#analysis-view .voice-analysis-events{max-height:87px}#result-view .kimse-finding__result{font-size:clamp(35px,8vh,60px)!important}}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석 · 베타</span></div><a class="back" href="./voice-analysis-demo.html">← 안정판으로</a></header>
 <section id="method-picker" class="panel">
@@ -298,6 +319,7 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 <button type="button" id="choose-retell" class="secondary" disabled aria-disabled="true">AI 통화 검사 · 준비 중</button>
 </details>
 </section>
+<div id="task-transition" class="voice-transition" hidden role="status" aria-live="polite" tabindex="-1"><span id="transition-message" class="voice-transition__message">다음 과제를 준비합니다</span></div>
 <section id="self-panel" class="panel" hidden>
 <div class="voice-test-header"><div><span class="voice-eyebrow">KIMSE / VOICE EXAM</span><h2>목소리 검사</h2></div><span id="progress" class="voice-task-count">1 / 3</span></div>
 <div class="progressTrack"><div id="progressFill"></div></div>
@@ -327,7 +349,7 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 <div class="actions" id="recording-actions"><button id="record" class="primary" type="button">🎙 녹음 시작</button><button id="stop" class="secondary" type="button" disabled>■ 녹음 종료</button></div>
 <details class="voice-task-help"><summary>녹음 재생 · 파일 확인 <span aria-hidden="true">?</span></summary><audio id="preview" controls hidden preload="none" aria-label="녹음 확인"></audio></details>
 <div id="quick-status" role="status" aria-live="polite">분석 서버 상태를 확인하고 있습니다.</div><section class="kimse-analysis" id="response-progress" data-mode="pending" hidden aria-label="2단계 음성 분석 진행 정보">
-<div class="kimse-analysis__top"><div><div class="kimse-analysis__eyebrow">KIMSE · VERIFIED PROCESS</div><h2 class="kimse-analysis__title">2단계 음성 신호 분석</h2><p class="kimse-analysis__status" id="response-progress-message">분석 서버 확인 중</p></div><div class="kimse-analysis__orb" id="response-progress-ring"><span class="kimse-analysis__pct" id="response-progress-value" aria-live="polite">—</span></div></div>
+<div class="kimse-analysis__top"><div><h2 class="kimse-analysis__title">2단계 음성 신호 분석</h2><p class="kimse-analysis__status" id="response-progress-message">분석 서버 확인 중</p></div><div class="kimse-analysis__orb" id="response-progress-ring"><span class="kimse-analysis__pct" id="response-progress-value" aria-live="polite">—</span></div></div>
 <div class="kimse-analysis__rail" role="progressbar" id="response-progress-bar" aria-label="서버가 완료한 음성 분석 단계" aria-valuemin="0" aria-valuemax="100"><div class="kimse-analysis__fill" id="response-progress-fill"></div></div>
 <ol class="kimse-analysis__phases"><li class="kimse-analysis__phase" id="response-step-audio_accepted" data-state="waiting">음성 확인</li><li class="kimse-analysis__phase" id="response-step-webrtc_completed" data-state="waiting">발화 경계</li><li class="kimse-analysis__phase" id="response-step-silero_completed" data-state="waiting">음성 구간</li><li class="kimse-analysis__phase" id="response-step-research_completed" data-state="waiting">AI 패턴 분류</li><li class="kimse-analysis__phase" id="response-step-extended_completed" data-state="waiting">추가 AI 비교</li><li class="kimse-analysis__phase" id="response-step-report_completed" data-state="waiting">보고서 정리</li></ol>
 <p class="kimse-analysis__foot"><span>서버 처리 단계 기준 · 남은 시간 추정 아님</span><span id="response-progress-count">확인 대기</span></p></section><button id="check-connection" type="button" class="secondary" hidden style="width:100%;margin-top:6px">서버 연결 다시 확인</button>
@@ -339,31 +361,34 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 </section>
 <section id="retell-panel" class="panel" hidden><h1>AI 통화로 검사</h1><p>AI와 대화하며 음성을 분석합니다.</p><div style="margin-top:24px"><a class="primary" href="./retell-guest.html">AI 통화 시작하기</a></div><p class="retell-note">동의 후 바로 통화할 수 있습니다. 운영자 코드가 필요하지 않습니다. 통화에서 측정 가능한 지표만 표시합니다.</p><button id="back-method" type="button" class="secondary" style="margin-top:26px;width:100%">다른 방법 선택</button></section>
 <section id="analysis-view" class="panel" hidden aria-label="세 가지 녹음 후 음성 분석 진행 중">
-<div class="voice-analyzing-header"><span class="voice-eyebrow">KIMSE · VERIFIED ANALYSIS</span><h1>세 가지 녹음 완료</h1><p>2단계 음성 분석 결과를 확인하고 있습니다. 확인된 처리 단계만 표시합니다.</p></div>
+<div class="voice-analyzing-header"><h1>녹음이 끝났어요</h1><p>실제 음성 분석 단계와 경과 시간을 확인할 수 있습니다.</p></div>
 <section class="kimse-analysis" id="result-response-progress" data-mode="pending" hidden aria-label="2단계 음성 분석 진행 정보">
-<div class="kimse-analysis__top"><div><div class="kimse-analysis__eyebrow">KIMSE · VERIFIED PROCESS</div><h2 class="kimse-analysis__title">2단계 음성 신호 분석</h2><p class="kimse-analysis__status" id="result-response-progress-message">분석 서버 확인 중</p></div><div class="kimse-analysis__orb" id="result-response-progress-ring"><span class="kimse-analysis__pct" id="result-response-progress-value" aria-live="polite">—</span></div></div>
+<div class="kimse-analysis__top"><div><h2 class="kimse-analysis__title">2단계 음성 신호 분석</h2><p class="kimse-analysis__status" id="result-response-progress-message">분석 서버 확인 중</p></div><div class="kimse-analysis__orb" id="result-response-progress-ring"><span class="kimse-analysis__pct" id="result-response-progress-value" aria-live="polite">—</span></div></div>
 <div class="kimse-analysis__rail" role="progressbar" id="result-response-progress-bar" aria-label="서버가 완료한 음성 분석 단계" aria-valuemin="0" aria-valuemax="100"><div class="kimse-analysis__fill" id="result-response-progress-fill"></div></div>
 <ol class="kimse-analysis__phases"><li class="kimse-analysis__phase" id="result-response-step-audio_accepted" data-state="waiting">음성 확인</li><li class="kimse-analysis__phase" id="result-response-step-webrtc_completed" data-state="waiting">발화 경계</li><li class="kimse-analysis__phase" id="result-response-step-silero_completed" data-state="waiting">음성 구간</li><li class="kimse-analysis__phase" id="result-response-step-research_completed" data-state="waiting">AI 패턴 분류</li><li class="kimse-analysis__phase" id="result-response-step-extended_completed" data-state="waiting">추가 AI 비교</li><li class="kimse-analysis__phase" id="result-response-step-report_completed" data-state="waiting">보고서 정리</li></ol>
-<p class="kimse-analysis__foot"><span>서버 처리 단계 기준 · 남은 시간 추정 아님</span><span id="result-response-progress-count">확인 대기</span></p></section>
+<p class="kimse-analysis__foot"><span>실제 완료된 처리 단계 기준</span><span id="result-response-progress-count">확인 대기</span></p><ol id="analysis-events" class="voice-analysis-events" aria-label="실제 서버 진행 기록"></ol></section>
 <button id="view-partial" class="secondary" type="button">현재까지 결과 먼저 보기</button>
 </section>
 <section id="result-view" hidden>
-<div class="report-heading"><div><span class="eyebrow">KIMSE · EVIDENCE</span><h1>음성 분석 결과</h1></div><span class="report-subtag">3가지 측정</span></div>
-<article class="kimse-finding" id="cognitive-screening-status" aria-label="연구용 AI 음성 패턴 분류 결과">
-<div class="kimse-finding__eyebrow">KIMSE / RESEARCH ACOUSTIC PATTERN</div>
-<h2 class="kimse-finding__title">AI 음성 패턴 분류 결과</h2>
-<div id="research-binary-result" class="kimse-finding__result" role="status" aria-live="polite">연구용 분류 미진행</div>
-<p class="kimse-finding__detail" id="research-binary-note">분석 결과가 도착하면 사용된 모델과 실제 분류 결과를 표시합니다.</p>
-<div class="kimse-finding__scope"><span>분류 범위 CN / AD</span><span>MCI 단계 미지원</span><span>연구용 · 한국어 미검증</span></div>
-<p class="kimse-finding__legal">음성 패턴의 연구용 분류이며 개인의 치매 여부·중증도·위험 확률을 뜻하지 않습니다. Pitt 학습 모델 (CC BY-NC-SA 4.0, 비상업 연구용). <a href="https://huggingface.co/sivdma/acophenotype-pitt-models" target="_blank" rel="noopener noreferrer">모델 출처</a></p>
-</article>
+<div class="report-heading"><div><h1>음성 분석 결과</h1></div></div>
+<article class="kimse-finding" id="cognitive-screening-status" aria-label="AI 음성 분류 결과">
+<div class="kimse-finding__top"><h2 class="kimse-finding__title">AI 분류 결과</h2>
+<details class="ai-result-disclosure" id="ai-result-details"><summary aria-label="AD, CN 결과와 판단 근거 설명 열기" title="분류 의미와 판단 근거">!</summary>
+<div class="ai-result-disclosure__body"><strong>AD · CN은 무슨 뜻일까요?</strong>
+<p><b>AD</b>는 학습자료의 알츠하이머병 그룹, <b>CN</b>은 비교 대상인 인지 정상 그룹입니다. 이 분류는 개인의 치매 진단이나 위험 확률을 뜻하지 않습니다.</p>
+<strong>무엇을 보고 판단했나요?</strong><p id="ai-result-evidence">질문에 답한 목소리의 발화 구간과 음향 특징을 분석해 AD/CN을 비교합니다.</p>
+<strong>모델 정보</strong><p>영어 Pitt 음성으로 학습된 AI 모델입니다. 한국어 임상 정확도와 MCI 구별 능력은 아직 검증되지 않았습니다. 학습 가중치: sivdma/acophenotype-pitt-models, CC BY-NC-SA 4.0.</p>
+<a href="https://huggingface.co/sivdma/acophenotype-pitt-models" target="_blank" rel="noopener noreferrer">모델 출처</a>
+</div></details></div>
+<div id="research-binary-result" class="kimse-finding__result" role="status" aria-live="polite">미측정</div>
+<p id="research-binary-note" hidden></p></article>
 <section class="result-short-summary" aria-label="음성 측정 세 가지 요약">
 <div class="result-metric"><span>01 · 발음</span><strong id="summary-pron">미측정</strong></div>
 <div class="result-metric"><span>02 · 발화</span><strong id="summary-delay">분석 중</strong></div>
 <div class="result-metric"><span>03 · 아— 발성</span><strong id="summary-vowel">미측정</strong></div>
 </section>
-<div class="footer-actions voice-summary-actions"><button id="restart-from-result" class="primary" type="button">다시 검사</button><button id="download" type="button" class="secondary" disabled>결과 저장</button></div>
-<details id="result-details" class="voice-result-details"><summary>측정 그래프 · 추가 AI · 검사 근거 보기 <span aria-hidden="true">?</span></summary>
+<div class="footer-actions voice-summary-actions"><button id="restart-from-result" class="primary" type="button">다시 검사</button><a id="result-feedback" href="./research-collab.html?target=voice-self&amp;origin=self-result" class="primary voice-feedback-primary">건의하기</a></div>
+<details id="result-details" class="voice-result-details"><summary>측정 그래프 · 추가 AI · 검사 근거 보기 <span aria-hidden="true">?</span></summary><button id="download" class="secondary" type="button" disabled>결과 파일 저장</button>
 <div class="results" id="results" aria-label="음성 분석 결과">
 
 <article class="result" id="extended-research-card">
@@ -397,10 +422,10 @@ body:has(#self-panel:not([hidden])) header,body:has(#analysis-view:not([hidden])
 <div class="timeline-viz" id="viz-tremor" aria-label="실제 모음 발성의 주파수 추적"></div>
 <div class="note" id="why-tremor"></div>
 </article></div>
-<div class="research-feedback-entry"><a href="./research-collab.html?target=voice-self&amp;origin=self-result">이 검사 결과에 의견 남기기 ↗</a><span>결과 확인 후 연구 의견 작성 · 파일 첨부 가능</span></div>
+
 
 <article id="beta-comparison" class="result beta-compare" aria-live="polite"><h2>음성 구간 모델 비교</h2><p>2단계 응답 분석 후 확인할 수 있습니다.</p></article>
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></details>
 </section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261027-vowel-viewport1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-uxresearch-speed1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
