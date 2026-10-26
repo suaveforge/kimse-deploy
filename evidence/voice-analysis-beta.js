@@ -289,12 +289,14 @@ async function checkService(){
     if(status.ready!==true||status.evidenceGuestQuickEnabled!==true)throw Error('API_NOT_READY');
     serviceReady=true;
     researchReady=status.researchBinaryAvailable===true;
-    el('pitt-row').hidden=index!==1||!researchReady;
+    if(!researchReady && el('pitt-consent').checked){
+      el('pitt-consent').checked=false;
+      setStatus('연구용 AI 분류를 사용할 수 없어 해당 항목은 미측정으로 진행합니다.','error');
+    }
     el('record').disabled=false;
       setStatus('연결 완료 · 동의 후 녹음을 시작해 주세요.','success');
   }catch(e){
     serviceReady=false;researchReady=false;
-    el('pitt-row').hidden=true;
     el('record').disabled=true;
     el('check-connection').hidden=false;
     setStatus('베타 분석 서버 준비 중입니다. 현재는 안정판 테스트를 이용해주세요.','error');
@@ -363,6 +365,22 @@ function finishVoiceProgress(success){
   renderVoiceProgress();
 }
 function updateResponseProgress(){renderVoiceProgress();}
+function renderTaskCards(){
+  const active=currentTask();
+  for(let i=0;i<tasks.length;i++){
+    const task=tasks[i],card=el('task-card-'+task);
+    if(!card)continue;
+    const state=i<index?'done':i===index?'current':'upcoming';
+    card.setAttribute('data-state',state);
+    if(i===index)card.setAttribute('aria-current','step');
+    else card.removeAttribute('aria-current');
+    el('task-state-'+task).textContent=state==='done'?'완료':state==='current'?'지금 할 차례':'다음 차례';
+  }
+  const currentCard=el('task-card-'+active),controls=el('voice-live-controls');
+  // Position exactly one microphone panel inside the active card.
+  // All task cards remain present in the DOM and in their numbered order.
+  if(currentCard?.appendChild&&controls)currentCard.appendChild(controls);
+}
 function showStage(i){
   cancelCapture();
   index=i;questionEnd=null;questionOffset=null;responsePreRollMs=0;responseSoundHasPreRoll=false;setAudio(null);
@@ -375,28 +393,35 @@ function showStage(i){
   el('progressFill').style.width=((i+1)/3*100)+'%';
   el('stage-title').textContent=(i+1)+'단계 · '+stageNames[i];
   el('prompt').textContent=task==='response'?'녹음 시작을 누르면 질문이 나타납니다.':prompts[task];
+  el('response-question').textContent='녹음을 시작하면 질문이 나타나요';
+  renderTaskCards();
   el('signal-label').textContent=task==='vowel'?'5.5초 동안 아— 소리를 내면 자동으로 종료됩니다.':
     task==='response'?'녹음 시작 시 질문이 공개됩니다. 답변을 마치면 자동 종료됩니다.':'문장을 읽고 잠시 멈추면 자동으로 종료됩니다.';
   el('record').hidden=false;
   el('stop').hidden=true;
-  el('azure-row').hidden=i!==0;
+  el('task-other-actions').hidden=i!==0;
   el('skip-pron').hidden=i!==0;
-  el('pitt-row').hidden=i!==1||!researchReady;
   el('after-actions').hidden=true;
   el('elapsed').textContent='00:00';
-  el('record').textContent=task==='response'?'🎙 질문 열고 녹음 시작':'🎙 녹음 시작';
+  el('record').textContent=task==='response'?'● 나의 답변 말하기 시작':task==='vowel'?'● 아—— 소리 시작':'● 이 문장 읽기 시작';
   el('record').disabled=!serviceReady;
   busy=false;
   updateResponseProgress();
-  setStatus(serviceReady?(task==='response'?'녹음 시작을 누르면 질문이 나타납니다.':
-    i===0?'동의 후 녹음을 시작해 주세요.':'준비되면 녹음 시작을 눌러주세요.'):'분석 서버 연결을 확인해주세요.');
+  if(i>0&&el('task-card-'+task)?.scrollIntoView){
+    el('task-card-'+task).scrollIntoView({block:'center',behavior:'smooth'});
+  }
+  setStatus(serviceReady?(task==='response'?'이제 녹음을 시작하면 질문이 공개됩니다. 내 말로 대답하세요.':
+    i===0?'아래 문장을 그대로 소리 내어 읽으세요.':'아—— 소리 하나를 길게 내세요.'):'분석 서버 연결을 확인해주세요.');
 }
 function newAssessment(){
+  if(!el('server-consent').checked){
+    el('consent-message').textContent='시작하려면 필수 음성 분석 동의를 선택해 주세요.';
+    return;
+  }
   assessmentGeneration++;
   completed={};report=null;
   voiceProgress={status:'idle',research:false,completed:0,total:0,phase:null,connected:false};
-  el('server-consent').checked=false;el('azure-consent').checked=false;
-  el('pitt-consent').checked=false;
+  // Consent is collected explicitly once before recording, not reset between tasks.
   el('method-picker').hidden=true;
   showStage(0);
   return checkService();
@@ -909,7 +934,10 @@ async function startRecording(){
       captureStartWatchdog=0;
       // The question is hidden until the recorder confirms a live capture.
       // Audio onset is relative to capture zero, NOT the end of an audible question.
-      if(isResponse)el('prompt').textContent=RESPONSE_QUESTION;
+      if(isResponse){
+        el('prompt').textContent=RESPONSE_QUESTION;
+        el('response-question').textContent=RESPONSE_QUESTION;
+      }
       beginMeter(stream);
       setRecordingState(true);
       startClock();
@@ -971,6 +999,22 @@ async function startRecording(){
   }
 }
 el('check-connection').addEventListener('click',checkService);
+function updateConsentStart(){
+  const required=el('server-consent').checked;
+  el('choose-self').disabled=!required;
+  el('choose-self').textContent=required?'선택한 항목으로 검사 시작 →':'필수 동의를 선택하고 검사 시작 →';
+  el('consent-message').textContent=required?
+    '동의 확인 완료 · 검사 중 추가 동의 화면은 나타나지 않습니다.':
+    '원하는 항목을 직접 선택하세요. 선택 동의 없이도 2·3단계를 진행할 수 있습니다.';
+}
+for(const id of ['server-consent','azure-consent','pitt-consent']){
+  el(id).addEventListener('change',updateConsentStart);
+}
+el('consent-all').addEventListener('click',()=>{
+  for(const id of ['server-consent','azure-consent','pitt-consent'])el(id).checked=true;
+  updateConsentStart();
+});
+updateConsentStart();
 el('choose-self').addEventListener('click',newAssessment);
 el('choose-retell').addEventListener('click',()=>{
   cancelCapture();el('method-picker').hidden=true;
