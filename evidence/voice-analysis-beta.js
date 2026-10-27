@@ -575,7 +575,7 @@ async function newAssessment(){
     return;
   }
   const wantsResearch=el('pitt-consent').checked;
-  const wantsExtended=el('extended-consent').checked&&!el('extended-row').hidden;
+  const wantsExtended=el('extended-consent').checked;
   preparingAssessment=true;
   const generation=++assessmentGeneration;
   // Restart also discards an already prepared microphone, so the permission
@@ -632,13 +632,18 @@ async function newAssessment(){
     updateConsentStart();
   }
 }
-function mergeResult(task,data,audioDurationMs=null){
+function mergeResult(task,data,audioDurationMs=null,requested={}){
   if(task==='read')completed.pronunciation=data.pronunciation;
   if(task==='response'){
     completed.responseDelay=data.responseDelay;
     completed.responseDelayComparison=data.responseDelayComparison||null;
-    completed.researchBinary=data.researchBinary||{status:'not_requested'};
-    completed.researchComparisons=data.researchComparisons||{status:'not_requested',models:{}};
+    const binary=data.researchBinary,extended=data.researchComparisons;
+    completed.researchBinary=requested.research&&(!binary||binary.status==='not_requested')?
+      {status:'unavailable',reason:'SERVER_MODEL_OUTPUT_MISSING'}:
+      binary||{status:'not_requested'};
+    completed.researchComparisons=requested.extended&&(!extended||extended.status==='not_requested')?
+      {status:'unavailable',reason:'SERVER_MODEL_OUTPUT_MISSING',models:{}}:
+      extended||{status:'not_requested',models:{}};
   }
   if(task==='vowel')completed.vocalTremor=data.vocalTremor;
   if(number(audioDurationMs)&&audioDurationMs>0)completed[task+'AudioDurationMs']=audioDurationMs;
@@ -866,12 +871,20 @@ function showResearchBinary(){
 function renderExtendedResearch(){
   const x=completed.researchComparisons||{status:'not_requested',models:{}};
   const card=el('extended-research-card');
-  card.hidden=x.status==='not_requested';
-  if(card.hidden)return;
+  const skipped=x.status==='not_requested';
+  card.hidden=skipped;
+  if(skipped){
+    el('overview-pitt-full').textContent='미실행';
+    el('overview-aihub217').textContent='미실행';
+    el('overview-pitt-note').textContent='이번 검사에서 추가 AI 사용이 선택되지 않았습니다.';
+    el('overview-aihub-note').textContent='음성 전송·모델 실행 기록이 없습니다.';
+    return;
+  }
   const running=x.status==='pending',models=x.models||{};
   const failures={
     WORKER_TIMED_OUT:'모델 분석 제한 시간 초과',
-    WORKER_UNREACHABLE_OR_INVALID_RESPONSE:'분석 서버 연결 또는 응답 오류'
+    WORKER_UNREACHABLE_OR_INVALID_RESPONSE:'분석 서버 연결 또는 응답 오류',
+    SERVER_MODEL_OUTPUT_MISSING:'요청한 AI 모델의 실행 결과가 서버 응답에서 누락됐습니다.'
   };
   el('extended-research-status').textContent=running?
     '각 모델이 실제 음성을 분석하고 있습니다. 완료되는 대로 결과를 표시합니다.':
@@ -882,27 +895,33 @@ function renderExtendedResearch(){
   el('extended-pitt-value').textContent=running?'실제 분석 중':
     pitt.status==='executed_research_only'?
       ((pitt.binaryTrainingPattern==='CN'||pitt.binaryTrainingPattern==='AD')?
-      pitt.binaryTrainingPattern:'학습 클래스 '+(pitt.rawTrainingClassId??'확인 불가')):
+      pitt.binaryTrainingPattern+' · 학습 패턴':'학습 클래스 '+(pitt.rawTrainingClassId??'확인 불가')):
     '분석 실패';
   el('extended-pitt-note').textContent=pitt.status==='executed_research_only'?
     '4개 스트림 융합 · 학습 그룹 '+String(pitt.rawTrainingClassId??'?')+
     ' · 한국어 임상 판정 아님':
     running?'Pitt 융합 가중치의 응답을 기다리고 있습니다.':
-    (failures[pitt.reason]||pitt.reason||'모델이 유효한 결과를 반환하지 못했습니다.');
+    (failures[pitt.reason||x.reason]||pitt.reason||x.reason||'모델이 유효한 결과를 반환하지 못했습니다.');
   const hub=models.aihub217||{};
   const heads=hub.candidateHeads||{},sci=heads.SCIvsOTHERS,mci=heads.MCIvsAD;
   const valid=hub.status==='executed_research_only'&&
     Number.isFinite(sci?.rawModelOutput)&&Number.isFinite(mci?.rawModelOutput);
   el('extended-aihub-value').textContent=running?'실제 분석 중':
-    valid?'SCI '+Number(sci.rawModelOutput).toFixed(3)+
-      ' · MCI '+Number(mci.rawModelOutput).toFixed(3):
+    valid?'SCIvsOTHERS 원시 '+Number(sci.rawModelOutput).toFixed(3)+
+      ' · MCIvsAD 원시 '+Number(mci.rawModelOutput).toFixed(3):
     '분석 실패';
   el('extended-aihub-note').textContent=valid?
     '공식 VGG16 2개 원시 출력 · 진단 확률이나 3분류 결과가 아닙니다.':
     running?'SCIvsOTHERS·MCIvsAD 두 가중치 모델의 응답을 기다리고 있습니다.':
-    (failures[hub.reason]||hub.reason||'모델이 유효한 결과를 반환하지 못했습니다.');
+    (failures[hub.reason||x.reason]||hub.reason||x.reason||'모델이 유효한 결과를 반환하지 못했습니다.');
   el('extended-research-raw').textContent=running?'서버의 실제 추론 결과 대기 중':
     JSON.stringify(x,null,2);
+  // Reuse the exact per-model status/output, never a fabricated three-class
+  // diagnosis and never hide the result behind 'more details' on mobile.
+  el('overview-pitt-full').textContent=el('extended-pitt-value').textContent;
+  el('overview-aihub217').textContent=el('extended-aihub-value').textContent;
+  el('overview-pitt-note').textContent=el('extended-pitt-note').textContent;
+  el('overview-aihub-note').textContent=el('extended-aihub-note').textContent;
 }
 function output(shouldScroll=true){
   const p=completed.pronunciation||{},d=completed.responseDelay||{},v=completed.vocalTremor||{};
@@ -1122,7 +1141,9 @@ async function analyze(){
       // Never use recordingSession here: showStage() deliberately changes it.
       void requestJob().then(data=>{
         if(generation!==assessmentGeneration)return;
-        mergeResult('response',data,Math.round(pcmLength/16));
+        mergeResult('response',data,Math.round(pcmLength/16),{
+          research:researchRequested,extended:extendedRequested
+        });
         finishVoiceProgress(true);
         if(completed.responseDelay?.status!=='measured'){
           completed.responseQuality.serverStatus='unmeasured';
@@ -1291,9 +1312,17 @@ el('check-connection').addEventListener('click',checkService);
 function setExtendedAvailability(status){
   const models=Array.isArray(status?.extendedResearchModels)?status.extendedResearchModels:[];
   extendedModelNames=models.filter(x=>x==='pitt_full'||x==='aihub217');
-  extendedReady=status?.extendedResearchAvailable===true&&extendedModelNames.length>0;
-  el('extended-row').hidden=!extendedReady;
-  if(!extendedReady)el('extended-consent').checked=false;
+  // A partial single-worker installation must not silently pass as both.
+  extendedReady=status?.extendedResearchAvailable===true&&
+    extendedModelNames.includes('pitt_full')&&extendedModelNames.includes('aihub217');
+  // The user's optional choice remains visible and never gets silently
+  // unchecked just because an initial status probe races with mic consent.
+  el('extended-row').hidden=false;
+  el('extended-ready-note').textContent=extendedReady?
+    'Pitt 전체 융합 · AI-Hub 217 두 모델 준비 확인됨':
+    status?.ready===true?
+      '두 모델이 모두 준비되지 않았습니다. 선택 상태라면 검사 시작 전 안내합니다.':
+      '추가 AI 서버 상태를 확인하고 있습니다.';
   updateConsentStart();
 }
 async function probeResearchAvailability(){
@@ -1308,7 +1337,7 @@ function updateConsentStart(){
   if(required)scope.push('기본 음성 분석');
   if(el('azure-consent').checked)scope.push('Microsoft Azure 발음 평가(음성 전송)');
   if(el('pitt-consent').checked)scope.push('Pitt AD/CN 연구 모델');
-  if(extendedReady&&el('extended-consent').checked)scope.push('Pitt 전체 융합·AI-Hub 추가 연구 AI');
+  if(el('extended-consent').checked)scope.push('Pitt 전체 융합·AI-Hub 217 추가 연구 AI'+(extendedReady?'':' (준비 확인 중)'));
   el('consent-scope-summary').textContent=scope.length?
     '선택한 분석: '+scope.join(' · ')+'. 아래에서 변경할 수 있습니다.':
     '아직 선택된 분석이 없습니다.';
@@ -1316,7 +1345,7 @@ function updateConsentStart(){
   el('choose-self').disabled=preparingAssessment||!required;
   el('choose-basic').disabled=preparingAssessment||!required;
   el('choose-self').textContent=preparingAssessment?'마이크 준비 중…':
-    required?'발음 평가 포함 · Azure 음성 전송 동의 후 시작':'기본 음성 분석을 선택해 주세요';
+    required?'발음 평가 포함 · Azure 음성 전송 동의 후 시작 · Pitt·AI-Hub 비교':'기본 음성 분석을 선택해 주세요';
   el('choose-basic').textContent=preparingAssessment?'마이크 준비 중…':
     required?'Azure 전송 없이 검사 시작 (발음 점수 제외)':'기본 음성 분석을 선택해 주세요';
   el('consent-message').textContent=required?
@@ -1328,7 +1357,7 @@ for(const id of ['server-consent','azure-consent','pitt-consent','extended-conse
 }
 el('consent-all').addEventListener('click',()=>{
   for(const id of ['server-consent','azure-consent','pitt-consent'])el(id).checked=true;
-  if(extendedReady)el('extended-consent').checked=true;
+  el('extended-consent').checked=true;
   updateConsentStart();
 });
 updateConsentStart();
