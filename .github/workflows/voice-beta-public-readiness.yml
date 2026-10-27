@@ -34,7 +34,9 @@ jobs:
           print('PUBLIC_PAGE_HTTP',code,'BYTES',len(page),flush=True)
           assert 'Azure 전송 없이 검사 시작 (발음 점수 제외)' in page
           assert 'id="choose-basic"' in page
-          assert 'voice-analysis-beta.js?v=20261027-measure-ready1' in page
+          assert 'id="research-binary-context"' in page,'VISIBLE_RESEARCH_ONLY_CONTEXT_MISSING'
+          assert 'id="close-ai-result-info"' in page,'MOBILE_INFORMATION_CLOSE_MISSING'
+          assert 'voice-analysis-beta.js?v=20261027-result-context1' in page
           assert state.get('onsetAzureEnabled') is True,'FULL_PRONUNCIATION_REQUIRES_AZURE_PROVIDER_READY'
           assert state.get('researchBinaryAvailable') is True,'PITT_RESEARCH_MODEL_UNAVAILABLE'
           print('VOICE_BETA_PUBLIC_READINESS_PASS',flush=True)
