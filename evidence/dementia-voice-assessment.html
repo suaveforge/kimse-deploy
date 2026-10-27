@@ -63,12 +63,12 @@ main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + en
 <h2 id="english-title" class="section-title">Pitt 영어 그림 설명</h2><p class="section-desc">동일한 Cookie Theft 그림을 보고 영어로 자유롭게 설명하는 과제입니다. 아래 두 모델은 서로 다른 특징 추출 방식이며, 같은 영어 과제를 사용합니다.</p>
 <div class="model-grid" aria-label="영어 Pitt 모델 선택">
 <button type="button" id="model-pitt-basic" data-model="pitt_basic" class="model-choice" aria-pressed="true"><span class="phase">PITT · ACOUSTIC</span><strong>Pitt 기본 AD / CN</strong><span>음향 바이오마커 → 사전학습 LightGBM 분류</span></button>
-<button type="button" id="model-pitt-full" data-model="pitt_full" class="model-choice" aria-pressed="false"><span class="phase">PITT · FOUR STREAMS</span><strong>Pitt 전체 융합</strong><span>음향·임베딩·감정·시각 특징을 융합하는 동결 모델</span></button>
+<button type="button" id="model-pitt-full" data-model="pitt_full" class="model-choice" aria-pressed="false"><span class="phase">PITT · FOUR STREAMS</span><strong>Pitt 전체 융합 · CN / MCI / AD</strong><span>4개 특징 스트림의 학습 집단 3분류. 별도의 AD/CN 이진 보조값도 함께 구분해 표시</span></button>
 </div>
 <div class="task-panel">
 <span class="phase">원자료 과제 · PICTURE #1</span><h3>Cookie Theft · Picture Description</h3>
 <p>공식 DementiaBank 과제는 아래 원본 그림을 보고 영어로 설명하는 방식입니다. 응시자가 그림을 보는 동안 음성을 녹음합니다. 모델 실험은 현재 서버 제한에 따라 <strong>10~30초 발화만 사용</strong>하며, 원 프로토콜의 약 3분짜리 전체 검사와 구분됩니다.</p>
-<img id="cookie-stimulus" class="task-photo" src="https://talkbank.org/dementia/protocol/participant/images/icons/cookie.jpg" width="480" height="350" alt="DementiaBank Cookie Theft 원본 그림. 부엌에서 아이들이 과자를 꺼내고 물이 넘치는 장면.">
+<img id="cookie-stimulus" class="task-photo" src="https://talkbank.org/dementia/protocol/participant/images/icons/cookie.jpg" width="392" height="294" alt="DementiaBank Cookie Theft 원본 그림. 부엌에서 아이들이 과자를 꺼내고 물이 넘치는 장면.">
 <p class="photo-note">원본 자극 그림: TalkBank DementiaBank 자료 서버 제공 · <a href="https://talkbank.org/dementia/protocol/participant/images/icons/cookie.jpg" target="_blank" rel="noopener noreferrer">원본 그림 별도 열기</a> · <a href="https://talkbank.org/dementia/protocol/investigator/pictures.html" target="_blank" rel="noopener noreferrer">공식 진행 문구</a></p>
 <div class="prompt" lang="en">Here is a picture. Please tell me everything you see going on in this picture.</div>
 <div class="meta-row"><span class="meta">언어 · 영어</span><span class="meta">입력 · 그림 설명</span><span class="meta">현재 사용 · 10~30초 음성</span><span class="meta">WAV · 16kHz · 모노</span></div>
@@ -80,7 +80,7 @@ main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + en
 <audio class="record-preview" id="record-playback" controls hidden></audio>
 <div class="action-row"><button id="analyze-model" class="primary" type="button" disabled>선택한 Pitt 모델로 분석</button><button id="discard-record" type="button" class="secondary" disabled>녹음 버리기</button></div>
 <p class="runtime" id="task-runtime" role="status" aria-live="polite" data-state="loading">서버의 모델 준비 상태를 확인하고 있습니다.</p>
-<div class="results" id="model-result" hidden><h3>선택한 모델의 음성 분류</h3><div class="result-large" id="model-classification">—</div><p id="model-explanation"></p><p id="model-provenance"></p></div>
+<div class="results" id="model-result" hidden aria-live="polite"><h3>모델이 학습한 집단으로의 분류 · 연구용</h3><div class="result-large" id="model-classification">—</div><p id="model-explanation"></p><p id="model-provenance"></p></div>
 </div>
 </section>
 <section id="korean-panel" class="panel" aria-labelledby="korean-title" hidden>
@@ -89,9 +89,22 @@ main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + en
 <article class="model-choice"><span class="phase">AI-HUB 217 · VGG16 #2</span><strong>MCI vs AD</strong><span>경도인지장애 / 알츠하이머병 학습 집단 비교. 세부 문항·학습 라벨 방향 확인 필요</span></article></div>
 <div class="task-panel"><span class="phase">학습 데이터 계열 · SNSB-II / CERAD-K</span><h3>모델별 원래 녹음 문항 확인</h3>
 <div class="requirements">
-<div class="requirement"><strong>SCI vs OTHERS</strong>학습 코드 경로: SNSB·CERAD 음성 멜 이미지<br>필요 확인: 실제 사용한 하위 검사 문항, 시간·음성 구간, 원본 라벨 방향<br><span>상태: 원본 과제 대조 전 · AI 추론 잠금</span></div>
-<div class="requirement"><strong>MCI vs AD</strong>학습 코드 경로: SNSB·CERAD 음성 멜 이미지<br>필요 확인: 실제 사용한 하위 검사 문항, 입력 예시, 모델 출력 0·1 의미<br><span>상태: 원본 과제 대조 전 · AI 추론 잠금</span></div>
-<div class="requirement"><strong>확인된 신호 입력 형식</strong>한국어 음성 → 48kHz 변환 → 최대 30초 → 멜 스펙트로그램 이미지 → 100×100 RGB → VGG16 두 개<br><span>입력 형식이 맞더라도 하위 과제가 다르면 학습 조건을 만족하지 않습니다.</span></div>
+<div class="requirement"><strong>SCI vs OTHERS · 첫 번째 VGG16 입력</strong>
+검사 종류: SNSB-II 또는 CERAD-K에서 실제 학습한 하위 과제 녹음<br>
+신호 길이: 최소 3초~최대 30초의 발화 · 원본 음성에는 타인 발화가 없어야 함<br>
+전처리: 단일 음성 → 48kHz → 멜 이미지 100×100 RGB<br>
+추가로 필수 확인: 모델에 대응하는 하위 검사명·문항 원본·0/1 클래스 방향<br>
+<span>상태: 하위 과제/라벨 대조 전 · AI 추론 잠금 · 임의 자유 대화 입력 불가</span></div>
+<div class="requirement"><strong>MCI vs AD · 두 번째 VGG16 입력</strong>
+검사 종류: SNSB-II 또는 CERAD-K에서 실제 학습한 하위 과제 녹음<br>
+신호 길이: 최소 3초~최대 30초의 발화 · 타인 음성 혼입 없는 녹음 필요<br>
+전처리: 첫 번째 모델과 같은 48kHz 멜 이미지 100×100 RGB<br>
+추가로 필수 확인: MCI·AD 원본 학습 라벨과 출력 0/1 방향·정확한 하위 검사명<br>
+<span>상태: 하위 과제/라벨 대조 전 · AI 추론 잠금 · 진단값 제공 불가</span></div>
+<div class="requirement"><strong>현재 확보된 것과 빠진 것</strong>실제 AI-Hub 공개 모델 가중치와 전처리 코드 확보 · VGG16 두 모델의 추론 엔진 보존<br>
+공식 데이터 종류에는 IB_APPS(SpeechTaskSet), CERAD-K, SNSB-II가 있으나, 확보한 VGG16 학습 코드 경로에서는 SNSB/CERAD를 확인했습니다.<br>
+정확한 하위 과제와 0/1 출력 방향 및 최종 ANN 가중치는 현재 검증·확보되지 않았습니다.<br>
+<span>입력 형식이 같아도 하위 과제가 다르면 학습 조건을 만족하지 않습니다. 두 모델의 출력 숫자를 위험 확률로 표시하지 않습니다.</span></div>
 </div><p class="warning-panel">공식 학습 코드에서 SNSB·CERAD 계열은 확인했지만, 두 VGG16의 세부 검사 문항 대응은 아직 확인되지 않았어. 정확한 문항을 임의로 만들어 검사에 연결하지 않고 있어.</p>
 <a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:15px" href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=217" target="_blank" rel="noopener noreferrer">AI-Hub 217 원본 학습자료 확인</a>
 <p class="runtime" id="korean-runtime" role="status">한국어 추론은 검증된 모델별 문항이 연결되기 전까지 실행할 수 없습니다.</p>
