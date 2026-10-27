@@ -384,6 +384,14 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 #task-overview #task-card-response .voice-task-sub{display:none!important}
 #task-overview #task-card-response .voice-stimulus-tag{display:none!important}
 #task-overview #task-card-response .voice-question-bubble strong{font-size:clamp(32px,5.6vw,70px)!important}
+
+/* Result clarity: never make the English-trained AD/CN label look like a
+   diagnosis. A fixed, scrollable dialog replaces a partially clipped popover. */
+#result-view .kimse-finding__context{margin:clamp(7px,1.4vh,12px) 0 0;color:#3e665f;font-size:clamp(12px,1.8vh,14px);line-height:1.5;font-weight:660;word-break:keep-all}
+#ai-result-details[open]::before{content:"";position:fixed;inset:0;background:rgba(5,28,33,.54);z-index:200;cursor:pointer}
+#ai-result-details[open] .ai-result-disclosure__body{position:fixed!important;inset:auto!important;top:50dvh!important;left:50vw!important;right:auto!important;transform:translate(-50%,-50%)!important;width:min(610px,calc(100vw - 30px))!important;max-height:calc(100dvh - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:clamp(16px,4vw,25px)!important;border-radius:19px!important;background:#fff!important;box-shadow:0 24px 75px rgba(0,33,28,.35)!important;z-index:201!important}
+#ai-result-details .ai-result-disclosure__close{position:sticky;top:0;float:right;z-index:1;min-width:76px;min-height:44px;border:1px solid #b7d9ce;border-radius:12px;background:#eaf7f1;color:#10584e;font-size:15px;font-weight:800;margin:-4px -4px 9px 9px;cursor:pointer}
+#ai-result-details .ai-result-disclosure__close:focus-visible{outline:3px solid #2d8f7d;outline-offset:3px}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석 · 베타</span></div><a class="back" href="./voice-analysis-demo.html">← 안정판으로</a></header>
 <section id="method-picker" class="panel">
@@ -471,14 +479,15 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <div class="report-heading"><div><h1>음성 분석 결과</h1></div></div>
 <article class="kimse-finding" id="cognitive-screening-status" aria-label="AI 음성 분류 결과">
 <div class="kimse-finding__top"><h2 class="kimse-finding__title">AI 분류 결과</h2>
-<details class="ai-result-disclosure" id="ai-result-details"><summary aria-label="AD, CN 결과와 판단 근거 설명 열기" title="분류 의미와 판단 근거">!</summary>
-<div class="ai-result-disclosure__body"><strong>AD · CN은 무슨 뜻일까요?</strong>
+<details class="ai-result-disclosure" id="ai-result-details"><summary id="ai-result-info-trigger" aria-label="AD, CN 결과와 판단 근거 설명 열기" title="분류 의미와 판단 근거">!</summary>
+<div class="ai-result-disclosure__body" role="dialog" aria-modal="true" aria-label="연구용 AI 분류 설명"><button id="close-ai-result-info" type="button" class="ai-result-disclosure__close" aria-label="설명 창 닫기">닫기 ×</button><strong>AD · CN은 무슨 뜻일까요?</strong>
 <p><b>AD</b>는 학습자료의 알츠하이머병 그룹, <b>CN</b>은 비교 대상인 인지 정상 그룹입니다. 이 분류는 개인의 치매 진단이나 위험 확률을 뜻하지 않습니다.</p>
 <strong>무엇을 보고 판단했나요?</strong><p id="ai-result-evidence">질문에 답한 목소리의 발화 구간과 음향 특징을 분석해 AD/CN을 비교합니다.</p>
 <strong>모델 정보</strong><p>영어 Pitt 음성으로 학습된 AI 모델입니다. 한국어 임상 정확도와 MCI 구별 능력은 아직 검증되지 않았습니다. 학습 가중치: sivdma/acophenotype-pitt-models, CC BY-NC-SA 4.0.</p>
 <a href="https://huggingface.co/sivdma/acophenotype-pitt-models" target="_blank" rel="noopener noreferrer">모델 출처</a>
 </div></details></div>
 <div id="research-binary-result" class="kimse-finding__result" role="status" aria-live="polite">미측정</div>
+<p id="research-binary-context" class="kimse-finding__context">영어 학습 모델의 연구용 분류 · 치매 진단 아님</p>
 <p id="research-binary-note" hidden></p></article>
 <section class="result-short-summary" aria-label="음성 측정 세 가지 요약">
 <div class="result-metric"><span>01 · 발음</span><strong id="summary-pron">미측정</strong></div>
@@ -526,4 +535,4 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></details>
 </section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261027-measure-ready1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-result-context1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
