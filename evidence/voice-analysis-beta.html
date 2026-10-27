@@ -392,6 +392,22 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 #ai-result-details[open] .ai-result-disclosure__body{position:fixed!important;inset:auto!important;top:50dvh!important;left:50vw!important;right:auto!important;transform:translate(-50%,-50%)!important;width:min(610px,calc(100vw - 30px))!important;max-height:calc(100dvh - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:clamp(16px,4vw,25px)!important;border-radius:19px!important;background:#fff!important;box-shadow:0 24px 75px rgba(0,33,28,.35)!important;z-index:201!important}
 #ai-result-details .ai-result-disclosure__close{position:sticky;top:0;float:right;z-index:1;min-width:76px;min-height:44px;border:1px solid #b7d9ce;border-radius:12px;background:#eaf7f1;color:#10584e;font-size:15px;font-weight:800;margin:-4px -4px 9px 9px;cursor:pointer}
 #ai-result-details .ai-result-disclosure__close:focus-visible{outline:3px solid #2d8f7d;outline-offset:3px}
+
+/* The real model responses belong on the primary results screen, not behind
+   the diagnostics disclosure. Keep the phone viewport scrollable. */
+#result-view{overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;justify-content:flex-start!important;scrollbar-width:thin}
+#result-research-overview{flex:none;margin:clamp(11px,1.8vh,17px) 0 0;padding:clamp(12px,2vw,18px);border:1px solid #d2e6dc;border-radius:18px;background:#f7faf8}
+.result-research-overview__heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.result-research-overview__heading strong{font-size:clamp(15px,2.6vh,19px);color:#145b4f}
+.result-research-overview__heading span{font-size:11px;color:#52766b}
+.result-research-overview__grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.result-research-overview__model{background:#fff;border:1px solid #cce4d8;border-radius:13px;padding:11px;min-width:0}
+.result-research-overview__model>span{display:block;font-size:12px;font-weight:780;color:#3e6f62}
+.result-research-overview__model>strong{display:block;margin:8px 0 5px;font-size:clamp(15px,2.4vh,22px);line-height:1.34;color:#135e52;overflow-wrap:anywhere}
+.result-research-overview__model>p{font-size:11px;line-height:1.5;color:#53716a;margin:0;overflow-wrap:anywhere}
+.result-research-overview__limitation{font-size:11px;color:#5c746d;line-height:1.5;margin:9px 0 0}
+#extended-ready-note{font-size:12px;color:#266e5a;display:block;margin-top:6px}
+@media(max-width:510px){#result-research-overview{padding:11px;margin-top:10px}.result-research-overview__heading span{font-size:10px}.result-research-overview__grid{gap:7px}.result-research-overview__model{padding:9px}.result-research-overview__model>strong{font-size:clamp(14px,3.3vw,17px)}}
 </style></head><body><main>
 <header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석 · 베타</span></div><a class="back" href="./voice-analysis-demo.html">← 안정판으로</a></header>
 <section id="method-picker" class="panel">
@@ -403,13 +419,13 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <section class="voice-consents" aria-labelledby="consent-heading">
 <div class="voice-consent-top"><h2 id="consent-heading">검사 시작 전 준비</h2></div>
 <p class="voice-consent-summary">세 가지 목소리 검사와 분석에 사용할 마이크를 <strong>지금 한 번만 연결</strong>합니다. 검사 중에는 다시 허용을 요청하지 않습니다.</p>
-<p id="consent-scope-summary" class="voice-consent-summary">기본 음성 분석과 Pitt·AI-Hub 연구용 AI 비교가 선택되어 있습니다. Microsoft Azure로 음성을 보내려면 별도로 선택하세요.</p>
+<p id="consent-scope-summary" class="voice-consent-summary">기본 음성 분석 · Pitt AD/CN · Pitt 전체 융합 · AI-Hub 217 연구용 비교를 포함합니다. Azure 발음 평가는 아래 시작 버튼에서 별도 동의합니다.</p>
 <details class="voice-consent-extra" id="analysis-consent-settings">
 <summary>분석 범위 변경 · 동의 내용 보기 <span aria-hidden="true">?</span></summary>
 <label class="consent voice-consent-choice voice-consent-required"><input id="server-consent" type="checkbox" checked><span><strong>기본 음성 분석</strong><small>녹음한 음성을 서버에서 분석합니다. 원음은 저장하지 않습니다.</small></span></label>
 <label class="consent voice-consent-choice" id="azure-row"><input id="azure-consent" type="checkbox"><span><strong>발음 평가 · 선택</strong><small>첫 번째 녹음을 Microsoft Azure로 전송합니다.</small></span></label>
 <label class="consent voice-consent-choice" id="pitt-row"><input id="pitt-consent" type="checkbox" checked><span><strong>AD/CN AI 비교 · 선택</strong><small>두 번째 음성을 Pitt 학습 모델로 분석합니다. 실제 치매 진단은 아닙니다.</small></span></label>
-<label class="consent voice-consent-choice" id="extended-row" hidden><input id="extended-consent" type="checkbox" checked><span><strong>추가 AI 모델 · 선택</strong><small>두 번째 음성을 Pitt 전체 융합 및 AI-Hub 217 모델에 적용합니다. 분석이 길어질 수 있습니다.</small></span></label>
+<label class="consent voice-consent-choice" id="extended-row"><input id="extended-consent" type="checkbox" checked><span><strong>Pitt 전체 융합 + AI-Hub 217 · 선택</strong><small>두 번째 답변 음성으로 두 모델 모두 분석합니다. 완료까지 약 1~3분 걸릴 수 있습니다. 연구용이며 치매 진단이 아닙니다.</small><small id="extended-ready-note" role="status" aria-live="polite">추가 AI 서버 확인 중</small></span></label>
 <button id="consent-all" type="button" class="voice-consent-all">Azure 음성 전송 포함 · 전체 분석 선택</button>
 <p class="voice-consent-message">선택 항목은 언제든 검사 시작 전에 끌 수 있습니다. 분석 결과는 의료 진단이 아닙니다. 위 내용을 확인하고 아래 버튼을 누를 때 선택된 분석에 동의합니다.</p>
 </details>
@@ -417,7 +433,7 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <p id="microphone-preflight" class="voice-consent-message" role="status" aria-live="polite" hidden></p>
 </section>
 <p class="voice-start-disclosure">발음 정확도까지 측정하려면 첫 번째 녹음이 <strong>Microsoft Azure</strong>로 전송됩니다. 아래에서 직접 선택하세요.</p>
-<button type="button" id="choose-self" class="primary voice-start">발음 평가 포함 · Azure 음성 전송 동의 후 시작</button>
+<button type="button" id="choose-self" class="primary voice-start">발음 평가 포함 · Azure 음성 전송 동의 후 시작 · Pitt·AI-Hub 비교</button>
 <button type="button" id="choose-basic" class="secondary voice-start voice-start-basic">Azure 전송 없이 검사 시작 (발음 점수 제외)</button>
 <details class="voice-secondary-tools"><summary>다른 검사 방식 <span aria-hidden="true">?</span></summary>
 <a href="./voice-pronunciation-onset.html">첫 단어 녹음·발음 오류 확인</a>
@@ -477,8 +493,8 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 </section>
 <section id="result-view" hidden>
 <div class="report-heading"><div><h1>음성 분석 결과</h1></div></div>
-<article class="kimse-finding" id="cognitive-screening-status" aria-label="AI 음성 분류 결과">
-<div class="kimse-finding__top"><h2 class="kimse-finding__title">AI 분류 결과</h2>
+<article class="kimse-finding" id="cognitive-screening-status" aria-label="Pitt 기본 연구용 AD/CN 분류 결과">
+<div class="kimse-finding__top"><h2 class="kimse-finding__title">Pitt 기본 AD/CN 분류</h2>
 <details class="ai-result-disclosure" id="ai-result-details"><summary id="ai-result-info-trigger" aria-label="AD, CN 결과와 판단 근거 설명 열기" title="분류 의미와 판단 근거">!</summary>
 <div class="ai-result-disclosure__body" role="dialog" aria-modal="true" aria-label="연구용 AI 분류 설명"><button id="close-ai-result-info" type="button" class="ai-result-disclosure__close" aria-label="설명 창 닫기">닫기 ×</button><strong>AD · CN은 무슨 뜻일까요?</strong>
 <p><b>AD</b>는 학습자료의 알츠하이머병 그룹, <b>CN</b>은 비교 대상인 인지 정상 그룹입니다. 이 분류는 개인의 치매 진단이나 위험 확률을 뜻하지 않습니다.</p>
@@ -489,6 +505,14 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <div id="research-binary-result" class="kimse-finding__result" role="status" aria-live="polite">미측정</div>
 <p id="research-binary-context" class="kimse-finding__context">영어 학습 모델의 연구용 분류 · 치매 진단 아님</p>
 <p id="research-binary-note" hidden></p></article>
+<section class="result-research-overview" id="result-research-overview" aria-label="Pitt 전체 융합 및 AI-Hub 추가 AI 실행 결과">
+<div class="result-research-overview__heading"><strong>추가 AI 모델 결과</strong><span>2단계 답변 음성 · 실제 실행 결과만 표시</span></div>
+<div class="result-research-overview__grid">
+<article class="result-research-overview__model"><span>Pitt 전체 융합</span><strong id="overview-pitt-full" aria-live="polite">확인 중</strong><p id="overview-pitt-note">서버 분석 상태를 확인합니다.</p></article>
+<article class="result-research-overview__model"><span>AI-Hub 217 · 한국어 음성</span><strong id="overview-aihub217" aria-live="polite">확인 중</strong><p id="overview-aihub-note">SCIvsOTHERS · MCIvsAD 원시 출력</p></article>
+</div>
+<p class="result-research-overview__limitation">두 모델의 학습 출력은 치매 여부·MCI 단계·위험 확률이 아닙니다.</p>
+</section>
 <section class="result-short-summary" aria-label="음성 측정 세 가지 요약">
 <div class="result-metric"><span>01 · 발음</span><strong id="summary-pron">미측정</strong></div>
 <div class="result-metric"><span>02 · 발화</span><strong id="summary-delay">분석 중</strong></div>
@@ -535,4 +559,4 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></details>
 </section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261027-result-context1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261027-all-models-visible1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
