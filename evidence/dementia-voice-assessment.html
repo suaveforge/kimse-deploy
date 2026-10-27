@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>낌새 | 치매 검사 · 언어별 AI 과제</title>
+<meta name="description" content="KIMSE 언어별 치매 음성 검사: Pitt 영어 그림 설명, AI-Hub 217 한국어 신경인지검사 과제. 모델별 학습 조건을 검증하고 사용합니다.">
+<style>
+:root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#173c36;background:#f2f7f5;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh}a{color:#146a58}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}[hidden]{display:none!important}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #159b7f;outline-offset:3px}
+main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:clamp(17px,3vw,26px) 0}
+.logo{color:#0b6656;font-size:clamp(22px,3.8vw,29px);font-weight:890;letter-spacing:-1.2px;text-decoration:none}
+.back{font-size:14px;font-weight:760;text-decoration:none;padding:10px 0}
+.hero{border-radius:28px;background:linear-gradient(118deg,#0d5c52,#174e61);color:#fff;padding:clamp(24px,5vw,48px);margin:9px 0 23px;box-shadow:0 18px 39px #0e594622}
+.eyebrow{font-size:12px;letter-spacing:1.8px;font-weight:850;color:#ade5d6}
+.hero h1{font-size:clamp(29px,5vw,43px);line-height:1.18;letter-spacing:-1.6px;margin:14px 0}
+.hero p{max-width:650px;color:#d8f1eb;font-size:clamp(14px,2.2vw,17px);line-height:1.65;margin:0}
+.hero-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.hero-links a{display:inline-flex;text-decoration:none;color:#f3fffb;border:1px solid #8dc6ba;border-radius:999px;padding:9px 13px;font-size:13px;font-weight:750}
+.language-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
+.lang{min-height:84px;border:1px solid #d4e6de;background:white;border-radius:18px;padding:15px;text-align:left;color:#2b6f62}
+.lang strong{display:block;font-weight:850;font-size:20px}.lang span{display:block;font-size:12px;margin-top:5px;color:#607970}
+.lang[aria-selected=true]{background:#e0f4e9;border:2px solid #157969;color:#0d5f51}
+.panel{border:1px solid #d9e7df;background:white;border-radius:23px;padding:clamp(18px,3vw,28px);margin-bottom:17px;box-shadow:0 8px 23px #1c55430a}
+.section-title{font-size:clamp(22px,3.6vw,28px);margin:0 0 7px;letter-spacing:-.7px}
+.section-desc{margin:0 0 20px;color:#59746b;line-height:1.6;font-size:14px}
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.model-choice{border:1px solid #cce2d6;border-radius:17px;padding:16px;background:#f8fcfa;min-height:151px;display:flex;flex-direction:column;text-align:left;gap:9px;color:#194f43;width:100%}
+.model-choice strong{font-size:18px;font-weight:860}.model-choice span{color:#5a7068;line-height:1.52;font-size:13px}
+.model-choice[aria-pressed=true]{border:2px solid #159078;background:#eaf8f1;box-shadow:0 4px 13px #135d5016}
+.phase{font-size:11px;font-weight:840;letter-spacing:.8px;color:#28705e}
+.task-panel{margin-top:18px;padding:18px;border:1px solid #d7e8df;border-radius:18px;background:#f8fbf9}
+.task-panel h3{font-size:21px;line-height:1.3;margin:6px 0 9px;letter-spacing:-.4px}
+.task-panel p{color:#536d65;font-size:14px;line-height:1.65;margin:0 0 12px}
+.task-photo{display:block;width:min(100%,600px);height:auto;min-height:160px;margin:17px auto 6px;border:1px solid #d8e6de;border-radius:13px;object-fit:contain;background:white}
+.photo-note{font-size:12px;color:#637b73;text-align:center;line-height:1.5;margin:5px 0 16px}
+.prompt{margin-top:18px;padding:17px;border-left:5px solid #25846e;background:#eaf7f1;border-radius:12px;font-size:clamp(18px,3.5vw,24px);font-weight:830;line-height:1.55;color:#165d4f}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}.meta{background:#f0f5f2;color:#43675d;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:750}
+.action-row{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin-top:18px}
+.primary,.secondary{min-height:58px;padding:13px 23px;border-radius:15px;font-weight:830;font-size:17px;border:1px solid transparent}
+.primary{background:#0c7160;color:#fff}.secondary{background:#f1f8f4;color:#125c4f;border-color:#b8d6c8}
+.action-row>*{flex:1 1 170px}.check-line{display:flex;align-items:flex-start;gap:12px;margin-top:16px;line-height:1.55;font-size:14px;color:#365d51}
+.check-line input{width:22px;height:22px;flex:none;accent-color:#117667}
+.runtime{margin-top:15px;padding:13px 15px;border-radius:13px;background:#eef7f2;color:#275e4f;font-size:14px;line-height:1.5}
+.runtime[data-state=error]{background:#fff0e8;color:#884735}
+.record-state{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:20px;font-weight:850;color:#186455}
+.clock{font-size:27px;font-variant-numeric:tabular-nums}
+.record-preview{display:block;width:100%;margin:16px 0}
+.results{border-radius:17px;padding:20px;background:#e9f7ef;border:1px solid #b7ddc8;margin-top:18px}
+.results h3{font-size:18px;margin:0}.result-large{font-size:clamp(36px,8vw,64px);font-weight:900;line-height:1.2;color:#0a6052;margin:12px 0}
+.results p{font-size:14px;line-height:1.65;color:#45685d}
+.warning-panel{border:1px solid #efdabe;background:#fffbf4;border-radius:15px;padding:15px;color:#654e36;font-size:14px;line-height:1.65}
+.requirements{display:grid;gap:9px;margin-top:15px}
+.requirement{padding:13px 15px;border:1px solid #dce8e1;border-radius:12px;background:#f9fcfa;font-size:14px;line-height:1.6}
+.requirement strong{display:block;font-size:15px;color:#1c5a4b}
+.requirement a{display:inline-block;margin-top:5px}
+.footnote{color:#6c8078;font-size:12px;line-height:1.7;margin:15px 4px}
+@media(max-width:600px){.model-grid{grid-template-columns:1fr}.hero{border-radius:23px}.model-choice{min-height:unset}.lang{min-height:77px;padding:12px}.lang strong{font-size:18px}.prompt{font-size:19px}.task-panel{padding:13px}.task-photo{min-height:0}.panel{border-radius:19px}}
+</style></head>
+<body><main>
+<header class="top"><a class="logo" href="./">낌새 <span style="font-size:13px;color:#75968a;font-weight:650">모델별 인지 검사</span></a><a class="back" href="./voice-analysis-beta.html">← 음성 변화 측정</a></header>
+<section class="hero"><span class="eyebrow">COGNITIVE · MODEL TASKS</span><h1>치매 검사<br>언어별 AI 과제</h1><p>음성 지표 측정과 구분된 검사실입니다. 학습한 언어와 과제에 맞춰 모델을 선택하며, 원본과 일치하지 않는 입력으로 임의 분류하지 않습니다.</p><div class="hero-links"><a href="./voice-analysis-beta.html">기존 음성 3가지 측정</a><a href="https://talkbank.org/dementia/access/English/Pitt.html" target="_blank" rel="noopener noreferrer">Pitt 원자료</a><a href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=217" target="_blank" rel="noopener noreferrer">AI-Hub 217 원자료</a></div></section>
+<nav class="language-selector" aria-label="검사 언어 선택"><button type="button" id="lang-en" class="lang" aria-selected="true" aria-controls="english-panel"><strong>English · 영어</strong><span>Pitt · 그림 설명 음성</span></button><button type="button" id="lang-ko" class="lang" aria-selected="false" aria-controls="korean-panel"><strong>한국어</strong><span>AI-Hub 217 · SNSB / CERAD</span></button></nav>
+<section id="english-panel" class="panel" aria-labelledby="english-title">
+<h2 id="english-title" class="section-title">Pitt 영어 그림 설명</h2><p class="section-desc">동일한 Cookie Theft 그림을 보고 영어로 자유롭게 설명하는 과제입니다. 아래 두 모델은 서로 다른 특징 추출 방식이며, 같은 영어 과제를 사용합니다.</p>
+<div class="model-grid" aria-label="영어 Pitt 모델 선택">
+<button type="button" id="model-pitt-basic" data-model="pitt_basic" class="model-choice" aria-pressed="true"><span class="phase">PITT · ACOUSTIC</span><strong>Pitt 기본 AD / CN</strong><span>음향 바이오마커 → 사전학습 LightGBM 분류</span></button>
+<button type="button" id="model-pitt-full" data-model="pitt_full" class="model-choice" aria-pressed="false"><span class="phase">PITT · FOUR STREAMS</span><strong>Pitt 전체 융합 · CN / MCI / AD</strong><span>4개 특징 스트림의 학습 집단 3분류. 별도의 AD/CN 이진 보조값도 함께 구분해 표시</span></button>
+</div>
+<div class="task-panel">
+<span class="phase">원자료 과제 · PICTURE #1</span><h3>Cookie Theft · Picture Description</h3>
+<p>공식 DementiaBank 과제는 아래 원본 그림을 보고 영어로 설명하는 방식입니다. 응시자가 그림을 보는 동안 음성을 녹음합니다. 모델 실험은 현재 서버 제한에 따라 <strong>10~30초 발화만 사용</strong>하며, 원 프로토콜의 약 3분짜리 전체 검사와 구분됩니다.</p>
+<img id="cookie-stimulus" class="task-photo" src="https://talkbank.org/dementia/protocol/participant/images/icons/cookie.jpg" width="392" height="294" alt="DementiaBank Cookie Theft 원본 그림. 부엌에서 아이들이 과자를 꺼내고 물이 넘치는 장면.">
+<p class="photo-note">원본 자극 그림: TalkBank DementiaBank 자료 서버 제공 · <a href="https://talkbank.org/dementia/protocol/participant/images/icons/cookie.jpg" target="_blank" rel="noopener noreferrer">원본 그림 별도 열기</a> · <a href="https://talkbank.org/dementia/protocol/investigator/pictures.html" target="_blank" rel="noopener noreferrer">공식 진행 문구</a></p>
+<div class="prompt" lang="en">Here is a picture. Please tell me everything you see going on in this picture.</div>
+<div class="meta-row"><span class="meta">언어 · 영어</span><span class="meta">입력 · 그림 설명</span><span class="meta">현재 사용 · 10~30초 음성</span><span class="meta">WAV · 16kHz · 모노</span></div>
+<div class="warning-panel">현재 모델 추론은 공식 과제의 <b>30초 발화 발췌본 비교</b>야. 약 3분 전체 과제에 대한 진단 성능으로 해석하지 않으며, 음성 내용·발화 언어가 맞는지는 응시자가 확인해야 해.</div>
+<label class="check-line"><input type="checkbox" id="stimulus-confirm"><span>위 원본 그림을 확인했고, 다른 문장을 읽지 않고 영어로 그림 내용을 설명하겠습니다.</span></label>
+<label class="check-line"><input type="checkbox" id="research-consent"><span>선택한 모델 분석을 위해 이번 영어 녹음을 서버에 일시 전송하는 데 동의합니다. 분석 종료 시 녹음 원본을 저장하지 않습니다.</span></label>
+<div class="record-state"><span id="record-label">녹음 대기</span><span class="clock" id="record-clock">00:00</span></div>
+<div class="action-row"><button type="button" id="start-record" class="primary" disabled>영어 그림 설명 녹음 시작</button><button type="button" id="stop-record" class="secondary" disabled>녹음 종료</button></div>
+<audio class="record-preview" id="record-playback" controls hidden></audio>
+<div class="action-row"><button id="analyze-model" class="primary" type="button" disabled>선택한 Pitt 모델로 분석</button><button id="discard-record" type="button" class="secondary" disabled>녹음 버리기</button></div>
+<p class="runtime" id="task-runtime" role="status" aria-live="polite" data-state="loading">서버의 모델 준비 상태를 확인하고 있습니다.</p>
+<div class="results" id="model-result" hidden aria-live="polite"><h3>모델이 학습한 집단으로의 분류 · 연구용</h3><div class="result-large" id="model-classification">—</div><p id="model-explanation"></p><p id="model-provenance"></p></div>
+</div>
+</section>
+<section id="korean-panel" class="panel" aria-labelledby="korean-title" hidden>
+<h2 class="section-title" id="korean-title">AI-Hub 217 · 한국어 신경인지검사 음성</h2><p class="section-desc">공식 공개 모델 코드에서는 SNSB-II 및 CERAD-K 녹음 자료를 학습 경로로 사용합니다. 자유 대화나 ‘어제 무엇을 했나요?’ 과제를 그대로 대체 입력하지 않습니다.</p>
+<div class="model-grid"><article class="model-choice"><span class="phase">AI-HUB 217 · VGG16 #1</span><strong>SCI vs OTHERS</strong><span>SCI / 그 밖의 학습 집단 비교. 세부 학습 문항·출력 방향은 원본 코드 및 학습 데이터와 추가 대조 필요</span></article>
+<article class="model-choice"><span class="phase">AI-HUB 217 · VGG16 #2</span><strong>MCI vs AD</strong><span>경도인지장애 / 알츠하이머병 학습 집단 비교. 세부 문항·학습 라벨 방향 확인 필요</span></article></div>
+<div class="task-panel"><span class="phase">학습 데이터 계열 · SNSB-II / CERAD-K</span><h3>모델별 원래 녹음 문항 확인</h3>
+<div class="requirements">
+<div class="requirement"><strong>SCI vs OTHERS · 첫 번째 VGG16 입력</strong>
+검사 종류: SNSB-II 또는 CERAD-K에서 실제 학습한 하위 과제 녹음<br>
+신호 길이: 최소 3초~최대 30초의 발화 · 원본 음성에는 타인 발화가 없어야 함<br>
+전처리: 단일 음성 → 48kHz → 멜 이미지 100×100 RGB<br>
+추가로 필수 확인: 모델에 대응하는 하위 검사명·문항 원본·0/1 클래스 방향<br>
+<span>상태: 하위 과제/라벨 대조 전 · AI 추론 잠금 · 임의 자유 대화 입력 불가</span></div>
+<div class="requirement"><strong>MCI vs AD · 두 번째 VGG16 입력</strong>
+검사 종류: SNSB-II 또는 CERAD-K에서 실제 학습한 하위 과제 녹음<br>
+신호 길이: 최소 3초~최대 30초의 발화 · 타인 음성 혼입 없는 녹음 필요<br>
+전처리: 첫 번째 모델과 같은 48kHz 멜 이미지 100×100 RGB<br>
+추가로 필수 확인: MCI·AD 원본 학습 라벨과 출력 0/1 방향·정확한 하위 검사명<br>
+<span>상태: 하위 과제/라벨 대조 전 · AI 추론 잠금 · 진단값 제공 불가</span></div>
+<div class="requirement"><strong>현재 확보된 것과 빠진 것</strong>실제 AI-Hub 공개 모델 가중치와 전처리 코드 확보 · VGG16 두 모델의 추론 엔진 보존<br>
+공식 데이터 종류에는 IB_APPS(SpeechTaskSet), CERAD-K, SNSB-II가 있으나, 확보한 VGG16 학습 코드 경로에서는 SNSB/CERAD를 확인했습니다.<br>
+정확한 하위 과제와 0/1 출력 방향 및 최종 ANN 가중치는 현재 검증·확보되지 않았습니다.<br>
+<span>입력 형식이 같아도 하위 과제가 다르면 학습 조건을 만족하지 않습니다. 두 모델의 출력 숫자를 위험 확률로 표시하지 않습니다.</span></div>
+</div><p class="warning-panel">공식 학습 코드에서 SNSB·CERAD 계열은 확인했지만, 두 VGG16의 세부 검사 문항 대응은 아직 확인되지 않았어. 정확한 문항을 임의로 만들어 검사에 연결하지 않고 있어.</p>
+<a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:15px" href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=217" target="_blank" rel="noopener noreferrer">AI-Hub 217 원본 학습자료 확인</a>
+<p class="runtime" id="korean-runtime" role="status">한국어 추론은 검증된 모델별 문항이 연결되기 전까지 실행할 수 없습니다.</p>
+</div></section>
+<p class="footnote">공식 원자료: TalkBank DementiaBank Pitt English corpus 및 표준 그림 설명 프로토콜, AI-Hub 217 치매·인지기능장애 음성 데이터. 영어는 30초 발췌 연구 비교, 한국어는 세부 과제 확인 전 잠금 상태입니다. 실제 의료 판단은 이 실험 화면의 모델 분류와 별도로 이뤄집니다.</p>
+</main><script defer src="./dementia-voice-assessment.js?v=20261028-task1"></script>
+</body></html>
