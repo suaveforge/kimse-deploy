@@ -183,14 +183,32 @@ async function analyze(){
     if(!resp.ok)throw new Error(String(typeof result.detail==='string'?result.detail:('HTTP_'+resp.status)));
     if(result.model!==state.model||result.protocolId!=='pitt_cookie_theft_excerpt_30s')throw Error('MODEL_RESULT_PROTOCOL_MISMATCH');
     const model=result.modelResult||{};
-    const classification=state.model==='pitt_basic'?model.researchClassOnly:model.binaryTrainingPattern;
-    if(!['AD','CN'].includes(classification))throw Error('PITT_OUTPUT_MISSING');
+    let classification,explanation,modelName;
+    if(state.model==='pitt_basic'){
+      classification=model.researchClassOnly;
+      if(!['AD','CN'].includes(classification))throw Error('PITT_OUTPUT_MISSING');
+      modelName='Pitt 기본 · 음향 특징 이진 분류';
+      explanation=classification==='AD'?
+        '영어 음향 특징이 Pitt AD 학습 집단으로 분류됐습니다. 연구용 분류이며 실제 치매 진단이 아닙니다.':
+        '영어 음향 특징이 Pitt CN 학습 집단으로 분류됐습니다. 연구용 분류이며 정상 진단이 아닙니다.';
+    }else{
+      // The frozen four-stream model has its OWN three-class prediction (0/1/2).
+      // Its auxiliary binaryTrainingPattern is a separate scorer, never the
+      // primary result of the 3-class model.
+      const raw=String(model.rawTrainingClassId??'');
+      const groups={'0':'CN','1':'MCI','2':'AD'};
+      if(!Object.hasOwn(groups,raw))throw Error('PITT_MULTICLASS_OUTPUT_MISSING');
+      classification=groups[raw];
+      modelName='Pitt 전체 융합 · 4스트림 3분류';
+      const groupLabel={'CN':'CN(인지 정상)','MCI':'MCI(경도인지장애)','AD':'AD(알츠하이머병)'};
+      const aux=['CN','AD'].includes(model.binaryTrainingPattern)?
+        ' 같은 음성의 별도 이진 분류 보조값: '+model.binaryTrainingPattern+'.':'';
+      explanation='전체 융합 모델의 학습 클래스 '+raw+' → '+groupLabel[classification]+' 집단 패턴입니다.'+
+        aux+' 모델 훈련 집단 분류이며, 의료진 진단 또는 한국어 임상 검증을 의미하지 않습니다.';
+    }
     byId('model-classification').textContent=classification;
-    byId('model-explanation').textContent=classification==='AD'?
-      '이번 영어 그림 설명 음성의 특징이 Pitt의 AD(알츠하이머병) 학습 집단 쪽으로 분류됐습니다.':
-      '이번 영어 그림 설명 음성의 특징이 Pitt의 CN(인지 정상) 학습 집단 쪽으로 분류됐습니다.';
-    byId('model-provenance').textContent=
-      (state.model==='pitt_full'?'Pitt 4개 스트림 융합':'Pitt 기본 음향 바이오마커')+
+    byId('model-explanation').textContent=explanation;
+    byId('model-provenance').textContent=modelName+
       ' · '+Number(result.audioSeconds).toFixed(1)+'초 발췌본 · 약 3분 전체 그림 설명 프로토콜 점수로 환산하지 않음';
     byId('model-result').hidden=false;
     status('선택한 Pitt 모델의 실제 추론이 완료됐습니다.');
