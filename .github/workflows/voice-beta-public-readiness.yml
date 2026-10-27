@@ -56,8 +56,10 @@ jobs:
                   assert 'const extendedRequested=false' in signal_js
                   assert 'id="lang-en"' in cognitive and 'id="lang-ko"' in cognitive
                   assert 'id="model-pitt-basic"' in cognitive and 'id="model-pitt-full"' in cognitive
-                  assert 'talkbank.org/dementia/protocol/materials/pictures/cookie.jpg' in cognitive
+                  assert 'talkbank.org/dementia/protocol/participant/images/icons/cookie.jpg' in cognitive
                   assert 'AI-Hub 217' in cognitive and '세부 검사 문항' in cognitive
+                  assert 'rawTrainingClassId' in cog_js and 'binaryTrainingPattern' in cog_js
+                  assert '첫 번째 VGG16 입력' in cognitive and '두 번째 VGG16 입력' in cognitive
                   assert "/cognitive/guest" in cog_js
                   assert "state.language!=='en'" in cog_js
                   assert "choice('cognitive','09','치매 검사'" in menu
