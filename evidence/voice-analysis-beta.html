@@ -395,14 +395,14 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <section class="voice-consents" aria-labelledby="consent-heading">
 <div class="voice-consent-top"><h2 id="consent-heading">검사 시작 전 준비</h2></div>
 <p class="voice-consent-summary">세 가지 목소리 검사와 분석에 사용할 마이크를 <strong>지금 한 번만 연결</strong>합니다. 검사 중에는 다시 허용을 요청하지 않습니다.</p>
-<p id="consent-scope-summary" class="voice-consent-summary">기본 음성 분석, Microsoft Azure 발음 평가(음성 전송), Pitt·AI-Hub 연구용 AI 비교가 선택되어 있습니다. 아래에서 변경할 수 있습니다.</p>
+<p id="consent-scope-summary" class="voice-consent-summary">기본 음성 분석과 Pitt·AI-Hub 연구용 AI 비교가 선택되어 있습니다. Microsoft Azure로 음성을 보내려면 별도로 선택하세요.</p>
 <details class="voice-consent-extra" id="analysis-consent-settings">
 <summary>분석 범위 변경 · 동의 내용 보기 <span aria-hidden="true">?</span></summary>
 <label class="consent voice-consent-choice voice-consent-required"><input id="server-consent" type="checkbox" checked><span><strong>기본 음성 분석</strong><small>녹음한 음성을 서버에서 분석합니다. 원음은 저장하지 않습니다.</small></span></label>
-<label class="consent voice-consent-choice" id="azure-row"><input id="azure-consent" type="checkbox" checked><span><strong>발음 평가 · 선택</strong><small>첫 번째 녹음을 Microsoft Azure로 전송합니다.</small></span></label>
+<label class="consent voice-consent-choice" id="azure-row"><input id="azure-consent" type="checkbox"><span><strong>발음 평가 · 선택</strong><small>첫 번째 녹음을 Microsoft Azure로 전송합니다.</small></span></label>
 <label class="consent voice-consent-choice" id="pitt-row"><input id="pitt-consent" type="checkbox" checked><span><strong>AD/CN AI 비교 · 선택</strong><small>두 번째 음성을 Pitt 학습 모델로 분석합니다. 실제 치매 진단은 아닙니다.</small></span></label>
 <label class="consent voice-consent-choice" id="extended-row" hidden><input id="extended-consent" type="checkbox" checked><span><strong>추가 AI 모델 · 선택</strong><small>두 번째 음성을 Pitt 전체 융합 및 AI-Hub 217 모델에 적용합니다. 분석이 길어질 수 있습니다.</small></span></label>
-<button id="consent-all" type="button" class="voice-consent-all">전체 분석 다시 선택</button>
+<button id="consent-all" type="button" class="voice-consent-all">Azure 음성 전송 포함 · 전체 분석 선택</button>
 <p class="voice-consent-message">선택 항목은 언제든 검사 시작 전에 끌 수 있습니다. 분석 결과는 의료 진단이 아닙니다. 위 내용을 확인하고 아래 버튼을 누를 때 선택된 분석에 동의합니다.</p>
 </details>
 <p id="consent-message" class="voice-consent-message" role="status" aria-live="polite">선택한 분석 범위를 확인한 뒤 마이크를 연결하세요. 검사 중 동의 창은 다시 나오지 않습니다.</p>
@@ -426,7 +426,7 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <div class="voice-task-stimulus voice-read-stimulus"><span class="voice-stimulus-tag">읽을 문장</span><strong id="read-text">오늘은 날씨가 맑아서 집 근처 공원을 천천히 걸었습니다.</strong><span class="voice-read-arrow" aria-hidden="true">↳ 소리 내어 그대로</span></div>
 </article>
 <article id="task-card-response" class="voice-task-card" data-state="upcoming">
-<div class="voice-task-bar"><span class="voice-number">02</span><div><div class="voice-task-action">질문</div><div class="voice-task-sub">마음속으로 답을 생각한 뒤 녹음하세요</div></div><span id="task-state-response" class="voice-task-state">다음 차례</span></div>
+<div class="voice-task-bar"><span class="voice-number">02</span><div><div class="voice-task-action">질문</div></div><span id="task-state-response" class="voice-task-state">다음 차례</span></div>
 <div class="voice-response-pair">
 <div class="voice-question-bubble"><span class="voice-stimulus-tag" aria-hidden="true">02</span><strong id="response-question">어제 하루 동안 기억에 남는 일은 무엇이었나요?</strong></div>
 
