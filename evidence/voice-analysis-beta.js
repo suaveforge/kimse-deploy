@@ -766,7 +766,7 @@ function renderDelay(d){
     '</div><div class="viz-insight">'+escapeText(startInfo+pauseInfo)+'</div>'+
     '<div class="viz-notice">'+(knownInitial?'브라우저 질문 종료 시각과 음성 구간의 근사 정렬':
       '첫 발화 이전 무음은 녹음 시작 기준이며 질문 표시 시각과 PCM 정합성은 미검증')+
-    ' · VAD 구간 자체는 임상 판정 아님</div>';
+    ' · WebRTC·Silero로 측정한 실제 발화 구간</div>';
 }
 function renderTremor(v){
   const raw=Array.isArray(v.pitchTrajectory)?v.pitchTrajectory:[];
@@ -800,7 +800,7 @@ function renderTremor(v){
     axis(duration,'모음 녹음 길이')+
     '<div class="viz-insight">실제 F0 범위 '+lo.toFixed(1)+'~'+hi.toFixed(1)+
     ' Hz'+(center!==null?' · 중앙값 '+center.toFixed(1)+' Hz':'')+'</div>'+
-    '<div class="viz-notice">중앙 안정구간에서 추출한 실제 Praat F0 프레임의 축소 표현 · 떨림 진단 아님</div>';
+    '<div class="viz-notice">안정 발성 구간의 실제 Praat 음높이(F0) 측정값</div>';
 }
 function renderBetaComparison(){
   const node=el('beta-comparison');
@@ -847,10 +847,12 @@ function showResearchBinary(){
       '서버가 분류 결과를 제공하지 않았습니다. 상태: '+String(x.status||'unknown');
   }
   el('research-binary-context').textContent=valid?
-    '영어 음성으로 학습한 Pitt 연구 모델의 분류입니다. 이 결과만으로 한국어 사용자의 치매 여부를 판단할 수 없습니다.':
-    x.status==='pending'?'연구용 모델의 분석 결과를 기다리는 중입니다.':
-    x.status==='not_requested'?'연구용 AI 분류를 선택하지 않았습니다. 치매 진단 결과는 제공하지 않습니다.':
-    '연구용 AI 분류가 완료되지 않았습니다. 치매 진단 결과는 제공하지 않습니다.';
+    (x.researchClassOnly==='AD'?
+      'AD · 알츠하이머병 학습 집단과 비슷한 음성 특징으로 분류 · 영어 Pitt 학습 기준':
+      'CN · 인지 정상 학습 집단과 비슷한 음성 특징으로 분류 · 영어 Pitt 학습 기준'):
+    x.status==='pending'?'Pitt 음성 패턴 분류 결과를 기다리는 중입니다.':
+    x.status==='not_requested'?'이번 검사에서 Pitt 음성 패턴 분류를 선택하지 않았습니다.':
+    'Pitt 음성 패턴 분류가 완료되지 않았습니다. 상세 정보를 확인하세요.';
   const baseline=completed.responseDelay||{};
   const comparison=completed.responseDelayComparison||{};
   const verifiedSegments=Array.isArray(comparison.candidate?.segments)?
@@ -866,7 +868,7 @@ function showResearchBinary(){
     (voicedMs>0?' 검증된 음성 구간 약 '+(voicedMs/1000).toFixed(1)+'초.':'')+
     (x.checkpointSha256?' 사용 가중치 SHA256: '+x.checkpointSha256+'.':'')+
     (baseline.status==='measured'?' 발화 시점 분석 완료.':'')+
-    ' 이 항목은 영어 학습 모델의 한국어 음성 적용 결과로 임상 진단이 아닙니다.';
+    ' 학습 기준은 영어 Pitt 음성 자료이며, 한국어 정확도 검증은 진행 전입니다.';
 }
 function renderExtendedResearch(){
   const x=completed.researchComparisons||{status:'not_requested',models:{}};
@@ -899,7 +901,7 @@ function renderExtendedResearch(){
     '분석 실패';
   el('extended-pitt-note').textContent=pitt.status==='executed_research_only'?
     '4개 스트림 융합 · 학습 그룹 '+String(pitt.rawTrainingClassId??'?')+
-    ' · 한국어 임상 판정 아님':
+    ' · 영어 Pitt 학습 기준':
     running?'Pitt 융합 가중치의 응답을 기다리고 있습니다.':
     (failures[pitt.reason||x.reason]||pitt.reason||x.reason||'모델이 유효한 결과를 반환하지 못했습니다.');
   const hub=models.aihub217||{};
@@ -907,11 +909,11 @@ function renderExtendedResearch(){
   const valid=hub.status==='executed_research_only'&&
     Number.isFinite(sci?.rawModelOutput)&&Number.isFinite(mci?.rawModelOutput);
   el('extended-aihub-value').textContent=running?'실제 분석 중':
-    valid?'SCIvsOTHERS 원시 '+Number(sci.rawModelOutput).toFixed(3)+
-      ' · MCIvsAD 원시 '+Number(mci.rawModelOutput).toFixed(3):
+    valid?'SCI / 그 외: '+Number(sci.rawModelOutput).toFixed(3)+
+      '\nMCI / AD: '+Number(mci.rawModelOutput).toFixed(3):
     '분석 실패';
   el('extended-aihub-note').textContent=valid?
-    '공식 VGG16 2개 원시 출력 · 진단 확률이나 3분류 결과가 아닙니다.':
+    '공식 VGG16 2개 모델의 내부 수치 · 판정 방향·임계값 확인이 필요한 상태':
     running?'SCIvsOTHERS·MCIvsAD 두 가중치 모델의 응답을 기다리고 있습니다.':
     (failures[hub.reason||x.reason]||hub.reason||x.reason||'모델이 유효한 결과를 반환하지 못했습니다.');
   el('extended-research-raw').textContent=running?'서버의 실제 추론 결과 대기 중':
@@ -929,7 +931,7 @@ function output(shouldScroll=true){
   const pronOK=p.status==='assessed'&&number(score);
   const pronSkipped=p.reason==='BETA_AZURE_NOT_ENABLED'||p.reason==='OPTIONAL_AZURE_PRONUNCIATION_SKIPPED';
   el('out-pron').textContent=pronOK?score.toFixed(1)+'/100':pronSkipped?'선택 제외':'측정 실패';
-  el('why-pron').textContent=pronOK?'Azure 발음 평가 · 교육용 정확도 점수':
+  el('why-pron').textContent=pronOK?'Azure에서 읽기 문장의 발음 정확도를 측정한 점수':
     pronSkipped?'외부 음성 전송을 선택하지 않아 발음 정확도 평가를 실시하지 않았습니다.':
     '발음 분석이 완료되지 않았습니다. 서버 응답: '+String(p.reason||p.status||'UNKNOWN');
   const onset=number(d.initialResponseLatencyMs)?d.initialResponseLatencyMs:null;
@@ -945,7 +947,7 @@ function output(shouldScroll=true){
   const f=v.frequencyModulation?.peakRateHz;
   el('out-tremor').textContent=v.status==='measured'&&number(f)?f.toFixed(2)+' Hz':'미측정';
   el('why-tremor').textContent=v.status==='measured'?
-    '목소리 주기적 변조의 측정값 · 떨림 질환 판정 아님':
+    '아— 발성에서 음높이(F0)의 변화가 1초 동안 반복되는 주기. 변화 폭이나 인지기능 점수와는 다른 지표입니다.':
     '품질 기준을 충족한 모음 발성 자료가 없습니다.';
   report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,researchOnlyBinary:completed.researchBinary||{status:'not_requested'},researchComparisons:completed.researchComparisons||{status:'not_requested'},cognitiveScreening:{status:'not_available',reason:'NO_KOREAN_CLINICALLY_VALIDATED_MODEL_CONNECTED',clinicalDecision:null},completedStages:tasks.filter(x=>completed[x+'Quality']?.serverStatus!=='pending'&&completed[x+'Quality']),measuredAt:new Date().toISOString()};
   renderPronunciation(p);
