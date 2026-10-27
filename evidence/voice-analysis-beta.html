@@ -410,32 +410,36 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 @media(max-width:510px){#result-research-overview{padding:11px;margin-top:10px}.result-research-overview__heading span{font-size:10px}.result-research-overview__grid{gap:7px}.result-research-overview__model{padding:9px}.result-research-overview__model>strong{font-size:clamp(14px,3.3vw,17px)}}
 #result-view #overview-aihub217{white-space:pre-line;line-height:1.45}
 #result-view .kimse-finding__context{font-weight:680}
+#result-view .voice-signal-bridge{margin:clamp(13px,2vh,22px) 0;padding:14px 16px;border-radius:15px;border:1px solid #cce6d8;background:#f1faf5;display:flex;flex-direction:column;gap:7px;font-size:14px}
+#result-view .voice-signal-bridge strong{color:#155947}
+#result-view .voice-signal-bridge a{font-weight:780;color:#146b5d;text-underline-offset:3px}
+#cognitive-screening-status[hidden],#result-research-overview[hidden],#extended-research-card[hidden],#pitt-row[hidden],#extended-row[hidden]{display:none!important}
 </style></head><body><main>
-<header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 분석 · 베타</span></div><a class="back" href="./voice-analysis-demo.html">← 안정판으로</a></header>
+<header><div class="brand">낌새 <span style="font-weight:500;color:#78968c;font-size:15px">음성 변화 측정</span></div><a class="back" href="./dementia-voice-assessment.html">치매 검사 →</a></header>
 <section id="method-picker" class="panel">
 <div class="voice-intro"><span class="voice-eyebrow">KIMSE · VOICE EVIDENCE</span>
-<h1>목소리로 하는 3가지 검사</h1>
+<h1>목소리로 확인하는 3가지 변화 지표</h1>
 <p class="voice-intro-sub">읽기 → 내 이야기로 답하기 → ‘아—’ 발성. 한 단계씩 화면에 크게 표시되니 그대로 따라 하시면 됩니다.</p>
 <div class="voice-intro-path" aria-label="세 가지 검사 과제"><span>01 <b>그대로 읽기</b></span><span>02 <b>내 말로 답하기</b></span><span>03 <b>아—— 발성</b></span></div>
 </div>
 <section class="voice-consents" aria-labelledby="consent-heading">
 <div class="voice-consent-top"><h2 id="consent-heading">검사 시작 전 준비</h2></div>
 <p class="voice-consent-summary">세 가지 목소리 검사와 분석에 사용할 마이크를 <strong>지금 한 번만 연결</strong>합니다. 검사 중에는 다시 허용을 요청하지 않습니다.</p>
-<p id="consent-scope-summary" class="voice-consent-summary">기본 음성 분석 · Pitt AD/CN · Pitt 전체 융합 · AI-Hub 217 연구용 비교를 포함합니다. Azure 발음 평가는 아래 시작 버튼에서 별도 동의합니다.</p>
+<p id="consent-scope-summary" class="voice-consent-summary">발음·응답 지연·발성 변조를 각각 측정합니다. 치매 관련 AI 분석은 별도의 치매 검사 메뉴에서 진행합니다.</p>
 <details class="voice-consent-extra" id="analysis-consent-settings">
 <summary>분석 범위 변경 · 동의 내용 보기 <span aria-hidden="true">?</span></summary>
 <label class="consent voice-consent-choice voice-consent-required"><input id="server-consent" type="checkbox" checked><span><strong>기본 음성 분석</strong><small>녹음한 음성을 서버에서 분석합니다. 원음은 저장하지 않습니다.</small></span></label>
 <label class="consent voice-consent-choice" id="azure-row"><input id="azure-consent" type="checkbox"><span><strong>발음 평가 · 선택</strong><small>첫 번째 녹음을 Microsoft Azure로 전송합니다.</small></span></label>
-<label class="consent voice-consent-choice" id="pitt-row"><input id="pitt-consent" type="checkbox" checked><span><strong>AD/CN AI 비교 · 선택</strong><small>두 번째 음성의 특징을 Pitt의 AD(알츠하이머병)·CN(인지 정상) 학습 집단과 비교합니다.</small></span></label>
-<label class="consent voice-consent-choice" id="extended-row"><input id="extended-consent" type="checkbox" checked><span><strong>Pitt 전체 융합 + AI-Hub 217 · 선택</strong><small>두 번째 답변 음성의 특징을 두 모델로 비교합니다. 모델 분석에는 시간이 걸릴 수 있습니다.</small><small id="extended-ready-note" role="status" aria-live="polite">추가 AI 서버 확인 중</small></span></label>
-<button id="consent-all" type="button" class="voice-consent-all">Azure 음성 전송 포함 · 전체 분석 선택</button>
-<p class="voice-consent-message">선택 항목은 검사 시작 전에 변경할 수 있습니다. Pitt는 영어 음성 학습 자료를 사용합니다. 아래 버튼을 누르면 선택한 분석에 동의합니다.</p>
+<label class="consent voice-consent-choice" id="pitt-row" hidden><input id="pitt-consent" type="checkbox" disabled><span><strong>AD/CN AI 비교 · 선택</strong><small>두 번째 음성의 특징을 Pitt의 AD(알츠하이머병)·CN(인지 정상) 학습 집단과 비교합니다.</small></span></label>
+<label class="consent voice-consent-choice" id="extended-row" hidden><input id="extended-consent" type="checkbox" disabled><span><strong>Pitt 전체 융합 + AI-Hub 217 · 선택</strong><small>두 번째 답변 음성의 특징을 두 모델로 비교합니다. 모델 분석에는 시간이 걸릴 수 있습니다.</small><small id="extended-ready-note" role="status" aria-live="polite">추가 AI 서버 확인 중</small></span></label>
+<button id="consent-all" type="button" class="voice-consent-all">발음 평가까지 포함하기</button>
+<p class="voice-consent-message">발음 평가는 Microsoft Azure 전송 동의가 필요합니다. 음성 지표 측정과 치매 모델 검사는 서로 구분합니다.</p>
 </details>
 <p id="consent-message" class="voice-consent-message" role="status" aria-live="polite">선택한 분석 범위를 확인한 뒤 마이크를 연결하세요. 검사 중 동의 창은 다시 나오지 않습니다.</p>
 <p id="microphone-preflight" class="voice-consent-message" role="status" aria-live="polite" hidden></p>
 </section>
 <p class="voice-start-disclosure">발음 정확도까지 측정하려면 첫 번째 녹음이 <strong>Microsoft Azure</strong>로 전송됩니다. 아래에서 직접 선택하세요.</p>
-<button type="button" id="choose-self" class="primary voice-start">발음 평가 포함 · Azure 음성 전송 동의 후 시작 · Pitt·AI-Hub 비교</button>
+<button type="button" id="choose-self" class="primary voice-start">발음 포함 · 세 가지 음성 측정 시작</button>
 <button type="button" id="choose-basic" class="secondary voice-start voice-start-basic">Azure 전송 없이 검사 시작 (발음 점수 제외)</button>
 <details class="voice-secondary-tools"><summary>다른 검사 방식 <span aria-hidden="true">?</span></summary>
 <a href="./voice-pronunciation-onset.html">첫 단어 녹음·발음 오류 확인</a>
@@ -475,7 +479,7 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <div id="quick-status" role="status" aria-live="polite">분석 서버 상태를 확인하고 있습니다.</div><section class="kimse-analysis" id="response-progress" data-mode="pending" hidden aria-label="2단계 음성 분석 진행 정보">
 <div class="kimse-analysis__top"><div><h2 class="kimse-analysis__title">2단계 음성 신호 분석</h2><p class="kimse-analysis__status" id="response-progress-message">분석 서버 확인 중</p></div><div class="kimse-analysis__orb" id="response-progress-ring"><span class="kimse-analysis__pct" id="response-progress-value" aria-live="polite">—</span></div></div>
 <div class="kimse-analysis__rail" role="progressbar" id="response-progress-bar" aria-label="서버가 완료한 음성 분석 단계" aria-valuemin="0" aria-valuemax="100"><div class="kimse-analysis__fill" id="response-progress-fill"></div></div>
-<ol class="kimse-analysis__phases"><li class="kimse-analysis__phase" id="response-step-audio_accepted" data-state="waiting">음성 확인</li><li class="kimse-analysis__phase" id="response-step-webrtc_completed" data-state="waiting">발화 경계</li><li class="kimse-analysis__phase" id="response-step-silero_completed" data-state="waiting">음성 구간</li><li class="kimse-analysis__phase" id="response-step-research_completed" data-state="waiting">AI 패턴 분류</li><li class="kimse-analysis__phase" id="response-step-extended_completed" data-state="waiting">추가 AI 비교</li><li class="kimse-analysis__phase" id="response-step-report_completed" data-state="waiting">보고서 정리</li></ol>
+<ol class="kimse-analysis__phases"><li class="kimse-analysis__phase" id="response-step-audio_accepted" data-state="waiting">음성 확인</li><li class="kimse-analysis__phase" id="response-step-webrtc_completed" data-state="waiting">발화 경계</li><li class="kimse-analysis__phase" id="response-step-silero_completed" data-state="waiting">음성 구간</li><li class="kimse-analysis__phase" id="response-step-research_completed" data-state="waiting" hidden>AI 패턴 분류</li><li class="kimse-analysis__phase" id="response-step-extended_completed" data-state="waiting" hidden>추가 AI 비교</li><li class="kimse-analysis__phase" id="response-step-report_completed" data-state="waiting">보고서 정리</li></ol>
 <p class="kimse-analysis__foot"><span>서버 처리 단계 기준 · 남은 시간 추정 아님</span><span id="response-progress-count">확인 대기</span></p></section><button id="check-connection" type="button" class="secondary" hidden style="width:100%;margin-top:6px">서버 연결 다시 확인</button>
 <div id="after-actions" class="actions" hidden><button id="quick-analyze" type="button" class="primary">다시 분석</button><button id="skip-stage" type="button" class="secondary">측정 없이 다음</button></div>
 <button id="error-copy" class="secondary" type="button" hidden style="font-size:14px;min-height:43px;width:100%;margin-top:8px">오류 정보 복사 (음성 미포함)</button>
@@ -489,13 +493,13 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <section class="kimse-analysis" id="result-response-progress" data-mode="pending" hidden aria-label="2단계 음성 분석 진행 정보">
 <div class="kimse-analysis__top"><div><h2 class="kimse-analysis__title">2단계 음성 신호 분석</h2><p class="kimse-analysis__status" id="result-response-progress-message">분석 서버 확인 중</p></div><div class="kimse-analysis__orb" id="result-response-progress-ring"><span class="kimse-analysis__pct" id="result-response-progress-value" aria-live="polite">—</span></div></div>
 <div class="kimse-analysis__rail" role="progressbar" id="result-response-progress-bar" aria-label="서버가 완료한 음성 분석 단계" aria-valuemin="0" aria-valuemax="100"><div class="kimse-analysis__fill" id="result-response-progress-fill"></div></div>
-<ol class="kimse-analysis__phases"><li class="kimse-analysis__phase" id="result-response-step-audio_accepted" data-state="waiting">음성 확인</li><li class="kimse-analysis__phase" id="result-response-step-webrtc_completed" data-state="waiting">발화 경계</li><li class="kimse-analysis__phase" id="result-response-step-silero_completed" data-state="waiting">음성 구간</li><li class="kimse-analysis__phase" id="result-response-step-research_completed" data-state="waiting">AI 패턴 분류</li><li class="kimse-analysis__phase" id="result-response-step-extended_completed" data-state="waiting">추가 AI 비교</li><li class="kimse-analysis__phase" id="result-response-step-report_completed" data-state="waiting">보고서 정리</li></ol>
+<ol class="kimse-analysis__phases"><li class="kimse-analysis__phase" id="result-response-step-audio_accepted" data-state="waiting">음성 확인</li><li class="kimse-analysis__phase" id="result-response-step-webrtc_completed" data-state="waiting">발화 경계</li><li class="kimse-analysis__phase" id="result-response-step-silero_completed" data-state="waiting">음성 구간</li><li class="kimse-analysis__phase" id="result-response-step-research_completed" data-state="waiting" hidden>AI 패턴 분류</li><li class="kimse-analysis__phase" id="result-response-step-extended_completed" data-state="waiting" hidden>추가 AI 비교</li><li class="kimse-analysis__phase" id="result-response-step-report_completed" data-state="waiting">보고서 정리</li></ol>
 <p class="kimse-analysis__foot"><span>실제 완료된 처리 단계 기준</span><span id="result-response-progress-count">확인 대기</span></p><ol id="analysis-events" class="voice-analysis-events" aria-label="실제 서버 진행 기록"></ol></section>
 <button id="view-partial" class="secondary" type="button">현재까지 결과 먼저 보기</button>
 </section>
 <section id="result-view" hidden>
-<div class="report-heading"><div><h1>음성 분석 결과</h1></div></div>
-<article class="kimse-finding" id="cognitive-screening-status" aria-label="Pitt 기본 연구용 AD/CN 분류 결과">
+<div class="report-heading"><div><h1>음성 변화 측정 결과</h1></div></div>
+<article class="kimse-finding" id="cognitive-screening-status" aria-label="이전 모델 비교 자료" hidden>
 <div class="kimse-finding__top"><h2 class="kimse-finding__title">Pitt 기본 AD/CN 분류</h2>
 <details class="ai-result-disclosure" id="ai-result-details"><summary id="ai-result-info-trigger" aria-label="AD, CN 결과와 판단 근거 설명 열기" title="분류 의미와 판단 근거">!</summary>
 <div class="ai-result-disclosure__body" role="dialog" aria-modal="true" aria-label="연구용 AI 분류 설명"><button id="close-ai-result-info" type="button" class="ai-result-disclosure__close" aria-label="설명 창 닫기">닫기 ×</button><strong>AD · CN은 무슨 뜻일까요?</strong>
@@ -507,7 +511,7 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <div id="research-binary-result" class="kimse-finding__result" role="status" aria-live="polite">미측정</div>
 <p id="research-binary-context" class="kimse-finding__context">Pitt가 학습한 AD·CN 집단의 음성 패턴 비교</p>
 <p id="research-binary-note" hidden></p></article>
-<section class="result-research-overview" id="result-research-overview" aria-label="Pitt 전체 융합 및 AI-Hub 추가 AI 실행 결과">
+<section class="result-research-overview" id="result-research-overview" aria-label="분리된 치매 검사 모델 결과" hidden>
 <div class="result-research-overview__heading"><strong>추가 AI 모델 결과</strong><span>2단계 답변 음성 · 실제 실행 결과만 표시</span></div>
 <div class="result-research-overview__grid">
 <article class="result-research-overview__model"><span>Pitt 전체 융합</span><strong id="overview-pitt-full" aria-live="polite">확인 중</strong><p id="overview-pitt-note">서버 분석 상태를 확인합니다.</p></article>
@@ -520,8 +524,8 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <div class="result-metric"><span>02 · 발화</span><strong id="summary-delay">분석 중</strong></div>
 <div class="result-metric"><span>03 · 음높이 변동</span><strong id="summary-vowel">미측정</strong></div>
 </section>
-<div class="footer-actions voice-summary-actions"><button id="restart-from-result" class="primary" type="button">다시 검사</button><a id="result-feedback" href="./research-collab.html?target=voice-self&amp;origin=self-result" class="primary voice-feedback-primary">건의하기</a></div>
-<details id="result-details" class="voice-result-details"><summary>측정 그래프 · 추가 AI · 검사 근거 보기 <span aria-hidden="true">?</span></summary><button id="download" class="secondary" type="button" disabled>결과 파일 저장</button>
+<p class="voice-signal-bridge"><strong>치매 관련 AI 검사는 별도로 진행합니다.</strong><a href="./dementia-voice-assessment.html">영어·한국어 모델별 검사로 이동 →</a></p><div class="footer-actions voice-summary-actions"><button id="restart-from-result" class="primary" type="button">다시 검사</button><a id="result-feedback" href="./research-collab.html?target=voice-self&amp;origin=self-result" class="primary voice-feedback-primary">건의하기</a></div>
+<details id="result-details" class="voice-result-details"><summary>측정 그래프 · 측정 방식과 근거 보기 <span aria-hidden="true">?</span></summary><button id="download" class="secondary" type="button" disabled>결과 파일 저장</button>
 <div class="results" id="results" aria-label="음성 분석 결과">
 
 <article class="result" id="extended-research-card">
@@ -561,4 +565,4 @@ body:has(#self-panel:not([hidden]))>main{margin:0!important;max-width:none!impor
 <details id="advanced" class="panel"><summary>상세 측정값 보기</summary><pre id="evidence">결과 없음</pre></details>
 <p class="small" style="padding:17px 4px">이 결과는 음성 특징을 측정한 값이며 질환 판정이 아닙니다.</p></details>
 </section>
-</main><script type="module" src="./voice-analysis-beta.js?v=20261028-interpretation1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
+</main><script type="module" src="./voice-analysis-beta.js?v=20261028-signals-only1"></script><script src="./voice-evidence-methods.js?v=20261023-methods1" defer></script></body></html>
