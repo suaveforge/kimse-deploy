@@ -574,8 +574,9 @@ async function newAssessment(){
     el('microphone-preflight').textContent='이 브라우저는 마이크 녹음을 지원하지 않습니다. Chrome 또는 Safari에서 다시 시도해 주세요.';
     return;
   }
-  const wantsResearch=el('pitt-consent').checked;
-  const wantsExtended=el('extended-consent').checked;
+  // Signal metrics are independent. Cognitive models run only in the new language/task-specific assessment.
+  const wantsResearch=false;
+  const wantsExtended=false;
   preparingAssessment=true;
   const generation=++assessmentGeneration;
   // Restart also discards an already prepared microphone, so the permission
@@ -949,7 +950,7 @@ function output(shouldScroll=true){
   el('why-tremor').textContent=v.status==='measured'?
     '아— 발성에서 음높이(F0)의 변화가 1초 동안 반복되는 주기. 변화 폭이나 인지기능 점수와는 다른 지표입니다.':
     '품질 기준을 충족한 모음 발성 자료가 없습니다.';
-  report={source:'evidence_guest',status:'research_features_only',pronunciation:p,responseDelay:d,vocalTremor:v,researchOnlyBinary:completed.researchBinary||{status:'not_requested'},researchComparisons:completed.researchComparisons||{status:'not_requested'},cognitiveScreening:{status:'not_available',reason:'NO_KOREAN_CLINICALLY_VALIDATED_MODEL_CONNECTED',clinicalDecision:null},completedStages:tasks.filter(x=>completed[x+'Quality']?.serverStatus!=='pending'&&completed[x+'Quality']),measuredAt:new Date().toISOString()};
+  report={source:'evidence_guest',status:'signal_measurements_only',pronunciation:p,responseDelay:d,vocalTremor:v,completedStages:tasks.filter(x=>completed[x+'Quality']?.serverStatus!=='pending'&&completed[x+'Quality']),measuredAt:new Date().toISOString()};
   renderPronunciation(p);
   renderDelay(d);
   renderTremor(v);
@@ -1021,8 +1022,8 @@ async function analyze(){
   if(busy||!sound||!checkConsent())return;
   const task=currentTask(),stageIndex=index,session=recordingSession;
   const generation=assessmentGeneration;
-  const researchRequested=task==='response'&&researchReady&&el('pitt-consent').checked;
-  const extendedRequested=task==='response'&&extendedReady&&el('extended-consent').checked;
+  const researchRequested=false;
+  const extendedRequested=false;
   let phase='decode',pcmLength=0;
   busy=true;lastAnalysisError=null;
   el('error-copy').hidden=true;
@@ -1045,9 +1046,7 @@ async function analyze(){
     phase='encode';
     const audio=wav16kBase64(pcm);
     phase='request';
-    setStatus(task==='response'&&researchReady&&el('pitt-consent').checked?
-      '음성 구간 및 학습 완료 연구용 AD/CN 분류기를 실행하고 있습니다…':
-      '분석 서버에서 음성의 발화·침묵 구간을 확인하고 있습니다…');
+    setStatus('음성 신호의 발화·침묵·발성 특징을 측정하고 있습니다…');
     // The response stage is analyzed independently: 3rd-stage capture does not
     // wait for Silero/Pitt processing. Only the same consented response audio
     // is sent once; no synthetic score, duplicate call or persisted recording.
@@ -1319,7 +1318,7 @@ function setExtendedAvailability(status){
     extendedModelNames.includes('pitt_full')&&extendedModelNames.includes('aihub217');
   // The user's optional choice remains visible and never gets silently
   // unchecked just because an initial status probe races with mic consent.
-  el('extended-row').hidden=false;
+  el('extended-row').hidden=true;
   el('extended-ready-note').textContent=extendedReady?
     'Pitt 전체 융합 · AI-Hub 217 두 모델 준비 확인됨':
     status?.ready===true?
@@ -1334,6 +1333,10 @@ async function probeResearchAvailability(){
   }catch{setExtendedAvailability({});}
 }
 function updateConsentStart(){
+  // No AD/CN/Pitt/AI-Hub inference can be requested from the signal-measurement UI.
+  el('pitt-consent').checked=false;el('pitt-consent').disabled=true;
+  el('extended-consent').checked=false;el('extended-consent').disabled=true;
+  el('pitt-row').hidden=true;el('extended-row').hidden=true;
   const required=el('server-consent').checked;
   const scope=[];
   if(required)scope.push('기본 음성 분석');
@@ -1347,7 +1350,7 @@ function updateConsentStart(){
   el('choose-self').disabled=preparingAssessment||!required;
   el('choose-basic').disabled=preparingAssessment||!required;
   el('choose-self').textContent=preparingAssessment?'마이크 준비 중…':
-    required?'발음 평가 포함 · Azure 음성 전송 동의 후 시작 · Pitt·AI-Hub 비교':'기본 음성 분석을 선택해 주세요';
+    required?'발음 포함 · 세 가지 음성 측정 시작':'기본 음성 분석을 선택해 주세요';
   el('choose-basic').textContent=preparingAssessment?'마이크 준비 중…':
     required?'Azure 전송 없이 검사 시작 (발음 점수 제외)':'기본 음성 분석을 선택해 주세요';
   el('consent-message').textContent=required?
@@ -1358,8 +1361,9 @@ for(const id of ['server-consent','azure-consent','pitt-consent','extended-conse
   el(id).addEventListener('change',updateConsentStart);
 }
 el('consent-all').addEventListener('click',()=>{
-  for(const id of ['server-consent','azure-consent','pitt-consent'])el(id).checked=true;
-  el('extended-consent').checked=true;
+  for(const id of ['server-consent','azure-consent'])el(id).checked=true;
+  el('pitt-consent').checked=false;
+  el('extended-consent').checked=false;
   updateConsentStart();
 });
 updateConsentStart();
