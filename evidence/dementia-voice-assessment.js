@@ -189,8 +189,8 @@ async function analyze(){
       if(!['AD','CN'].includes(classification))throw Error('PITT_OUTPUT_MISSING');
       modelName='Pitt 기본 · 음향 특징 이진 분류';
       explanation=classification==='AD'?
-        '영어 음향 특징이 Pitt AD 학습 집단으로 분류됐습니다. 연구용 분류이며 실제 치매 진단이 아닙니다.':
-        '영어 음향 특징이 Pitt CN 학습 집단으로 분류됐습니다. 연구용 분류이며 정상 진단이 아닙니다.';
+        '영어 음향 특징이 Pitt의 AD(알츠하이머병) 학습 집단으로 분류됐습니다.':
+        '영어 음향 특징이 Pitt의 CN(인지 정상) 학습 집단으로 분류됐습니다.';
     }else{
       // The frozen four-stream model has its OWN three-class prediction (0/1/2).
       // Its auxiliary binaryTrainingPattern is a separate scorer, never the
