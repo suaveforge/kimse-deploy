@@ -562,6 +562,7 @@ function showStage(i){
 async function newAssessment(){
   clearTaskTransition();
   if(preparingAssessment)return;
+  el('ai-result-details').open=false;
   if(!el('server-consent').checked){
     el('consent-message').textContent='기본 음성 분석을 선택해야 검사할 수 있습니다.';
     el('analysis-consent-settings').open=true;
@@ -840,6 +841,11 @@ function showResearchBinary(){
     note.textContent=x.status==='not_requested'?'AD/CN 연구 모델을 선택하지 않았습니다.':
       '서버가 분류 결과를 제공하지 않았습니다. 상태: '+String(x.status||'unknown');
   }
+  el('research-binary-context').textContent=valid?
+    '영어 음성으로 학습한 Pitt 연구 모델의 분류입니다. 이 결과만으로 한국어 사용자의 치매 여부를 판단할 수 없습니다.':
+    x.status==='pending'?'연구용 모델의 분석 결과를 기다리는 중입니다.':
+    x.status==='not_requested'?'연구용 AI 분류를 선택하지 않았습니다. 치매 진단 결과는 제공하지 않습니다.':
+    '연구용 AI 분류가 완료되지 않았습니다. 치매 진단 결과는 제공하지 않습니다.';
   const baseline=completed.responseDelay||{};
   const comparison=completed.responseDelayComparison||{};
   const verifiedSegments=Array.isArray(comparison.candidate?.segments)?
@@ -1400,6 +1406,22 @@ el('audio-file').addEventListener('change',e=>{
 });
 el('new-session').addEventListener('click',newAssessment);
 el('restart-from-result').addEventListener('click',newAssessment);
+// A visible close control, Escape and tapping the backdrop all dismiss
+// the result explanation without disturbing the recorded measurement.
+const researchInfo=el('ai-result-details');
+const researchInfoTrigger=el('ai-result-info-trigger');
+function dismissResearchInfo(){
+  if(!researchInfo.open)return;
+  researchInfo.open=false;
+  researchInfoTrigger.focus?.();
+}
+el('close-ai-result-info').addEventListener('click',dismissResearchInfo);
+researchInfo.addEventListener('click',event=>{
+  if(event.target===researchInfo)dismissResearchInfo();
+});
+window.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&researchInfo.open)dismissResearchInfo();
+});
 el('download').addEventListener('click',()=>{
   if(!report)return;
   const url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));
