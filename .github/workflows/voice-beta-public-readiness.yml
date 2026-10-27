@@ -1,0 +1,41 @@
+name: KIMSE Voice Beta Public Readiness
+on:
+  push:
+    paths:
+      - .github/workflows/voice-beta-public-readiness.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read-only live API and published beta page sanity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import urllib.request
+          import time
+          api='https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis/beta/status'
+          url='https://kimse.suaveforge.com/evidence/voice-analysis-beta.html'
+          headers={'User-Agent':'Kimse-QA/1.0','Cache-Control':'no-cache'}
+          def get(u):
+              with urllib.request.urlopen(urllib.request.Request(u,headers=headers),timeout=20) as resp:
+                  return resp.status,resp.read().decode('utf-8','replace')
+          code,raw=get(api)
+          state=json.loads(raw)
+          fields=['ready','evidenceGuestQuickEnabled','onsetAzureEnabled','researchBinaryAvailable','extendedResearchAvailable','extendedResearchModels','version']
+          print('PUBLIC_BETA_HTTP',code,flush=True)
+          print('PUBLIC_BETA_READINESS',json.dumps({key:state.get(key) for key in fields},ensure_ascii=False),flush=True)
+          assert code==200 and state.get('ready') is True and state.get('evidenceGuestQuickEnabled') is True
+          code,page=get(url+'?qa='+str(int(time.time())))
+          print('PUBLIC_PAGE_HTTP',code,'BYTES',len(page),flush=True)
+          assert 'Azure 전송 없이 검사 시작 (발음 점수 제외)' in page
+          assert 'id="choose-basic"' in page
+          assert 'voice-analysis-beta.js?v=20261027-measure-ready1' in page
+          assert state.get('onsetAzureEnabled') is True,'FULL_PRONUNCIATION_REQUIRES_AZURE_PROVIDER_READY'
+          assert state.get('researchBinaryAvailable') is True,'PITT_RESEARCH_MODEL_UNAVAILABLE'
+          print('VOICE_BETA_PUBLIC_READINESS_PASS',flush=True)
+          PY
