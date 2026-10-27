@@ -35,8 +35,13 @@ jobs:
           assert 'Azure 전송 없이 검사 시작 (발음 점수 제외)' in page
           assert 'id="choose-basic"' in page
           assert 'id="research-binary-context"' in page,'VISIBLE_RESEARCH_ONLY_CONTEXT_MISSING'
+          assert 'id="result-research-overview"' in page,'MAIN_AI_COMPARISON_MISSING'
+          assert 'id="overview-pitt-full"' in page,'MAIN_PITT_FUSION_OUTPUT_MISSING'
+          assert 'id="overview-aihub217"' in page,'MAIN_AIHUB217_OUTPUT_MISSING'
+          assert 'id="extended-consent"' in page,'UPFRONT_EXTRA_AI_OPT_IN_MISSING'
+          assert 'id="extended-row" hidden' not in page,'HIDDEN_OPTIONAL_MODEL_CANNOT_BE_CONSENTED'
           assert 'id="close-ai-result-info"' in page,'MOBILE_INFORMATION_CLOSE_MISSING'
-          assert 'voice-analysis-beta.js?v=20261027-result-context1' in page
+          assert 'voice-analysis-beta.js?v=20261027-all-models-visible1' in page
           assert state.get('onsetAzureEnabled') is True,'FULL_PRONUNCIATION_REQUIRES_AZURE_PROVIDER_READY'
           assert state.get('researchBinaryAvailable') is True,'PITT_RESEARCH_MODEL_UNAVAILABLE'
           print('VOICE_BETA_PUBLIC_READINESS_PASS',flush=True)
