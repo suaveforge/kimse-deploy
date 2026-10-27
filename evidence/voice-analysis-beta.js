@@ -39,7 +39,7 @@ function eventProgress(label){
   if(voiceProgress.history.length>9)voiceProgress.history.shift();
 }
 let responsePreRollMs=0,responseSoundHasPreRoll=false;
-let busy=false,recordingSession=0,serviceReady=false,researchReady=false;
+let busy=false,recordingSession=0,serviceReady=false,researchReady=false,azureProviderReady=false;
 let extendedReady=false,extendedModelNames=[];
 let autoStopTimer=0,activeRecordingTask=null,autoVoiceSeen=false,lastActiveVoiceMs=null,voiceAboveFrames=0;
 let vowelOnsetMs=null,vowelLastVoiceMs=null,vowelVoiceFrames=0;
@@ -88,7 +88,10 @@ const shortReason={
   SERVER_AUDIO_PROCESSING_CONSENT_REQUIRED:'음성 분석 동의가 필요합니다.',
   AZURE_AUDIO_TRANSFER_CONSENT_REQUIRED:'Azure 발음 평가 동의가 필요합니다.',
   VOICE_ANALYSIS_TIMEOUT:'분석 응답 시간이 초과됐습니다. 녹음 파일을 유지했으니 다시 분석해 주세요.',
-  Failed_to_fetch:'분석 서버에 연결할 수 없습니다.'
+  Failed_to_fetch:'분석 서버에 연결할 수 없습니다.',
+  BETA_HOURLY_QUOTA_REACHED:'서버의 시간당 분석 한도에 도달했습니다. 지금 재시도해도 결과가 나오지 않습니다.',
+  VOICE_ANALYSIS_PROCESSING_FAILED:'서버가 음성 분석을 끝내지 못했습니다.',
+  FROZEN_PITT_RESEARCH_INFERENCE_FAILED:'Pitt AI 모델이 분석 결과를 만들지 못했습니다.'
 };
 function friendlyError(e){
   const raw=String(e?.message||e||'알 수 없는 오류');
@@ -348,15 +351,14 @@ async function checkService(){
     if(status.ready!==true||status.evidenceGuestQuickEnabled!==true)throw Error('API_NOT_READY');
     serviceReady=true;
     researchReady=status.researchBinaryAvailable===true;
+    azureProviderReady=status.onsetAzureEnabled===true;
     setExtendedAvailability(status);
-    if(!researchReady && el('pitt-consent').checked){
-      el('pitt-consent').checked=false;
-      setStatus('연구용 AI 분류를 사용할 수 없어 해당 항목은 미측정으로 진행합니다.','error');
-    }
+    // Never silently discard a requested measurement: the preflight must
+    // refuse to start if an explicitly selected model is offline.
     el('record').disabled=false;
-      setStatus('연결 완료 · 동의 후 녹음을 시작해 주세요.','success');
+    setStatus('분석 서버 연결 완료','success');
   }catch(e){
-    serviceReady=false;researchReady=false;
+    serviceReady=false;researchReady=false;azureProviderReady=false;
     setExtendedAvailability({});
     el('record').disabled=true;
     el('check-connection').hidden=false;
@@ -571,6 +573,8 @@ async function newAssessment(){
     el('microphone-preflight').textContent='이 브라우저는 마이크 녹음을 지원하지 않습니다. Chrome 또는 Safari에서 다시 시도해 주세요.';
     return;
   }
+  const wantsResearch=el('pitt-consent').checked;
+  const wantsExtended=el('extended-consent').checked&&!el('extended-row').hidden;
   preparingAssessment=true;
   const generation=++assessmentGeneration;
   // Restart also discards an already prepared microphone, so the permission
@@ -582,6 +586,7 @@ async function newAssessment(){
     connected:false,detail:null,percent:0,confirmedPercent:0,lastServerHeartbeat:null,
     startedAt:0,history:[]};
   el('choose-self').disabled=true;
+  el('choose-basic').disabled=true;
   el('method-picker').hidden=false;
   const notice=el('microphone-preflight');
   notice.hidden=false;
@@ -602,7 +607,10 @@ async function newAssessment(){
     await statusRequest;
     if(generation!==assessmentGeneration)return;
     if(!serviceReady)throw Error('ANALYSIS_SERVER_NOT_READY');
-    notice.textContent='마이크 및 분석 서버 준비 완료';
+    if(el('azure-consent').checked&&!azureProviderReady)throw Error('AZURE_SERVICE_NOT_READY');
+    if(wantsResearch&&!researchReady)throw Error('PITT_MODEL_NOT_READY');
+    if(wantsExtended&&!extendedReady)throw Error('EXTENDED_MODELS_NOT_READY');
+    notice.textContent='마이크 및 선택한 분석 모델 준비 완료';
     el('method-picker').hidden=true;
     showStage(0);
   }catch(e){
@@ -614,6 +622,9 @@ async function newAssessment(){
     notice.textContent=e?.name==='NotAllowedError'||e?.name==='PermissionDeniedError'?
       '마이크 권한이 거부됐습니다. 브라우저 주소창에서 마이크를 허용하고 다시 누르세요.':
       e?.message==='ANALYSIS_SERVER_NOT_READY'?'분석 서버에 연결되지 않았습니다. 다시 시도해 주세요.':
+      e?.message==='AZURE_SERVICE_NOT_READY'?'발음 평가 서버가 준비되지 않았습니다. 녹음을 시작하지 않았습니다. 잠시 후 다시 시도하거나 Azure 전송 없이 검사하세요.':
+      e?.message==='PITT_MODEL_NOT_READY'?'AD/CN 연구 모델이 준비되지 않았습니다. 검사 결과가 빠지지 않도록 시작을 중단했습니다.':
+      e?.message==='EXTENDED_MODELS_NOT_READY'?'추가 AI 모델이 준비되지 않았습니다. 녹음을 시작하지 않았습니다.':
       '마이크를 준비하지 못했습니다. 기기 연결과 브라우저 권한을 확인한 뒤 다시 누르세요.';
   }finally{
     preparingAssessment=false;
@@ -823,10 +834,11 @@ function showResearchBinary(){
     value.textContent='분류 불가';
     note.textContent=x.status==='insufficient_data'?
       '답변 음성이 5초 미만이거나 실제 발성 구간이 2.5초 미만이어서 분류하지 못했습니다.':
-      '모델 계산 오류: '+String(x.reason||'알 수 없는 실행 문제');
+      '분류 실패: '+friendlyError({message:x.reason||'VOICE_ANALYSIS_PROCESSING_FAILED',httpStatus:x.httpStatus});
   }else{
-    value.textContent='미측정';
-    note.textContent='별도 AI 분류에 동의하지 않았거나 측정하지 않았습니다.';
+    value.textContent=x.status==='not_requested'?'선택 제외':'측정 실패';
+    note.textContent=x.status==='not_requested'?'AD/CN 연구 모델을 선택하지 않았습니다.':
+      '서버가 분류 결과를 제공하지 않았습니다. 상태: '+String(x.status||'unknown');
   }
   const baseline=completed.responseDelay||{};
   const comparison=completed.responseDelayComparison||{};
@@ -889,9 +901,12 @@ function renderExtendedResearch(){
 function output(shouldScroll=true){
   const p=completed.pronunciation||{},d=completed.responseDelay||{},v=completed.vocalTremor||{};
   const score=p.scores?.accuracy;
-  el('out-pron').textContent=p.status==='assessed'&&number(score)?score.toFixed(1)+'/100':'미측정';
-  el('why-pron').textContent=p.status==='assessed'?
-    'Azure 발음 평가 · 교육용 정확도 점수':'측정된 발음 점수가 없습니다.';
+  const pronOK=p.status==='assessed'&&number(score);
+  const pronSkipped=p.reason==='BETA_AZURE_NOT_ENABLED'||p.reason==='OPTIONAL_AZURE_PRONUNCIATION_SKIPPED';
+  el('out-pron').textContent=pronOK?score.toFixed(1)+'/100':pronSkipped?'선택 제외':'측정 실패';
+  el('why-pron').textContent=pronOK?'Azure 발음 평가 · 교육용 정확도 점수':
+    pronSkipped?'외부 음성 전송을 선택하지 않아 발음 정확도 평가를 실시하지 않았습니다.':
+    '발음 분석이 완료되지 않았습니다. 서버 응답: '+String(p.reason||p.status||'UNKNOWN');
   const onset=number(d.initialResponseLatencyMs)?d.initialResponseLatencyMs:null;
   const fromRecordStart=number(d.firstSpeechFromWavStartMs)?d.firstSpeechFromWavStartMs:null;
   const pauses=d.withinResponse||{};
@@ -901,7 +916,7 @@ function output(shouldScroll=true){
     (onset!==null?'질문 종료 시각 기준 추정':'녹음 시작~첫 발화(화면 질문 표시와 PCM 시각 정합 미검증)')+
     ' · 내부 무음 '+(number(pauses.silentPauseCount)?pauses.silentPauseCount+'회':'미측정')+
     ' · 총 '+(number(pauses.totalSilentPauseMs)?(pauses.totalSilentPauseMs/1000).toFixed(2)+'초':'미측정'):
-    '답변 음성 분석 자료가 없습니다.';
+    '답변 분석 실패: '+friendlyError({message:completed.responseQuality?.errorCode||d.reason||'VOICE_ANALYSIS_PROCESSING_FAILED',httpStatus:completed.responseQuality?.httpStatus});
   const f=v.frequencyModulation?.peakRateHz;
   el('out-tremor').textContent=v.status==='measured'&&number(f)?f.toFixed(2)+' Hz':'미측정';
   el('why-tremor').textContent=v.status==='measured'?
@@ -1110,15 +1125,17 @@ async function analyze(){
         if(el('result-view').hidden===false||el('analysis-view').hidden===false)output(false);
       }).catch(error=>{
         if(generation!==assessmentGeneration)return;
-        completed.responseDelay={status:'unavailable',reason:'VOICE_ANALYSIS_REQUEST_FAILED'};
+        const failureCode=String(error?.message||'VOICE_ANALYSIS_REQUEST_FAILED').slice(0,90);
+        const failureHttp=Number(error?.httpStatus)||null;
+        completed.responseDelay={status:'unavailable',reason:failureCode};
         completed.responseDelayComparison=null;
         completed.researchBinary=researchRequested?
-          {status:'unavailable',reason:'VOICE_ANALYSIS_REQUEST_FAILED'}:{status:'not_requested'};
+          {status:'unavailable',reason:failureCode,httpStatus:failureHttp}:{status:'not_requested'};
         completed.researchComparisons=extendedRequested?
-          {status:'unavailable',models:{}}:{status:'not_requested',models:{}};
+          {status:'unavailable',reason:failureCode,models:{}}:{status:'not_requested',models:{}};
         finishVoiceProgress(false);
         completed.responseQuality={serverStatus:'failed',
-          errorCode:String(error?.message||'VOICE_ANALYSIS_REQUEST_FAILED').slice(0,90)};
+          errorCode:failureCode,httpStatus:failureHttp};
         updateResponseProgress();
         if(el('result-view').hidden===false||el('analysis-view').hidden===false)output(false);
       });
@@ -1291,8 +1308,11 @@ function updateConsentStart(){
     '아직 선택된 분석이 없습니다.';
 
   el('choose-self').disabled=preparingAssessment||!required;
+  el('choose-basic').disabled=preparingAssessment||!required;
   el('choose-self').textContent=preparingAssessment?'마이크 준비 중…':
-    required?'위 항목에 동의하고 마이크 연결 →':'기본 음성 분석을 선택해 주세요';
+    required?'발음 평가 포함 · Azure 음성 전송 동의 후 시작':'기본 음성 분석을 선택해 주세요';
+  el('choose-basic').textContent=preparingAssessment?'마이크 준비 중…':
+    required?'Azure 전송 없이 검사 시작 (발음 점수 제외)':'기본 음성 분석을 선택해 주세요';
   el('consent-message').textContent=required?
     '검사 시작 전에 필요한 동의와 마이크 권한을 끝냅니다.':
     '기본 음성 분석을 선택해야 진행할 수 있습니다.';
@@ -1307,7 +1327,18 @@ el('consent-all').addEventListener('click',()=>{
 });
 updateConsentStart();
 void probeResearchAvailability();
-el('choose-self').addEventListener('click',newAssessment);
+el('choose-self').addEventListener('click',()=>{
+  // A separate, plainly labeled affirmative click opts into Azure transfer.
+  el('azure-consent').checked=true;
+  updateConsentStart();
+  return newAssessment();
+});
+el('choose-basic').addEventListener('click',()=>{
+  // No external transfer; the missing pronunciation score is explicit.
+  el('azure-consent').checked=false;
+  updateConsentStart();
+  return newAssessment();
+});
 el('choose-retell').addEventListener('click',()=>{
   cancelCapture(true);el('method-picker').hidden=true;
   el('self-panel').hidden=true;el('result-view').hidden=true;el('retell-panel').hidden=false;
