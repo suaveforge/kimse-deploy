@@ -1,4 +1,4 @@
-name: KIMSE Voice Beta Public Readiness
+name: KIMSE Voice Signals and Cognitive Tasks Public Readiness
 on:
   push:
     paths:
@@ -9,43 +9,62 @@ permissions:
 jobs:
   public-status:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
-      - name: Read-only live API and published beta page sanity
+      - name: Validate published three signal metrics and separated language-task interfaces
         shell: bash
         run: |
           python3 - <<'PY'
-          import json
-          import urllib.request
-          import time
-          api='https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis/beta/status'
-          url='https://kimse.suaveforge.com/evidence/voice-analysis-beta.html'
+          import json,time,urllib.request,urllib.error
+          api='https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis/beta'
+          page='https://kimse.suaveforge.com/evidence/'
           headers={'User-Agent':'Kimse-QA/1.0','Cache-Control':'no-cache'}
           def get(u):
-              with urllib.request.urlopen(urllib.request.Request(u,headers=headers),timeout=20) as resp:
-                  return resp.status,resp.read().decode('utf-8','replace')
-          code,raw=get(api)
-          state=json.loads(raw)
-          fields=['ready','evidenceGuestQuickEnabled','onsetAzureEnabled','researchBinaryAvailable','extendedResearchAvailable','extendedResearchModels','version']
-          print('PUBLIC_BETA_HTTP',code,flush=True)
-          print('PUBLIC_BETA_READINESS',json.dumps({key:state.get(key) for key in fields},ensure_ascii=False),flush=True)
-          assert code==200 and state.get('ready') is True and state.get('evidenceGuestQuickEnabled') is True
-          code,page=get(url+'?qa='+str(int(time.time())))
-          print('PUBLIC_PAGE_HTTP',code,'BYTES',len(page),flush=True)
-          assert 'Azure 전송 없이 검사 시작 (발음 점수 제외)' in page
-          assert 'id="choose-basic"' in page
-          assert 'id="research-binary-context"' in page,'VISIBLE_RESEARCH_ONLY_CONTEXT_MISSING'
-          assert 'id="result-research-overview"' in page,'MAIN_AI_COMPARISON_MISSING'
-          assert 'id="overview-pitt-full"' in page,'MAIN_PITT_FUSION_OUTPUT_MISSING'
-          assert 'id="overview-aihub217"' in page,'MAIN_AIHUB217_OUTPUT_MISSING'
-          assert 'id="extended-consent"' in page,'UPFRONT_EXTRA_AI_OPT_IN_MISSING'
-          assert 'id="extended-row" hidden' not in page,'HIDDEN_OPTIONAL_MODEL_CANNOT_BE_CONSENTED'
-          assert 'id="close-ai-result-info"' in page,'MOBILE_INFORMATION_CLOSE_MISSING'
-          assert 'Pitt가 학습한 AD·CN 집단의 음성 패턴 비교' in page,'RESULT_INTERPRETATION_NOT_VISIBLE'
-          assert 'SCIvsOTHERS와 MCIvsAD 값은 0~1 범위 모델 출력값' in page,'AIHUB_RAW_INTERPRETATION_MISSING'
-          assert '치매 진단 아님' not in page and '치매 진단은 아닙니다' not in page,'REPETITIVE_DIAGNOSTIC_DENIAL_STILL_VISIBLE'
-          assert 'voice-analysis-beta.js?v=20261028-interpretation1' in page
-          assert state.get('onsetAzureEnabled') is True,'FULL_PRONUNCIATION_REQUIRES_AZURE_PROVIDER_READY'
-          assert state.get('researchBinaryAvailable') is True,'PITT_RESEARCH_MODEL_UNAVAILABLE'
-          print('VOICE_BETA_PUBLIC_READINESS_PASS',flush=True)
+              with urllib.request.urlopen(urllib.request.Request(u,headers=headers),timeout=20) as r:
+                  assert r.status==200,(u,r.status)
+                  return r.read().decode('utf-8','replace')
+          # During blue/green deployment, static Pages and API are not atomic.
+          # A bounded retry handles propagation, but cannot fake any result.
+          for attempt in range(1,21):
+              try:
+                  state=json.loads(get(api+'/status'))
+                  cognitive=json.loads(get(api+'/cognitive/models'))
+                  signal=get(page+'voice-analysis-beta.html?qa='+str(int(time.time())))
+                  assessment=get(page+'dementia-voice-assessment.html?qa='+str(int(time.time())))
+                  js=get(page+'voice-analysis-beta.js?qa='+str(int(time.time())))
+                  app=get(page+'dementia-voice-assessment.js?qa='+str(int(time.time())))
+                  home=get(page+'?qa='+str(int(time.time())))
+                  if ('20261028-signals-only1' not in signal or
+                      'cognitive-menu1' not in home or
+                      cognitive.get('english',{}).get('taskId')!='pitt_cookie_theft_excerpt_30s'):
+                      raise AssertionError('PAGES_API_DEPLOY_PROPAGATING')
+                  break
+              except (urllib.error.URLError,TimeoutError,ValueError,AssertionError) as e:
+                  if attempt==20:raise
+                  print('CANDIDATE_PROPAGATION_ATTEMPT',attempt,str(e)[:150],flush=True)
+                  time.sleep(15)
+          assert state.get('ready') is True and state.get('evidenceGuestQuickEnabled') is True
+          assert state.get('researchBinaryAvailable') is True
+          assert state.get('onsetAzureEnabled') is True
+          assert 'id="summary-pron"' in signal and 'id="summary-delay"' in signal and 'id="summary-vowel"' in signal
+          assert 'id="pitt-row" hidden' in signal and 'id="extended-row" hidden' in signal
+          assert 'id="cognitive-screening-status" aria-label="이전 모델 비교 자료" hidden' in signal
+          assert 'id="result-research-overview" aria-label="분리된 치매 검사 모델 결과" hidden' in signal
+          assert 'const researchRequested=false;' in js and 'const extendedRequested=false;' in js
+          assert 'status:\'signal_measurements_only\'' in js
+          assert 'id="lang-en"' in assessment and 'id="lang-ko"' in assessment
+          assert 'id="model-pitt-basic"' in assessment and 'id="model-pitt-full"' in assessment
+          assert 'SCI vs OTHERS' in assessment and 'MCI vs AD' in assessment
+          assert 'https://talkbank.org/dementia/protocol/participant/images/icons/cookie.jpg' in assessment
+          assert 'id="research-consent"' in assessment and 'id="stimulus-confirm"' in assessment
+          assert 'pitt_cookie_theft_excerpt_30s' in app
+          assert "state.language!=='en'" in app
+          assert "rawTrainingClassId" in app and "binaryTrainingPattern" in app
+          assert cognitive.get('english',{}).get('models',{}).get('pitt_basic') is True
+          assert cognitive.get('korean',{}).get('subtaskToModelMappingVerified') is False
+          assert cognitive.get('korean',{}).get('inferenceEnabled') is False
+          print('KIMSE_THREE_ORIGINAL_SIGNALS_UNCHANGED_RESEARCH_FLAGS_OFF=PASS')
+          print('KIMSE_ENGLISH_PITT_BASIC_AND_FUSION_TASKS_PUBLISHED=PASS')
+          print('KIMSE_KOREAN_AIHUB_UNVERIFIED_TASKS_FAIL_CLOSED=PASS')
+          print('KIMSE_PUBLIC_EVIDENCE_AND_COGNITIVE_ROUTES=PASS')
           PY
