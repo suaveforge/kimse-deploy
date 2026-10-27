@@ -41,7 +41,10 @@ jobs:
           assert 'id="extended-consent"' in page,'UPFRONT_EXTRA_AI_OPT_IN_MISSING'
           assert 'id="extended-row" hidden' not in page,'HIDDEN_OPTIONAL_MODEL_CANNOT_BE_CONSENTED'
           assert 'id="close-ai-result-info"' in page,'MOBILE_INFORMATION_CLOSE_MISSING'
-          assert 'voice-analysis-beta.js?v=20261027-all-models-visible1' in page
+          assert 'Pitt가 학습한 AD·CN 집단의 음성 패턴 비교' in page,'RESULT_INTERPRETATION_NOT_VISIBLE'
+          assert 'SCIvsOTHERS와 MCIvsAD 값은 0~1 범위 모델 출력값' in page,'AIHUB_RAW_INTERPRETATION_MISSING'
+          assert '치매 진단 아님' not in page and '치매 진단은 아닙니다' not in page,'REPETITIVE_DIAGNOSTIC_DENIAL_STILL_VISIBLE'
+          assert 'voice-analysis-beta.js?v=20261028-interpretation1' in page
           assert state.get('onsetAzureEnabled') is True,'FULL_PRONUNCIATION_REQUIRES_AZURE_PROVIDER_READY'
           assert state.get('researchBinaryAvailable') is True,'PITT_RESEARCH_MODEL_UNAVAILABLE'
           print('VOICE_BETA_PUBLIC_READINESS_PASS',flush=True)
