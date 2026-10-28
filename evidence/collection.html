@@ -236,13 +236,21 @@ main{padding-bottom:70px}.eyebrow{color:var(--teal);letter-spacing:.09em;font-si
 <dt>한계</dt><dd>치매 예측 및 병적 음성 떨림 판정 미검증 · 통화 시각은 근사치</dd></dl>
 <footer>임상 점수 임의 생성 없음 · 음성 원음 저장 없이 시험 분석</footer></article>
 <article class="reg-card" id="ai-cognitive-scoring-sandbox">
-<header class="kimse-demo-head"><div><small>09 · 검증된 인지검사 채점규칙 · 음성 AI 연결 시험</small><h3>음성·인지검사 채점 검증실</h3></div><a class="kimse-demo-action" href="./cognitive-scoring-demo.html" aria-label="음성 전사와 공식 검사 채점규칙 검증실 열기">테스트</a></header>
+<header class="kimse-demo-head"><div><small>10 · 검증된 인지검사 채점규칙 · 음성 AI 연결 시험</small><h3>음성·인지검사 채점 검증실</h3></div><a class="kimse-demo-action" href="./cognitive-scoring-demo.html" aria-label="음성 전사와 공식 검사 채점규칙 검증실 열기">테스트</a></header>
 <div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-list-check"></i><span>SCORE<br>LAB</span></div><div><p class="kimse-vision-desc">사전학습 Whisper 한국어 전사, 원문 읽기 발음 차이 후보 분석, Azure Speech 공식 한국어 발음 평가(서버 설정 시)와 GPCOG 공개 채점규칙 계산을 분리했습니다. 공식 발음 점수는 인지저하 진단이 아닙니다.</p></div></div>
 <dl><dt>기존 모델</dt><dd>Whisper tiny ONNX(선택적 브라우저 ASR) · GPCOG 공식 FAQ 9점·보호자 6점 규칙</dd><dt>실제 발음 평가</dt><dd>Azure Speech ko-KR(정확도·유창성·완성도, 계정 인증·외부 전송 동의·서버 비밀키 필요) · 언어학습 참고 점수이며 임상검사 아님</dd><dt>자동 평가 범위</dt><dd>검사자가 정오를 확인한 항목들의 점수 합계만 산출 · 전사 문자 일치는 검토 제안만</dd><dt>제약</dt><dd>GPCOG 원문 사용권 별도 필요 · 한국어 ASR 정확도 및 임상 채점 일치도 미검증 · 진단 불가</dd></dl>
 <footer>검사 시행/진단을 대체하지 않는, 공식 채점규칙 재현용 독립 실험실</footer>
 </article>
+<article class="reg-card" id="ai-dementia-voice-assessment">
+<header class="kimse-demo-head"><div><small>11 · 영어 Pitt / 한국어 AI-Hub · 독립 검사</small><h3>치매 검사 · 언어별 AI 음성 과제</h3></div><a class="kimse-demo-action" href="./dementia-voice-assessment.html" aria-label="영어 Pitt 및 한국어 AI-Hub 치매 검사 페이지 열기">테스트</a></header>
+<div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-brain"></i><span>COGNITIVE<br>LAB</span></div><div><p class="kimse-vision-desc">기존 발음·응답 지연·음높이 측정과 분리된 모델별 인지 음성검사입니다. 영어 Pitt는 Cookie Theft 원본 그림을 보며 영어로 녹음하고, 한국어 AI-Hub 217은 정확한 하위 검사 문항·학습 라벨 확인 전 추론을 잠급니다.</p></div></div>
+<dl><dt>영어 Pitt</dt><dd>기본 AD/CN · 전체 융합 모델을 각각 선택 · 공식 그림 설명 과제 · 현재 서버 입력 10~30초 발췌본(약 3분 전체 과제와 구분)</dd>
+<dt>한국어 AI-Hub 217</dt><dd>SCIvsOTHERS · MCIvsAD 모델 및 원본 가중치 보존 · SNSB/CERAD 하위 과제와 라벨 방향 검증 전 추론 차단</dd>
+<dt>기존 음성 측정</dt><dd>VOICE 3 및 SCORE LAB은 별도 항목으로 유지 · 인지 분류 자동 실행 없음</dd></dl>
+<footer>연구용 비진단 검사 · 영어 과제의 의료적 진단 성능 미검증 · 한국어 모델 입력 검증 대기</footer>
+</article>
 <article class="reg-card" id="ai-retell-voice-demo">
-<header class="kimse-demo-head"><div><small>10 · Retell AI 통화 · 클라이언트 직접 체험</small><h3>AI 음성 통화 및 응답 지연</h3></div><a class="kimse-demo-action" href="./retell-guest.html" aria-label="접근코드 없이 AI 음성 통화 테스트 열기">통화 테스트</a></header>
+<header class="kimse-demo-head"><div><small>12 · Retell AI 통화 · 클라이언트 직접 체험</small><h3>AI 음성 통화 및 응답 지연</h3></div><a class="kimse-demo-action" href="./retell-guest.html" aria-label="접근코드 없이 AI 음성 통화 테스트 열기">통화 테스트</a></header>
 <div class="kimse-vision-demo-row"><div class="kimse-vision-thumb" aria-hidden="true"><i class="ti ti-phone-call"></i><span>RETELL<br>LIVE</span></div>
 <div><p class="kimse-vision-desc">본인 음성 처리 동의 후 운영자 코드 없이 AI와 직접 통화하고 질문 후 응답 지연을 확인합니다. 통화 자료가 없으면 발음·떨림을 임의로 채점하지 않습니다.</p></div></div>
 <dl><dt>실행 방식</dt><dd>클라이언트 직접 통화 · 서버 측 비용 제한 및 통화별 접근권한</dd>
