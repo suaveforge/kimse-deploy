@@ -93,17 +93,17 @@ main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + en
 검사 종류: SNSB-II 또는 CERAD-K에서 실제 학습한 하위 과제 녹음<br>
 신호 길이: 최소 3초~최대 30초의 발화 · 원본 음성에는 타인 발화가 없어야 함<br>
 전처리: 단일 음성 → 48kHz → 멜 이미지 100×100 RGB<br>
-추가로 필수 확인: 모델에 대응하는 하위 검사명·문항 원본·0/1 클래스 방향<br>
-<span>상태: 하위 과제/라벨 대조 전 · AI 추론 잠금 · 임의 자유 대화 입력 불가</span></div>
+특징 추출 코드에서 확인한 라벨: 0=OTHERS, 1=SCI. VGG16 원본 학습 당시 클래스 인덱스와 하위 검사 문항은 추가 검증 필요<br>
+<span>상태: 최종 분류기 특징 라벨 복원 · VGG16 실제 클래스 인덱스와 하위 과제 미확인 · 사용자 추론 잠금</span></div>
 <div class="requirement"><strong>MCI vs AD · 두 번째 VGG16 입력</strong>
 검사 종류: SNSB-II 또는 CERAD-K에서 실제 학습한 하위 과제 녹음<br>
 신호 길이: 최소 3초~최대 30초의 발화 · 타인 음성 혼입 없는 녹음 필요<br>
 전처리: 첫 번째 모델과 같은 48kHz 멜 이미지 100×100 RGB<br>
-추가로 필수 확인: MCI·AD 원본 학습 라벨과 출력 0/1 방향·정확한 하위 검사명<br>
-<span>상태: 하위 과제/라벨 대조 전 · AI 추론 잠금 · 진단값 제공 불가</span></div>
+특징 추출 코드에서 확인한 라벨: 0=AD, 1=MCI. VGG16 원본 학습 당시 클래스 인덱스와 하위 검사 문항은 추가 검증 필요<br>
+<span>상태: 최종 분류기 특징 라벨 복원 · VGG16 실제 클래스 인덱스와 하위 과제 미확인 · 사용자 추론 잠금</span></div>
 <div class="requirement"><strong>현재 확보된 것과 빠진 것</strong>실제 AI-Hub 공개 모델 가중치와 전처리 코드 확보 · VGG16 두 모델의 추론 엔진 보존<br>
 공식 데이터 종류에는 IB_APPS(SpeechTaskSet), CERAD-K, SNSB-II가 있으나, 확보한 VGG16 학습 코드 경로에서는 SNSB/CERAD를 확인했습니다.<br>
-정확한 하위 과제와 0/1 출력 방향 및 최종 ANN 가중치는 현재 검증·확보되지 않았습니다.<br>
+AI-Hub 공식 데이터셋 진단 코드는 정상=1, MCI=5, AD=10입니다. 별도의 공개 특징 추출 코드에서 SCI=1/OTHERS=0, MCI=1/AD=0을 확인했습니다. 그러나 원 VGG16 학습 당시 class_indices 실측기록, 정확한 검사 문항 및 최종 ANN 가중치는 아직 확보되지 않았습니다.<br>
 <span>입력 형식이 같아도 하위 과제가 다르면 학습 조건을 만족하지 않습니다. 두 모델의 출력 숫자를 위험 확률로 표시하지 않습니다.</span></div>
 </div><p class="warning-panel">공식 학습 코드에서 SNSB·CERAD 계열은 확인했지만, 두 VGG16의 세부 검사 문항 대응은 아직 확인되지 않았어. 정확한 문항을 임의로 만들어 검사에 연결하지 않고 있어.</p>
 <a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:15px" href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=217" target="_blank" rel="noopener noreferrer">AI-Hub 217 원본 학습자료 확인</a>
