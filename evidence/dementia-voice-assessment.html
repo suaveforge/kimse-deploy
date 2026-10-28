@@ -108,6 +108,10 @@ AI-Hub 공식 데이터셋 진단 코드는 정상=1, MCI=5, AD=10입니다. 별
 </div><p class="warning-panel">공식 학습 코드에서 SNSB·CERAD 계열은 확인했지만, 두 VGG16의 세부 검사 문항 대응은 아직 확인되지 않았어. 정확한 문항을 임의로 만들어 검사에 연결하지 않고 있어.</p>
 <a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:15px" href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=217" target="_blank" rel="noopener noreferrer">AI-Hub 217 원본 학습자료 확인</a>
 <p class="runtime" id="korean-runtime" role="status">한국어 추론은 검증된 모델별 문항이 연결되기 전까지 실행할 수 없습니다.</p>
+<div class="requirement" id="korean-available-now"><strong>기관 회신 없이 지금 가능한 한국어 음성 분석</strong>
+<p style="margin:8px 0">한국어 Whisper base 사전학습 음성인식은 브라우저에서 음성을 텍스트로 전사합니다. 별도 VOICE 3에서는 발음 정확도(설정 시), 응답 지연, 음높이 변화를 측정합니다. 두 기능은 현재 사용할 수 있지만, 한국어 AD/MCI/정상 진단 분류와는 다릅니다.</p>
+<div class="action-row"><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./cognitive-scoring-demo.html">한국어 Whisper 음성 전사 실행 →</a><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./voice-analysis-demo.html">발음·응답 지연·음높이 측정 →</a></div>
+<p style="margin:8px 0;font-size:14px">추가로 공개된 고령자 한국어 ASR <a href="https://huggingface.co/hyyoka/wav2vec2-xlsr-korean-senior" target="_blank" rel="noopener noreferrer">wav2vec2-xlsr-korean-senior</a> 가중치·추론 예제가 확인됐으며, 이 화면이나 서버에 아직 연결·검증된 상태는 아닙니다. 전사 모델은 치매 분류기가 아닙니다.</p></div>
 </div></section>
 <p class="footnote">공식 원자료: TalkBank DementiaBank Pitt English corpus 및 표준 그림 설명 프로토콜, AI-Hub 217 치매·인지기능장애 음성 데이터. 영어는 30초 발췌 연구 비교, 한국어는 세부 과제 확인 전 잠금 상태입니다. 실제 의료 판단은 이 실험 화면의 모델 분류와 별도로 이뤄집니다.</p>
 </main><script defer src="./dementia-voice-assessment.js?v=20261028-task1"></script>
