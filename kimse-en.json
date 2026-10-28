@@ -1057,7 +1057,8 @@
     "잠자리에 누운 시각:": "Went to bed at:",
     "일어났어요 · 기록하기": "I got up · Save record",
     "잘못 누른 기록 취소": "Cancel accidental entry",
-    "수면시간과 다름": "Not the same as sleep duration"
+    "수면시간과 다름": "Not the same as sleep duration",
+    "별도 치매 검사 · 영어 / 한국어 모델별 과제 →": "Separate dementia assessment · English / Korean model-specific tasks →"
   },
   "note": "Curated English public UI strings. Not a clinical instrument translation and not a complete certified translation of every product screen."
 }
