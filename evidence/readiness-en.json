@@ -113,6 +113,13 @@
     "각 영역": "Each area",
     "항목으로 평가.": "is assessed against five items.",
     "여섯 영역은 증빙 준비도를 뜻하며 제품 출시 여부는 개인정보 보호, 안전성, 법률·운영 요건과 별도로 확인해야 함.": "The six areas measure evidence readiness, not launch approval. Privacy, safety, legal and operational requirements require separate checks.",
-    "투자 준비도도 성공 확률이나 투자 가능 여부가 아님.": "Investor readiness neither predicts fundraising success nor guarantees investment."
+    "투자 준비도도 성공 확률이나 투자 가능 여부가 아님.": "Investor readiness neither predicts fundraising success nor guarantees investment.",
+    "현황": "Status",
+    "기능별 검토": "Feature-level review",
+    "현황 기능별 검토": "Status and feature-level review",
+    "출원": "Patent application",
+    "권리화 목록 보기 ↗": "View intellectual property candidates ↗",
+    "권리화 목록 보기": "View intellectual property candidates",
+    "치매 검사": "Dementia assessment"
   }
 }
