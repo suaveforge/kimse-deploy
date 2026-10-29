@@ -4,7 +4,70 @@ const API='https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis/beta'
 const byId=id=>document.getElementById(id);
 const researchModels=['pitt_basic','pitt_full'];
 const senior={ready:false,recording:false,busy:false,recorder:null,stream:null,blob:null,url:null};
-const state={language:'en',model:'pitt_basic',available:{pitt_basic:false,pitt_full:false},recording:false,busy:false,
+const examTasks=Object.freeze([
+  {domain:'시간과 장소',question:'오늘 날짜와 지금 계신 곳을 말씀해 주세요.',tip:'기억나는 대로 편하게 이야기하세요.',seconds:25},
+  {domain:'말의 유창성',question:'동물 이름을 최대한 많이 말씀해 주세요.',tip:'생각나는 순서대로 계속 말씀하세요.',seconds:30},
+  {domain:'일상 이야기',question:'오늘 있었던 일을 들려주세요.',tip:'기억나는 일부터 편하게 말씀하세요.',seconds:30}
+]);
+const exam={index:0,answers:[],startedAt:0,timer:null,finished:false};
+function examClock(seconds){
+  const value=Math.max(0,Math.ceil(seconds));
+  byId('exam-clock').textContent='00:'+String(value).padStart(2,'0');
+}
+function examDraw(){
+  const task=examTasks[exam.index];
+  byId('exam-progress').textContent=String(exam.index+1).padStart(2,'0')+' / 03';
+  byId('exam-domain').textContent=task.domain;
+  byId('exam-question').textContent=task.question;
+  byId('exam-tip').textContent=task.tip;
+  if(!senior.recording&&!senior.blob)examClock(task.seconds);
+  byId('exam-finished').hidden=!exam.finished;
+  const action=byId('senior-main-action');
+  if(exam.finished){action.hidden=true;return}
+  action.hidden=false;
+  action.disabled=senior.busy||(!senior.recording&&(!senior.ready||!byId('senior-consent').checked));
+  if(senior.busy){action.textContent='분석 중…';return}
+  if(senior.recording){action.textContent='녹음 끝내기';action.disabled=false;return}
+  if(senior.blob&&!byId('senior-result').hidden){action.textContent=exam.index===examTasks.length-1?'결과 보기':'다음 질문';return}
+  action.textContent=senior.blob?'답변 확인하기':'녹음 시작';
+}
+function examRecordClock(){
+  if(!senior.recording)return;
+  const left=examTasks[exam.index].seconds-(performance.now()-exam.startedAt)/1000;
+  examClock(left);
+  if(left<=0)seniorStop();
+}
+function examNext(){
+  if(senior.recording||senior.busy||byId('senior-result').hidden)return;
+  if(exam.index===examTasks.length-1){
+    exam.finished=true;
+    byId('exam-summary').textContent=exam.answers.map((a,i)=>
+      (i+1)+'. '+examTasks[i].domain+' · '+a.text).join('\n');
+    examDraw();return;
+  }
+  exam.index++;
+  seniorDiscard();
+  byId('senior-result').hidden=true;
+  seniorMessage('질문을 듣고 녹음 시작을 누르세요.');
+  examDraw();
+}
+function examRestart(){
+  if(senior.recording||senior.busy)return;
+  exam.index=0;exam.answers=[];exam.finished=false;
+  seniorDiscard();
+  byId('exam-finished').hidden=true;
+  seniorMessage('준비되면 녹음 시작을 누르세요.');
+  examDraw();
+}
+function examAction(){
+  if(exam.finished)return;
+  if(senior.recording){seniorStop();return}
+  if(senior.busy)return;
+  if(senior.blob){if(!byId('senior-result').hidden){examNext();return}return seniorAnalyze()}
+  return seniorBegin();
+}
+
+const state={language:'ko',model:'pitt_basic',available:{pitt_basic:false,pitt_full:false},recording:false,busy:false,
   recorder:null,stream:null,blob:null,url:null,clock:null,startedAt:0};
 const id=(typeof crypto!=='undefined'&&crypto.randomUUID)?
   crypto.randomUUID().replace(/-/g,''):'cognitive'+String(Date.now())+String(Math.random()).slice(2,12);
@@ -230,6 +293,7 @@ async function analyze(){
 function seniorMessage(message,error=false){
   const node=byId('senior-runtime');node.textContent=message;
   node.dataset.state=error?'error':'ok';
+  examDraw();
 }
 function seniorUpdate(){
   const consent=byId('senior-consent').checked;
@@ -237,6 +301,7 @@ function seniorUpdate(){
   byId('senior-stop').disabled=!senior.recording;
   byId('senior-analyze').disabled=!senior.ready||!consent||!senior.blob||senior.recording||senior.busy;
   byId('senior-discard').disabled=!senior.blob||senior.recording||senior.busy;
+  examDraw();
 }
 async function seniorReady(){
   try{
@@ -277,6 +342,7 @@ async function seniorBegin(){
     recorder.onerror=()=>seniorMessage('녹음에 실패했습니다.',true);
     recorder.onstop=()=>{
       senior.recording=false;seniorReleaseMic();
+      if(exam.timer){clearInterval(exam.timer);exam.timer=null;}
       if(chunks.length){
         senior.blob=new Blob(chunks,{type:recorder.mimeType||chunks[0]?.type||'audio/webm'});
         senior.url=URL.createObjectURL(senior.blob);
@@ -286,9 +352,12 @@ async function seniorBegin(){
       seniorUpdate();
     };
     senior.recorder=recorder;recorder.start(250);senior.recording=true;
+    exam.startedAt=performance.now();examClock(examTasks[exam.index].seconds);
+    if(exam.timer)clearInterval(exam.timer);
+    exam.timer=setInterval(examRecordClock,250);
     seniorMessage('한국어로 말씀하세요. 최대 30초까지 녹음합니다.');
     seniorUpdate();
-    setTimeout(()=>{if(senior.recorder===recorder&&recorder.state==='recording')seniorStop()},29500);
+    setTimeout(()=>{if(senior.recorder===recorder&&recorder.state==='recording')seniorStop()},examTasks[exam.index].seconds*1000-500);
   }catch(error){seniorReleaseMic();senior.recording=false;seniorUpdate();
     seniorMessage('마이크 권한 또는 기기 설정을 확인해 주세요.',true);}
 }
@@ -354,7 +423,12 @@ async function seniorAnalyze(){
        data.clinicalDecision!==null||data.dementiaClassification!==null||
        data.model!=='hyyoka/wav2vec2-xlsr-korean-senior')throw Error('SENIOR_ASR_RESULT_UNVERIFIED');
     byId('senior-transcript').textContent=composeSeniorKoreanTranscript(data.text)||'(인식된 단어 없음)';
-    byId('senior-result').hidden=false;seniorMessage('고령자 한국어 전사 완료 · 의료 판정이 아닌 텍스트 결과입니다.');
+    byId('senior-result').hidden=false;
+    const transcript=byId('senior-transcript').textContent;
+    const words=transcript.trim().split(/\s+/).filter(Boolean);
+    byId('exam-measure').textContent='발화 단어 약 '+words.length+'개 · 자동 전사 결과';
+    exam.answers[exam.index]={text:transcript,words:words.length};
+    seniorMessage('확인했으면 다음 질문으로 넘어가세요.');
   }catch(error){
     const reason=error?.name==='AbortError'?'서버 응답시간 초과':
       error?.message==='SENIOR_ASR_REQUIRES_1_TO_30_SECONDS'?'녹음은 1~30초여야 합니다.':
@@ -363,6 +437,8 @@ async function seniorAnalyze(){
   }finally{senior.busy=false;seniorUpdate();}
 }
 byId('senior-consent').addEventListener('change',seniorUpdate);
+byId('senior-main-action').addEventListener('click',examAction);
+byId('exam-restart').addEventListener('click',examRestart);
 byId('senior-start').addEventListener('click',seniorBegin);
 byId('senior-stop').addEventListener('click',seniorStop);
 byId('senior-analyze').addEventListener('click',seniorAnalyze);
@@ -378,6 +454,7 @@ byId('analyze-model').addEventListener('click',analyze);
 byId('discard-record').addEventListener('click',discard);
 window.addEventListener('pagehide',()=>{if(state.recorder?.state==='recording')state.recorder.stop();releaseMic();if(state.url)URL.revokeObjectURL(state.url);if(senior.recorder?.state==='recording')senior.recorder.stop();seniorReleaseMic();if(senior.url)URL.revokeObjectURL(senior.url);});
 update();
+examDraw();
 void checkModels();
 void seniorReady();
 })();
