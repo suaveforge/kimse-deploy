@@ -43,13 +43,80 @@ function examNext(){
     exam.finished=true;
     byId('exam-summary').textContent=exam.answers.map((a,i)=>
       (i+1)+'. '+examTasks[i].domain+' · '+a.text).join('\n');
-    examDraw();researchUpdate();return;
+    examDraw();researchUpdate();binaryUpdate();return;
   }
   exam.index++;
   seniorDiscard();
   byId('senior-result').hidden=true;
   seniorMessage('질문을 듣고 녹음 시작을 누르세요.');
   examDraw();
+}
+
+
+const frozenBinary={
+  ready:false,busy:false,
+  model:'Mrsmetamorphosis/dementia-wav2vec-scientific-specaugment-V3'
+};
+function binaryUpdate(){
+ const button=byId('binary-run');
+ button.disabled=!exam.finished||!frozenBinary.ready||frozenBinary.busy||!senior.blob||
+   !byId('senior-consent').checked||!byId('binary-research-opt-in').checked;
+ if(!exam.finished)return;
+ if(!frozenBinary.ready){
+   byId('binary-runtime').textContent='치매/비치매 학습 모델이 사용 준비되지 않았습니다.';
+ }else if(!frozenBinary.busy){
+   byId('binary-runtime').textContent='공개 가중치 분류 준비됨 · 한국어 진단 검증은 되지 않았습니다.';
+ }
+}
+async function binaryReady(){
+ try{
+   const response=await fetch(API+'/cognitive/binary-research/status',{cache:'no-store'});
+   const data=response.ok?await response.json():{};
+   frozenBinary.ready=data.ready===true&&data.model===frozenBinary.model&&
+      JSON.stringify(data.trainedClasses)==='["nodementia","dementia"]'&&
+      data.koreanValidation===false&&data.medicalDiagnosis===false;
+ }catch{frozenBinary.ready=false}
+ binaryUpdate();
+}
+async function binaryAnalyze(){
+ if(!frozenBinary.ready||frozenBinary.busy||!exam.finished||!senior.blob||
+    !byId('senior-consent').checked||!byId('binary-research-opt-in').checked)return;
+ frozenBinary.busy=true;
+ byId('binary-result').hidden=true;
+ byId('binary-runtime').textContent='실제 학습 가중치로 분류 중입니다.';
+ binaryUpdate();
+ try{
+   const samples=await seniorPcm16k(senior.blob);
+   if(samples.length<3*16000)throw Error('3초 이상 녹음이 필요합니다.');
+   const encoded=wavBase64(samples);
+   const ctrl=new AbortController();
+   const timer=setTimeout(()=>ctrl.abort(),165000);
+   let response;
+   try{
+     response=await fetch(API+'/cognitive/binary-research/guest',{
+       method:'POST',cache:'no-store',signal:ctrl.signal,
+       headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':id},
+       body:JSON.stringify({language:'ko',audio_base64:encoded,
+           consent_server_audio_processing:true,consent_nonclinical_research:true})
+     });
+   }finally{clearTimeout(timer)}
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error('실제 분류 모델 실행 실패');
+   if(data.status!=='classified_research_only'||data.model!==frozenBinary.model||
+      !['nodementia','dementia'].includes(data.trainingClass)||
+      data.clinicalDecision!==null||data.dementiaDiagnosis!==null||
+      data.mciClassification!==null||data.koreanValidation!==false||
+      data.originalTrainingTaskVerified!==false||data.audioStored!==false||
+      data.scoreMeaning!=='UNCALIBRATED_MODEL_SOFTMAX_NOT_CLINICAL_RISK')throw Error('연구 모델 출력 검증 실패');
+   const label=data.trainingClass==='dementia'?'치매 학습 집단':'비치매 학습 집단';
+   byId('binary-class').textContent=label+' · 연구 분류';
+   byId('binary-result').hidden=false;
+   byId('binary-runtime').textContent='실제 공개 학습 모델로 분류했습니다.';
+ }catch(error){
+   byId('binary-runtime').textContent=error?.name==='AbortError'?'모델 응답시간 초과':
+     '연구 분류 실패: '+String(error?.message||'오류').slice(0,70);
+   byId('binary-result').hidden=true;
+ }finally{frozenBinary.busy=false;binaryUpdate()}
 }
 
 let researchReady=false;
@@ -110,6 +177,8 @@ async function researchAnalyze(){
 function examRestart(){
   if(senior.recording||senior.busy)return;
   exam.index=0;exam.answers=[];exam.finished=false;
+  byId('binary-research-opt-in').checked=false;
+  byId('binary-result').hidden=true;
   byId('exam-research-opt-in').checked=false;
   byId('exam-research-result').hidden=true;
   seniorDiscard();
@@ -499,6 +568,8 @@ byId('senior-main-action').addEventListener('click',examAction);
 byId('exam-restart').addEventListener('click',examRestart);
 byId('exam-research-opt-in').addEventListener('change',researchUpdate);
 byId('exam-run-vgg').addEventListener('click',researchAnalyze);
+byId('binary-research-opt-in').addEventListener('change',binaryUpdate);
+byId('binary-run').addEventListener('click',binaryAnalyze);
 byId('senior-start').addEventListener('click',seniorBegin);
 byId('senior-stop').addEventListener('click',seniorStop);
 byId('senior-analyze').addEventListener('click',seniorAnalyze);
@@ -518,4 +589,5 @@ examDraw();
 void checkModels();
 void seniorReady();
 void researchStatus();
+void binaryReady();
 })();
