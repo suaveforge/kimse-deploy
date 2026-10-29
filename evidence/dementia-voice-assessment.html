@@ -85,6 +85,13 @@ main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + en
 </section>
 <section id="korean-panel" class="panel" aria-labelledby="korean-title" hidden>
 <h2 class="section-title" id="korean-title">AI-Hub 217 · 한국어 신경인지검사 음성</h2><p class="section-desc">공식 공개 모델 코드에서는 SNSB-II 및 CERAD-K 녹음 자료를 학습 경로로 사용합니다. 자유 대화나 ‘어제 무엇을 했나요?’ 과제를 그대로 대체 입력하지 않습니다.</p>
+<h3 id="korean-ready-now-heading" style="margin:16px 0 10px;font-size:18px">01 · 지금 바로 사용하는 한국어 음성 분석</h3>
+<div class="requirement" id="korean-available-now"><strong>기관 회신 없이 지금 가능한 한국어 음성 분석</strong>
+<p style="margin:8px 0">한국어 Whisper base 사전학습 음성인식은 브라우저에서 음성을 텍스트로 전사합니다. 별도 VOICE 3에서는 발음 정확도(설정 시), 응답 지연, 음높이 변화를 측정합니다. 두 기능은 현재 사용할 수 있지만, 한국어 AD/MCI/정상 진단 분류와는 다릅니다.</p>
+<div class="action-row"><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./cognitive-scoring-demo.html">한국어 Whisper 음성 전사 실행 →</a><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./voice-analysis-demo.html">발음·응답 지연·음높이 측정 →</a></div>
+<p style="margin:8px 0;font-size:14px">추가로 공개된 고령자 한국어 ASR <a href="https://huggingface.co/hyyoka/wav2vec2-xlsr-korean-senior" target="_blank" rel="noopener noreferrer">wav2vec2-xlsr-korean-senior</a> 가중치·추론 예제가 확인됐으며, 이 화면이나 서버에 아직 연결·검증된 상태는 아닙니다. 전사 모델은 치매 분류기가 아닙니다.</p></div>
+<h3 id="korean-waiting-heading" style="margin:24px 0 10px;font-size:18px">02 · 요청 완료 · 원본 검증이 필요한 치매 분류 모델</h3>
+<p class="section-desc">AI-Hub 217 원본 데이터와 공개 VGG16 가중치는 이미 확보했습니다. 기관에는 정확한 검사 문항·최종 ANN 자료와 이용 조건을 문의했으며, 이 항목만 회신·교차 검증이 필요합니다. 지금 가능한 전사와 음성 측정은 위에서 별도로 사용할 수 있습니다.</p>
 <div class="model-grid"><article class="model-choice"><span class="phase">AI-HUB 217 · VGG16 #1</span><strong>SCI vs OTHERS</strong><span>SCI / 그 밖의 학습 집단 비교. 세부 학습 문항·출력 방향은 원본 코드 및 학습 데이터와 추가 대조 필요</span></article>
 <article class="model-choice"><span class="phase">AI-HUB 217 · VGG16 #2</span><strong>MCI vs AD</strong><span>경도인지장애 / 알츠하이머병 학습 집단 비교. 세부 문항·학습 라벨 방향 확인 필요</span></article></div>
 <div class="task-panel"><span class="phase">학습 데이터 계열 · SNSB-II / CERAD-K</span><h3>모델별 원래 녹음 문항 확인</h3>
@@ -108,10 +115,7 @@ AI-Hub 공식 데이터셋 진단 코드는 정상=1, MCI=5, AD=10입니다. 별
 </div><p class="warning-panel">공식 학습 코드에서 SNSB·CERAD 계열은 확인했지만, 두 VGG16의 세부 검사 문항 대응은 아직 확인되지 않았어. 정확한 문항을 임의로 만들어 검사에 연결하지 않고 있어.</p>
 <a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:15px" href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=217" target="_blank" rel="noopener noreferrer">AI-Hub 217 원본 학습자료 확인</a>
 <p class="runtime" id="korean-runtime" role="status">한국어 추론은 검증된 모델별 문항이 연결되기 전까지 실행할 수 없습니다.</p>
-<div class="requirement" id="korean-available-now"><strong>기관 회신 없이 지금 가능한 한국어 음성 분석</strong>
-<p style="margin:8px 0">한국어 Whisper base 사전학습 음성인식은 브라우저에서 음성을 텍스트로 전사합니다. 별도 VOICE 3에서는 발음 정확도(설정 시), 응답 지연, 음높이 변화를 측정합니다. 두 기능은 현재 사용할 수 있지만, 한국어 AD/MCI/정상 진단 분류와는 다릅니다.</p>
-<div class="action-row"><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./cognitive-scoring-demo.html">한국어 Whisper 음성 전사 실행 →</a><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./voice-analysis-demo.html">발음·응답 지연·음높이 측정 →</a></div>
-<p style="margin:8px 0;font-size:14px">추가로 공개된 고령자 한국어 ASR <a href="https://huggingface.co/hyyoka/wav2vec2-xlsr-korean-senior" target="_blank" rel="noopener noreferrer">wav2vec2-xlsr-korean-senior</a> 가중치·추론 예제가 확인됐으며, 이 화면이나 서버에 아직 연결·검증된 상태는 아닙니다. 전사 모델은 치매 분류기가 아닙니다.</p></div>
+
 </div></section>
 <p class="footnote">공식 원자료: TalkBank DementiaBank Pitt English corpus 및 표준 그림 설명 프로토콜, AI-Hub 217 치매·인지기능장애 음성 데이터. 영어는 30초 발췌 연구 비교, 한국어는 세부 과제 확인 전 잠금 상태입니다. 실제 의료 판단은 이 실험 화면의 모델 분류와 별도로 이뤄집니다.</p>
 </main><script defer src="./dementia-voice-assessment.js?v=20261028-task1"></script>
