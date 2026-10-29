@@ -3,6 +3,7 @@
 const API='https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis/beta';
 const byId=id=>document.getElementById(id);
 const researchModels=['pitt_basic','pitt_full'];
+const senior={ready:false,recording:false,busy:false,recorder:null,stream:null,blob:null,url:null};
 const state={language:'en',model:'pitt_basic',available:{pitt_basic:false,pitt_full:false},recording:false,busy:false,
   recorder:null,stream:null,blob:null,url:null,clock:null,startedAt:0};
 const id=(typeof crypto!=='undefined'&&crypto.randomUUID)?
@@ -32,7 +33,7 @@ function update(){
   }
 }
 function languageTo(value){
-  if(state.recording||state.busy)return;
+  if(state.recording||state.busy||senior.recording||senior.busy)return;
   state.language=value;
   byId('english-panel').hidden=value!=='en';
   byId('korean-panel').hidden=value!=='ko';
@@ -225,6 +226,127 @@ async function analyze(){
       '검사 분석을 완료하지 못했습니다. 서버 응답: '+String(error.message).slice(0,90)),true);
   }finally{state.busy=false;update();}
 }
+
+function seniorMessage(message,error=false){
+  const node=byId('senior-runtime');node.textContent=message;
+  node.dataset.state=error?'error':'ok';
+}
+function seniorUpdate(){
+  const consent=byId('senior-consent').checked;
+  byId('senior-start').disabled=!senior.ready||!consent||senior.recording||senior.busy;
+  byId('senior-stop').disabled=!senior.recording;
+  byId('senior-analyze').disabled=!senior.ready||!consent||!senior.blob||senior.recording||senior.busy;
+  byId('senior-discard').disabled=!senior.blob||senior.recording||senior.busy;
+}
+async function seniorReady(){
+  try{
+    const response=await fetch(API+'/asr/senior/status',{cache:'no-store'});
+    if(!response.ok)throw Error('SENIOR_ASR_STATUS_HTTP_'+response.status);
+    const data=await response.json();
+    senior.ready=data.ready===true&&data.model==='hyyoka/wav2vec2-xlsr-korean-senior'&&
+      data.language==='ko'&&data.nonDiagnostic===true&&data.clinicalDecisionAvailable===false;
+    seniorMessage(senior.ready?
+      '고령자 한국어 음성인식 모델 사용 가능 · 녹음 전송 동의 후 1~30초 한국어를 녹음하세요.':
+      '고령자 한국어 모델을 준비 중입니다. 기존 Whisper 전사와 VOICE 3은 위 버튼으로 사용할 수 있습니다.',!senior.ready);
+  }catch(error){
+    senior.ready=false;
+    seniorMessage('고령자 전사 서버 연결을 확인하지 못했습니다. 기존 Whisper 전사와 VOICE 3을 사용해 주세요.',true);
+  }finally{seniorUpdate();}
+}
+function seniorReleaseMic(){
+  if(senior.stream){senior.stream.getTracks().forEach(track=>track.stop());senior.stream=null;}
+}
+function seniorDiscard(){
+  senior.blob=null;
+  if(senior.url){URL.revokeObjectURL(senior.url);senior.url=null;}
+  byId('senior-playback').removeAttribute('src');byId('senior-playback').hidden=true;
+  byId('senior-result').hidden=true;
+  byId('senior-transcript').textContent='';
+  seniorUpdate();
+}
+async function seniorBegin(){
+  if(!senior.ready||!byId('senior-consent').checked||senior.busy||senior.recording)return;
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
+    seniorMessage('이 브라우저에서 마이크 녹음을 지원하지 않습니다.',true);return;
+  }
+  seniorDiscard();
+  try{
+    senior.stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    const recorder=new MediaRecorder(senior.stream),chunks=[];
+    recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data)};
+    recorder.onerror=()=>seniorMessage('녹음에 실패했습니다.',true);
+    recorder.onstop=()=>{
+      senior.recording=false;seniorReleaseMic();
+      if(chunks.length){
+        senior.blob=new Blob(chunks,{type:recorder.mimeType||chunks[0]?.type||'audio/webm'});
+        senior.url=URL.createObjectURL(senior.blob);
+        byId('senior-playback').src=senior.url;byId('senior-playback').hidden=false;
+        seniorMessage('녹음 완료 · 1~30초인 경우 전사할 수 있습니다.');
+      }else seniorMessage('녹음 파일이 없습니다.',true);
+      seniorUpdate();
+    };
+    senior.recorder=recorder;recorder.start(250);senior.recording=true;
+    seniorMessage('한국어로 말씀하세요. 최대 30초까지 녹음합니다.');
+    seniorUpdate();
+    setTimeout(()=>{if(senior.recorder===recorder&&recorder.state==='recording')seniorStop()},29500);
+  }catch(error){seniorReleaseMic();senior.recording=false;seniorUpdate();
+    seniorMessage('마이크 권한 또는 기기 설정을 확인해 주세요.',true);}
+}
+function seniorStop(){
+  if(!senior.recorder||senior.recorder.state!=='recording')return;
+  try{senior.recorder.stop()}catch{seniorReleaseMic();senior.recording=false;seniorUpdate();}
+}
+async function seniorPcm16k(blob){
+  const Audio=window.AudioContext||window.webkitAudioContext;
+  const Offline=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+  if(!Audio||!Offline)throw Error('BROWSER_AUDIO_DECODER_UNAVAILABLE');
+  const ctx=new Audio();
+  try{
+    const decoded=await ctx.decodeAudioData(await blob.arrayBuffer());
+    if(decoded.duration<1||decoded.duration>30.5)throw Error('SENIOR_ASR_REQUIRES_1_TO_30_SECONDS');
+    const offline=new Offline(1,Math.floor(decoded.duration*16000),16000);
+    const source=offline.createBufferSource();source.buffer=decoded;
+    source.connect(offline.destination);source.start(0);
+    const rendered=await offline.startRendering(),samples=rendered.getChannelData(0);
+    if(samples.length<16000||samples.length>480000)throw Error('SENIOR_ASR_REQUIRES_1_TO_30_SECONDS');
+    return samples;
+  }finally{await ctx.close().catch(()=>{});}
+}
+async function seniorAnalyze(){
+  if(!senior.ready||!senior.blob||!byId('senior-consent').checked||senior.busy)return;
+  senior.busy=true;seniorUpdate();byId('senior-result').hidden=true;
+  try{
+    seniorMessage('녹음을 16kHz WAV로 변환 중입니다.');
+    const pcm=await seniorPcm16k(senior.blob),encoded=wavBase64(pcm);
+    seniorMessage('고령자 한국어 사전학습 모델로 실제 전사 중입니다.');
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),115000);
+    let response;
+    try{
+      response=await fetch(API+'/asr/senior/guest',{method:'POST',cache:'no-store',
+        signal:controller.signal,
+        headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':id},
+        body:JSON.stringify({language:'ko',consent_server_audio_processing:true,audio_base64:encoded})});
+    }finally{clearTimeout(timer);}
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:'SENIOR_ASR_HTTP_'+response.status);
+    if(data.status!=='transcribed'||data.nonDiagnostic!==true||
+       data.clinicalDecision!==null||data.dementiaClassification!==null||
+       data.model!=='hyyoka/wav2vec2-xlsr-korean-senior')throw Error('SENIOR_ASR_RESULT_UNVERIFIED');
+    byId('senior-transcript').textContent=String(data.text||'').trim()||'(인식된 단어 없음)';
+    byId('senior-result').hidden=false;seniorMessage('고령자 한국어 전사 완료 · 의료 판정이 아닌 텍스트 결과입니다.');
+  }catch(error){
+    const reason=error?.name==='AbortError'?'서버 응답시간 초과':
+      error?.message==='SENIOR_ASR_REQUIRES_1_TO_30_SECONDS'?'녹음은 1~30초여야 합니다.':
+      '한국어 전사를 완료하지 못했습니다: '+String(error?.message||'오류').slice(0,80);
+    seniorMessage(reason,true);
+  }finally{senior.busy=false;seniorUpdate();}
+}
+byId('senior-consent').addEventListener('change',seniorUpdate);
+byId('senior-start').addEventListener('click',seniorBegin);
+byId('senior-stop').addEventListener('click',seniorStop);
+byId('senior-analyze').addEventListener('click',seniorAnalyze);
+byId('senior-discard').addEventListener('click',seniorDiscard);
+
 byId('lang-en').addEventListener('click',()=>languageTo('en'));
 byId('lang-ko').addEventListener('click',()=>languageTo('ko'));
 for(const model of researchModels)byId('model-'+model.replace('_','-')).addEventListener('click',()=>selectModel(model));
@@ -233,7 +355,8 @@ byId('start-record').addEventListener('click',begin);
 byId('stop-record').addEventListener('click',stop);
 byId('analyze-model').addEventListener('click',analyze);
 byId('discard-record').addEventListener('click',discard);
-window.addEventListener('pagehide',()=>{if(state.recorder?.state==='recording')state.recorder.stop();releaseMic();if(state.url)URL.revokeObjectURL(state.url);});
+window.addEventListener('pagehide',()=>{if(state.recorder?.state==='recording')state.recorder.stop();releaseMic();if(state.url)URL.revokeObjectURL(state.url);if(senior.recorder?.state==='recording')senior.recorder.stop();seniorReleaseMic();if(senior.url)URL.revokeObjectURL(senior.url);});
 update();
 void checkModels();
+void seniorReady();
 })();
