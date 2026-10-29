@@ -89,7 +89,24 @@ main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + en
 <div class="requirement" id="korean-available-now"><strong>기관 회신 없이 지금 가능한 한국어 음성 분석</strong>
 <p style="margin:8px 0">한국어 Whisper base 사전학습 음성인식은 브라우저에서 음성을 텍스트로 전사합니다. 별도 VOICE 3에서는 발음 정확도(설정 시), 응답 지연, 음높이 변화를 측정합니다. 두 기능은 현재 사용할 수 있지만, 한국어 AD/MCI/정상 진단 분류와는 다릅니다.</p>
 <div class="action-row"><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./cognitive-scoring-demo.html">한국어 Whisper 음성 전사 실행 →</a><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./voice-analysis-demo.html">발음·응답 지연·음높이 측정 →</a></div>
-<p style="margin:8px 0;font-size:14px">추가로 공개된 고령자 한국어 ASR <a href="https://huggingface.co/hyyoka/wav2vec2-xlsr-korean-senior" target="_blank" rel="noopener noreferrer">wav2vec2-xlsr-korean-senior</a> 가중치·추론 예제가 확인됐으며, 이 화면이나 서버에 아직 연결·검증된 상태는 아닙니다. 전사 모델은 치매 분류기가 아닙니다.</p></div>
+<p style="margin:8px 0;font-size:14px">추가로 공개된 고령자 한국어 ASR <a href="https://huggingface.co/hyyoka/wav2vec2-xlsr-korean-senior" target="_blank" rel="noopener noreferrer">wav2vec2-xlsr-korean-senior</a> 가중치·추론 예제가 확인됐으며, 123서버 연구 컨테이너에서 실제 모델 연산은 확인했습니다. 위 전사 도구는 별도 서버 준비 상태가 확인된 경우에만 활성화됩니다. 전사 모델은 치매 분류기가 아닙니다.</p></div>
+<div class="task-panel" id="korean-senior-asr-tool">
+  <span class="phase">고령자 한국어 음성 · Korean Senior wav2vec2</span>
+  <h3>사전학습 모델 실제 음성 전사</h3>
+  <p>1~30초 한국어 발화를 녹음하고 서버의 별도 음성인식 모델로 글자로 변환합니다. 원음은 저장하지 않으며, 치매·MCI·정상 분류나 진단을 하지 않습니다.</p>
+  <label class="check-line"><input id="senior-consent" type="checkbox"><span>전사를 위해 이번 녹음을 서버에 일시 전송하는 데 동의합니다. 원음은 저장하지 않습니다.</span></label>
+  <div class="action-row">
+    <button class="primary" id="senior-start" type="button" disabled>한국어 녹음 시작</button>
+    <button class="secondary" id="senior-stop" type="button" disabled>녹음 종료</button>
+    <button class="primary" id="senior-analyze" type="button" disabled>Korean Senior로 전사</button>
+    <button class="secondary" id="senior-discard" type="button" disabled>녹음 삭제</button>
+  </div>
+  <audio id="senior-playback" controls preload="none" hidden></audio>
+  <p class="runtime" id="senior-runtime" role="status" aria-live="polite">Korean Senior 서버 준비 상태를 확인 중입니다.</p>
+  <div class="results" id="senior-result" hidden aria-live="polite"><h3>실제 음성 인식 결과 · 연구용</h3>
+    <p id="senior-transcript" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
+    <p>전사 오류가 있을 수 있습니다. 의료적 치매 판정 결과가 아닙니다.</p></div>
+</div>
 <h3 id="korean-waiting-heading" style="margin:24px 0 10px;font-size:18px">02 · 요청 완료 · 원본 검증이 필요한 치매 분류 모델</h3>
 <p class="section-desc">AI-Hub 217 원본 데이터와 공개 VGG16 가중치는 이미 확보했습니다. 기관에는 정확한 검사 문항·최종 ANN 자료와 이용 조건을 문의했으며, 이 항목만 회신·교차 검증이 필요합니다. 지금 가능한 전사와 음성 측정은 위에서 별도로 사용할 수 있습니다.</p>
 <div class="model-grid"><article class="model-choice"><span class="phase">AI-HUB 217 · VGG16 #1</span><strong>SCI vs OTHERS</strong><span>SCI / 그 밖의 학습 집단 비교. 세부 학습 문항·출력 방향은 원본 코드 및 학습 데이터와 추가 대조 필요</span></article>
