@@ -54,12 +54,60 @@ main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + en
 .requirement a{display:inline-block;margin-top:5px}
 .footnote{color:#6c8078;font-size:12px;line-height:1.7;margin:15px 4px}
 @media(max-width:600px){.model-grid{grid-template-columns:1fr}.hero{border-radius:23px}.model-choice{min-height:unset}.lang{min-height:77px;padding:12px}.lang strong{font-size:18px}.prompt{font-size:19px}.task-panel{padding:13px}.task-photo{min-height:0}.panel{border-radius:19px}}
+
+/* User-facing assessment: one question, one action, one screen. */
+body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
+.top{padding:13px 2px}.logo{font-size:24px}.back{font-size:16px}
+.exam-intro{margin:5px 0 12px}.exam-intro h1{font-size:clamp(23px,4vw,29px);margin:0;letter-spacing:-.7px}
+.language-selector{display:flex;gap:6px;justify-content:flex-end;margin:0 0 10px}
+.lang{border:0;min-height:40px;padding:7px 16px;border-radius:999px;flex:0 0 auto;text-align:center;background:#e8efea;color:#315b50}
+.lang strong{font-size:15px}.lang[aria-selected=true]{background:#146b5a;border:0;color:white}.lang span{display:none}
+#korean-panel{background:transparent;border:0;box-shadow:none;padding:0;margin:0}
+.exam-card{background:#fff;border:1px solid #dce8e1;border-radius:26px;box-shadow:0 12px 30px #154e3c11;min-height:min(670px,calc(100dvh - 143px));padding:clamp(20px,4vw,36px);display:flex;flex-direction:column;align-items:stretch}
+.exam-head{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:750;color:#57746a}
+.exam-kind{font-size:14px;font-weight:650}
+.exam-domain{margin-top:clamp(24px,4vh,43px);color:#12836e;font-size:16px;font-weight:800}
+.exam-question{font-size:clamp(28px,5vw,38px);line-height:1.38;letter-spacing:-1px;margin:12px 0 10px;min-height:2.8em;word-break:keep-all;color:#173b34}
+.exam-tip{font-size:16px;color:#657d73;margin:0}
+.exam-center{display:flex;align-items:center;justify-content:center;flex-direction:column;margin:auto 0;padding:18px 0}
+.exam-clock{font-size:clamp(44px,8vw,63px);font-weight:820;color:#126652;line-height:1.3;font-variant-numeric:tabular-nums;letter-spacing:-2px}
+.exam-clock-caption{font-size:14px;color:#6f867b}
+.exam-consent{font-size:15px;display:flex;align-items:center;gap:9px;color:#416459;margin:0 0 14px}
+.exam-consent input{width:21px;height:21px;accent-color:#147661}
+.exam-button{border:0;border-radius:18px;background:#0c715e;color:#fff;width:100%;font-size:clamp(19px,3vw,23px);font-weight:840;min-height:72px;padding:14px}
+.exam-button:disabled{opacity:.45;cursor:not-allowed}
+.exam-button:focus-visible{outline:3px solid #efb950;outline-offset:4px}
+.exam-status{font-size:15px;line-height:1.4;text-align:center;color:#53796c;min-height:21px;margin:13px 0 0}
+.exam-status[data-state=error]{color:#ad4a36}
+.exam-result{background:#eff8f3;border-radius:16px;padding:15px 17px;margin-top:15px}
+.exam-result-label{font-size:14px;color:#41685a;font-weight:800}
+.exam-result #senior-transcript{font-size:22px;color:#123e33;line-height:1.6;margin:7px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.exam-measure{font-size:14px;color:#53776b;margin:0}
+.exam-notice{font-size:14px;text-align:center;color:#899a93;margin:10px 0 0}
+.exam-finished{background:#f1f8f4;padding:18px;border-radius:18px;margin-top:14px}
+.exam-finished h3{margin:0 0 8px;font-size:24px}.exam-finished p{font-size:16px;color:#587267}
+.exam-summary{white-space:pre-wrap;font-size:15px;color:#285648;line-height:1.8;margin:10px 0}
+.exam-finished button{min-height:48px;font-size:16px}
+.research-details{margin:18px 5px;color:#677e73;font-size:14px}
+.research-details summary{cursor:pointer;padding:8px;list-style:none;font-size:14px}
+.research-details summary::before{content:'ⓘ ';font-weight:800}
+.research-inner{margin-top:10px}.research-inner .requirement{font-size:14px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#korean-panel .exam-internal{display:none}
+@media(max-width:600px){
+ body main{padding:0 12px 12px}
+ .exam-card{border-radius:20px;padding:18px;min-height:calc(100dvh - 130px)}
+ .exam-domain{margin-top:20px}
+ .exam-question{font-size:clamp(27px,7vw,35px)}
+ .exam-center{padding:10px 0}
+ .exam-button{min-height:69px}
+}
 </style></head>
 <body><main>
-<header class="top"><a class="logo" href="./">낌새 <span style="font-size:13px;color:#75968a;font-weight:650">모델별 인지 검사</span></a><a class="back" href="./voice-analysis-beta.html">← 음성 변화 측정</a></header>
-<section class="hero"><span class="eyebrow">COGNITIVE · MODEL TASKS</span><h1>치매 검사<br>언어별 AI 과제</h1><p>음성 지표 측정과 구분된 검사실입니다. 학습한 언어와 과제에 맞춰 모델을 선택하며, 원본과 일치하지 않는 입력으로 임의 분류하지 않습니다.</p><div class="hero-links"><a href="./voice-analysis-beta.html">기존 음성 3가지 측정</a><a href="https://talkbank.org/dementia/access/English/Pitt.html" target="_blank" rel="noopener noreferrer">Pitt 원자료</a><a href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=217" target="_blank" rel="noopener noreferrer">AI-Hub 217 원자료</a></div></section>
-<nav class="language-selector" aria-label="검사 언어 선택"><button type="button" id="lang-en" class="lang" aria-selected="true" aria-controls="english-panel"><strong>English · 영어</strong><span>Pitt · 그림 설명 음성</span></button><button type="button" id="lang-ko" class="lang" aria-selected="false" aria-controls="korean-panel"><strong>한국어</strong><span>AI-Hub 217 · SNSB / CERAD</span></button></nav>
-<section id="english-panel" class="panel" aria-labelledby="english-title">
+<header class="top"><a class="logo" href="./">낌새 </a><a class="back" href="./">나가기</a></header>
+<div class="exam-intro"><h1>말하기 인지검사</h1></div>
+<nav class="language-selector" aria-label="검사 언어 선택"><button type="button" id="lang-en" class="lang" aria-selected="false" aria-controls="english-panel"><strong>English</strong></button><button type="button" id="lang-ko" class="lang" aria-selected="true" aria-controls="korean-panel"><strong>한국어</strong></button></nav>
+<section id="english-panel" class="panel" aria-labelledby="english-title" hidden>
 <h2 id="english-title" class="section-title">Pitt 영어 그림 설명</h2><p class="section-desc">동일한 Cookie Theft 그림을 보고 영어로 자유롭게 설명하는 과제입니다. 아래 두 모델은 서로 다른 특징 추출 방식이며, 같은 영어 과제를 사용합니다.</p>
 <div class="model-grid" aria-label="영어 Pitt 모델 선택">
 <button type="button" id="model-pitt-basic" data-model="pitt_basic" class="model-choice" aria-pressed="true"><span class="phase">PITT · ACOUSTIC</span><strong>Pitt 기본 AD / CN</strong><span>음향 바이오마커 → 사전학습 LightGBM 분류</span></button>
@@ -83,31 +131,47 @@ main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + en
 <div class="results" id="model-result" hidden aria-live="polite"><h3>모델이 학습한 집단으로의 분류 · 연구용</h3><div class="result-large" id="model-classification">—</div><p id="model-explanation"></p><p id="model-provenance"></p></div>
 </div>
 </section>
-<section id="korean-panel" class="panel" aria-labelledby="korean-title" hidden>
-<h2 class="section-title" id="korean-title">AI-Hub 217 · 한국어 신경인지검사 음성</h2><p class="section-desc">공식 공개 모델 코드에서는 SNSB-II 및 CERAD-K 녹음 자료를 학습 경로로 사용합니다. 자유 대화나 ‘어제 무엇을 했나요?’ 과제를 그대로 대체 입력하지 않습니다.</p>
-<h3 id="korean-ready-now-heading" style="margin:16px 0 10px;font-size:18px">01 · 지금 바로 사용하는 한국어 음성 분석</h3>
-<div class="requirement" id="korean-available-now"><strong>기관 회신 없이 지금 가능한 한국어 음성 분석</strong>
-<p style="margin:8px 0">한국어 Whisper base 사전학습 음성인식은 브라우저에서 음성을 텍스트로 전사합니다. 별도 VOICE 3에서는 발음 정확도(설정 시), 응답 지연, 음높이 변화를 측정합니다. 두 기능은 현재 사용할 수 있지만, 한국어 AD/MCI/정상 진단 분류와는 다릅니다.</p>
-<div class="action-row"><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./cognitive-scoring-demo.html">한국어 Whisper 음성 전사 실행 →</a><a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:46px;padding:10px 15px" href="./voice-analysis-demo.html">발음·응답 지연·음높이 측정 →</a></div>
-<p style="margin:8px 0;font-size:14px">추가로 공개된 고령자 한국어 ASR <a href="https://huggingface.co/hyyoka/wav2vec2-xlsr-korean-senior" target="_blank" rel="noopener noreferrer">wav2vec2-xlsr-korean-senior</a> 가중치·추론 예제가 확인됐으며, 123서버 연구 컨테이너에서 실제 모델 연산은 확인했습니다. 위 전사 도구는 별도 서버 준비 상태가 확인된 경우에만 활성화됩니다. 전사 모델은 치매 분류기가 아닙니다.</p></div>
-<div class="task-panel" id="korean-senior-asr-tool">
-  <span class="phase">고령자 한국어 음성 · Korean Senior wav2vec2</span>
-  <h3>사전학습 모델 실제 음성 전사</h3>
-  <p>1~30초 한국어 발화를 녹음하고 서버의 별도 음성인식 모델로 글자로 변환합니다. 원음은 저장하지 않으며, 치매·MCI·정상 분류나 진단을 하지 않습니다.</p>
-  <label class="check-line"><input id="senior-consent" type="checkbox"><span>전사를 위해 이번 녹음을 서버에 일시 전송하는 데 동의합니다. 원음은 저장하지 않습니다.</span></label>
-  <div class="action-row">
-    <button class="primary" id="senior-start" type="button" disabled>한국어 녹음 시작</button>
-    <button class="secondary" id="senior-stop" type="button" disabled>녹음 종료</button>
-    <button class="primary" id="senior-analyze" type="button" disabled>Korean Senior로 전사</button>
-    <button class="secondary" id="senior-discard" type="button" disabled>녹음 삭제</button>
-  </div>
+<section id="korean-panel" class="panel" aria-labelledby="korean-title">
+<div class="exam-card" id="korean-senior-asr-tool">
+ <div class="exam-head"><span id="exam-progress">01 / 03</span><span class="exam-kind">인지 변화 관찰</span></div>
+ <h2 id="korean-title" class="visually-hidden">한국어 말하기 검사</h2>
+ <span id="exam-domain" class="exam-domain">시간과 장소</span>
+ <h3 id="exam-question" class="exam-question">오늘 날짜와 지금 계신 곳을 말씀해 주세요.</h3>
+ <p id="exam-tip" class="exam-tip">기억나는 대로 편하게 이야기하세요.</p>
+ <div class="exam-center"><div id="exam-clock" class="exam-clock" aria-live="off">00:30</div><span class="exam-clock-caption">남은 시간</span></div>
+ <label class="exam-consent"><input id="senior-consent" type="checkbox"><span>이번 녹음을 서버로 전송하고 저장하지 않는 데 동의합니다.</span></label>
+ <button class="exam-button" id="senior-main-action" disabled type="button">음성 연결 중</button>
+ <p class="exam-status" id="senior-runtime" role="status" aria-live="polite">음성 연결을 확인하고 있습니다.</p>
+ <div class="exam-result" id="senior-result" hidden aria-live="polite">
+   <span class="exam-result-label">인식한 답변</span>
+   <p id="senior-transcript"></p>
+   <p id="exam-measure" class="exam-measure"></p>
+ </div>
+ <div id="exam-finished" class="exam-finished" hidden>
+   <h3>검사가 끝났어요.</h3>
+   <p>답변을 모두 기록했습니다.</p>
+   <div id="exam-summary" class="exam-summary"></div>
+   <button type="button" id="exam-restart" class="secondary">처음부터 다시 하기</button>
+ </div>
+ <div class="exam-internal" hidden>
+  <button class="primary" id="senior-start" type="button" disabled>녹음 시작</button>
+  <button class="secondary" id="senior-stop" type="button" disabled>녹음 종료</button>
+  <button class="primary" id="senior-analyze" type="button" disabled>전사</button>
+  <button class="secondary" id="senior-discard" type="button" disabled>삭제</button>
   <audio id="senior-playback" controls preload="none" hidden></audio>
-  <p class="runtime" id="senior-runtime" role="status" aria-live="polite">Korean Senior 서버 준비 상태를 확인 중입니다.</p>
-  <div class="results" id="senior-result" hidden aria-live="polite"><h3>실제 음성 인식 결과 · 연구용</h3>
-    <p id="senior-transcript" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
-    <p>전사 오류가 있을 수 있습니다. 의료적 치매 판정 결과가 아닙니다.</p></div>
+ </div>
+ <p class="exam-notice">진단이 아닌 말하기 수행 기록입니다.</p>
 </div>
-<h3 id="korean-waiting-heading" style="margin:24px 0 10px;font-size:18px">02 · 요청 완료 · 원본 검증이 필요한 치매 분류 모델</h3>
+<details class="research-details" id="research-details">
+ <summary>연구·검사 근거</summary>
+ <div class="research-inner">
+ <div class="requirement" id="korean-available-now">
+  <strong>기존 검사 도구</strong>
+  <a href="./cognitive-scoring-demo.html">한국어 음성 전사·검사자 채점</a>
+  <a href="./voice-analysis-demo.html">발음·응답 지연·음높이 측정</a>
+  <a href="https://huggingface.co/hyyoka/wav2vec2-xlsr-korean-senior" target="_blank" rel="noopener noreferrer">고령자 한국어 전사 모델</a>
+ </div>
+ <h3 id="korean-waiting-heading" style="margin:24px 0 10px;font-size:18px">02 · 요청 완료 · 원본 검증이 필요한 치매 분류 모델</h3>
 <p class="section-desc">AI-Hub 217 원본 데이터와 공개 VGG16 가중치는 이미 확보했습니다. 기관에는 정확한 검사 문항·최종 ANN 자료와 이용 조건을 문의했으며, 이 항목만 회신·교차 검증이 필요합니다. 지금 가능한 전사와 음성 측정은 위에서 별도로 사용할 수 있습니다.</p>
 <div class="model-grid"><article class="model-choice"><span class="phase">AI-HUB 217 · VGG16 #1</span><strong>SCI vs OTHERS</strong><span>SCI / 그 밖의 학습 집단 비교. 세부 학습 문항·출력 방향은 원본 코드 및 학습 데이터와 추가 대조 필요</span></article>
 <article class="model-choice"><span class="phase">AI-HUB 217 · VGG16 #2</span><strong>MCI vs AD</strong><span>경도인지장애 / 알츠하이머병 학습 집단 비교. 세부 문항·학습 라벨 방향 확인 필요</span></article></div>
@@ -133,7 +197,10 @@ AI-Hub 공식 데이터셋 진단 코드는 정상=1, MCI=5, AD=10입니다. 별
 <a class="secondary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:15px" href="https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=217" target="_blank" rel="noopener noreferrer">AI-Hub 217 원본 학습자료 확인</a>
 <p class="runtime" id="korean-runtime" role="status">한국어 추론은 검증된 모델별 문항이 연결되기 전까지 실행할 수 없습니다.</p>
 
-</div></section>
-<p class="footnote">공식 원자료: TalkBank DementiaBank Pitt English corpus 및 표준 그림 설명 프로토콜, AI-Hub 217 치매·인지기능장애 음성 데이터. 영어는 30초 발췌 연구 비교, 한국어는 세부 과제 확인 전 잠금 상태입니다. 실제 의료 판단은 이 실험 화면의 모델 분류와 별도로 이뤄집니다.</p>
-</main><script defer src="./dementia-voice-assessment.js?v=20261028-task1"></script>
+
+ </div>
+ </div>
+</details>
+</section>
+</main><script defer src="./dementia-voice-assessment.js?v=20261029-one-screen"></script>
 </body></html>
