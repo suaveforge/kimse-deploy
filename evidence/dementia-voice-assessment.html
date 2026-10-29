@@ -85,7 +85,13 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
 .exam-measure{font-size:14px;color:#53776b;margin:0}
 .exam-notice{font-size:14px;text-align:center;color:#899a93;margin:10px 0 0}
 .exam-finished{background:#f1f8f4;padding:18px;border-radius:18px;margin-top:14px}
-.exam-finished h3{margin:0 0 8px;font-size:24px}.exam-finished p{font-size:16px;color:#587267}
+.exam-finished h3{margin:0 0 8px;font-size:24px}
+.exam-research-option{display:grid;gap:12px;border-top:1px solid #d7e8df;margin-top:15px;padding-top:13px;font-size:15px}
+.exam-research-option label{display:flex;gap:9px;align-items:center}
+.exam-research-option input{width:20px;height:20px;accent-color:#0c715e}
+.exam-research-option button{min-height:52px}
+#exam-research-result{background:#fff;border-radius:14px;padding:15px;font-size:15px;line-height:1.6}
+#exam-research-result p{font-size:14px;line-height:1.5;color:#526d63}.exam-finished p{font-size:16px;color:#587267}
 .exam-summary{white-space:pre-wrap;font-size:15px;color:#285648;line-height:1.8;margin:10px 0}
 .exam-finished button{min-height:48px;font-size:16px}
 .research-details{margin:18px 5px;color:#677e73;font-size:14px}
@@ -151,6 +157,15 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
    <h3>검사가 끝났어요.</h3>
    <p>답변을 모두 기록했습니다.</p>
    <div id="exam-summary" class="exam-summary"></div>
+   <div class="exam-research-option">
+     <label><input type="checkbox" id="exam-research-opt-in"> 확보한 한국어 인지 분류 모델로 연구 분석하기</label>
+     <button type="button" id="exam-run-vgg" class="secondary" disabled>실제 인지 분류 모델 실행</button>
+     <p id="exam-research-status" role="status"></p>
+     <div id="exam-research-result" hidden><strong>AI-Hub 217 원본 학습 모델 결과 · 연구용</strong>
+       <div id="exam-vgg-sci"></div><div id="exam-vgg-mci"></div>
+       <p>원래 학습 문항 및 최종 ANN이 확인되지 않아 이 값은 치매 위험도나 정상·MCI·치매 판정이 아닙니다.</p>
+     </div>
+   </div>
    <button type="button" id="exam-restart" class="secondary">처음부터 다시 하기</button>
  </div>
  <div class="exam-internal" hidden>
@@ -202,5 +217,5 @@ AI-Hub 공식 데이터셋 진단 코드는 정상=1, MCI=5, AD=10입니다. 별
  </div>
 </details>
 </section>
-</main><script defer src="./dementia-voice-assessment.js?v=20261029-one-screen"></script>
+</main><script defer src="./dementia-voice-assessment.js?v=20261029-aihub-research"></script>
 </body></html>
