@@ -312,6 +312,27 @@ async function seniorPcm16k(blob){
     return samples;
   }finally{await ctx.close().catch(()=>{});}
 }
+
+// The pretrained Senior checkpoint may emit [PAD] and compatibility Jamo.
+// Compose only model-recognized phonemes; do not invent extra words or scores.
+function composeSeniorKoreanTranscript(raw){
+  const s=String(raw||'').replace(/\[[^\]]+\]/g,'').replace(/[^ ㄱ-ㅣ가-힣]/g,'');
+  const leads='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+  const vowels='ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ';
+  const tails=['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  let out='';
+  for(let i=0;i<s.length;){
+    const l=leads.indexOf(s[i]),v=vowels.indexOf(s[i+1]||'!');
+    if(l<0||v<0){out+=s[i++];continue;}
+    i+=2;let tail=0;
+    if(i<s.length&&tails.indexOf(s[i])>0&&vowels.indexOf(s[i+1]||'!')<0){
+      tail=tails.indexOf(s[i++]);
+    }
+    out+=String.fromCharCode(0xAC00+(l*21+v)*28+tail);
+  }
+  return out.trim();
+}
+
 async function seniorAnalyze(){
   if(!senior.ready||!senior.blob||!byId('senior-consent').checked||senior.busy)return;
   senior.busy=true;seniorUpdate();byId('senior-result').hidden=true;
@@ -332,7 +353,7 @@ async function seniorAnalyze(){
     if(data.status!=='transcribed'||data.nonDiagnostic!==true||
        data.clinicalDecision!==null||data.dementiaClassification!==null||
        data.model!=='hyyoka/wav2vec2-xlsr-korean-senior')throw Error('SENIOR_ASR_RESULT_UNVERIFIED');
-    byId('senior-transcript').textContent=String(data.text||'').trim()||'(인식된 단어 없음)';
+    byId('senior-transcript').textContent=composeSeniorKoreanTranscript(data.text)||'(인식된 단어 없음)';
     byId('senior-result').hidden=false;seniorMessage('고령자 한국어 전사 완료 · 의료 판정이 아닌 텍스트 결과입니다.');
   }catch(error){
     const reason=error?.name==='AbortError'?'서버 응답시간 초과':
