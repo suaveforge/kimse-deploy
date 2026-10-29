@@ -43,7 +43,7 @@ function examNext(){
     exam.finished=true;
     byId('exam-summary').textContent=exam.answers.map((a,i)=>
       (i+1)+'. '+examTasks[i].domain+' · '+a.text).join('\n');
-    examDraw();return;
+    examDraw();researchUpdate();return;
   }
   exam.index++;
   seniorDiscard();
@@ -51,9 +51,67 @@ function examNext(){
   seniorMessage('질문을 듣고 녹음 시작을 누르세요.');
   examDraw();
 }
+
+let researchReady=false;
+async function researchStatus(){
+ try{
+   const response=await fetch(API+'/cognitive/ko/vgg-research/status',{cache:'no-store'});
+   const data=response.ok?await response.json():{};
+   researchReady=data.ready===true&&data.model==='AIHub217_official_two_VGG16_candidates'&&
+     data.clinicalDecisionAvailable===false&&data.originalTaskVerified===false;
+ }catch{researchReady=false}
+ researchUpdate();
+}
+function researchUpdate(){
+ byId('exam-run-vgg').disabled=!exam.finished||!senior.blob||senior.busy||
+   !researchReady||!byId('exam-research-opt-in').checked||!byId('senior-consent').checked;
+ byId('exam-research-status').textContent=researchReady?
+   '연구용 한국어 인지 분류 모델 준비됨':'원본 인지 분류 모델을 현재 실행할 수 없습니다.';
+}
+async function researchAnalyze(){
+ if(!exam.finished||!researchReady||!senior.blob||
+   !byId('exam-research-opt-in').checked||!byId('senior-consent').checked)return;
+ const button=byId('exam-run-vgg');button.disabled=true;
+ byId('exam-research-status').textContent='실제 AI-Hub 217 가중치로 분석 중입니다.';
+ try{
+   const pcm=await seniorPcm16k(senior.blob);
+   if(pcm.length<3*16000)throw Error('3초 이상 녹음이 필요합니다.');
+   const encoded=wavBase64(pcm);
+   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),160000);
+   let response;
+   try{
+     response=await fetch(API+'/cognitive/ko/vgg-research/guest',{
+       method:'POST',cache:'no-store',signal:ctrl.signal,
+       headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':id},
+       body:JSON.stringify({language:'ko',audio_base64:encoded,
+         consent_server_audio_processing:true,consent_nonclinical_research:true})
+     });
+   }finally{clearTimeout(timer)}
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error('연구 모델 실행 실패');
+   if(data.status!=='executed_research_only'||data.originalTaskVerified!==false||
+      data.combinedThreeClassDiagnosis!==null||data.riskProbability!==null||
+      data.clinicalDecision!==null||data.audioStored!==false)throw Error('검증되지 않은 연구 결과');
+   const sci=data.candidateHeads?.SCIvsOTHERS,mci=data.candidateHeads?.MCIvsAD;
+   if(sci?.meaning!=='UNVALIDATED_NOT_DISEASE_PROBABILITY'||
+      mci?.meaning!=='UNVALIDATED_NOT_DISEASE_PROBABILITY')throw Error('모델 출처 불일치');
+   for(const [el,value,label] of [['exam-vgg-sci',sci.rawActivation,'SCI vs OTHERS'],['exam-vgg-mci',mci.rawActivation,'MCI vs AD']]){
+      if(!Number.isFinite(value)||value<0||value>1)throw Error('모델 출력 오류');
+      byId(el).textContent=label+' · 연구 출력값 '+value.toFixed(4);
+   }
+   byId('exam-research-result').hidden=false;
+   byId('exam-research-status').textContent='원본 한국어 VGG16 분류 가중치 두 개를 실제 실행했습니다.';
+ }catch(error){
+   byId('exam-research-result').hidden=true;
+   byId('exam-research-status').textContent=error?.name==='AbortError'?'연구 모델 응답 시간이 초과됐습니다.':String(error?.message||'실행 오류');
+ }finally{researchUpdate()}
+}
+
 function examRestart(){
   if(senior.recording||senior.busy)return;
   exam.index=0;exam.answers=[];exam.finished=false;
+  byId('exam-research-opt-in').checked=false;
+  byId('exam-research-result').hidden=true;
   seniorDiscard();
   byId('exam-finished').hidden=true;
   seniorMessage('준비되면 녹음 시작을 누르세요.');
@@ -439,6 +497,8 @@ async function seniorAnalyze(){
 byId('senior-consent').addEventListener('change',seniorUpdate);
 byId('senior-main-action').addEventListener('click',examAction);
 byId('exam-restart').addEventListener('click',examRestart);
+byId('exam-research-opt-in').addEventListener('change',researchUpdate);
+byId('exam-run-vgg').addEventListener('click',researchAnalyze);
 byId('senior-start').addEventListener('click',seniorBegin);
 byId('senior-stop').addEventListener('click',seniorStop);
 byId('senior-analyze').addEventListener('click',seniorAnalyze);
@@ -457,4 +517,5 @@ update();
 examDraw();
 void checkModels();
 void seniorReady();
+void researchStatus();
 })();
