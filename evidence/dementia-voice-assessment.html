@@ -72,6 +72,32 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
 .exam-center{display:flex;align-items:center;justify-content:center;flex-direction:column;margin:auto 0;padding:18px 0}
 .exam-clock{font-size:clamp(44px,8vw,63px);font-weight:820;color:#126652;line-height:1.3;font-variant-numeric:tabular-nums;letter-spacing:-2px}
 .exam-clock-caption{font-size:14px;color:#6f867b}
+.exam-meter-wrap{border:1px solid #d6eae0;border-radius:18px;padding:12px 14px;background:#eff8f4;margin:14px 0 11px}
+.exam-meter-wrap .liveheader{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:750}
+.exam-meter-wrap .dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#96aba5;margin-right:7px}
+.exam-meter-wrap canvas{display:block;width:100%;height:52px}
+.exam-meter-wrap p{font-size:14px;line-height:1.4;margin:0;color:#68817b;text-align:center}
+.exam-card[data-phase="recording"] .exam-meter-wrap{border-color:#e2b5b5;background:#fff7f6}
+.exam-card[data-phase="recording"] .exam-meter-wrap .dot{background:#df3e42;animation:recordPulse 1.1s infinite}
+.exam-card[data-phase="done"] .exam-meter-wrap{display:none}
+.exam-progress-rail{height:8px;border-radius:99px;background:#e1eee7;overflow:hidden;margin-top:12px}
+.exam-progress-fill{height:100%;width:0;background:#198a70;border-radius:inherit;transition:width .2s linear}
+.exam-recording-indicator{font-size:16px;font-weight:830;color:#ae3d36;display:flex;align-items:center;justify-content:center;gap:8px}
+.exam-recording-indicator:before{content:"";display:inline-block;width:12px;height:12px;background:#db554a;border-radius:50%;animation:recordPulse 1.2s infinite}
+@keyframes recordPulse{50%{opacity:.25;transform:scale(.74)}}
+.exam-card[data-phase="recording"] .exam-clock{color:#b54e41}
+.exam-card[data-phase="recording"] .exam-button{background:#a8453f}
+.exam-card[data-phase="done"] .exam-center,.exam-card[data-phase="done"] .exam-progress-rail{display:none}
+.exam-consent.secondary-consent{font-size:14px;margin:0 0 7px;color:#547467;align-items:flex-start}
+.exam-consent.secondary-consent input{flex:none}
+#azure-transcription-info{font-size:14px;line-height:1.5;color:#638174;margin:0 0 15px}
+.exam-binary-result #binary-class{display:block;font-size:clamp(30px,7vw,43px)!important;line-height:1.25}
+#binary-runtime{font-size:14px;line-height:1.5}
+.exam-research-option>strong{font-size:19px}
+.exam-more-research{margin-top:17px;border-top:1px solid #d7e8df;padding-top:12px}
+.exam-more-research summary{cursor:pointer;font-size:14px;color:#58796a;font-weight:750;min-height:40px}
+@media(prefers-reduced-motion:reduce){.exam-recording-indicator:before{animation:none}.exam-progress-fill{transition:none}}
+
 .exam-consent{font-size:15px;display:flex;align-items:center;gap:9px;color:#416459;margin:0 0 14px}
 .exam-consent input{width:21px;height:21px;accent-color:#147661}
 .exam-button{border:0;border-radius:18px;background:#0c715e;color:#fff;width:100%;font-size:clamp(19px,3vw,23px);font-weight:840;min-height:72px;padding:14px}
@@ -88,6 +114,10 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
 .exam-finished h3{margin:0 0 8px;font-size:24px}
 .exam-research-option{display:grid;gap:12px;border-top:1px solid #d7e8df;margin-top:15px;padding-top:13px;font-size:15px}
 .exam-research-option label{display:flex;gap:9px;align-items:center}
+.exam-binary-phases{display:flex;gap:8px;flex-wrap:wrap;font-size:14px;margin:8px 0}
+.exam-binary-phases span{padding:8px 10px;border-radius:10px;border:1px solid #cde1d7;color:#657b72}
+.exam-binary-phases span[data-state="active"]{background:#e8f5ef;border-color:#14846b;color:#155e4e;font-weight:750}
+.exam-binary-phases span[data-state="done"]{background:#186f5d;border-color:#186f5d;color:#fff}
 .exam-binary-result{background:#fff;padding:16px;border-radius:15px;display:grid;gap:8px}
 .exam-binary-result[hidden]{display:none}
 .exam-binary-result>span{font-size:14px;color:#5c796d}
@@ -149,8 +179,20 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
  <span id="exam-domain" class="exam-domain">시간과 장소</span>
  <h3 id="exam-question" class="exam-question">오늘 날짜와 지금 계신 곳을 말씀해 주세요.</h3>
  <p id="exam-tip" class="exam-tip">기억나는 대로 편하게 이야기하세요.</p>
- <div class="exam-center"><div id="exam-clock" class="exam-clock" aria-live="off">00:30</div><span class="exam-clock-caption">남은 시간</span></div>
- <label class="exam-consent"><input id="senior-consent" type="checkbox"><span>이번 녹음을 서버로 전송하고 저장하지 않는 데 동의합니다.</span></label>
+ <div class="exam-center">
+ <div class="exam-recording-indicator" id="exam-recording-indicator" hidden>녹음 중</div>
+ <div id="exam-clock" class="exam-clock" aria-live="off">00:25</div>
+ <span class="exam-clock-caption">남은 녹음 시간</span>
+ </div>
+ <div class="exam-progress-rail" role="presentation"><div class="exam-progress-fill" id="exam-progress-fill"></div></div>
+ <div class="exam-meter-wrap" id="exam-meter-wrap" aria-live="off">
+   <div class="liveheader"><span><span class="dot"></span><span id="exam-meter-status">녹음 대기</span></span><span id="exam-elapsed">00:00</span></div>
+   <canvas id="exam-level-canvas" width="560" height="100" aria-label="실제 마이크 입력 음량"></canvas>
+   <p id="exam-signal-hint">녹음을 시작하면 마이크에 들어오는 목소리가 표시됩니다.</p>
+ </div>
+ <label class="exam-consent"><input id="senior-consent" type="checkbox"><span>AI 분석을 위한 서버 음성 처리에 동의합니다. 녹음은 저장하지 않습니다.</span></label>
+ <label class="exam-consent secondary-consent"><input id="azure-transcription-consent" type="checkbox" disabled><span>한국어 받아쓰기에 동의합니다 (Microsoft Azure로 음성 전송).</span></label>
+ <p id="azure-transcription-info">한국어 받아쓰기 사용 가능 여부 확인 중</p>
  <button class="exam-button" id="senior-main-action" disabled type="button">음성 연결 중</button>
  <p class="exam-status" id="senior-runtime" role="status" aria-live="polite">음성 연결을 확인하고 있습니다.</p>
  <div class="exam-result" id="senior-result" hidden aria-live="polite">
@@ -159,20 +201,23 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
    <p id="exam-measure" class="exam-measure"></p>
  </div>
  <div id="exam-finished" class="exam-finished" hidden>
-   <h3>검사가 끝났어요.</h3>
-   <p>답변을 모두 기록했습니다.</p>
-   <div id="exam-summary" class="exam-summary"></div>
+   <h3>음성 검사가 끝났습니다.</h3>
+   <p>세 질문의 녹음이 끝났습니다. 실제 AI 학습 모델의 분류 결과를 확인할 수 있습니다.</p>
    <div class="exam-research-option" id="binary-compare">
-     <strong>치매·비치매 AI 연구 분류</strong>
-     <label><input type="checkbox" id="binary-research-opt-in"> 진단이 아닌 연구용 AI 분류에 이번 녹음을 보내는 데 동의합니다.</label>
-     <button id="binary-run" type="button" class="primary" disabled>치매·비치매 연구 모델 실행</button>
+     <strong>AI 음성 분류 결과</strong>
+     <label><input type="checkbox" id="binary-research-opt-in"> 마지막 음성을 연구용 AI 모델로 분류하는 데 동의합니다. (의학적 진단 아님)</label>
+     <button id="binary-run" type="button" class="primary" disabled>AI 음성 분류 결과 확인하기</button>
      <p id="binary-runtime" role="status">모델 상태를 확인하고 있습니다.</p>
+     <div class="exam-binary-phases" id="binary-phases" hidden aria-label="실제 음성 분석 처리 단계"><span id="binary-phase-audio">음성 준비</span><span id="binary-phase-model">AI 모델 분석</span></div>
      <div class="exam-binary-result" id="binary-result" hidden aria-live="polite">
-       <span>모델이 선택한 학습 집단</span>
+       <span>학습된 AI 모델이 분류한 음성 패턴</span>
        <strong id="binary-class" class="result-large"></strong>
-       <p>한국어에서 검증되지 않은 연구모델 분류입니다. 실제 치매 여부나 위험도를 뜻하지 않습니다.</p>
+       <p><strong>Wav2Vec2 Dementia V3</strong> · 한국어 임상 검증 미완료</p>
+       <p>이 값은 치매 여부를 확진하지 않습니다. 실제 검사는 의료진의 평가가 필요합니다.</p>
      </div>
    </div>
+   <details class="exam-more-research"><summary>세 질문의 녹음 및 받아쓰기 확인</summary><div id="exam-summary" class="exam-summary"></div></details>
+   <details class="exam-more-research"><summary>추가 연구 분석 보기 (AI-Hub 217)</summary>
    <div class="exam-research-option">
      <label><input type="checkbox" id="exam-research-opt-in"> 확보한 한국어 인지 분류 모델로 연구 분석하기</label>
      <button type="button" id="exam-run-vgg" class="secondary" disabled>실제 인지 분류 모델 실행</button>
@@ -182,6 +227,7 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
        <p>원래 학습 문항 및 최종 ANN이 확인되지 않아 이 값은 치매 위험도나 정상·MCI·치매 판정이 아닙니다.</p>
      </div>
    </div>
+   </details>
    <button type="button" id="exam-restart" class="secondary">처음부터 다시 하기</button>
  </div>
  <div class="exam-internal" hidden>
@@ -233,5 +279,5 @@ AI-Hub 공식 데이터셋 진단 코드는 정상=1, MCI=5, AD=10입니다. 별
  </div>
 </details>
 </section>
-</main><script defer src="./dementia-voice-assessment.js?v=20261029-dementia-binary-research"></script>
+</main><script defer src="./dementia-voice-assessment.js?v=20261030-readable-voice-flow"></script>
 </body></html>
