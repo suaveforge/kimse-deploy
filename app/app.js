@@ -3214,16 +3214,20 @@ function clinicalSpecialtySourceTrace(report,id){
   if(!rows.length)return '<small class="clinical-specialty-source-empty">원자료 미수집 · 정상 소견으로 해석하지 않음</small>';
   const date=x=>known(x)?String(x).slice(0,10):'날짜 미입력';
   const summary='<small class="clinical-specialty-source-summary">원자료 '+rows.length+'건 · 출처·기록일 확인 가능 (의료기관 검증 아님)</small>';
-  const detail='<details class="clinical-specialty-trace"><summary>이 카드의 원자료 위치·상태 확인</summary><ol>'
-    +rows.map(row=>'<li data-clinical-source-path="'+esc(row.path)+'">'
+  // The same canonical rows, labels and original indices feed both screen and A4.
+  // Never collapse [0], [1], etc. to a common array prefix on paper.
+  const sourceRows=(attribute)=>rows.map(row=>'<li '+attribute+'="'+esc(row.path)+'">'
        +'<span class="clinical-specialty-source-path">'+esc(row.path)+'</span>'
        +'<span>관찰·검사일 '+esc(date(row.date))
        +' · 앱 등록일 '+esc(date(row.recorded))
        +' · 출처 '+esc(String(row.source||'미확인'))
-       +' · 상태 '+esc(known(row.state)?String(row.state):'별도 상태값 없음')+'</span></li>').join('')
+       +' · 상태 '+esc(known(row.state)?String(row.state):'별도 상태값 없음')+'</span></li>').join('');
+  const detail='<details class="clinical-specialty-trace"><summary>이 카드의 원자료 위치·상태 확인</summary><ol>'
+    +sourceRows('data-clinical-source-path')
     +'</ol><p>표시된 위치는 원본 기록의 참조 경로입니다. 사용자 입력·진단·의료진 확인 여부는 구분해야 합니다.</p></details>';
-  const paths=[...new Set(rows.map(row=>row.path.replace(/\[\d+\]$/,'')))];
-  const print='<small class="clinical-specialty-print-refs">원자료 위치: '+esc(paths.join(' · '))+'</small>';
+  const print='<div class="clinical-specialty-print-refs"><small>원자료 위치: 개별 '
+    +rows.length+'건 · 사용자/보호자 입력과 의료기관 확인 구분</small><ol>'
+    +sourceRows('data-clinical-print-path')+'</ol></div>';
   return summary+detail+print;
 }
 
