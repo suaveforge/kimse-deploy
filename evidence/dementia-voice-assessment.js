@@ -10,6 +10,28 @@ const examTasks=Object.freeze([
   {domain:'일상 이야기',question:'오늘 있었던 일을 들려주세요.',tip:'기억나는 일부터 편하게 말씀하세요.',seconds:30}
 ]);
 const exam={index:0,answers:[],startedAt:0,timer:null,finished:false,epoch:0,started:false};
+const transitionLines=Object.freeze([
+  '오늘 날짜와 지금 있는 곳을 떠올려 보세요',
+  '동물 이름을 하나씩 떠올려 보세요',
+  '오늘 있었던 일을 천천히 떠올려 보세요'
+]);
+function clearTaskTransition(){
+  byId('task-transition').hidden=true;
+}
+function showTaskTransition(i){
+  clearTaskTransition();
+  if(!exam.started||exam.finished||senior.recording||!transitionLines[i])return;
+  byId('transition-message').textContent=transitionLines[i];
+  byId('task-transition').hidden=false;
+  byId('task-transition').focus?.({preventScroll:true});
+}
+function finishTaskTransition(){
+  const screen=byId('task-transition');
+  if(screen.hidden)return;
+  clearTaskTransition();
+  byId('senior-main-action').focus?.({preventScroll:true});
+}
+
 let examMeterCtx=null,examAnalyser=null,examMeterSource=null,examFrame=0;
 function stopExamMeter(){
  if(examFrame&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(examFrame);
@@ -112,6 +134,7 @@ function examNext(){
   byId('exam-elapsed').textContent='00:00';
   seniorMessage('준비되면 녹음 시작을 누르세요.');
   examDraw();
+  showTaskTransition(exam.index);
 }
 
 const frozenBinary={
@@ -260,15 +283,17 @@ function examRestart(){
   byId('exam-finished').hidden=true;
   seniorMessage('준비되면 녹음 시작을 누르세요.');
   examDraw();
+  showTaskTransition(0);
 }
 function examAction(){
-  if(exam.finished)return;
+  if(exam.finished||!byId('task-transition').hidden)return;
   if(!exam.started){
     if(!byId('senior-consent').checked||!senior.ready)return;
     exam.started=true;
     byId('binary-research-opt-in').checked=true;
     examDraw();
-    return seniorBegin();
+    showTaskTransition(0);
+    return;
   }
   if(senior.recording){seniorStop();return}
   if(senior.busy)return;
@@ -306,6 +331,7 @@ function update(){
 }
 function languageTo(value){
   if(state.recording||state.busy||senior.recording||senior.busy)return;
+  clearTaskTransition();
   state.language=value;
   byId('english-panel').hidden=value!=='en';
   byId('korean-panel').hidden=value!=='ko';
@@ -579,7 +605,7 @@ function seniorDiscard(){
   seniorUpdate();
 }
 async function seniorBegin(){
-  if(!senior.ready||!byId('senior-consent').checked||senior.busy||senior.recording)return;
+  if(!senior.ready||!byId('senior-consent').checked||senior.busy||senior.recording||!byId('task-transition').hidden)return;
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
     seniorMessage('이 브라우저에서 마이크 녹음을 지원하지 않습니다.',true);return;
   }
@@ -668,6 +694,10 @@ async function seniorAnalyze(){
 byId('senior-consent').addEventListener('change',seniorUpdate);
 byId('exam-switch-to-english').addEventListener('click',()=>languageTo('en'));
 byId('azure-transcription-consent').addEventListener('change',seniorUpdate);
+byId('task-transition').addEventListener('click',finishTaskTransition);
+byId('task-transition').addEventListener('keydown',event=>{
+  if(event.key==='Enter'||event.key===' '){event.preventDefault();finishTaskTransition()}
+});
 byId('senior-main-action').addEventListener('click',examAction);
 byId('exam-restart').addEventListener('click',examRestart);
 byId('exam-research-opt-in').addEventListener('change',researchUpdate);
@@ -687,7 +717,7 @@ byId('start-record').addEventListener('click',begin);
 byId('stop-record').addEventListener('click',stop);
 byId('analyze-model').addEventListener('click',analyze);
 byId('discard-record').addEventListener('click',discard);
-window.addEventListener('pagehide',()=>{if(state.recorder?.state==='recording')state.recorder.stop();releaseMic();if(state.url)URL.revokeObjectURL(state.url);if(senior.recorder?.state==='recording')senior.recorder.stop();seniorReleaseMic();if(senior.url)URL.revokeObjectURL(senior.url);});
+window.addEventListener('pagehide',()=>{clearTaskTransition();if(state.recorder?.state==='recording')state.recorder.stop();releaseMic();if(state.url)URL.revokeObjectURL(state.url);if(senior.recorder?.state==='recording')senior.recorder.stop();seniorReleaseMic();if(senior.url)URL.revokeObjectURL(senior.url);});
 update();
 examDraw();
 void checkModels();
