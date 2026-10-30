@@ -200,6 +200,17 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
 #korean-panel [hidden]{display:none!important}
 @media(max-height:660px){#korean-panel .exam-card{padding-top:calc(env(safe-area-inset-top,0px) + 9px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}#korean-panel .exam-topbar{margin-bottom:3px}#korean-panel .exam-question{font-size:clamp(25px,5.8vw,40px);margin:8px 0}#korean-panel .exam-meter-wrap canvas{height:40px}#korean-panel .exam-button{min-height:58px}#korean-panel .exam-consent-step{gap:12px}}
 @media(prefers-reduced-motion:reduce){#korean-panel .exam-recording-indicator:before{animation:none}}
+
+/* Reused unchanged from voice-analysis-beta.html: uninterrupted, user-controlled
+ * full-screen focus transition. Never force-advance after a timer. */
+.voice-transition{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:radial-gradient(ellipse at 45% 40%,#164953,#06252c);color:#f5fffb;cursor:pointer;text-align:center;min-height:100dvh;grid-template-rows:1fr auto;align-items:stretch;justify-items:stretch;padding:clamp(20px,5vw,60px)}
+.voice-transition[hidden]{display:none!important}
+.voice-transition__center{display:grid;place-items:center;height:100%}
+.voice-transition__message{font-size:clamp(40px,8vw,95px);max-width:1000px;line-height:1.28;font-weight:870;letter-spacing:-.05em;word-break:keep-all;animation:calm-voice 3.4s ease-in-out infinite}
+.voice-transition__hint{justify-self:center;margin:0 0 max(20px,3vh);font-size:clamp(18px,3vw,28px);border:1px solid #539b98;padding:16px 25px;border-radius:999px;color:#d3fff7;animation:calm-hint 3.1s ease-in-out infinite}
+@keyframes calm-voice{0%,100%{opacity:.74;transform:scale(.989)}50%{opacity:1;transform:scale(1.009)}}
+@keyframes calm-hint{0%,100%{opacity:.68}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.voice-transition__message,.voice-transition__hint{animation:none}}
 </style></head>
 <body><main>
 <header class="top"><a class="logo" href="./">낌새 </a><a class="back" href="./">나가기</a></header>
@@ -230,6 +241,11 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
 </div>
 </section>
 <section id="korean-panel" class="panel" aria-labelledby="korean-title">
+<!-- Exact concentration-transition interaction from the existing KIMSE voice-analysis-beta flow. -->
+<div id="task-transition" class="voice-transition" hidden role="button" aria-label="화면을 터치하여 다음 단계로" tabindex="0">
+  <div class="voice-transition__center"><span id="transition-message" class="voice-transition__message">다음 질문을 준비합니다</span></div>
+  <span class="voice-transition__hint">화면을 터치하면 다음 ›</span>
+</div>
 <div class="exam-card" id="korean-senior-asr-tool">
  <div class="exam-topbar"><strong>낌새</strong><div><button type="button" id="exam-switch-to-english" class="exam-toplink">English</button><a href="./" class="exam-toplink">나가기</a></div></div>
  <div class="exam-head"><span id="exam-progress">01 / 03</span><span class="exam-kind">인지 변화 관찰</span></div>
@@ -342,5 +358,5 @@ AI-Hub 공식 데이터셋 진단 코드는 정상=1, MCI=5, AD=10입니다. 별
  </div>
 </details>
 </section>
-</main><script defer src="./dementia-voice-assessment.js?v=20261030-one-consent-fullscreen"></script>
+</main><script defer src="./dementia-voice-assessment.js?v=20261030-focus-transition"></script>
 </body></html>
