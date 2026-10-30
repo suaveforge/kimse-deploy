@@ -9,7 +9,7 @@ const examTasks=Object.freeze([
   {domain:'말의 유창성',question:'동물 이름을 최대한 많이 말씀해 주세요.',tip:'생각나는 순서대로 계속 말씀하세요.',seconds:30},
   {domain:'일상 이야기',question:'오늘 있었던 일을 들려주세요.',tip:'기억나는 일부터 편하게 말씀하세요.',seconds:30}
 ]);
-const exam={index:0,answers:[],startedAt:0,timer:null,finished:false,epoch:0};
+const exam={index:0,answers:[],startedAt:0,timer:null,finished:false,epoch:0,started:false};
 let examMeterCtx=null,examAnalyser=null,examMeterSource=null,examFrame=0;
 function stopExamMeter(){
  if(examFrame&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(examFrame);
@@ -64,7 +64,8 @@ function examClock(seconds){
 function examDraw(){
   const task=examTasks[exam.index];
   const card=byId('korean-senior-asr-tool');
-  card.dataset.phase=exam.finished?'done':senior.recording?'recording':senior.busy?'processing':'ready';
+  card.dataset.phase=exam.finished?'done':!exam.started?'consent':senior.recording?'recording':senior.busy?'processing':'ready';
+  byId('exam-consent-step').hidden=exam.started;
   byId('exam-progress').textContent=exam.finished?'03 / 03':String(exam.index+1).padStart(2,'0')+' / 03';
   byId('exam-domain').textContent=exam.finished?'검사 완료':task.domain;
   byId('exam-question').textContent=exam.finished?'세 가지 말하기를 마쳤습니다.':task.question;
@@ -77,6 +78,7 @@ function examDraw(){
   if(exam.finished){action.hidden=true;return}
   action.hidden=false;
   action.disabled=senior.busy||(!senior.recording&&(!senior.ready||!byId('senior-consent').checked));
+  if(!exam.started){action.textContent='동의하고 검사 시작';return}
   if(senior.busy){action.textContent='처리 중…';return}
   if(senior.recording){action.textContent='녹음 끝내기';action.disabled=false;return}
   action.textContent=senior.blob?(exam.index===examTasks.length-1?'AI 결과 확인하기':'다음 질문'):'녹음 시작';
@@ -95,7 +97,13 @@ function examNext(){
   if(senior.recording||senior.busy||!senior.blob)return;
   if(exam.index===examTasks.length-1){
     exam.finished=true;
-    examSummaryRender();examDraw();researchUpdate();binaryUpdate();return;
+    examSummaryRender();examDraw();researchUpdate();binaryUpdate();
+    // Initial explicit consent covers the full 3-question exam and frozen model.
+    void binaryReady().then(()=>{
+      if(exam.finished&&frozenBinary.ready&&!frozenBinary.completed)void binaryAnalyze();
+      else binaryUpdate();
+    }).catch(()=>binaryUpdate());
+    return;
   }
   exam.index++;
   seniorDiscard();
@@ -114,6 +122,7 @@ function binaryUpdate(){
  const button=byId('binary-run');
  button.disabled=!exam.finished||!frozenBinary.ready||frozenBinary.busy||!senior.blob||
    !byId('senior-consent').checked||!byId('binary-research-opt-in').checked;
+ button.hidden=!exam.finished||frozenBinary.busy||frozenBinary.completed||!frozenBinary.ready;
  if(!exam.finished)return;
  if(!frozenBinary.ready){
    byId('binary-runtime').textContent='치매/비치매 학습 모델이 사용 준비되지 않았습니다.';
@@ -136,6 +145,9 @@ async function binaryAnalyze(){
     !byId('senior-consent').checked||!byId('binary-research-opt-in').checked)return;
  frozenBinary.busy=true;
  byId('binary-result').hidden=true;
+ byId('binary-phases').hidden=false;
+ byId('binary-phase-audio').dataset.state='active';
+ byId('binary-phase-model').dataset.state='waiting';
  byId('binary-runtime').textContent='1/2 · 분석할 음성을 준비하고 있습니다.';
  binaryUpdate();
  try{
@@ -239,7 +251,8 @@ function examRestart(){
   frozenBinary.completed=false;
   byId('exam-progress-fill').style.width='0%';
   byId('binary-phases').hidden=true;
-  byId('binary-research-opt-in').checked=false;
+  // Restart in the same open exam keeps the initial consent.
+  byId('binary-research-opt-in').checked=exam.started&&byId('senior-consent').checked;
   byId('binary-result').hidden=true;
   byId('exam-research-opt-in').checked=false;
   byId('exam-research-result').hidden=true;
@@ -250,6 +263,13 @@ function examRestart(){
 }
 function examAction(){
   if(exam.finished)return;
+  if(!exam.started){
+    if(!byId('senior-consent').checked||!senior.ready)return;
+    exam.started=true;
+    byId('binary-research-opt-in').checked=true;
+    examDraw();
+    return seniorBegin();
+  }
   if(senior.recording){seniorStop();return}
   if(senior.busy)return;
   if(senior.blob){examNext();return}
@@ -646,6 +666,7 @@ async function seniorAnalyze(){
 }
 
 byId('senior-consent').addEventListener('change',seniorUpdate);
+byId('exam-switch-to-english').addEventListener('click',()=>languageTo('en'));
 byId('azure-transcription-consent').addEventListener('change',seniorUpdate);
 byId('senior-main-action').addEventListener('click',examAction);
 byId('exam-restart').addEventListener('click',examRestart);
