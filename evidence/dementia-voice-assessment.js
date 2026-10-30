@@ -3,58 +3,111 @@
 const API='https://api-kimse.suaveforge.com/api/v1/evidence/voice-analysis/beta';
 const byId=id=>document.getElementById(id);
 const researchModels=['pitt_basic','pitt_full'];
-const senior={ready:false,recording:false,busy:false,recorder:null,stream:null,blob:null,url:null};
+const senior={ready:true,azureReady:false,recording:false,busy:false,recorder:null,stream:null,blob:null,url:null};
 const examTasks=Object.freeze([
   {domain:'시간과 장소',question:'오늘 날짜와 지금 계신 곳을 말씀해 주세요.',tip:'기억나는 대로 편하게 이야기하세요.',seconds:25},
   {domain:'말의 유창성',question:'동물 이름을 최대한 많이 말씀해 주세요.',tip:'생각나는 순서대로 계속 말씀하세요.',seconds:30},
   {domain:'일상 이야기',question:'오늘 있었던 일을 들려주세요.',tip:'기억나는 일부터 편하게 말씀하세요.',seconds:30}
 ]);
-const exam={index:0,answers:[],startedAt:0,timer:null,finished:false};
+const exam={index:0,answers:[],startedAt:0,timer:null,finished:false,epoch:0};
+let examMeterCtx=null,examAnalyser=null,examMeterSource=null,examFrame=0;
+function stopExamMeter(){
+ if(examFrame&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(examFrame);
+ examFrame=0;try{examMeterSource?.disconnect()}catch{}
+ examMeterSource=null;examAnalyser=null;
+ const ctx=examMeterCtx;examMeterCtx=null;if(ctx)ctx.close().catch(()=>{});
+ const c=byId('exam-level-canvas'),g=c?.getContext?.('2d');
+ if(g)g.clearRect(0,0,c.width,c.height);
+}
+function drawExamMeter(){
+ const c=byId('exam-level-canvas'),g=c?.getContext?.('2d');
+ if(!g||!examAnalyser||!senior.recording)return;
+ const arr=new Uint8Array(examAnalyser.fftSize);examAnalyser.getByteTimeDomainData(arr);
+ let power=0;for(const v of arr){const n=(v-128)/128;power+=n*n}
+ const level=Math.min(1,Math.sqrt(power/arr.length)*5.5);
+ const W=c.width,H=c.height,N=35,gap=5,bw=(W-gap*(N-1))/N;
+ g.clearRect(0,0,W,H);
+ for(let i=0;i<N;i++){
+   const center=1-Math.abs((i-17)/17);
+   const h=6+level*(15+55*center)*(.63+.37*Math.abs(Math.sin(performance.now()/115+i*.52)));
+   g.fillStyle='#0e8c7c';
+   if(g.roundRect){g.beginPath();g.roundRect(i*(bw+gap),(H-h)/2,bw,h,bw/2);g.fill()}
+   else g.fillRect(i*(bw+gap),(H-h)/2,bw,h);
+ }
+ if(typeof requestAnimationFrame==='function')examFrame=requestAnimationFrame(drawExamMeter);
+}
+async function startExamMeter(stream){
+ stopExamMeter();
+ const Audio=window.AudioContext||window.webkitAudioContext;
+ if(!Audio||!stream)return;
+ try{
+   examMeterCtx=new Audio();
+   if(typeof examMeterCtx.resume==='function')await examMeterCtx.resume();
+   if(!senior.recording||!examMeterCtx.createAnalyser||!examMeterCtx.createMediaStreamSource)return;
+   examAnalyser=examMeterCtx.createAnalyser();examAnalyser.fftSize=1024;
+   examAnalyser.smoothingTimeConstant=.62;
+   examMeterSource=examMeterCtx.createMediaStreamSource(stream);
+   examMeterSource.connect(examAnalyser);drawExamMeter();
+ }catch{stopExamMeter()}
+}
+const azureConsent=()=>byId('azure-transcription-consent').checked&&byId('senior-consent').checked;
+function examSummaryRender(){
+  byId('exam-summary').textContent=examTasks.map((task,i)=>{
+    const a=exam.answers[i];
+    return (i+1)+'. '+task.domain+' · '+(a?.text||a?.status||'녹음 완료');
+  }).join('\n');
+}
 function examClock(seconds){
   const value=Math.max(0,Math.ceil(seconds));
   byId('exam-clock').textContent='00:'+String(value).padStart(2,'0');
 }
 function examDraw(){
   const task=examTasks[exam.index];
-  byId('exam-progress').textContent=String(exam.index+1).padStart(2,'0')+' / 03';
-  byId('exam-domain').textContent=task.domain;
-  byId('exam-question').textContent=task.question;
-  byId('exam-tip').textContent=task.tip;
-  if(!senior.recording&&!senior.blob)examClock(task.seconds);
+  const card=byId('korean-senior-asr-tool');
+  card.dataset.phase=exam.finished?'done':senior.recording?'recording':senior.busy?'processing':'ready';
+  byId('exam-progress').textContent=exam.finished?'03 / 03':String(exam.index+1).padStart(2,'0')+' / 03';
+  byId('exam-domain').textContent=exam.finished?'검사 완료':task.domain;
+  byId('exam-question').textContent=exam.finished?'세 가지 말하기를 마쳤습니다.':task.question;
+  byId('exam-tip').textContent=exam.finished?'AI 음성 분류 결과를 확인할 수 있습니다.':task.tip;
   byId('exam-finished').hidden=!exam.finished;
+  byId('exam-recording-indicator').hidden=!senior.recording;
+  byId('exam-meter-status').textContent=senior.recording?'녹음 중':senior.blob?'녹음 완료':'녹음 대기';
+  if(!senior.recording&&!senior.blob)examClock(task.seconds);
   const action=byId('senior-main-action');
   if(exam.finished){action.hidden=true;return}
   action.hidden=false;
   action.disabled=senior.busy||(!senior.recording&&(!senior.ready||!byId('senior-consent').checked));
-  if(senior.busy){action.textContent='분석 중…';return}
+  if(senior.busy){action.textContent='처리 중…';return}
   if(senior.recording){action.textContent='녹음 끝내기';action.disabled=false;return}
-  if(senior.blob&&!byId('senior-result').hidden){action.textContent=exam.index===examTasks.length-1?'결과 보기':'다음 질문';return}
-  action.textContent=senior.blob?'답변 확인하기':'녹음 시작';
+  action.textContent=senior.blob?(exam.index===examTasks.length-1?'AI 결과 확인하기':'다음 질문'):'녹음 시작';
 }
+
 function examRecordClock(){
   if(!senior.recording)return;
-  const left=examTasks[exam.index].seconds-(performance.now()-exam.startedAt)/1000;
-  examClock(left);
-  if(left<=0)seniorStop();
+  const total=examTasks[exam.index].seconds;
+  const passed=(performance.now()-exam.startedAt)/1000;
+  examClock(total-passed);
+  byId('exam-elapsed').textContent='00:'+String(Math.min(59,Math.floor(passed))).padStart(2,'0');
+  byId('exam-progress-fill').style.width=Math.min(100,Math.max(0,passed/total*100))+'%';
+  if(passed>=total)seniorStop();
 }
 function examNext(){
-  if(senior.recording||senior.busy||byId('senior-result').hidden)return;
+  if(senior.recording||senior.busy||!senior.blob)return;
   if(exam.index===examTasks.length-1){
     exam.finished=true;
-    byId('exam-summary').textContent=exam.answers.map((a,i)=>
-      (i+1)+'. '+examTasks[i].domain+' · '+a.text).join('\n');
-    examDraw();researchUpdate();binaryUpdate();return;
+    examSummaryRender();examDraw();researchUpdate();binaryUpdate();return;
   }
   exam.index++;
   seniorDiscard();
   byId('senior-result').hidden=true;
-  seniorMessage('질문을 듣고 녹음 시작을 누르세요.');
+  byId('exam-progress-fill').style.width='0%';
+  byId('exam-elapsed').textContent='00:00';
+  seniorMessage('준비되면 녹음 시작을 누르세요.');
   examDraw();
 }
 
-
 const frozenBinary={
-  ready:false,busy:false,
+  ready:false,busy:false,completed:false,
   model:'Mrsmetamorphosis/dementia-wav2vec-scientific-specaugment-V3'
 };
 function binaryUpdate(){
@@ -64,8 +117,8 @@ function binaryUpdate(){
  if(!exam.finished)return;
  if(!frozenBinary.ready){
    byId('binary-runtime').textContent='치매/비치매 학습 모델이 사용 준비되지 않았습니다.';
- }else if(!frozenBinary.busy){
-   byId('binary-runtime').textContent='공개 가중치 분류 준비됨 · 한국어 진단 검증은 되지 않았습니다.';
+ }else if(!frozenBinary.busy&&!frozenBinary.completed){
+   byId('binary-runtime').textContent='모델 준비됨 · 검사 음성으로 분류할 수 있습니다.';
  }
 }
 async function binaryReady(){
@@ -83,12 +136,15 @@ async function binaryAnalyze(){
     !byId('senior-consent').checked||!byId('binary-research-opt-in').checked)return;
  frozenBinary.busy=true;
  byId('binary-result').hidden=true;
- byId('binary-runtime').textContent='실제 학습 가중치로 분류 중입니다.';
+ byId('binary-runtime').textContent='1/2 · 분석할 음성을 준비하고 있습니다.';
  binaryUpdate();
  try{
    const samples=await seniorPcm16k(senior.blob);
    if(samples.length<3*16000)throw Error('3초 이상 녹음이 필요합니다.');
    const encoded=wavBase64(samples);
+   byId('binary-runtime').textContent='2/2 · 실제 AI 모델이 음성을 분석 중입니다.';
+   byId('binary-phase-audio').dataset.state='done';
+   byId('binary-phase-model').dataset.state='active';
    const ctrl=new AbortController();
    const timer=setTimeout(()=>ctrl.abort(),165000);
    let response;
@@ -108,14 +164,17 @@ async function binaryAnalyze(){
       data.mciClassification!==null||data.koreanValidation!==false||
       data.originalTrainingTaskVerified!==false||data.audioStored!==false||
       data.scoreMeaning!=='UNCALIBRATED_MODEL_SOFTMAX_NOT_CLINICAL_RISK')throw Error('연구 모델 출력 검증 실패');
-   const label=data.trainingClass==='dementia'?'치매 학습 집단':'비치매 학습 집단';
-   byId('binary-class').textContent=label+' · 연구 분류';
+   const label=data.trainingClass==='dementia'?'치매 패턴':'비치매 패턴';
+   byId('binary-class').textContent=label;
+   frozenBinary.completed=true;
+   byId('binary-phase-model').dataset.state='done';
    byId('binary-result').hidden=false;
-   byId('binary-runtime').textContent='실제 공개 학습 모델로 분류했습니다.';
+   byId('binary-runtime').textContent='음성 분류가 완료됐습니다.';
  }catch(error){
    byId('binary-runtime').textContent=error?.name==='AbortError'?'모델 응답시간 초과':
      '연구 분류 실패: '+String(error?.message||'오류').slice(0,70);
    byId('binary-result').hidden=true;
+   byId('binary-phases').hidden=true;
  }finally{frozenBinary.busy=false;binaryUpdate()}
 }
 
@@ -176,7 +235,10 @@ async function researchAnalyze(){
 
 function examRestart(){
   if(senior.recording||senior.busy)return;
-  exam.index=0;exam.answers=[];exam.finished=false;
+  exam.epoch++;exam.index=0;exam.answers=[];exam.finished=false;
+  frozenBinary.completed=false;
+  byId('exam-progress-fill').style.width='0%';
+  byId('binary-phases').hidden=true;
   byId('binary-research-opt-in').checked=false;
   byId('binary-result').hidden=true;
   byId('exam-research-opt-in').checked=false;
@@ -190,7 +252,7 @@ function examAction(){
   if(exam.finished)return;
   if(senior.recording){seniorStop();return}
   if(senior.busy)return;
-  if(senior.blob){if(!byId('senior-result').hidden){examNext();return}return seniorAnalyze()}
+  if(senior.blob){examNext();return}
   return seniorBegin();
 }
 
@@ -431,21 +493,61 @@ function seniorUpdate(){
   examDraw();
 }
 async function seniorReady(){
+  // Recording and frozen classification must not depend on a slow CTC transcriber.
+  senior.ready=true;
   try{
-    const response=await fetch(API+'/asr/senior/status',{cache:'no-store'});
-    if(!response.ok)throw Error('SENIOR_ASR_STATUS_HTTP_'+response.status);
-    const data=await response.json();
-    senior.ready=data.ready===true&&data.model==='hyyoka/wav2vec2-xlsr-korean-senior'&&
-      data.language==='ko'&&data.nonDiagnostic===true&&data.clinicalDecisionAvailable===false;
-    seniorMessage(senior.ready?
-      '고령자 한국어 음성인식 모델 사용 가능 · 녹음 전송 동의 후 1~30초 한국어를 녹음하세요.':
-      '고령자 한국어 모델을 준비 중입니다. 기존 Whisper 전사와 VOICE 3은 위 버튼으로 사용할 수 있습니다.',!senior.ready);
-  }catch(error){
-    senior.ready=false;
-    seniorMessage('고령자 전사 서버 연결을 확인하지 못했습니다. 기존 Whisper 전사와 VOICE 3을 사용해 주세요.',true);
-  }finally{seniorUpdate();}
+    const response=await fetch(API+'/asr/ko/status',{cache:'no-store'});
+    const data=response.ok?await response.json():{};
+    senior.azureReady=data.ready===true&&data.provider==='Microsoft Azure Speech-to-Text'&&
+      data.requiresExternalTransferConsent===true;
+  }catch{senior.azureReady=false}
+  const info=byId('azure-transcription-info');
+  info.textContent=senior.azureReady?
+    '선택 시 Microsoft Azure로 음성을 전송하여 한국어로 받아씁니다. AI 음성 분류와는 별도입니다.':
+    '한국어 받아쓰기는 현재 사용할 수 없습니다. 음성 녹음과 AI 분류는 계속 가능합니다.';
+  byId('azure-transcription-consent').disabled=!senior.azureReady;
+  if(!senior.azureReady)byId('azure-transcription-consent').checked=false;
+  seniorMessage('준비되면 녹음 시작을 누르세요.');
+  seniorUpdate();
 }
+async function transcribeRecorded(blob,step,epoch){
+  if(!azureConsent()||!senior.azureReady)return;
+  exam.answers[step]={status:'받아쓰기 중…'};
+  try{
+    const pcm=await seniorPcm16k(blob);
+    const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),55000);
+    let response;
+    try{
+      response=await fetch(API+'/asr/ko/guest',{
+        method:'POST',cache:'no-store',signal:ctrl.signal,
+        headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':id},
+        body:JSON.stringify({language:'ko',audio_base64:wavBase64(pcm),
+          consent_server_audio_processing:true,consent_azure_transfer:true})
+      });
+    }finally{clearTimeout(timer)}
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error('받아쓰기 연결 실패');
+    if(data.provider!=='azure_speech'||data.language!=='ko'||data.audioStored!==false||
+       data.nonDiagnostic!==true||!['transcribed','no_speech'].includes(data.status))
+      throw Error('받아쓰기 응답 확인 실패');
+    if(epoch!==exam.epoch)return;
+    const text=data.status==='transcribed'&&typeof data.text==='string'?data.text.trim():'';
+    exam.answers[step]={text:text||'인식된 말이 없습니다.',status:'전사 완료'};
+    if(exam.index===step&&!exam.finished&&!senior.recording){
+      byId('senior-transcript').textContent=text||'인식된 말이 없습니다.';
+      byId('senior-result').hidden=false;
+      byId('exam-measure').textContent='한국어 음성 자동 받아쓰기 · 오류가 있을 수 있습니다.';
+    }
+  }catch{
+    if(epoch!==exam.epoch)return;
+    exam.answers[step]={status:'받아쓰기를 완료하지 못했습니다. 녹음은 정상 기록됐습니다.'};
+  }finally{
+    if(epoch===exam.epoch&&exam.finished)examSummaryRender();
+  }
+}
+
 function seniorReleaseMic(){
+  stopExamMeter();
   if(senior.stream){senior.stream.getTracks().forEach(track=>track.stop());senior.stream=null;}
 }
 function seniorDiscard(){
@@ -477,8 +579,16 @@ async function seniorBegin(){
         seniorMessage('녹음 완료 · 1~30초인 경우 전사할 수 있습니다.');
       }else seniorMessage('녹음 파일이 없습니다.',true);
       seniorUpdate();
+      if(senior.blob){
+        const step=exam.index,epoch=exam.epoch;
+        exam.answers[step]={status:'음성 녹음 완료'};
+        void transcribeRecorded(senior.blob,step,epoch);
+      }
     };
     senior.recorder=recorder;recorder.start(250);senior.recording=true;
+    byId('exam-progress-fill').style.width='0%';
+    byId('exam-elapsed').textContent='00:00';
+    void startExamMeter(senior.stream);
     exam.startedAt=performance.now();examClock(examTasks[exam.index].seconds);
     if(exam.timer)clearInterval(exam.timer);
     exam.timer=setInterval(examRecordClock,250);
@@ -530,40 +640,13 @@ function composeSeniorKoreanTranscript(raw){
 }
 
 async function seniorAnalyze(){
-  if(!senior.ready||!senior.blob||!byId('senior-consent').checked||senior.busy)return;
-  senior.busy=true;seniorUpdate();byId('senior-result').hidden=true;
-  try{
-    seniorMessage('녹음을 16kHz WAV로 변환 중입니다.');
-    const pcm=await seniorPcm16k(senior.blob),encoded=wavBase64(pcm);
-    seniorMessage('고령자 한국어 사전학습 모델로 실제 전사 중입니다.');
-    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),115000);
-    let response;
-    try{
-      response=await fetch(API+'/asr/senior/guest',{method:'POST',cache:'no-store',
-        signal:controller.signal,
-        headers:{'Content-Type':'application/json','X-KIMSE-EVIDENCE-CLIENT':id},
-        body:JSON.stringify({language:'ko',consent_server_audio_processing:true,audio_base64:encoded})});
-    }finally{clearTimeout(timer);}
-    const data=await response.json().catch(()=>({}));
-    if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:'SENIOR_ASR_HTTP_'+response.status);
-    if(data.status!=='transcribed'||data.nonDiagnostic!==true||
-       data.clinicalDecision!==null||data.dementiaClassification!==null||
-       data.model!=='hyyoka/wav2vec2-xlsr-korean-senior')throw Error('SENIOR_ASR_RESULT_UNVERIFIED');
-    byId('senior-transcript').textContent=composeSeniorKoreanTranscript(data.text)||'(인식된 단어 없음)';
-    byId('senior-result').hidden=false;
-    const transcript=byId('senior-transcript').textContent;
-    const words=transcript.trim().split(/\s+/).filter(Boolean);
-    byId('exam-measure').textContent='발화 단어 약 '+words.length+'개 · 자동 전사 결과';
-    exam.answers[exam.index]={text:transcript,words:words.length};
-    seniorMessage('확인했으면 다음 질문으로 넘어가세요.');
-  }catch(error){
-    const reason=error?.name==='AbortError'?'서버 응답시간 초과':
-      error?.message==='SENIOR_ASR_REQUIRES_1_TO_30_SECONDS'?'녹음은 1~30초여야 합니다.':
-      '한국어 전사를 완료하지 못했습니다: '+String(error?.message||'오류').slice(0,80);
-    seniorMessage(reason,true);
-  }finally{senior.busy=false;seniorUpdate();}
+  // Legacy hidden button uses the same independent, consented transcription path.
+  if(!senior.blob||!azureConsent()||!senior.azureReady)return;
+  await transcribeRecorded(senior.blob,exam.index,exam.epoch);
 }
+
 byId('senior-consent').addEventListener('change',seniorUpdate);
+byId('azure-transcription-consent').addEventListener('change',seniorUpdate);
 byId('senior-main-action').addEventListener('click',examAction);
 byId('exam-restart').addEventListener('click',examRestart);
 byId('exam-research-opt-in').addEventListener('change',researchUpdate);
