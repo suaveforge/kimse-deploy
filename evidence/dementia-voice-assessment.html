@@ -143,6 +143,80 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
  .exam-center{padding:10px 0}
  .exam-button{min-height:69px}
 }
+
+/* Full-viewport speech exam restores the established KIMSE single-screen flow.
+ * Explicit consents are collected once before the first audio capture.
+ * On iOS in-app browsers, this fills the browser viewport; it cannot hide browser chrome. */
+#korean-panel:not([hidden]){position:fixed;z-index:999;inset:0;height:100dvh;width:100%;margin:0;padding:0;border:0;background:#113e3b;overflow-y:auto;overscroll-behavior:contain;box-shadow:none}
+#korean-panel .exam-card{position:relative;width:100%;max-width:950px;min-height:100dvh;min-height:100svh;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 18px) clamp(20px,5.4vw,48px) calc(env(safe-area-inset-bottom,0px) + 24px);border:0;border-radius:0;box-shadow:none;background:linear-gradient(155deg,#123e3a,#0d4d45 55%,#153b40);color:#f7fff9;align-items:stretch}
+#korean-panel .exam-topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:23px;margin-bottom:24px}
+#korean-panel .exam-topbar>div{display:flex;gap:17px;align-items:center}
+#korean-panel .exam-toplink{appearance:none;display:inline-block;border:0;background:transparent;font-size:14px;font-weight:760;color:#c3e6dc;text-decoration:none;cursor:pointer}
+#korean-panel .exam-head{color:#b6e0d3;font-size:16px}
+#korean-panel .exam-kind{font-size:15px;color:#b6e0d3}
+#korean-panel .exam-domain{color:#9de6cd;font-size:18px;margin-top:clamp(16px,3vh,28px)}
+#korean-panel .exam-question{font-size:clamp(31px,6vw,51px);color:#fff;line-height:1.3;letter-spacing:-1.3px;margin:15px 0 16px;min-height:0;text-wrap:balance}
+#korean-panel .exam-tip{font-size:clamp(16px,2.2vw,20px);color:#b6d9cf;line-height:1.5}
+#korean-panel .exam-center{flex:1;min-height:130px;padding:18px 0;margin:0}
+#korean-panel .exam-clock{font-size:clamp(62px,10vw,92px);line-height:1.13;color:#f1fff8;font-weight:850}
+#korean-panel .exam-clock-caption{font-size:16px;color:#b1dacb}
+#korean-panel .exam-recording-indicator{color:#ffe5df;font-size:17px;margin-bottom:4px}
+#korean-panel .exam-progress-rail{background:#3c7268;margin-top:0;height:6px}
+#korean-panel .exam-progress-fill{background:#a3ead4}
+#korean-panel .exam-meter-wrap{margin:12px 0 18px;padding:12px 16px;background:#174f48;border:1px solid #357268;border-radius:18px}
+#korean-panel .exam-meter-wrap .liveheader{font-size:15px;color:#d6f0e6}
+#korean-panel .exam-meter-wrap .dot{background:#7bb29f}
+#korean-panel .exam-meter-wrap p{font-size:14px;color:#c0ded2}
+#korean-panel .exam-button{flex:none;margin-top:auto;min-height:76px;border-radius:18px;font-size:clamp(20px,4vw,25px);background:#a8e5d0;color:#12463b;box-shadow:0 8px 27px #061a1a33}
+#korean-panel .exam-button:disabled{opacity:.52}
+#korean-panel .exam-card[data-phase=recording] .exam-button{background:#ffe8df;color:#913d35}
+#korean-panel .exam-card[data-phase=recording] .exam-meter-wrap{background:#633d40;border-color:#a46b6a}
+#korean-panel .exam-status{font-size:15px;color:#c2e4d8;margin:12px 0 0}
+#korean-panel .exam-status[data-state=error]{color:#ffd6bc}
+#korean-panel .exam-consent-step{margin:0 0 22px;padding:18px 18px 7px;border:1px solid #57867c;border-radius:18px;background:#164c44}
+#korean-panel .exam-consent-step>strong{font-size:23px;color:#fff}
+#korean-panel .exam-consent-step>p{font-size:15px;line-height:1.5;color:#c4e0d4;margin:6px 0 15px}
+#korean-panel .exam-consent-step .exam-consent{font-size:16px;color:#f5fff9;line-height:1.5;align-items:flex-start;margin:0 0 15px}
+#korean-panel .exam-consent-step .exam-consent input{width:24px;height:24px;flex:none;accent-color:#62c8a9}
+#korean-panel .exam-consent-step .secondary-consent{font-size:15px;color:#d1eadd}
+#korean-panel .exam-consent-step #azure-transcription-info{font-size:14px;color:#b4d6cc;margin:0 0 12px}
+#korean-panel .exam-card[data-phase=consent] .exam-center,#korean-panel .exam-card[data-phase=consent] .exam-meter-wrap,#korean-panel .exam-card[data-phase=consent] .exam-progress-rail{display:none}
+#korean-panel .exam-card[data-phase=consent] .exam-question{margin-bottom:7px}
+#korean-panel .exam-card[data-phase=consent] .exam-tip{margin-bottom:20px}
+#korean-panel .exam-result{display:none}
+#korean-panel .exam-finished{flex:1;display:flex;flex-direction:column;padding:0;margin-top:14px;background:transparent;color:#fff}
+#korean-panel .exam-finished[hidden]{display:none}
+#korean-panel .exam-card[data-phase=done] .exam-domain,#korean-panel .exam-card[data-phase=done] .exam-question,#korean-panel .exam-card[data-phase=done] .exam-tip{display:none}
+#korean-panel .exam-finished>h3{font-size:clamp(28px,6vw,42px);color:#fff;margin:0 0 4px}
+#korean-panel .exam-finished>p{font-size:17px;color:#c9e6dd;line-height:1.5}
+#korean-panel .exam-research-option{border:0;margin-top:12px;padding:0;color:#fff}
+#korean-panel .exam-research-option>strong{font-size:20px;color:#def8ec}
+#korean-panel #binary-runtime{font-size:16px;color:#d3f3e8;line-height:1.5}
+#korean-panel .exam-binary-result{background:#f4fff9;color:#1a4f40;border-radius:20px;padding:clamp(18px,5vw,32px)}
+#korean-panel .exam-binary-result>span{font-size:16px;color:#336b5a}
+#korean-panel .exam-binary-result #binary-class{font-size:clamp(40px,9vw,66px)!important;color:#14543f}
+#korean-panel .exam-binary-result p{color:#466c5f;font-size:16px;line-height:1.5}
+#korean-panel .exam-binary-phases span{color:#e0f3ed;border-color:#547f76}
+#korean-panel .exam-binary-phases span[data-state=active]{background:#b4e7d6;color:#164639}
+#korean-panel .exam-binary-phases span[data-state=done]{background:#1b8069;color:#fff}
+#korean-panel .exam-more-research{border-top:1px solid #407669;margin-top:15px}
+#korean-panel .exam-more-research summary{font-size:15px;color:#b9ddce}
+#korean-panel .exam-summary,#korean-panel #exam-research-status{font-size:15px;color:#d5efe5}
+#korean-panel #exam-research-result{color:#244a40}
+#korean-panel #exam-research-result p{color:#466c5f}
+#korean-panel #exam-restart{display:block;align-self:stretch;margin-top:auto;border-radius:16px;background:transparent;color:#d8f5e9;border-color:#5a9584;min-height:57px}
+#korean-panel #binary-run{min-height:56px;background:#a8e5d0;color:#125040;border:0}
+#korean-panel [hidden]{display:none!important}
+@media(max-height:680px){
+ #korean-panel .exam-card{padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
+ #korean-panel .exam-topbar{margin-bottom:10px}
+ #korean-panel .exam-question{font-size:clamp(29px,5.5vw,43px);margin:10px 0}
+ #korean-panel .exam-center{min-height:75px;padding:8px 0}
+ #korean-panel .exam-clock{font-size:clamp(49px,9vw,76px)}
+ #korean-panel .exam-meter-wrap{margin:6px 0 10px}
+ #korean-panel .exam-button{min-height:63px}
+}
+
 </style></head>
 <body><main>
 <header class="top"><a class="logo" href="./">낌새 </a><a class="back" href="./">나가기</a></header>
@@ -174,6 +248,7 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
 </section>
 <section id="korean-panel" class="panel" aria-labelledby="korean-title">
 <div class="exam-card" id="korean-senior-asr-tool">
+ <div class="exam-topbar"><strong>낌새</strong><div><button type="button" id="exam-switch-to-english" class="exam-toplink">English</button><a href="./" class="exam-toplink">나가기</a></div></div>
  <div class="exam-head"><span id="exam-progress">01 / 03</span><span class="exam-kind">인지 변화 관찰</span></div>
  <h2 id="korean-title" class="visually-hidden">한국어 말하기 검사</h2>
  <span id="exam-domain" class="exam-domain">시간과 장소</span>
@@ -190,9 +265,13 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
    <canvas id="exam-level-canvas" width="560" height="100" aria-label="실제 마이크 입력 음량"></canvas>
    <p id="exam-signal-hint">녹음을 시작하면 마이크에 들어오는 목소리가 표시됩니다.</p>
  </div>
- <label class="exam-consent"><input id="senior-consent" type="checkbox"><span>AI 분석을 위한 서버 음성 처리에 동의합니다. 녹음은 저장하지 않습니다.</span></label>
- <label class="exam-consent secondary-consent"><input id="azure-transcription-consent" type="checkbox" disabled><span>한국어 받아쓰기에 동의합니다 (Microsoft Azure로 음성 전송).</span></label>
- <p id="azure-transcription-info">한국어 받아쓰기 사용 가능 여부 확인 중</p>
+ <div class="exam-consent-step" id="exam-consent-step">
+   <strong>세 가지 말하기 검사</strong>
+   <p>첫 질문부터 마지막 AI 음성 분류까지 한 번에 진행합니다.</p>
+   <label class="exam-consent"><input id="senior-consent" type="checkbox"><span>이번 검사 음성을 서버에서 처리하고, 마지막 녹음으로 연구용 치매/비치매 AI 분류를 실행하는 데 동의합니다. 녹음은 저장하지 않으며 의료 진단이 아닙니다.</span></label>
+   <label class="exam-consent secondary-consent"><input id="azure-transcription-consent" type="checkbox" disabled><span>선택: 한국어 받아쓰기용 Microsoft Azure 음성 전송에 동의합니다.</span></label>
+   <p id="azure-transcription-info">한국어 받아쓰기 사용 여부 확인 중</p>
+ </div>
  <button class="exam-button" id="senior-main-action" disabled type="button">음성 연결 중</button>
  <p class="exam-status" id="senior-runtime" role="status" aria-live="polite">음성 연결을 확인하고 있습니다.</p>
  <div class="exam-result" id="senior-result" hidden aria-live="polite">
@@ -205,8 +284,8 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
    <p>세 질문의 녹음이 끝났습니다. 실제 AI 학습 모델의 분류 결과를 확인할 수 있습니다.</p>
    <div class="exam-research-option" id="binary-compare">
      <strong>AI 음성 분류 결과</strong>
-     <label><input type="checkbox" id="binary-research-opt-in"> 마지막 음성을 연구용 AI 모델로 분류하는 데 동의합니다. (의학적 진단 아님)</label>
-     <button id="binary-run" type="button" class="primary" disabled>AI 음성 분류 결과 확인하기</button>
+     <input id="binary-research-opt-in" type="checkbox" hidden aria-label="검사 시작 시 동의한 연구 분류">
+     <button id="binary-run" type="button" class="primary" disabled hidden>분류 다시 시도</button>
      <p id="binary-runtime" role="status">모델 상태를 확인하고 있습니다.</p>
      <div class="exam-binary-phases" id="binary-phases" hidden aria-label="실제 음성 분석 처리 단계"><span id="binary-phase-audio">음성 준비</span><span id="binary-phase-model">AI 모델 분석</span></div>
      <div class="exam-binary-result" id="binary-result" hidden aria-live="polite">
@@ -279,5 +358,5 @@ AI-Hub 공식 데이터셋 진단 코드는 정상=1, MCI=5, AD=10입니다. 별
  </div>
 </details>
 </section>
-</main><script defer src="./dementia-voice-assessment.js?v=20261030-readable-voice-flow"></script>
+</main><script defer src="./dementia-voice-assessment.js?v=20261030-one-consent-fullscreen"></script>
 </body></html>
