@@ -141,6 +141,82 @@ async function main(){
   const dimensions=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
   check(dimensions.scroll<=dimensions.width+2,'mobile-no-overflow');
   await ctx.close();
+  // New A4-only acceptance: display each concrete canonical row index, original
+  // observation/entry date, reporter and PRESENT/ABSENT/UNKNOWN independently.
+  const traceReport=JSON.parse(JSON.stringify(report));
+  traceReport.clinical_domains={...(traceReport.clinical_domains||{})};
+  traceReport.risk_confounders={...(traceReport.risk_confounders||{})};
+  traceReport.family_feedback=[
+    {assessment:'NO_CHANGE',feedback_at:'2026-09-02',recorded_at:'2026-10-01',reported_by:'CAREGIVER'},
+    {assessment:'CONFIRMED',feedback_at:'2026-09-03',recorded_at:'2026-10-02',reported_by:'CAREGIVER'}
+  ];
+  traceReport.clinical_domains.safety_support={context_events:[
+    {status:'PRESENT',occurred_at:'2026-09-07',recorded_at:'2026-10-06'},
+    {status:'ABSENT',occurred_at:'2026-09-08',recorded_at:'2026-10-07'},
+    {status:'UNKNOWN',occurred_at:'2026-09-09',recorded_at:'2026-10-08'}
+  ]};
+  traceReport.clinical_domains.mood_behavior={context_events:[
+    {status:'ABSENT',occurred_at:'2026-09-10',recorded_at:'2026-10-09'}
+  ]};
+  traceReport.risk_confounders.current_medications=[
+    {name:'QA-PILL-A',recorded_at:'2026-10-10'},
+    {name:'QA-PILL-B',recorded_at:'2026-10-11'}
+  ];
+  traceReport.risk_confounders.medication_change={events:[
+    {status:'PRESENT',occurred_at:'2026-09-11',recorded_at:'2026-10-12'}
+  ]};
+  traceReport.risk_confounders.acute_illness_context={events:[
+    {status:'UNKNOWN',occurred_at:'2026-09-12',recorded_at:'2026-10-13'}
+  ]};
+  const traceOriginal=JSON.stringify(traceReport);
+  const traceCtx=await browser.newContext({viewport:{width:1440,height:950},locale:'ko-KR',serviceWorkers:'block'});
+  await traceCtx.addInitScript(q=>localStorage.setItem('kimse.p0.state',JSON.stringify(q)),
+    {...state,clinicalReport:traceReport,professionalOutcomes:traceReport.professional_outcomes});
+  await traceCtx.route('https://api-kimse.suaveforge.com/**',r=>r.abort('failed'));
+  try{
+    const tp=await traceCtx.newPage();
+    await tp.goto(BASE+'#/clinical-handoff',{waitUntil:'domcontentloaded',timeout:50000});
+    await tp.waitForSelector('#clinical-target-department',{timeout:25000});
+    for(const [dept,focus,required] of [
+      ['신경과','NEUROLOGY',['family_feedback[0]','family_feedback[1]']],
+      ['노인의학과','GERIATRICS',['family_feedback[0]','family_feedback[1]',
+        'clinical_domains.safety_support.context_events[0]',
+        'clinical_domains.safety_support.context_events[1]',
+        'clinical_domains.safety_support.context_events[2]',
+        'risk_confounders.current_medications[0]',
+        'risk_confounders.current_medications[1]']],
+      ['정신건강의학과','PSYCHIATRY',['family_feedback[0]','family_feedback[1]',
+        'clinical_domains.mood_behavior.context_events[0]']],
+      ['가정의학과','PRIMARY_CARE',['risk_confounders.current_medications[0]',
+        'risk_confounders.current_medications[1]',
+        'risk_confounders.acute_illness_context.events[0]']]
+    ]){
+      await tp.locator('#clinical-target-department').fill(dept);
+      await tp.locator('#clinical-target-department').dispatchEvent('change');
+      await tp.waitForFunction(id=>document.querySelector('.clinical-specialty-review')?.dataset.specialtyFocus===id,focus,{timeout:12000});
+      const screen=await tp.locator('.clinical-specialty-trace [data-clinical-source-path]').evaluateAll(ns=>ns.map(n=>n.dataset.clinicalSourcePath));
+      const paper=await tp.locator('.clinical-specialty-print-refs [data-clinical-print-path]').evaluateAll(ns=>ns.map(n=>n.dataset.clinicalPrintPath));
+      check(JSON.stringify(screen)===JSON.stringify(paper)&&paper.length>=required.length,'trace-screen-paper-parity-'+focus);
+      for(const path of required)check(paper.includes(path),'trace-index-present-'+focus+'-'+path);
+      await tp.emulateMedia({media:'print'});
+      const pdf=await tp.pdf({format:'A4',printBackground:true,
+        margin:{top:'11mm',right:'11mm',bottom:'11mm',left:'11mm'}});
+      const file='clinical-specialty-full-source-'+focus+'.pdf';
+      fs.writeFileSync('clinical-specialty-qa/'+file,pdf);
+      const text=execFileSync('pdftotext',['-raw','clinical-specialty-qa/'+file,'-'],{encoding:'utf8'}).replace(/\s+/g,'');
+      for(const path of required)check(text.includes(path),'trace-PDF-index-'+focus+'-'+path);
+      if(focus==='GERIATRICS')for(const token of [
+        '2026-09-07','2026-10-06','2026-09-08','2026-10-07','2026-09-09','2026-10-08',
+        'PRESENT','ABSENT','UNKNOWN','NO_CHANGE','CONFIRMED']){
+        check(text.includes(token),'trace-PDF-unaltered-source-'+token);
+      }
+      const pageCount=(await PDFDocument.load(pdf)).getPageCount();
+      check(pageCount>=1&&pageCount<=8,'trace-PDF-page-budget-'+focus+'-'+pageCount);
+      await tp.emulateMedia({media:'screen'});
+    }
+  }finally{await traceCtx.close()}
+  check(JSON.stringify(traceReport)===traceOriginal,'trace-canonical-data-immutable');
+
   // A user reporting *absence* of an event must not be printed as having
   // experienced that event; conflicting or unverified records also remain
   // clearly distinguished. Run through the actual production DOM and A4 PDF.
