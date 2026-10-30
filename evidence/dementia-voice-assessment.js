@@ -78,7 +78,7 @@ function examDraw(){
   if(exam.finished){action.hidden=true;return}
   action.hidden=false;
   action.disabled=senior.busy||(!senior.recording&&(!senior.ready||!byId('senior-consent').checked));
-  if(!exam.started){action.textContent='동의하고 검사 시작';return}
+  if(!exam.started){action.textContent='검사 시작';return}
   if(senior.busy){action.textContent='처리 중…';return}
   if(senior.recording){action.textContent='녹음 끝내기';action.disabled=false;return}
   action.textContent=senior.blob?(exam.index===examTasks.length-1?'AI 결과 확인하기':'다음 질문'):'녹음 시작';
@@ -148,13 +148,13 @@ async function binaryAnalyze(){
  byId('binary-phases').hidden=false;
  byId('binary-phase-audio').dataset.state='active';
  byId('binary-phase-model').dataset.state='waiting';
- byId('binary-runtime').textContent='1/2 · 분석할 음성을 준비하고 있습니다.';
+ byId('binary-runtime').textContent='음성 준비 중…';
  binaryUpdate();
  try{
    const samples=await seniorPcm16k(senior.blob);
    if(samples.length<3*16000)throw Error('3초 이상 녹음이 필요합니다.');
    const encoded=wavBase64(samples);
-   byId('binary-runtime').textContent='2/2 · 실제 AI 모델이 음성을 분석 중입니다.';
+   byId('binary-runtime').textContent='AI 분석 중…';
    byId('binary-phase-audio').dataset.state='done';
    byId('binary-phase-model').dataset.state='active';
    const ctrl=new AbortController();
@@ -181,10 +181,10 @@ async function binaryAnalyze(){
    frozenBinary.completed=true;
    byId('binary-phase-model').dataset.state='done';
    byId('binary-result').hidden=false;
-   byId('binary-runtime').textContent='음성 분류가 완료됐습니다.';
+   byId('binary-runtime').textContent='';
  }catch(error){
    byId('binary-runtime').textContent=error?.name==='AbortError'?'모델 응답시간 초과':
-     '연구 분류 실패: '+String(error?.message||'오류').slice(0,70);
+     '분류를 완료하지 못했습니다. 다시 시도해 주세요.';
    byId('binary-result').hidden=true;
    byId('binary-phases').hidden=true;
  }finally{frozenBinary.busy=false;binaryUpdate()}
