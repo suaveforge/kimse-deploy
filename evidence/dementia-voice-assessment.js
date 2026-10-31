@@ -9,7 +9,7 @@ const examTasks=Object.freeze([
   {domain:'말의 유창성',question:'동물 이름을 최대한 많이 말씀해 주세요.',tip:'생각나는 순서대로 계속 말씀하세요.',seconds:30},
   {domain:'일상 이야기',question:'오늘 있었던 일을 들려주세요.',tip:'기억나는 일부터 편하게 말씀하세요.',seconds:30}
 ]);
-const exam={index:0,answers:[],startedAt:0,timer:null,finished:false,epoch:0,started:false};
+const exam={index:0,answers:[],recordings:[],startedAt:0,timer:null,finished:false,epoch:0,started:false};
 const transitionLines=Object.freeze([
   '오늘 날짜와 지금 있는 곳을 떠올려 보세요',
   '동물 이름을 하나씩 떠올려 보세요',
@@ -118,6 +118,10 @@ function examRecordClock(){
 function examNext(){
   if(senior.recording||senior.busy||!senior.blob)return;
   if(exam.index===examTasks.length-1){
+    // Keep each response independent: model-specific research must not pretend
+    // an arbitrary concatenation is the original training protocol.
+    if(exam.recordings.length!==examTasks.length||
+       !exam.recordings.every((audio)=>audio instanceof Blob))return;
     exam.finished=true;
     examSummaryRender();examDraw();researchUpdate();binaryUpdate();
     // Initial explicit consent covers the full 3-question exam and frozen model.
@@ -270,7 +274,7 @@ async function researchAnalyze(){
 
 function examRestart(){
   if(senior.recording||senior.busy)return;
-  exam.epoch++;exam.index=0;exam.answers=[];exam.finished=false;
+  exam.epoch++;exam.index=0;exam.answers=[];exam.recordings=[];exam.finished=false;
   frozenBinary.completed=false;
   byId('exam-progress-fill').style.width='0%';
   byId('binary-phases').hidden=true;
@@ -627,6 +631,9 @@ async function seniorBegin(){
       seniorUpdate();
       if(senior.blob){
         const step=exam.index,epoch=exam.epoch;
+        // Retain exactly one recording per question in memory for the session.
+        // Not persisted, sent separately or merged across tasks.
+        exam.recordings[step]=senior.blob;
         exam.answers[step]={status:'음성 녹음 완료'};
         void transcribeRecorded(senior.blob,step,epoch);
       }
@@ -717,7 +724,7 @@ byId('start-record').addEventListener('click',begin);
 byId('stop-record').addEventListener('click',stop);
 byId('analyze-model').addEventListener('click',analyze);
 byId('discard-record').addEventListener('click',discard);
-window.addEventListener('pagehide',()=>{clearTaskTransition();if(state.recorder?.state==='recording')state.recorder.stop();releaseMic();if(state.url)URL.revokeObjectURL(state.url);if(senior.recorder?.state==='recording')senior.recorder.stop();seniorReleaseMic();if(senior.url)URL.revokeObjectURL(senior.url);});
+window.addEventListener('pagehide',()=>{exam.recordings=[];clearTaskTransition();if(state.recorder?.state==='recording')state.recorder.stop();releaseMic();if(state.url)URL.revokeObjectURL(state.url);if(senior.recorder?.state==='recording')senior.recorder.stop();seniorReleaseMic();if(senior.url)URL.revokeObjectURL(senior.url);});
 update();
 examDraw();
 void checkModels();
