@@ -1,0 +1,36 @@
+name: KIMSE Evidence three-model public page smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/evidence-top3-public-smoke.yml'
+      - 'evidence/voice-three-models.html'
+      - 'evidence/evidence-application-tabs.js'
+      - 'evidence/index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm deploy assets and external page availability
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -s evidence/voice-three-models.html
+          grep -Fq "AI 음성 3모델 비교" evidence/evidence-application-tabs.js
+          grep -Fq "20261101-top3-voice1" evidence/index.html
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error --connect-timeout 7 --max-time 18 \
+              "https://kimse.suaveforge.com/evidence/voice-three-models.html" > /tmp/kimse-top3-page.html && \
+              grep -Fq '내 목소리로' /tmp/kimse-top3-page.html; then
+              echo KIMSE_TOP3_PUBLIC_GITHUB_PAGES=PASS
+              exit 0
+            fi
+            sleep 10
+          done
+          echo KIMSE_TOP3_PUBLIC_GITHUB_PAGES=UNVERIFIED
+          exit 1
