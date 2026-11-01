@@ -2487,26 +2487,9 @@ page['care-schedule']=()=>wrap(
   '<div class="list">'+(S.schedule.length?S.schedule.map(x=>row('📅 '+x.title,x.date,'예정')).join(''):'<p class="page-desc">아직 등록된 일정이 없습니다.</p>')+'</div></section>',{title:'일정 관리',narrow:true});
 page.family=()=>{
   const connected=S.caregivers||[],pending=(S.caregiverInvites||[]).filter(x=>x.status==='PENDING'),schedule=S.callSchedules?.[0];
-  return wrap(`<h1 class="page-title">가족 연결 관리</h1><div class="summary-card bg-blue"><h3>보호자 ${connected.length}명 연결</h3><p>초대받은 보호자가 해당 이메일로 로그인하면 가족 계정과 연결됩니다.</p></div><div class="list">${connected.map(x=>row(x.name,(x.relation||'가족')+(x.email?' · '+x.email:''),'연결됨')).join('')||'<div class="empty-state"><h3>연결된 보호자가 없어요</h3><p>이메일로 보호자를 초대할 수 있습니다.</p></div>'}</div>${pending.length?'<h2 class="section-title">초대 대기</h2><div class="list">'+pending.map(x=>row(x.email,x.relation||'가족','대기 중')).join('')+'</div>':''}<div class="hero-actions"><button class="btn-kimse btn-primary-k btn-full" data-go="family-add">+ 보호자 초대하기</button>${connected.length?'<button class="btn-kimse btn-secondary-k btn-full" data-go="family-call">정기 안부 통화 설정'+(schedule?' · '+schedule.interval_days+'일':'')+'</button>':''}${S.care&&new URLSearchParams(location.search).get('gippeunsai')==='1'?'<button class="btn-kimse btn-secondary-k btn-full" data-go="gippeunsai-pilot">기쁜사이 AI 안부 상담 등록</button>':''}</div>`,{title:'가족 연결 관리',narrow:true});
+  return wrap(`<h1 class="page-title">가족 연결 관리</h1><div class="summary-card bg-blue"><h3>보호자 ${connected.length}명 연결</h3><p>초대받은 보호자가 해당 이메일로 로그인하면 가족 계정과 연결됩니다.</p></div><div class="list">${connected.map(x=>row(x.name,(x.relation||'가족')+(x.email?' · '+x.email:''),'연결됨')).join('')||'<div class="empty-state"><h3>연결된 보호자가 없어요</h3><p>이메일로 보호자를 초대할 수 있습니다.</p></div>'}</div>${pending.length?'<h2 class="section-title">초대 대기</h2><div class="list">'+pending.map(x=>row(x.email,x.relation||'가족','대기 중')).join('')+'</div>':''}<div class="hero-actions"><button class="btn-kimse btn-primary-k btn-full" data-go="family-add">+ 보호자 초대하기</button>${connected.length?'<button class="btn-kimse btn-secondary-k btn-full" data-go="family-call">정기 안부 통화 설정'+(schedule?' · '+schedule.interval_days+'일':'')+'</button>':''}</div>`,{title:'가족 연결 관리',narrow:true});
 };
 page['family-add']=()=>wrap(`<h1 class="page-title">보호자 계정 초대</h1><p class="page-desc">보호자가 로그인할 때 사용하는 이메일을 입력해주세요.</p><div class="form-stack"><div class="field"><label for="family-email">보호자 이메일</label><input id="family-email" type="email" autocomplete="email" placeholder="family@example.com"></div><div class="field"><label for="family-relation">관계</label><input id="family-relation" placeholder="예: 배우자, 자녀"></div><button id="save-family" class="btn-kimse btn-primary-k">보호자 초대</button></div>${notice('실제 계정 연결','초대받은 보호자가 같은 이메일로 로그인하면 연결됩니다. 생활 기록의 공유는 동의한 범위에서만 이루어집니다.')}`,{title:'보호자 초대',narrow:true});
-page['gippeunsai-pilot']=()=>{
-  const subjects=S.remote.careSubjects||[];
-  if(!S.remote.token||!S.care)return wrap('<h1 class="page-title">기쁜사이 안부 상담</h1><p>보호자 계정으로 로그인해주세요.</p><button class="btn-kimse btn-primary-k btn-full" data-go="auth">로그인</button>',{title:'기쁜사이',narrow:true});
-  const choices='<option value="">새 고령자 등록</option>'+subjects.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.displayName||'고령자')+'</option>').join('');
-  const noticeText='고령자가 문자 링크를 직접 열어 AI 음성 처리·녹음·분석에 동의한 뒤 예약된 시간에 웹통화 수락 버튼을 눌러야 상담이 시작됩니다.';
-  return wrap('<h1 class="page-title">기쁜사이 AI 안부 상담</h1><p class="page-desc">'+noticeText+'</p>'+
-    '<div class="form-stack">'+
-    '<div class="field"><label for="gippeunsai-subject">고령자</label><select id="gippeunsai-subject">'+choices+'</select></div>'+
-    '<div class="field"><label for="gippeunsai-name">고령자 이름 (새로 등록할 때)</label><input id="gippeunsai-name" type="text" maxlength="40" placeholder="예: 어머니"></div>'+
-    '<div class="field"><label for="gippeunsai-family-phone">가족 연락처</label><input id="gippeunsai-family-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="01012345678" maxlength="13"></div>'+
-    '<div class="field"><label for="gippeunsai-phone">고령자 휴대폰 번호</label><input id="gippeunsai-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="01012345678" maxlength="13"></div>'+
-    '<div class="field"><label for="gippeunsai-due">첫 상담 날짜·시간</label><input id="gippeunsai-due" type="datetime-local"></div>'+
-    '<button class="btn-kimse btn-primary-k btn-full" id="save-gippeunsai-pilot">상담 초대 등록</button></div>'+
-    '<div id="gippeunsai-pilot-result" aria-live="polite"></div>'+
-    '<p class="screen-footnote">문자 발송은 별도 중계 설정이 완료된 경우에만 진행됩니다. 링크가 만들어졌다는 사실은 문자 수신을 의미하지 않습니다.</p>',
-    {title:'기쁜사이 안부 상담',narrow:true});
-};
 page['family-call']=()=>{
   const caregivers=S.caregivers||[],schedules=S.callSchedules||[],sessions=S.callSessions||[];
   const pastStatuses=['ENDED','FAILED','CANCELLED'];
@@ -3904,40 +3887,6 @@ if(e.target.closest('[data-health-sleep]')&&route()==='health-detail'&&S.selecte
   if(!v){feedback('기록할 값을 입력해주세요.','warning');return}
   S.health[k]=v;S.health.memo=$('#health-memo')?.value.trim()||'';save();syncClinicalContextSnapshot().catch(()=>{});if(k==='sleep'){const n=parseSleepMinutes(v);if(n)queueSignal('sleep_minutes',n,'min','manual-health')}if(k==='steps'){const n=parseSteps(v);if(n)queueSignal('steps',n,'count','manual-health')}flushSignals();feedback(HEALTH_META[k][1]+' 기록을 저장했습니다.','success');go('health')}if(e.target.id==='add-schedule'){const title=$('#schedule-title')?.value.trim()||'',day=$('#schedule-date')?.value.trim()||'',time=$('#schedule-time')?.value.trim()||'',date=day&&time?day+'T'+time:'';if(!title||!date){feedback('일정과 날짜/시간을 입력해주세요.','warning');return}const parsed=new Date(date);if(!Number.isFinite(parsed.getTime())){feedback('날짜와 시간을 선택해주세요.','warning');return}S.schedule.push({id:'s'+Date.now(),title,date:parsed.toLocaleString('ko-KR',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'})});save();feedback('가족 일정을 추가했습니다.','success');render()}});
 document.addEventListener('click',async e=>{
-  if(e.target.id==='save-gippeunsai-pilot'){
-    const subject=$('#gippeunsai-subject')?.value||'',seniorName=$('#gippeunsai-name')?.value.trim()||'',familyPhone=$('#gippeunsai-family-phone')?.value.trim().replace(/[\s-]/g,'')||'',phone=$('#gippeunsai-phone')?.value.trim().replace(/[\s-]/g,'')||'',when=$('#gippeunsai-due')?.value||'';
-    if((!subject&&!seniorName)||!/^01[016789]\d{7,8}$/.test(phone)||!/^01[016789]\d{7,8}$/.test(familyPhone)||!when){feedback('고령자 이름, 가족·고령자 전화번호, 상담 시간을 확인해주세요.','warning');return}
-    const date=new Date(when);
-    if(!Number.isFinite(date.getTime())){feedback('상담 날짜·시간을 확인해주세요.','warning');return}
-    e.target.disabled=true;
-    const output=$('#gippeunsai-pilot-result');
-    try{
-      const response=await fetch(API+'/api/v1/pilot/gippeunsai/invitations',{method:'POST',headers:remoteHeaders(),
-        body:JSON.stringify({account_id:S.remote.accountId,subject_id:subject||null,senior_name:seniorName||null,family_phone:familyPhone,senior_phone:phone,scheduled_at:date.toISOString()})});
-      if(!response.ok){
-        const errors={401:'로그인 정보를 다시 확인해주세요.',403:'고령자 보호자 권한이 필요합니다.',409:'이미 진행 중인 초대가 있습니다.',422:'전화번호 또는 상담 시간을 확인해주세요.',429:'하루 초대 한도를 초과했습니다.',503:'서버의 기쁜사이 파일럿이 아직 활성화되지 않았습니다.'};
-        throw new Error(errors[response.status]||'등록 오류 ('+response.status+')');
-      }
-      const result=await response.json();
-      if(!subject&&result.subject_id&&!S.remote.careSubjects.some(x=>x.id===result.subject_id)){
-        S.remote.careSubjects.push({id:result.subject_id,displayName:seniorName,relation:'고령자'});
-        if(!S.remote.activeCareSubjectId)S.remote.activeCareSubjectId=result.subject_id;
-        if(!S.remote.subjectId)S.remote.subjectId=result.subject_id;
-        save();
-      }
-      if(output){
-        output.replaceChildren();
-        const description=document.createElement('p');
-        description.textContent=result.relay_status==='QUEUED'?'발송 요청이 대기열에 등록되었습니다. 실제 문자 수신 여부는 별도 확인이 필요합니다.':'초대 링크는 생성됐지만 자동 문자 발송은 아직 설정되지 않았습니다.';
-        const link=document.createElement('a');
-        link.href=result.approval_link;link.textContent='초대 링크 열기';link.rel='noopener noreferrer';link.target='_blank';
-        output.append(description,link);
-      }
-      feedback('고령자 상담 초대를 등록했습니다.','success');
-    }catch(err){feedback(err.message||'상담 초대 등록에 실패했습니다.','warning');}
-    finally{e.target.disabled=false}
-    return;
-  }
   if(e.target.id==='save-family'){
     const email=$('#family-email')?.value.trim()||'',relation=$('#family-relation')?.value.trim()||'';
     if(!email||!email.includes('@')){feedback('보호자 이메일을 확인해주세요.','warning');return}
