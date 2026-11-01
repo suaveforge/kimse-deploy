@@ -1,0 +1,133 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>낌새 | 3개 AI 음성 비교</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;background:#f4f7f5;color:#153e35}
+*{box-sizing:border-box}body{margin:0}main{max-width:650px;margin:auto;padding:24px 16px 60px}
+.brand{font-size:18px;font-weight:900;color:#0c765d}h1{font-size:clamp(29px,6vw,39px);letter-spacing:-1.5px;line-height:1.2;margin:22px 0 10px}
+.sub{color:#537167;font-size:16px;line-height:1.65;margin:0 0 23px}
+.card{padding:25px 22px;background:white;border-radius:24px;box-shadow:0 10px 34px #174a3912;margin:16px 0}
+h2{font-size:18px;margin:0 0 13px}.prompt{font-size:clamp(24px,5.4vw,34px);line-height:1.44;letter-spacing:-.9px;font-weight:850;margin:0 0 16px;word-break:keep-all}
+.help{font-size:14px;color:#5b776c;line-height:1.55;margin:0 0 15px}
+button{width:100%;min-height:66px;font-size:20px;font-weight:850;border:0;border-radius:16px;cursor:pointer;color:#fff;background:#0c7961}
+button:disabled{opacity:.42;cursor:not-allowed}
+button.stop{background:#bb4e45}button.secondary{background:#dcf0e6;color:#0d5c4c}
+.clock{text-align:center;font-size:60px;font-weight:850;font-variant-numeric:tabular-nums;letter-spacing:-2px;margin:10px 0 17px}
+label{display:flex;align-items:flex-start;gap:12px;margin:15px 0;font-size:15px;font-weight:660;line-height:1.55}
+input[type=checkbox]{height:23px;width:23px;margin:1px 0 0;accent-color:#14735d;flex:none}
+.status{text-align:center;color:#496e62;line-height:1.5;min-height:25px;margin:13px 0 0}
+.results{display:grid;gap:12px}.result{background:#fff;border:1px solid #d5e6dc;border-radius:16px;padding:17px}
+.result b{font-size:18px}.result strong{font-size:25px;display:block;margin-top:9px;color:#0e705b}.result em{font-size:14px;color:#57776b;font-style:normal}
+.notice{font-size:13px;line-height:1.7;color:#657e73;margin-top:22px}
+#recorded,#analyze,#resultsBox{display:none}
+</style></head><body><main>
+<div class="brand"><a href="./" style="color:inherit;text-decoration:none">낌새</a> · AI 음성 비교</div><h1>내 목소리로<br>AI 모델 3개 비교</h1>
+<p class="sub">한 번 말하고 세 개의 실제 AI 모델에 같은 음성을 넣어 결과를 비교합니다.</p>
+<section class="card"><h2>말하기 질문</h2><p class="prompt">최근 기억에 남는 일을 편하게 이야기해 주세요.</p>
+<p class="help">인상 깊었던 경험을 내 말로 이야기하세요. 3~20초 녹음합니다. 원본 모델의 학습 질문과 일치한다고 확인된 검사는 아닙니다.</p>
+<div id="clock" class="clock">00:00</div><button id="rec">녹음 시작</button>
+<p id="recState" class="status" role="status">마이크를 허용하고 시작하세요.</p>
+<div id="recorded"><label><input id="consent" type="checkbox"><span>음성을 서버로 보내 AI 모델 3개에서 연구용으로 처리하는 데 동의합니다. 서버에 음성을 저장하지 않습니다.</span></label>
+<button id="analyze" disabled>세 모델로 분석하기</button>
+<button class="secondary" id="retry" style="margin-top:10px">다시 녹음</button></div></section>
+<section class="card" id="resultsBox" aria-live="polite"><h2>모델별 결과</h2>
+<div id="results" class="results"></div>
+<p class="help" style="margin-top:15px">이 결과는 모델의 원시 치매/비치매 분류입니다. 한국어 치매 판별 정확도와 검사 질문의 학습 조건 일치 여부는 아직 검증되지 않았습니다.</p></section>
+<p class="notice">기존 낌새 검사와 분리된 AI 비교 실험입니다. 질병 위험 확률이나 MCI 여부를 계산하지 않으며, 녹음은 서버에서 저장하지 않고 메모리에서 처리합니다.</p>
+</main><script>
+'use strict';
+const $=id=>document.getElementById(id);
+const url=location.hostname==='kimse.suaveforge.com'
+ ? 'https://api-kimse.suaveforge.com:18467/api/v1/evidence/voice-analysis/top3-lab'
+ : '/api/v1/evidence/voice-analysis/top3-lab';
+let recorder=null,stream=null,chunks=[],wav='',timer=null,start=0,busy=false;
+const models=[['parim1','parim1'],['auralis','Auralis'],['mmcnair','MMcnair']];
+const state=msg=>{$('recState').textContent=msg};
+function clock(){const s=Math.floor((Date.now()-start)/1000);$('clock').textContent='00:'+String(s).padStart(2,'0');if(s>=19&&recorder?.state==='recording')stop()}
+function reset(){if(timer)clearInterval(timer);timer=null;wav='';chunks=[];$('clock').textContent='00:00';$('rec').disabled=false;$('rec').className='';$('rec').textContent='녹음 시작';$('recorded').style.display='none';$('consent').checked=false;$('analyze').disabled=true;$('resultsBox').style.display='none';$('results').replaceChildren();state('마이크를 허용하고 시작하세요.')}
+function stop(){if(recorder?.state==='recording')recorder.stop();$('rec').disabled=true;state('녹음 확인 중…')}
+$('rec').addEventListener('click',async()=>{
+ if(recorder?.state==='recording'){stop();return}
+ try{
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('브라우저 녹음 기능 미지원');
+  stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  chunks=[];recorder=new MediaRecorder(stream);
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  recorder.onerror=()=>{state('녹음에 실패했습니다.');stream?.getTracks().forEach(t=>t.stop())};
+  recorder.onstop=async()=>{
+    stream?.getTracks().forEach(t=>t.stop());
+    clearInterval(timer);timer=null;const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
+    try{wav=await makeWav(blob);$('recorded').style.display='block';$('analyze').style.display='block';state('녹음 완료. 동의하고 분석하세요.')}
+    catch(e){state(e.message||'음성 변환 실패. 다시 녹음하세요.');$('rec').disabled=false;$('rec').className='';$('rec').textContent='다시 녹음'}
+  };
+  recorder.start(300);start=Date.now();$('rec').textContent='녹음 종료';$('rec').className='stop';state('녹음 중…');clock();timer=setInterval(clock,250);
+ }catch(e){state('마이크를 사용할 수 없습니다. 브라우저 권한을 확인하세요.');stream?.getTracks().forEach(t=>t.stop())}
+});
+async function makeWav(blob){
+ const ctx=new (window.AudioContext||window.webkitAudioContext)();
+ let decoded;try{decoded=await ctx.decodeAudioData(await blob.arrayBuffer())}finally{ctx.close().catch(()=>{})}
+ const n=Math.min(Math.floor(decoded.duration*16000),20*16000);
+ if(n<3*16000||n>20*16000)throw Error('3~20초로 다시 녹음하세요.');
+ const offline=new OfflineAudioContext(1,n,16000);
+ const source=offline.createBufferSource();source.buffer=decoded;source.connect(offline.destination);source.start();
+ const samples=(await offline.startRendering()).getChannelData(0);
+ const view=new DataView(new ArrayBuffer(44+samples.length*2));
+ function txt(at,s){for(let i=0;i<s.length;i++)view.setUint8(at+i,s.charCodeAt(i))}
+ txt(0,'RIFF');view.setUint32(4,36+samples.length*2,true);txt(8,'WAVE');txt(12,'fmt ');
+ view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,16000,true);
+ view.setUint32(28,32000,true);view.setUint16(32,2,true);view.setUint16(34,16,true);
+ txt(36,'data');view.setUint32(40,samples.length*2,true);
+ for(let i=0;i<samples.length;i++){let v=Math.max(-1,Math.min(1,samples[i]));view.setInt16(44+i*2,v<0?v*32768:v*32767,true)}
+ const bytes=new Uint8Array(view.buffer);let output='';for(let i=0;i<bytes.length;i+=8192)output+=String.fromCharCode(...bytes.subarray(i,i+8192));
+ return btoa(output);
+}
+$('consent').addEventListener('change',()=>{$('analyze').disabled=!$('consent').checked||!wav||busy});
+$('retry').addEventListener('click',reset);
+$('analyze').addEventListener('click',async()=>{
+ if(busy||!wav||!$('consent').checked)return;
+ busy=true;$('analyze').disabled=true;$('retry').disabled=true;$('rec').disabled=true;$('resultsBox').style.display='block';
+ const results=$('results');results.replaceChildren();
+ for(let i=0;i<models.length;i++){
+   const [id,name]=models[i],card=document.createElement('div');card.className='result';
+   const title=document.createElement('b');title.textContent=name;
+   const output=document.createElement('strong');output.textContent='분석 중…';
+   const info=document.createElement('em');info.textContent=(i+1)+'/3 모델 실행';
+   card.append(title,output,info);results.append(card);
+   try{
+     const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),155000);let res;
+     try{res=await fetch(url+'/classify',{method:'POST',headers:{'Content-Type':'application/json'},signal:ctrl.signal,
+       body:JSON.stringify({model:id,audio_base64:wav,consent_research_audio_processing:true})})}finally{clearTimeout(to)}
+     const data=await res.json().catch(()=>({}));
+     if(!res.ok||data.status!=='classified_research_only'||data.model!==id||
+        data.checkpointVerified!==true||data.weightTensorCount!==426||
+        data.koreanClinicalAccuracyVerified!==false||data.clinicalDecision!==null||
+        !['dementia','nodementia'].includes(data.trainingClass))throw Error(res.status===429?'시간당 테스트 횟수 초과':res.status===503?'모델 사용 중이거나 일시적으로 실행 불가':'모델 응답 확인 실패');
+     output.textContent=data.trainingClass==='dementia'?'치매 패턴':'비치매 패턴';
+     info.textContent='원본 가중치 426개 · 연구용 출력';
+   }catch(e){output.textContent='분류 실패';info.textContent=e.name==='AbortError'?'응답 시간이 초과됐습니다.':e.message}
+ }
+ wav='';busy=false;$('retry').disabled=false;state('세 모델 실행 종료. 다시 검사할 수 있습니다.');
+});
+reset();
+async function checkConnection(){
+  const rec=$('rec');
+  rec.disabled=true;
+  state('AI 서버 연결 확인 중…');
+  try{
+    const c=new AbortController();
+    const t=setTimeout(()=>c.abort(),12000);
+    let response;
+    try{response=await fetch(url+'/status',{cache:'no-store',signal:c.signal})}
+    finally{clearTimeout(t)}
+    const data=await response.json();
+    if(!response.ok||data.ready!==true||
+       data.models?.parim1!==true||data.models?.auralis!==true||data.models?.mmcnair!==true)
+       throw Error('AI 모델 준비 중');
+    rec.disabled=false;
+    state('녹음 시작을 눌러주세요.');
+  }catch(e){
+    rec.disabled=true;
+    state('AI 서버 연결 준비 중입니다. 잠시 후 새로고침해 주세요.');
+  }
+}
+checkConnection();
+</script></body></html>
