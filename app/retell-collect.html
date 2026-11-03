@@ -32,7 +32,7 @@ a{color:#165d66}footer{font-size:.85rem;padding-top:10px}
 <footer><a href="/">낌새 홈</a> · <a href="/retell-test.html">연결 기능만 테스트</a></footer>
 </main>
 <script type="module">
-import { RetellWebClient } from "https://esm.sh/retell-client-js-sdk@2.0.8";
+import { RetellWebClient } from "https://esm.sh/retell-client-js-sdk@3.0.2";
 const API="https://api-kimse.suaveforge.com";
 const el=id=>document.getElementById(id);
 const status=message=>{el("status").textContent=message;};
@@ -75,7 +75,7 @@ el("start").addEventListener("click",async()=>{
    if(!resp.ok)throw new Error(result.detail||("연결 오류 "+resp.status));
    callId=result.call_id;
    el("stop").disabled=false;
-   await client.startCall({accessToken:result.access_token});
+   await client.startCall({accessToken:result.access_token,callId:result.call_id,transport:result.transport,iceServers:result.ice_servers});
    status("AI 상담원과 연결 중입니다.");
  }catch(e){status("통화를 시작하지 못했습니다: "+String(e.message||e));el("stop").disabled=true;if(callId)el("after").hidden=false;}
  finally{work=false;}
