@@ -225,7 +225,7 @@ body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
   <section class="exam-finished" id="top3-finished" hidden aria-live="polite">
     <h3>AI 비교 결과</h3>
     <div class="model-grid" id="top3-results"></div>
-    <p class="exam-summary">모델의 학습 분류 결과입니다. 한국어 판별 정확도는 검증 중입니다.</p>
+    <p class="visually-hidden">연구용 모델의 원시 학습 분류입니다. 한국어 판별 정확도는 검증 중입니다.</p>
   </section>
   <button type="button" class="exam-button" id="rec" disabled>AI 연결 확인 중</button>
   <p class="exam-status" id="recState" role="status" aria-live="polite" data-state="error">AI 연결 확인 중입니다.</p>
@@ -347,7 +347,7 @@ async function analyze(wav){
     data.checkpointVerified!==true||data.weightTensorCount!==426||data.audioStored!==false||
     data.koreanClinicalAccuracyVerified!==false||
     !['dementia','nodementia'].includes(data.trainingClass))throw Error('INVALID_MODEL_RESPONSE');
-   results.push({name,value:data.trainingClass==='dementia'?'치매 패턴':'비치매 패턴'});
+   results.push({name,value:data.trainingClass==='dementia'?'치매':'비치매'});
   }catch{results.push({name,value:'분석 실패'})}
  }
  wav='';busy=false;
