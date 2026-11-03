@@ -347,7 +347,7 @@ async function analyze(wav){
     data.checkpointVerified!==true||data.weightTensorCount!==426||data.audioStored!==false||
     data.koreanClinicalAccuracyVerified!==false||
     !['dementia','nodementia'].includes(data.trainingClass))throw Error('INVALID_MODEL_RESPONSE');
-   results.push({name,value:data.trainingClass==='dementia'?'치매':'비치매'});
+   results.push({name,value:data.trainingClass==='dementia'?'치매 패턴':'비치매 패턴'});
   }catch{results.push({name,value:'분석 실패'})}
  }
  wav='';busy=false;
