@@ -355,8 +355,9 @@ async function analyze(wav){
  for(const result of results){
   const card=document.createElement('article');card.className='model-choice';
   const name=document.createElement('strong');name.textContent=result.name;
-  const value=document.createElement('div');value.className='result-large';value.textContent=result.value;
-  card.append(name,value);list.append(card);
+  const wrapper=document.createElement('div');wrapper.className='exam-intro';
+  const value=document.createElement('h1');value.setAttribute('role','none');value.textContent=result.value;
+  wrapper.append(value);card.append(name,wrapper);list.append(card);
  }
  screen('done');state('');
 }
