@@ -26,7 +26,9 @@ jobs:
           for attempt in $(seq 1 12); do
             if curl --fail --silent --show-error --connect-timeout 7 --max-time 18 \
               "https://kimse.suaveforge.com/evidence/voice-three-models.html" > /tmp/kimse-top3-page.html && \
-              grep -Fq '내 목소리로' /tmp/kimse-top3-page.html; then
+              grep -Fq 'id="top3-card"' /tmp/kimse-top3-page.html && \
+              grep -Fq 'AI 음성 비교' /tmp/kimse-top3-page.html && \
+              grep -Fq 'getUserMedia' /tmp/kimse-top3-page.html; then
               echo KIMSE_TOP3_PUBLIC_GITHUB_PAGES=PASS
               exit 0
             fi
