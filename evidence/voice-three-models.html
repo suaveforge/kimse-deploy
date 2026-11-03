@@ -1,67 +1,312 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>낌새 | 3개 AI 음성 비교</title>
+<title>낌새 | AI 음성 3모델 비교</title>
+<!-- Shared KIMSE examination styles copied unchanged from dementia-voice-assessment.html -->
 <style>
-:root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;background:#f4f7f5;color:#153e35}
-*{box-sizing:border-box}body{margin:0}main{max-width:650px;margin:auto;padding:24px 16px 60px}
-.brand{font-size:18px;font-weight:900;color:#0c765d}h1{font-size:clamp(29px,6vw,39px);letter-spacing:-1.5px;line-height:1.2;margin:22px 0 10px}
-.sub{color:#537167;font-size:16px;line-height:1.65;margin:0 0 23px}
-.card{padding:25px 22px;background:white;border-radius:24px;box-shadow:0 10px 34px #174a3912;margin:16px 0}
-h2{font-size:18px;margin:0 0 13px}.prompt{font-size:clamp(24px,5.4vw,34px);line-height:1.44;letter-spacing:-.9px;font-weight:850;margin:0 0 16px;word-break:keep-all}
-.help{font-size:14px;color:#5b776c;line-height:1.55;margin:0 0 15px}
-button{width:100%;min-height:66px;font-size:20px;font-weight:850;border:0;border-radius:16px;cursor:pointer;color:#fff;background:#0c7961}
-button:disabled{opacity:.42;cursor:not-allowed}
-button.stop{background:#bb4e45}button.secondary{background:#dcf0e6;color:#0d5c4c}
-.clock{text-align:center;font-size:60px;font-weight:850;font-variant-numeric:tabular-nums;letter-spacing:-2px;margin:10px 0 17px}
-label{display:flex;align-items:flex-start;gap:12px;margin:15px 0;font-size:15px;font-weight:660;line-height:1.55}
-input[type=checkbox]{height:23px;width:23px;margin:1px 0 0;accent-color:#14735d;flex:none}
-.status{text-align:center;color:#496e62;line-height:1.5;min-height:25px;margin:13px 0 0}
-.results{display:grid;gap:12px}.result{background:#fff;border:1px solid #d5e6dc;border-radius:16px;padding:17px}
-.result b{font-size:18px}.result strong{font-size:25px;display:block;margin-top:9px;color:#0e705b}.result em{font-size:14px;color:#57776b;font-style:normal}
-.notice{font-size:13px;line-height:1.7;color:#657e73;margin-top:22px}
-#recorded,#analyze,#resultsBox{display:none}
+:root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#173c36;background:#f2f7f5;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh}a{color:#146a58}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}[hidden]{display:none!important}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #159b7f;outline-offset:3px}
+main{max-width:940px;margin:auto;padding:0 clamp(15px,3.5vw,30px) calc(55px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:clamp(17px,3vw,26px) 0}
+.logo{color:#0b6656;font-size:clamp(22px,3.8vw,29px);font-weight:890;letter-spacing:-1.2px;text-decoration:none}
+.back{font-size:14px;font-weight:760;text-decoration:none;padding:10px 0}
+.hero{border-radius:28px;background:linear-gradient(118deg,#0d5c52,#174e61);color:#fff;padding:clamp(24px,5vw,48px);margin:9px 0 23px;box-shadow:0 18px 39px #0e594622}
+.eyebrow{font-size:12px;letter-spacing:1.8px;font-weight:850;color:#ade5d6}
+.hero h1{font-size:clamp(29px,5vw,43px);line-height:1.18;letter-spacing:-1.6px;margin:14px 0}
+.hero p{max-width:650px;color:#d8f1eb;font-size:clamp(14px,2.2vw,17px);line-height:1.65;margin:0}
+.hero-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.hero-links a{display:inline-flex;text-decoration:none;color:#f3fffb;border:1px solid #8dc6ba;border-radius:999px;padding:9px 13px;font-size:13px;font-weight:750}
+.language-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
+.lang{min-height:84px;border:1px solid #d4e6de;background:white;border-radius:18px;padding:15px;text-align:left;color:#2b6f62}
+.lang strong{display:block;font-weight:850;font-size:20px}.lang span{display:block;font-size:12px;margin-top:5px;color:#607970}
+.lang[aria-selected=true]{background:#e0f4e9;border:2px solid #157969;color:#0d5f51}
+.panel{border:1px solid #d9e7df;background:white;border-radius:23px;padding:clamp(18px,3vw,28px);margin-bottom:17px;box-shadow:0 8px 23px #1c55430a}
+.section-title{font-size:clamp(22px,3.6vw,28px);margin:0 0 7px;letter-spacing:-.7px}
+.section-desc{margin:0 0 20px;color:#59746b;line-height:1.6;font-size:14px}
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.model-choice{border:1px solid #cce2d6;border-radius:17px;padding:16px;background:#f8fcfa;min-height:151px;display:flex;flex-direction:column;text-align:left;gap:9px;color:#194f43;width:100%}
+.model-choice strong{font-size:18px;font-weight:860}.model-choice span{color:#5a7068;line-height:1.52;font-size:13px}
+.model-choice[aria-pressed=true]{border:2px solid #159078;background:#eaf8f1;box-shadow:0 4px 13px #135d5016}
+.phase{font-size:11px;font-weight:840;letter-spacing:.8px;color:#28705e}
+.task-panel{margin-top:18px;padding:18px;border:1px solid #d7e8df;border-radius:18px;background:#f8fbf9}
+.task-panel h3{font-size:21px;line-height:1.3;margin:6px 0 9px;letter-spacing:-.4px}
+.task-panel p{color:#536d65;font-size:14px;line-height:1.65;margin:0 0 12px}
+.task-photo{display:block;width:min(100%,600px);height:auto;min-height:160px;margin:17px auto 6px;border:1px solid #d8e6de;border-radius:13px;object-fit:contain;background:white}
+.photo-note{font-size:12px;color:#637b73;text-align:center;line-height:1.5;margin:5px 0 16px}
+.prompt{margin-top:18px;padding:17px;border-left:5px solid #25846e;background:#eaf7f1;border-radius:12px;font-size:clamp(18px,3.5vw,24px);font-weight:830;line-height:1.55;color:#165d4f}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}.meta{background:#f0f5f2;color:#43675d;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:750}
+.action-row{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin-top:18px}
+.primary,.secondary{min-height:58px;padding:13px 23px;border-radius:15px;font-weight:830;font-size:17px;border:1px solid transparent}
+.primary{background:#0c7160;color:#fff}.secondary{background:#f1f8f4;color:#125c4f;border-color:#b8d6c8}
+.action-row>*{flex:1 1 170px}.check-line{display:flex;align-items:flex-start;gap:12px;margin-top:16px;line-height:1.55;font-size:14px;color:#365d51}
+.check-line input{width:22px;height:22px;flex:none;accent-color:#117667}
+.runtime{margin-top:15px;padding:13px 15px;border-radius:13px;background:#eef7f2;color:#275e4f;font-size:14px;line-height:1.5}
+.runtime[data-state=error]{background:#fff0e8;color:#884735}
+.record-state{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:20px;font-weight:850;color:#186455}
+.clock{font-size:27px;font-variant-numeric:tabular-nums}
+.record-preview{display:block;width:100%;margin:16px 0}
+.results{border-radius:17px;padding:20px;background:#e9f7ef;border:1px solid #b7ddc8;margin-top:18px}
+.results h3{font-size:18px;margin:0}.result-large{font-size:clamp(36px,8vw,64px);font-weight:900;line-height:1.2;color:#0a6052;margin:12px 0}
+.results p{font-size:14px;line-height:1.65;color:#45685d}
+.warning-panel{border:1px solid #efdabe;background:#fffbf4;border-radius:15px;padding:15px;color:#654e36;font-size:14px;line-height:1.65}
+.requirements{display:grid;gap:9px;margin-top:15px}
+.requirement{padding:13px 15px;border:1px solid #dce8e1;border-radius:12px;background:#f9fcfa;font-size:14px;line-height:1.6}
+.requirement strong{display:block;font-size:15px;color:#1c5a4b}
+.requirement a{display:inline-block;margin-top:5px}
+.footnote{color:#6c8078;font-size:12px;line-height:1.7;margin:15px 4px}
+@media(max-width:600px){.model-grid{grid-template-columns:1fr}.hero{border-radius:23px}.model-choice{min-height:unset}.lang{min-height:77px;padding:12px}.lang strong{font-size:18px}.prompt{font-size:19px}.task-panel{padding:13px}.task-photo{min-height:0}.panel{border-radius:19px}}
+
+/* User-facing assessment: one question, one action, one screen. */
+body{background:#f2f7f5}body main{max-width:740px;padding:0 16px 20px}
+.top{padding:13px 2px}.logo{font-size:24px}.back{font-size:16px}
+.exam-intro{margin:5px 0 12px}.exam-intro h1{font-size:clamp(23px,4vw,29px);margin:0;letter-spacing:-.7px}
+.language-selector{display:flex;gap:6px;justify-content:flex-end;margin:0 0 10px}
+.lang{border:0;min-height:40px;padding:7px 16px;border-radius:999px;flex:0 0 auto;text-align:center;background:#e8efea;color:#315b50}
+.lang strong{font-size:15px}.lang[aria-selected=true]{background:#146b5a;border:0;color:white}.lang span{display:none}
+#korean-panel{background:transparent;border:0;box-shadow:none;padding:0;margin:0}
+.exam-card{background:#fff;border:1px solid #dce8e1;border-radius:26px;box-shadow:0 12px 30px #154e3c11;min-height:min(670px,calc(100dvh - 143px));padding:clamp(20px,4vw,36px);display:flex;flex-direction:column;align-items:stretch}
+.exam-head{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:750;color:#57746a}
+.exam-kind{font-size:14px;font-weight:650}
+.exam-domain{margin-top:clamp(24px,4vh,43px);color:#12836e;font-size:16px;font-weight:800}
+.exam-question{font-size:clamp(28px,5vw,38px);line-height:1.38;letter-spacing:-1px;margin:12px 0 10px;min-height:2.8em;word-break:keep-all;color:#173b34}
+.exam-tip{font-size:16px;color:#657d73;margin:0}
+.exam-center{display:flex;align-items:center;justify-content:center;flex-direction:column;margin:auto 0;padding:18px 0}
+.exam-clock{font-size:clamp(44px,8vw,63px);font-weight:820;color:#126652;line-height:1.3;font-variant-numeric:tabular-nums;letter-spacing:-2px}
+.exam-clock-caption{font-size:14px;color:#6f867b}
+.exam-meter-wrap{border:1px solid #d6eae0;border-radius:18px;padding:12px 14px;background:#eff8f4;margin:14px 0 11px}
+.exam-meter-wrap .liveheader{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:750}
+.exam-meter-wrap .dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#96aba5;margin-right:7px}
+.exam-meter-wrap canvas{display:block;width:100%;height:52px}
+.exam-meter-wrap p{font-size:14px;line-height:1.4;margin:0;color:#68817b;text-align:center}
+.exam-card[data-phase="recording"] .exam-meter-wrap{border-color:#e2b5b5;background:#fff7f6}
+.exam-card[data-phase="recording"] .exam-meter-wrap .dot{background:#df3e42;animation:recordPulse 1.1s infinite}
+.exam-card[data-phase="done"] .exam-meter-wrap{display:none}
+.exam-progress-rail{height:8px;border-radius:99px;background:#e1eee7;overflow:hidden;margin-top:12px}
+.exam-progress-fill{height:100%;width:0;background:#198a70;border-radius:inherit;transition:width .2s linear}
+.exam-recording-indicator{font-size:16px;font-weight:830;color:#ae3d36;display:flex;align-items:center;justify-content:center;gap:8px}
+.exam-recording-indicator:before{content:"";display:inline-block;width:12px;height:12px;background:#db554a;border-radius:50%;animation:recordPulse 1.2s infinite}
+@keyframes recordPulse{50%{opacity:.25;transform:scale(.74)}}
+.exam-card[data-phase="recording"] .exam-clock{color:#b54e41}
+.exam-card[data-phase="recording"] .exam-button{background:#a8453f}
+.exam-card[data-phase="done"] .exam-center,.exam-card[data-phase="done"] .exam-progress-rail{display:none}
+.exam-consent.secondary-consent{font-size:14px;margin:0 0 7px;color:#547467;align-items:flex-start}
+.exam-consent.secondary-consent input{flex:none}
+#azure-transcription-info{font-size:14px;line-height:1.5;color:#638174;margin:0 0 15px}
+.exam-binary-result #binary-class{display:block;font-size:clamp(30px,7vw,43px)!important;line-height:1.25}
+#binary-runtime{font-size:14px;line-height:1.5}
+.exam-research-option>strong{font-size:19px}
+.exam-more-research{margin-top:17px;border-top:1px solid #d7e8df;padding-top:12px}
+.exam-more-research summary{cursor:pointer;font-size:14px;color:#58796a;font-weight:750;min-height:40px}
+@media(prefers-reduced-motion:reduce){.exam-recording-indicator:before{animation:none}.exam-progress-fill{transition:none}}
+
+.exam-consent{font-size:15px;display:flex;align-items:center;gap:9px;color:#416459;margin:0 0 14px}
+.exam-consent input{width:21px;height:21px;accent-color:#147661}
+.exam-button{border:0;border-radius:18px;background:#0c715e;color:#fff;width:100%;font-size:clamp(19px,3vw,23px);font-weight:840;min-height:72px;padding:14px}
+.exam-button:disabled{opacity:.45;cursor:not-allowed}
+.exam-button:focus-visible{outline:3px solid #efb950;outline-offset:4px}
+.exam-status{font-size:15px;line-height:1.4;text-align:center;color:#53796c;min-height:21px;margin:13px 0 0}
+.exam-status[data-state=error]{color:#ad4a36}
+.exam-result{background:#eff8f3;border-radius:16px;padding:15px 17px;margin-top:15px}
+.exam-result-label{font-size:14px;color:#41685a;font-weight:800}
+.exam-result #senior-transcript{font-size:22px;color:#123e33;line-height:1.6;margin:7px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.exam-measure{font-size:14px;color:#53776b;margin:0}
+.exam-notice{font-size:14px;text-align:center;color:#899a93;margin:10px 0 0}
+.exam-finished{background:#f1f8f4;padding:18px;border-radius:18px;margin-top:14px}
+.exam-finished h3{margin:0 0 8px;font-size:24px}
+.exam-research-option{display:grid;gap:12px;border-top:1px solid #d7e8df;margin-top:15px;padding-top:13px;font-size:15px}
+.exam-research-option label{display:flex;gap:9px;align-items:center}
+.exam-binary-phases{display:flex;gap:8px;flex-wrap:wrap;font-size:14px;margin:8px 0}
+.exam-binary-phases span{padding:8px 10px;border-radius:10px;border:1px solid #cde1d7;color:#657b72}
+.exam-binary-phases span[data-state="active"]{background:#e8f5ef;border-color:#14846b;color:#155e4e;font-weight:750}
+.exam-binary-phases span[data-state="done"]{background:#186f5d;border-color:#186f5d;color:#fff}
+.exam-binary-result{background:#fff;padding:16px;border-radius:15px;display:grid;gap:8px}
+.exam-binary-result[hidden]{display:none}
+.exam-binary-result>span{font-size:14px;color:#5c796d}
+.exam-binary-result #binary-class{font-size:clamp(24px,5vw,31px);font-weight:850;color:#125a4c}
+.exam-binary-result p{font-size:14px;line-height:1.5;margin:0;color:#576e63}
+.exam-research-option input{width:20px;height:20px;accent-color:#0c715e}
+.exam-research-option button{min-height:52px}
+#exam-research-result{background:#fff;border-radius:14px;padding:15px;font-size:15px;line-height:1.6}
+#exam-research-result p{font-size:14px;line-height:1.5;color:#526d63}.exam-finished p{font-size:16px;color:#587267}
+.exam-summary{white-space:pre-wrap;font-size:15px;color:#285648;line-height:1.8;margin:10px 0}
+.exam-finished button{min-height:48px;font-size:16px}
+.research-details{margin:18px 5px;color:#677e73;font-size:14px}
+.research-details summary{cursor:pointer;padding:8px;list-style:none;font-size:14px}
+.research-details summary::before{content:'ⓘ ';font-weight:800}
+.research-inner{margin-top:10px}.research-inner .requirement{font-size:14px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#korean-panel .exam-internal{display:none}
+@media(max-width:600px){
+ body main{padding:0 12px 12px}
+ .exam-card{border-radius:20px;padding:18px;min-height:calc(100dvh - 130px)}
+ .exam-domain{margin-top:20px}
+ .exam-question{font-size:clamp(27px,7vw,35px)}
+ .exam-center{padding:10px 0}
+ .exam-button{min-height:69px}
+}
+
+/* KIMSE Korean exam: only one task at a time. 1 viewport, no page scroll. */
+#korean-panel:not([hidden]){position:fixed;inset:0;z-index:999;width:100%;height:100dvh;overflow:hidden;background:#103e3b;border:0;border-radius:0;box-shadow:none;padding:0;margin:0}
+#korean-panel .exam-card{height:100%;min-height:0;max-width:760px;width:100%;margin:auto;overflow:hidden;padding:calc(env(safe-area-inset-top,0px) + 14px) clamp(18px,5vw,40px) calc(env(safe-area-inset-bottom,0px) + 18px);display:flex;flex-direction:column;background:linear-gradient(160deg,#103b39,#114c46);color:#fff;border:0;border-radius:0;box-shadow:none}
+#korean-panel .exam-topbar{display:flex;align-items:center;justify-content:space-between;flex:none;gap:16px;font-size:22px;margin-bottom:8px}
+#korean-panel .exam-topbar>div{display:flex;gap:16px}
+#korean-panel .exam-toplink{font-size:14px;background:transparent;color:#b9dcd2;border:0;cursor:pointer;text-decoration:none;font-weight:750;padding:4px 0}
+#korean-panel .exam-head{flex:none;font-size:17px;color:#bde8d8}
+#korean-panel .exam-kind,#korean-panel .exam-domain,#korean-panel .exam-tip,#korean-panel .exam-clock-caption,#korean-panel .exam-meter-wrap .liveheader,#korean-panel #exam-signal-hint,#korean-panel .exam-notice{display:none!important}
+#korean-panel .exam-question{flex:none;font-size:clamp(29px,6.2vw,49px);line-height:1.29;letter-spacing:-.04em;color:#fff;margin:clamp(16px,4vh,30px) 0 12px;min-height:0;word-break:keep-all;text-wrap:balance}
+#korean-panel .exam-center{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0;padding:0}
+#korean-panel .exam-clock{font-size:clamp(64px,11vw,96px);font-weight:850;line-height:1.12;color:#f4fff8;letter-spacing:-.055em}
+#korean-panel .exam-recording-indicator{font-size:15px;color:#ffdcd5;margin-bottom:8px}
+#korean-panel .exam-progress-rail{height:5px;background:#3c7368;margin:0 0 10px;flex:none}
+#korean-panel .exam-progress-fill{background:#a4e8d4}
+#korean-panel .exam-meter-wrap{background:transparent;border:0;border-radius:0;margin:0 0 clamp(10px,2vh,18px);padding:0;flex:none}
+#korean-panel .exam-meter-wrap canvas{display:block;width:100%;height:clamp(38px,9vh,70px)}
+#korean-panel .exam-button{display:block;flex:none;width:100%;min-height:clamp(62px,11vh,80px);margin:0;padding:12px;border:0;border-radius:18px;font-size:clamp(20px,4vw,26px);font-weight:850;background:#b1ead8;color:#16453a}
+#korean-panel .exam-card[data-phase=recording] .exam-button{background:#ffe5dc;color:#8b3a35}
+#korean-panel .exam-card[data-phase=recording] .exam-clock{color:#ffefe9}
+#korean-panel .exam-card[data-phase=ready] .exam-meter-wrap,#korean-panel .exam-card[data-phase=ready] .exam-progress-rail,#korean-panel .exam-card[data-phase=processing] .exam-meter-wrap{visibility:hidden}
+#korean-panel .exam-status{display:none;margin:10px 0 0;flex:none;font-size:15px;text-align:center;line-height:1.4;color:#ffceb9}
+#korean-panel .exam-status[data-state=error]{display:block}
+#korean-panel .exam-result{display:none!important}
+#korean-panel .exam-consent-step{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,3vh,26px);padding:0;background:transparent;border:0;color:#fff;margin:0}
+#korean-panel .exam-consent-step>strong{font-size:clamp(31px,7vw,48px);letter-spacing:-.045em}
+#korean-panel .exam-consent-step>p{margin:0;font-size:clamp(16px,3vw,20px);line-height:1.45;color:#c9e8dc}
+#korean-panel .exam-consent-step .exam-consent{display:flex;align-items:flex-start;gap:12px;font-size:16px;line-height:1.55;color:#f4fff9;margin:0}
+#korean-panel .exam-consent-step .exam-consent input{width:24px;height:24px;accent-color:#7ad5b8;flex:none}
+#korean-panel .exam-optional-stt{font-size:14px;color:#b9dacf}
+#korean-panel .exam-optional-stt summary{min-height:36px;cursor:pointer;font-weight:650}
+#korean-panel .exam-optional-stt label{font-size:15px;line-height:1.45;margin:6px 0}
+#korean-panel .exam-optional-stt #azure-transcription-info{font-size:14px;line-height:1.45;color:#b9dacf;margin:0}
+#korean-panel .exam-card[data-phase=consent] .exam-head,#korean-panel .exam-card[data-phase=consent] .exam-question,#korean-panel .exam-card[data-phase=consent] .exam-center,#korean-panel .exam-card[data-phase=consent] .exam-progress-rail,#korean-panel .exam-card[data-phase=consent] .exam-meter-wrap{display:none}
+#korean-panel .exam-card[data-phase=done] .exam-head,#korean-panel .exam-card[data-phase=done] .exam-question,#korean-panel .exam-card[data-phase=done] .exam-center,#korean-panel .exam-card[data-phase=done] .exam-progress-rail,#korean-panel .exam-card[data-phase=done] .exam-meter-wrap{display:none}
+#korean-panel .exam-finished{display:flex;flex:1;flex-direction:column;min-height:0;overflow:hidden;margin:0;padding:clamp(12px,4vh,26px) 0 0;background:transparent;color:#fff}
+#korean-panel .exam-finished[hidden]{display:none!important}
+#korean-panel .exam-finished>h3{font-size:clamp(29px,6.5vw,42px);font-weight:850;line-height:1.2;margin:0;color:#fff}
+#korean-panel .exam-research-option{display:flex;flex-direction:column;gap:9px;border:0;margin:0;padding:0;color:#fff}
+#korean-panel #binary-compare{flex:1;min-height:0;justify-content:center}
+#korean-panel #binary-runtime{font-size:clamp(17px,3vw,21px);text-align:center;line-height:1.5;color:#d2eee4;margin:0}
+#korean-panel .exam-binary-phases{display:none!important}
+#korean-panel .exam-binary-result{background:transparent;border:0;border-radius:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:clamp(14px,3vh,26px)}
+#korean-panel .exam-binary-result[hidden]{display:none}
+#korean-panel .exam-binary-result #binary-class{display:block;font-size:clamp(48px,11vw,84px)!important;font-weight:900;line-height:1.16;letter-spacing:-.06em;text-align:center;color:#b1ead8}
+#korean-panel .exam-binary-result p{font-size:clamp(14px,2.5vw,16px);line-height:1.5;text-align:center;color:#c5e5da;margin:0}
+#korean-panel #binary-run:not([hidden]){background:transparent;border:1px solid #65a894;color:#e0f6ed;font-size:17px}
+#korean-panel .exam-more-research{flex:none;border-top:0;margin:0;padding:0;color:#c1ddd2}
+#korean-panel .exam-more-research summary{display:block;min-height:38px;font-size:14px;line-height:38px;text-align:center;cursor:pointer;color:#c1ddd2}
+#korean-panel #exam-more[open]{overflow-y:auto;max-height:36dvh;border:1px solid #376e62;border-radius:12px;padding:6px 12px;background:#0c413b}
+#korean-panel .exam-summary,#korean-panel #exam-research-status{color:#d5ede4;font-size:15px}
+#korean-panel #exam-research-result{color:#23473c}
+#korean-panel #exam-research-result p{color:#526d63}
+#korean-panel #exam-restart{flex:none;align-self:stretch;min-height:58px;margin-top:8px;padding:10px 18px;background:#b1ead8;color:#12453a;border:0;border-radius:16px;font-size:20px;font-weight:800}
+#korean-panel [hidden]{display:none!important}
+@media(max-height:660px){#korean-panel .exam-card{padding-top:calc(env(safe-area-inset-top,0px) + 9px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}#korean-panel .exam-topbar{margin-bottom:3px}#korean-panel .exam-question{font-size:clamp(25px,5.8vw,40px);margin:8px 0}#korean-panel .exam-meter-wrap canvas{height:40px}#korean-panel .exam-button{min-height:58px}#korean-panel .exam-consent-step{gap:12px}}
+@media(prefers-reduced-motion:reduce){#korean-panel .exam-recording-indicator:before{animation:none}}
+
+/* Reused unchanged from voice-analysis-beta.html: uninterrupted, user-controlled
+ * full-screen focus transition. Never force-advance after a timer. */
+.voice-transition{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:radial-gradient(ellipse at 45% 40%,#164953,#06252c);color:#f5fffb;cursor:pointer;text-align:center;min-height:100dvh;grid-template-rows:1fr auto;align-items:stretch;justify-items:stretch;padding:clamp(20px,5vw,60px)}
+.voice-transition[hidden]{display:none!important}
+.voice-transition__center{display:grid;place-items:center;height:100%}
+.voice-transition__message{font-size:clamp(40px,8vw,95px);max-width:1000px;line-height:1.28;font-weight:870;letter-spacing:-.05em;word-break:keep-all;animation:calm-voice 3.4s ease-in-out infinite}
+.voice-transition__hint{justify-self:center;margin:0 0 max(20px,3vh);font-size:clamp(18px,3vw,28px);border:1px solid #539b98;padding:16px 25px;border-radius:999px;color:#d3fff7;animation:calm-hint 3.1s ease-in-out infinite}
+@keyframes calm-voice{0%,100%{opacity:.74;transform:scale(.989)}50%{opacity:1;transform:scale(1.009)}}
+@keyframes calm-hint{0%,100%{opacity:.68}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.voice-transition__message,.voice-transition__hint{animation:none}}
 </style></head><body><main>
-<div class="brand"><a href="./" style="color:inherit;text-decoration:none">낌새</a> · AI 음성 비교</div><h1>내 목소리로<br>AI 모델 3개 비교</h1>
-<p class="sub">한 번 말하고 세 개의 실제 AI 모델에 같은 음성을 넣어 결과를 비교합니다.</p>
-<section class="card"><h2>말하기 질문</h2><p class="prompt">최근 기억에 남는 일을 편하게 이야기해 주세요.</p>
-<p class="help">인상 깊었던 경험을 내 말로 이야기하세요. 3~20초 녹음합니다. 원본 모델의 학습 질문과 일치한다고 확인된 검사는 아닙니다.</p>
-<div id="clock" class="clock">00:00</div><button id="rec">녹음 시작</button>
-<p id="recState" class="status" role="status">마이크를 허용하고 시작하세요.</p>
-<div id="recorded"><label><input id="consent" type="checkbox"><span>음성을 서버로 보내 AI 모델 3개에서 연구용으로 처리하는 데 동의합니다. 서버에 음성을 저장하지 않습니다.</span></label>
-<button id="analyze" disabled>세 모델로 분석하기</button>
-<button class="secondary" id="retry" style="margin-top:10px">다시 녹음</button></div></section>
-<section class="card" id="resultsBox" aria-live="polite"><h2>모델별 결과</h2>
-<div id="results" class="results"></div>
-<p class="help" style="margin-top:15px">이 결과는 모델의 원시 치매/비치매 분류입니다. 한국어 치매 판별 정확도와 검사 질문의 학습 조건 일치 여부는 아직 검증되지 않았습니다.</p></section>
-<p class="notice">기존 낌새 검사와 분리된 AI 비교 실험입니다. 질병 위험 확률이나 MCI 여부를 계산하지 않으며, 녹음은 서버에서 저장하지 않고 메모리에서 처리합니다.</p>
-</main><script>
+<section id="korean-panel" class="panel" aria-label="AI 음성 비교">
+<div class="exam-card" id="top3-card" data-phase="consent">
+  <div class="exam-topbar"><strong>낌새</strong><div><a class="exam-toplink" href="./">나가기</a></div></div>
+  <section class="exam-consent-step" id="top3-consent">
+    <strong>AI 음성 비교</strong>
+    <p>최근 기억에 남는 일을<br>편하게 이야기해 주세요.</p>
+    <label class="exam-consent"><input id="consent" type="checkbox"><span>음성을 AI 모델 3개로 분석하는 데 동의합니다. 음성은 저장하지 않습니다.</span></label>
+  </section>
+  <div class="exam-head" id="top3-head" hidden><span>말하기 검사</span><span>01 / 01</span></div>
+  <p class="exam-question" id="top3-question" hidden>최근 기억에 남는 일을 이야기해 주세요.</p>
+  <div class="exam-center" id="top3-center" hidden><div class="exam-clock" id="clock" aria-live="polite">00:00</div></div>
+  <section class="exam-finished" id="top3-finished" hidden aria-live="polite">
+    <h3>AI 비교 결과</h3>
+    <div class="model-grid" id="top3-results"></div>
+    <p class="exam-summary">모델의 학습 분류 결과입니다. 한국어 판별 정확도는 검증 중입니다.</p>
+  </section>
+  <button type="button" class="exam-button" id="rec" disabled>AI 연결 확인 중</button>
+  <p class="exam-status" id="recState" role="status" aria-live="polite" data-state="error">AI 연결 확인 중입니다.</p>
+</div></section></main>
+<script>
 'use strict';
 const $=id=>document.getElementById(id);
 const url=location.hostname==='kimse.suaveforge.com'
- ? 'https://api-kimse.suaveforge.com:18467/api/v1/evidence/voice-analysis/top3-lab'
- : '/api/v1/evidence/voice-analysis/top3-lab';
-let recorder=null,stream=null,chunks=[],wav='',timer=null,start=0,busy=false;
+  ? 'https://api-kimse.suaveforge.com:18467/api/v1/evidence/voice-analysis/top3-lab'
+  : '/api/v1/evidence/voice-analysis/top3-lab';
 const models=[['parim1','parim1'],['auralis','Auralis'],['mmcnair','MMcnair']];
-const state=msg=>{$('recState').textContent=msg};
-function clock(){const s=Math.floor((Date.now()-start)/1000);$('clock').textContent='00:'+String(s).padStart(2,'0');if(s>=19&&recorder?.state==='recording')stop()}
-function reset(){if(timer)clearInterval(timer);timer=null;wav='';chunks=[];$('clock').textContent='00:00';$('rec').disabled=false;$('rec').className='';$('rec').textContent='녹음 시작';$('recorded').style.display='none';$('consent').checked=false;$('analyze').disabled=true;$('resultsBox').style.display='none';$('results').replaceChildren();state('마이크를 허용하고 시작하세요.')}
-function stop(){if(recorder?.state==='recording')recorder.stop();$('rec').disabled=true;state('녹음 확인 중…')}
-$('rec').addEventListener('click',async()=>{
- if(recorder?.state==='recording'){stop();return}
- try{
-  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw Error('브라우저 녹음 기능 미지원');
-  stream=await navigator.mediaDevices.getUserMedia({audio:true});
-  chunks=[];recorder=new MediaRecorder(stream);
-  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
-  recorder.onerror=()=>{state('녹음에 실패했습니다.');stream?.getTracks().forEach(t=>t.stop())};
-  recorder.onstop=async()=>{
-    stream?.getTracks().forEach(t=>t.stop());
-    clearInterval(timer);timer=null;const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
-    try{wav=await makeWav(blob);$('recorded').style.display='block';$('analyze').style.display='block';state('녹음 완료. 동의하고 분석하세요.')}
-    catch(e){state(e.message||'음성 변환 실패. 다시 녹음하세요.');$('rec').disabled=false;$('rec').className='';$('rec').textContent='다시 녹음'}
-  };
-  recorder.start(300);start=Date.now();$('rec').textContent='녹음 종료';$('rec').className='stop';state('녹음 중…');clock();timer=setInterval(clock,250);
- }catch(e){state('마이크를 사용할 수 없습니다. 브라우저 권한을 확인하세요.');stream?.getTracks().forEach(t=>t.stop())}
+let phase='consent',ready=false,busy=false,recorder=null,stream=null,chunks=[],timer=null,started=0;
+function state(msg,error=false){
+ $('recState').textContent=msg;
+ $('recState').dataset.state=error?'error':'ok';
+}
+function screen(next){
+ phase=next;$('top3-card').dataset.phase=next;
+ $('top3-consent').hidden=next!=='consent';
+ $('top3-head').hidden=!['recording','processing'].includes(next);
+ $('top3-question').hidden=!['recording','processing'].includes(next);
+ $('top3-center').hidden=!['recording','processing'].includes(next);
+ $('top3-finished').hidden=next!=='done';
+ const action=$('rec');
+ if(next==='consent'){action.textContent=ready?'녹음 시작':'AI 연결 확인 중';action.disabled=!ready||!$('consent').checked}
+ if(next==='recording'){action.textContent='녹음 끝내기';action.disabled=false}
+ if(next==='processing'){action.textContent='AI 분석 중';action.disabled=true;$('top3-question').textContent='AI가 음성을 비교하고 있습니다.'}
+ if(next==='done'){action.textContent='다시 검사';action.disabled=false}
+}
+function cleanup(){
+ if(timer!==null)clearInterval(timer);timer=null;
+ if(recorder?.state==='recording')try{recorder.stop()}catch{}
+ stream?.getTracks().forEach(t=>t.stop());
+ recorder=null;stream=null;chunks=[];
+}
+function tick(){
+ if(phase!=='recording')return;
+ const s=Math.floor((performance.now()-started)/1000);
+ $('clock').textContent='00:'+String(Math.min(20,s)).padStart(2,'0');
+ if(s>=19)stop();
+}
+function stop(){
+ if(phase!=='recording'||!recorder)return;
+ $('rec').disabled=true;state('녹음 확인 중…',true);
+ if(recorder.state==='recording')recorder.stop();
+}
+$('consent').addEventListener('change',()=>{if(phase==='consent')screen('consent')});
+$('rec').addEventListener('click',()=>{
+ if(phase==='consent')void start();
+ else if(phase==='recording')stop();
+ else if(phase==='done')reset();
 });
+async function start(){
+ if(phase!=='consent'||!ready||busy||!$('consent').checked)return;
+ $('rec').disabled=true;state('마이크 연결 중…',true);
+ try{
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder||!window.OfflineAudioContext)
+   throw Error('UNSUPPORTED_RECORDING');
+  stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  recorder=new MediaRecorder(stream);chunks=[];
+  const current=recorder;
+  current.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  current.onerror=()=>{cleanup();screen('consent');state('녹음 실패. 다시 시작해 주세요.',true)};
+  current.onstop=async()=>{
+   if(timer!==null)clearInterval(timer);timer=null;
+   stream?.getTracks().forEach(t=>t.stop());stream=null;
+   const blob=new Blob(chunks,{type:current.mimeType||'audio/webm'});
+   recorder=null;chunks=[];
+   if(phase!=='recording')return;
+   screen('processing');$('clock').textContent='···';state('');
+   try{const wav=await makeWav(blob);await analyze(wav)}
+   catch(e){screen('consent');state(e.message||'다시 녹음해 주세요.',true)}
+  };
+  current.start(300);started=performance.now();
+  $('top3-question').textContent='최근 기억에 남는 일을 이야기해 주세요.';
+  $('clock').textContent='00:00';screen('recording');state('');
+  timer=setInterval(tick,250);
+ }catch{
+  cleanup();screen('consent');state('마이크 권한을 확인한 후 다시 시작해 주세요.',true);
+ }
+}
 async function makeWav(blob){
  const ctx=new (window.AudioContext||window.webkitAudioContext)();
  let decoded;try{decoded=await ctx.decodeAudioData(await blob.arrayBuffer())}finally{ctx.close().catch(()=>{})}
@@ -80,54 +325,61 @@ async function makeWav(blob){
  const bytes=new Uint8Array(view.buffer);let output='';for(let i=0;i<bytes.length;i+=8192)output+=String.fromCharCode(...bytes.subarray(i,i+8192));
  return btoa(output);
 }
-$('consent').addEventListener('change',()=>{$('analyze').disabled=!$('consent').checked||!wav||busy});
-$('retry').addEventListener('click',reset);
-$('analyze').addEventListener('click',async()=>{
- if(busy||!wav||!$('consent').checked)return;
- busy=true;$('analyze').disabled=true;$('retry').disabled=true;$('rec').disabled=true;$('resultsBox').style.display='block';
- const results=$('results');results.replaceChildren();
+
+async function analyze(wav){
+ if(busy)return;busy=true;
+ screen('processing');state('');
+ const results=[];
  for(let i=0;i<models.length;i++){
-   const [id,name]=models[i],card=document.createElement('div');card.className='result';
-   const title=document.createElement('b');title.textContent=name;
-   const output=document.createElement('strong');output.textContent='분석 중…';
-   const info=document.createElement('em');info.textContent=(i+1)+'/3 모델 실행';
-   card.append(title,output,info);results.append(card);
-   try{
-     const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),155000);let res;
-     try{res=await fetch(url+'/classify',{method:'POST',headers:{'Content-Type':'application/json'},signal:ctrl.signal,
-       body:JSON.stringify({model:id,audio_base64:wav,consent_research_audio_processing:true})})}finally{clearTimeout(to)}
-     const data=await res.json().catch(()=>({}));
-     if(!res.ok||data.status!=='classified_research_only'||data.model!==id||
-        data.checkpointVerified!==true||data.weightTensorCount!==426||
-        data.koreanClinicalAccuracyVerified!==false||data.clinicalDecision!==null||
-        !['dementia','nodementia'].includes(data.trainingClass))throw Error(res.status===429?'시간당 테스트 횟수 초과':res.status===503?'모델 사용 중이거나 일시적으로 실행 불가':'모델 응답 확인 실패');
-     output.textContent=data.trainingClass==='dementia'?'치매 패턴':'비치매 패턴';
-     info.textContent='원본 가중치 426개 · 연구용 출력';
-   }catch(e){output.textContent='분류 실패';info.textContent=e.name==='AbortError'?'응답 시간이 초과됐습니다.':e.message}
- }
- wav='';busy=false;$('retry').disabled=false;state('세 모델 실행 종료. 다시 검사할 수 있습니다.');
-});
-reset();
-async function checkConnection(){
-  const rec=$('rec');
-  rec.disabled=true;
-  state('AI 서버 연결 확인 중…');
+  const [model,name]=models[i];
+  $('clock').textContent=String(i+1)+' / 3';
   try{
-    const c=new AbortController();
-    const t=setTimeout(()=>c.abort(),12000);
-    let response;
-    try{response=await fetch(url+'/status',{cache:'no-store',signal:c.signal})}
-    finally{clearTimeout(t)}
-    const data=await response.json();
-    if(!response.ok||data.ready!==true||
-       data.models?.parim1!==true||data.models?.auralis!==true||data.models?.mmcnair!==true)
-       throw Error('AI 모델 준비 중');
-    rec.disabled=false;
-    state('녹음 시작을 눌러주세요.');
-  }catch(e){
-    rec.disabled=true;
-    state('AI 서버 연결 준비 중입니다. 잠시 후 새로고침해 주세요.');
-  }
+   const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),155000);
+   let response;
+   try{
+    response=await fetch(url+'/classify',{
+      method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},signal:ctrl.signal,
+      body:JSON.stringify({model,audio_base64:wav,consent_research_audio_processing:true})
+    });
+   }finally{clearTimeout(timeout)}
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok||data.status!=='classified_research_only'||data.model!==model||
+    data.checkpointVerified!==true||data.weightTensorCount!==426||data.audioStored!==false||
+    data.koreanClinicalAccuracyVerified!==false||
+    !['dementia','nodementia'].includes(data.trainingClass))throw Error('INVALID_MODEL_RESPONSE');
+   results.push({name,value:data.trainingClass==='dementia'?'치매 패턴':'비치매 패턴'});
+  }catch{results.push({name,value:'분석 실패'})}
+ }
+ wav='';busy=false;
+ const list=$('top3-results');list.replaceChildren();
+ for(const result of results){
+  const card=document.createElement('article');card.className='model-choice';
+  const name=document.createElement('strong');name.textContent=result.name;
+  const value=document.createElement('div');value.className='result-large';value.textContent=result.value;
+  card.append(name,value);list.append(card);
+ }
+ screen('done');state('');
 }
-checkConnection();
+function reset(){
+ cleanup();busy=false;$('consent').checked=false;
+ $('clock').textContent='00:00';$('top3-results').replaceChildren();
+ screen('consent');state('');
+}
+async function checkConnection(){
+ state('AI 연결 확인 중입니다.',true);
+ try{
+  const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),12000);
+  let response;
+  try{response=await fetch(url+'/status',{cache:'no-store',signal:ctrl.signal})}
+  finally{clearTimeout(timeout)}
+  const data=await response.json();
+  if(!response.ok||data.ready!==true||
+     data.models?.parim1!==true||data.models?.auralis!==true||data.models?.mmcnair!==true)
+     throw Error('MODEL_NOT_READY');
+  ready=true;screen('consent');state('');
+ }catch{
+  ready=false;screen('consent');state('AI 연결이 되지 않았습니다. 새로고침해 주세요.',true);
+ }
+}
+screen('consent');void checkConnection();
 </script></body></html>
