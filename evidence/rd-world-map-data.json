@@ -72,8 +72,8 @@
       "authority": "공공 적용성",
       "stage": "SUBSTANTIVE_INFORMATION_RESPONSE",
       "stageLabel": "공식 계약·운영 자료 회신",
-      "sourceURL": null,
-      "sourceScope": "계약 DN736017 · 관찰 14일; 2023~26 건수는 계약별 범위 분리 필요",
+      "sourceURL": "https://procontract.due-north.com/ContractsRegister/ViewContractDetails?contractId=79b553e3-f24f-ef11-812d-005056b64545",
+      "sourceScope": "Just Checking Ltd 낙찰 · 센서 돌봄평가 계약 DN736017. 2024.10.21 낙찰금액 £642,000(실제 지급액 아님). 관찰 14일. 2023~2026년 164·185·180·231건 회신.",
       "city": "Truro",
       "cityCoordinate": [
         -5.05,
@@ -97,7 +97,7 @@
         "procurementEvidenceVerified": true,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "2024년 계약 이전 2023 실적의 귀속과 £642,000 확정/실지급 여부는 미확인",
+        "nextAction": "기존 계약등록부상 종료일 2026-10-01 이후 후속 조달공고 유무 조사; £642,000은 낙찰금액이지 실제 지출 아님",
         "formURL": null,
         "formSubmitted": false,
         "requestSent": true,
@@ -106,10 +106,22 @@
       "publicFOIEvidence": {
         "responseDate": "2026-11-06",
         "reference": "0H33KHA3-101008224568",
-        "summary": "계약 DN736017 · 관찰 14일; 2023~26 건수는 계약별 범위 분리 필요",
-        "qualification": "2024년 계약 이전 2023 실적의 귀속과 £642,000 확정/실지급 여부는 미확인",
+        "summary": "Just Checking Ltd 낙찰 · 센서 돌봄평가 계약 DN736017. 2024.10.21 낙찰금액 £642,000(실제 지급액 아님). 관찰 14일. 2023~2026년 164·185·180·231건 회신.",
+        "qualification": "공개 계약등록부는 계약기간 2024.11.01~2026.10.01, 별도 연장 0건으로 표시. 2023년 실적은 계약 이전, 누적 실지급액은 미확인.",
         "operationalEvidence": true,
-        "spendVerified": false
+        "spendVerified": false,
+        "award": {
+          "supplier": "Just Checking Ltd",
+          "awardDate": "2024-10-21",
+          "awardValueGBP": 642000,
+          "contractRegistryEstimateGBP": 428000,
+          "registryStart": "2024-11-01",
+          "registryEnd": "2026-10-01",
+          "actualPaymentsConfirmed": false,
+          "sourceURL": "https://procontract.due-north.com/ContractsRegister/ViewContractDetails?contractId=79b553e3-f24f-ef11-812d-005056b64545",
+          "sourceType": "PUBLIC_PROCUREMENT_REGISTER",
+          "caution": "The £642,000 figure is a recorded award value, not an amount spent. Registry currently lists no extensions. Verify if any later variation or reprocurement has been made."
+        }
       }
     },
     {
