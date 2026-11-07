@@ -1,21 +1,21 @@
 {
-  "schemaVersion": "2026-11-07.map.7",
+  "schemaVersion": "2026-11-07.map.8",
   "asOf": "2026-11-07",
-  "displayPolicy": "Official research and FOI statuses report KIMSE-initiated information requests. Eight council responses: six operational records including five with amounts, one no-contract statement and one generic information response. Three foreign researcher-method responses; no KIMSE partnership, trial funding or purchases established.",
+  "displayPolicy": "Official research and FOI statuses report KIMSE-initiated information requests. Ten council responses: seven operational records, five with disclosed amounts, two no external contract statements and one generic information response. Three foreign researcher-method responses; no KIMSE partnership, trial funding or purchases established.",
   "mapSource": "Natural Earth 110m geography via world-atlas topojson",
   "total": 92,
   "countryCount": 24,
   "contacts": {
     "outreachSent": 55,
-    "formalFOIRegistered": 14,
+    "formalFOIRegistered": 12,
     "automatedAckOnly": 1,
     "researchMethodsReply": 3,
     "approvedFOIFormNotSubmitted": 4,
     "uncontacted": 37,
     "procurementSpendEvidence": 5,
     "mutualCollaboration": 0,
-    "substantiveFOIResponse": 8,
-    "officialFOIOperationalEvidence": 6,
+    "substantiveFOIResponse": 10,
+    "officialFOIOperationalEvidence": 7,
     "foreignResearchDelivered": 23
   },
   "institutions": [
@@ -163,10 +163,10 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "FORMAL_FOI_REGISTERED",
-      "stageLabel": "FOI 공식 접수",
+      "stage": "SUBSTANTIVE_INFORMATION_RESPONSE",
+      "stageLabel": "공식 계약·운영 자료 회신",
       "sourceURL": null,
-      "sourceScope": "AD/MCI passive home monitoring: actual unique participants, actual observed days, contract scope/payment",
+      "sourceScope": "Just Checking 및 Just Roaming 서비스 운영, Just Roaming 대상 60명, Just Checking 초기 관찰기간 2주",
       "city": "Manchester",
       "cityCoordinate": [
         -2.24,
@@ -176,24 +176,33 @@
       "authorityTier": "C",
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
-        "phase": 1,
-        "phaseLabel": "자료요청 · 공식 접수",
-        "order": 50,
-        "stageCode": "FORMAL_FOI_REGISTERED",
-        "source": "VERIFIED_RECEIVED_GMAIL_OFFICIAL_ACK_20261013",
-        "asOf": "2026-10-13",
-        "contactStatus": "FORMAL_FOI_REGISTERED",
+        "phase": 2,
+        "phaseLabel": "공식 자료 회신",
+        "order": 75,
+        "stageCode": "SUBSTANTIVE_INFORMATION_RESPONSE",
+        "source": "VERIFIED_FOI_REPLY_20261107",
+        "asOf": "2026-11-07",
+        "contactStatus": "SUBSTANTIVE_RESPONSE_RECEIVED",
         "formalFOIRef": "FOI/21992",
         "formalResponseDeadline": null,
         "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
-        "procurementEvidenceVerified": false,
+        "procurementEvidenceVerified": true,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "공식 FOI 답변 및 실제 계약·집행 자료 대기",
+        "nextAction": "60명은 Just Roaming 적용 인원이며 Just Checking 이용자 규모가 아님. 상업적 이해관계 FOIA Section 43 이유로 계약금액 비공개.",
         "formURL": null,
         "formSubmitted": false,
-        "requestSent": true
+        "requestSent": true,
+        "spendVerified": false
+      },
+      "publicFOIEvidence": {
+        "responseDate": "2026-10-20",
+        "reference": "FOI/21992",
+        "summary": "Just Checking 및 Just Roaming 서비스 운영, Just Roaming 대상 60명, Just Checking 초기 관찰기간 2주",
+        "qualification": "60명은 Just Roaming 적용 인원이며 Just Checking 이용자 규모가 아님. 상업적 이해관계 FOIA Section 43 이유로 계약금액 비공개.",
+        "operationalEvidence": true,
+        "spendVerified": false
       }
     },
     {
@@ -2066,35 +2075,44 @@
       "countryEnglish": "United Kingdom",
       "sector": "공공·돌봄",
       "authority": "공공 적용성",
-      "stage": "FORMAL_FOI_REGISTERED",
-      "stageLabel": "FOI 공식 접수",
+      "stage": "SUBSTANTIVE_INFORMATION_RESPONSE",
+      "stageLabel": "외부 계약 없음 확인",
       "sourceURL": null,
-      "sourceScope": "Historic official dementia/passive monitoring reference; confirm responsible authority and recoverable records",
+      "sourceScope": "외부 TEC 서비스 계약을 하지 않으며 자체 텔레케어 지원 경로를 안내",
       "city": null,
       "cityCoordinate": null,
       "positionAccuracy": null,
       "authorityTier": "C",
       "authorityTierDescription": "지역 공공·돌봄",
       "progress": {
-        "phase": 1,
-        "phaseLabel": "자료요청 · 공식 접수",
-        "order": 50,
-        "stageCode": "FORMAL_FOI_REGISTERED",
-        "source": "INSTITUTION_OUTREACH_TRACKER_RECONCILED_20261013",
-        "asOf": "2026-10-14",
-        "contactStatus": "FORMAL_FOI_REGISTERED",
+        "phase": 2,
+        "phaseLabel": "공식 자료 회신",
+        "order": 75,
+        "stageCode": "SUBSTANTIVE_INFORMATION_RESPONSE",
+        "source": "VERIFIED_FOI_REPLY_20261107",
+        "asOf": "2026-11-07",
+        "contactStatus": "SUBSTANTIVE_RESPONSE_RECEIVED",
         "formalFOIRef": "F00024564",
-        "formalResponseDeadline": "2026-11-09",
+        "formalResponseDeadline": null,
         "approvedWebFormNotSubmitted": false,
         "researchMethodsResponse": false,
         "procurementEvidenceVerified": false,
         "commercialDiscussion": "NOT_STARTED",
         "cooperation": "NONE",
-        "nextAction": "2026-10-14 공식 FOI 답변: TEC 외부위탁 계약 없다고 설명. 내부 Telecare 운영 언급. 제공된 지출액 없음. 협력·구매 미확인.",
+        "nextAction": "외부 공급업체 계약·지출 근거 없음. 자체 텔레케어 비용은 제시하지 않음.",
         "formURL": null,
         "formSubmitted": false,
         "requestSent": true,
-        "foiSubstantiveResponseReceived": true
+        "foiSubstantiveResponseReceived": true,
+        "spendVerified": false
+      },
+      "publicFOIEvidence": {
+        "responseDate": "2026-10-14",
+        "reference": "F00024564",
+        "summary": "외부 TEC 서비스 계약을 하지 않으며 자체 텔레케어 지원 경로를 안내",
+        "qualification": "외부 공급업체 계약·지출 근거 없음. 자체 텔레케어 비용은 제시하지 않음.",
+        "operationalEvidence": false,
+        "spendVerified": false
       }
     },
     {
@@ -5062,7 +5080,7 @@
     {
       "code": "SUBSTANTIVE_INFORMATION_RESPONSE",
       "label": "기관 FOI 공식 회신",
-      "count": 8
+      "count": 10
     },
     {
       "code": "RESEARCH_METHODS_RESPONSE_RECEIVED",
@@ -5092,7 +5110,7 @@
     {
       "code": "FORMAL_FOI_REGISTERED",
       "label": "FOI 공식 접수",
-      "count": 14
+      "count": 12
     },
     {
       "code": "FOI_FORM_APPROVED_NOT_SUBMITTED",
