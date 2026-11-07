@@ -17,7 +17,7 @@
         '<div class="kimse-atlas-stats" id="kimse-atlas-stats" aria-live="polite"></div>' +
       '</div>' +
       '<section class="kimse-atlas-progress" aria-labelledby="kimse-progress-title">' +
-        '<div class="kimse-atlas-progress-head"><div><div class="kimse-atlas-kicker">INSTITUTION BY INSTITUTION · 2026.10.13</div><h3 id="kimse-progress-title">어느 기관과 몇 단계인가?</h3><p>기관 이름 옆에 <strong>0·1·2단계</strong>를 직접 표시합니다. 0단계는 미접촉, 1단계는 연락·접수, 2단계는 실제 연구정보 답변입니다. 협력 단계와 구분합니다.</p></div><div class="kimse-atlas-progress-total" id="kimse-progress-total">기관 원장 확인 중</div></div>' +
+        '<div class="kimse-atlas-progress-head"><div><div class="kimse-atlas-kicker">INSTITUTION BY INSTITUTION · 2026.11.07</div><h3 id="kimse-progress-title">어느 기관과 몇 단계인가?</h3><p>기관 이름 옆에 <strong>0·1·2단계</strong>를 직접 표시합니다. 0단계는 미접촉, 1단계는 연락·접수, 2단계는 공식 기관자료 또는 연구방법 회신입니다. 협력 단계와 구분합니다.</p></div><div class="kimse-atlas-progress-total" id="kimse-progress-total">기관 원장 확인 중</div></div>' +
         '<div class="kimse-progress-numbers" id="kimse-progress-numbers" aria-label="숫자 단계별 기관 필터"></div>' +
         '<div class="kimse-progress-overview" id="kimse-progress-overview" aria-label="세부 진행상태별 기관 수"></div>' +
         '<div class="kimse-progress-tools"><label for="kimse-progress-phase">숫자 단계<select id="kimse-progress-phase"><option value="">전체 (0~2단계)</option><option value="0">0단계 · 미접촉</option><option value="1">1단계 · 연락·접수</option><option value="2">2단계 · 자료 회신</option></select></label><label for="kimse-progress-stage">상세 상태<select id="kimse-progress-stage"><option value="">전체 상태</option></select></label><label for="kimse-progress-country">국가·지역<select id="kimse-progress-country"><option value="">전체 국가·지역</option></select></label><label class="kimse-progress-query-label" for="kimse-progress-search">기관 검색<input type="search" id="kimse-progress-search" placeholder="기관명 · 국가명 · 접수번호" autocomplete="off"></label></div>' +
@@ -78,7 +78,7 @@
   function stageClass(x) {
     var name=x&&x.stage||'';
     if(name==='FORMAL_FOI_REGISTERED')return 'status-registered';
-    if(name==='RESEARCH_METHODS_RESPONSE_RECEIVED')return 'status-research';
+    if(name==='RESEARCH_METHODS_RESPONSE_RECEIVED'||name==='SUBSTANTIVE_INFORMATION_RESPONSE')return 'status-research';
     if(name==='AUTOMATED_ACK_ONLY')return 'status-ack';
     if(name==='INFORMATION_REQUEST_SENT')return 'status-request';
     if(name==='FOI_FORM_APPROVED_NOT_SUBMITTED')return 'status-pending-form';
@@ -108,7 +108,7 @@
     var formal=state.data.institutions.filter(function(x){return x.stage==='FORMAL_FOI_REGISTERED'}).length;
     var methods=state.data.institutions.filter(function(x){return x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'}).length;
     document.getElementById('kimse-atlas-stats').innerHTML=[
-      ['전체 후보기관',total,'곳'],['등록 국가·지역',countries,'곳'],['세계 검토대상',state.data.isoMasterCount||0,'개'],['정보요청 발송',sent,'곳'],['공식 FOI 접수',formal,'곳'],['연구방법 답변',methods,'곳']
+      ['전체 후보기관',total,'곳'],['등록 국가·지역',countries,'곳'],['세계 검토대상',state.data.isoMasterCount||0,'개'],['정보요청 발송',sent,'곳'],['공식 FOI 접수',formal,'곳'],['공식 FOI 답변',state.data.contacts.substantiveFOIResponse||0,'곳'],['연구방법 답변',methods,'곳']
     ].map(function(a){return '<div class="kimse-atlas-stat"><small>'+safe(a[0])+'</small><strong>'+a[1]+'<em>'+safe(a[2])+'</em></strong></div>'}).join('');
   }
   function setupProgressFilters() {
@@ -127,7 +127,7 @@
     var phaseEl=document.getElementById('kimse-progress-phase'),stageEl=document.getElementById('kimse-progress-stage'),countryEl=document.getElementById('kimse-progress-country'),searchEl=document.getElementById('kimse-progress-search');
     if(!phaseEl||!stageEl||!countryEl||!searchEl)return;
     var stages=state.data.progressStages||[];
-    document.getElementById('kimse-progress-numbers').innerHTML=[0,1,2].map(function(n){var num=state.data.institutions.filter(function(x){return x.progress&&x.progress.phase===n}).length;return '<button type="button" class="kimse-progress-number '+(phaseEl.value===String(n)?'is-selected':'')+'" data-phase="'+n+'" aria-pressed="'+(phaseEl.value===String(n)?'true':'false')+'"><span class="kimse-progress-number-value">'+n+'단계</span><strong>'+num+'곳</strong><small>'+(n===0?'접촉 전 · 준비':n===1?'발송 · 공식 접수':'연구정보 답변')+'</small></button>'}).join('');
+    document.getElementById('kimse-progress-numbers').innerHTML=[0,1,2].map(function(n){var num=state.data.institutions.filter(function(x){return x.progress&&x.progress.phase===n}).length;return '<button type="button" class="kimse-progress-number '+(phaseEl.value===String(n)?'is-selected':'')+'" data-phase="'+n+'" aria-pressed="'+(phaseEl.value===String(n)?'true':'false')+'"><span class="kimse-progress-number-value">'+n+'단계</span><strong>'+num+'곳</strong><small>'+(n===0?'접촉 전 · 준비':n===1?'발송 · 공식 접수':'기관 자료 회신')+'</small></button>'}).join('');
     document.getElementById('kimse-progress-overview').innerHTML=stages.map(function(p){
       return '<button type="button" class="kimse-progress-metric '+(stageEl.value===p.code?'is-selected':'')+'" data-stage="'+safe(p.code)+'" aria-pressed="'+(stageEl.value===p.code?'true':'false')+'"><strong>'+Number(p.count||0)+'</strong><span>'+safe(p.label)+'</span></button>';
     }).join('');
@@ -139,19 +139,19 @@
       return !phrase||norm([x.name,x.countryName,x.stageLabel,p.formalFOIRef,x.sector].join(' ')).includes(phrase);
     });
     filtered.sort(function(a,b){return (b.progress?.order||0)-(a.progress?.order||0)||a.name.localeCompare(b.name)});
-    document.getElementById('kimse-progress-total').textContent=filtered.length+' / '+state.data.institutions.length+'개 기관 · 기준 2026.10.13';
+    document.getElementById('kimse-progress-total').textContent=filtered.length+' / '+state.data.institutions.length+'개 기관 · 기준 2026.11.07';
     var body=document.getElementById('kimse-progress-rows');
     if(!filtered.length){body.innerHTML='<tr><td colspan="5" class="kimse-progress-noresults">검색조건에 맞는 기관이 없습니다.</td></tr>';return;}
     body.innerHTML=filtered.map(function(x){
       var p=x.progress||{},ref=p.formalFOIRef?'<div class="kimse-progress-reference">접수번호 '+safe(p.formalFOIRef)+'</div>':'';
       var deadline=p.formalResponseDeadline?'<div class="kimse-progress-deadline">답변 예정 '+safe(p.formalResponseDeadline)+'</div>':'';
-      var evidence=p.formalFOIRef?'공식 FOI 접수번호 확인':x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'?'기관 연구방법 회신':x.stage==='AUTOMATED_ACK_ONLY'?'자동 확인메일 · 정식 접수 미확정':x.stage==='INFORMATION_REQUEST_SENT'?'회사메일 전송 · 답변 대기':x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED'?'사용자 승인 · 실제 제출 전':x.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT'?'공식 문의경로 확인 · 아직 1차 연락 전':'공식 담당·연구 근거 검토';
+      var evidence=x.stage==='SUBSTANTIVE_INFORMATION_RESPONSE'?'공식 기관답변 · 계약자료 확인':p.formalFOIRef?'공식 FOI 접수번호 확인':x.stage==='RESEARCH_METHODS_RESPONSE_RECEIVED'?'기관 연구방법 회신':x.stage==='AUTOMATED_ACK_ONLY'?'자동 확인메일 · 정식 접수 미확정':x.stage==='INFORMATION_REQUEST_SENT'?'회사메일 전송 · 답변 대기':x.stage==='FOI_FORM_APPROVED_NOT_SUBMITTED'?'사용자 승인 · 실제 제출 전':x.stage==='FIRST_CONTACT_ROUTE_VERIFIED_UNSENT'?'공식 문의경로 확인 · 아직 1차 연락 전':'공식 담당·연구 근거 검토';
       var phase=p.phase===2?'2단계 · 자료 검토':p.phase===1?'1단계 · 자료요청':'0단계 · 접촉 준비';
       return '<tr><td><div class="kimse-progress-name-and-phase"><span class="kimse-progress-bignum phase-'+Number(p.phase||0)+'">'+Number(p.phase||0)+'단계</span><strong>'+safe(x.name)+'</strong></div><small>'+safe(x.countryName)+' · '+safe(x.sector)+'</small></td>'+
         '<td><span class="kimse-atlas-chip '+stageClass(x)+'">'+safe(x.stageLabel)+'</span><small>'+safe(phase)+'</small></td>'+
         '<td>'+safe(evidence)+ref+deadline+'</td>'+
         '<td>'+safe(p.nextAction||'근거 확인 후 진행')+(p.approvedWebFormNotSubmitted && /^https:\/\//.test(p.formURL||'')?'<div class="kimse-progress-form-link"><a href="'+safe(p.formURL)+'" target="_blank" rel="noopener noreferrer">공식 FOI 양식 열기 ↗</a></div>':'')+(p.routeVerified && /^https:\/\//.test(p.contactRouteURL||'')?'<div class="kimse-progress-form-link"><a href="'+safe(p.contactRouteURL)+'" target="_blank" rel="noopener noreferrer">기관 공식 문의경로 ↗</a></div>':'')+'</td>'+
-        '<td><span class="kimse-progress-unverified">협력 미확정</span><small>구매·계약 증거 0</small></td></tr>';
+        '<td><span class="kimse-progress-unverified">협력 미확정</span><small>낌새 직접 구매·계약 0</small></td></tr>';
     }).join('');
   }
   function nameFor(id) {
@@ -302,7 +302,7 @@
   }
   async function start() {
     try {
-      var r=await fetch('./rd-world-map-data.json?v=20261013-first-enquiry-routes2',{cache:'no-store'});
+      var r=await fetch('./rd-world-map-data.json?v=20261107-foi-replies-1',{cache:'no-store'});
       if(!r.ok)throw new Error('기관 자료 HTTP '+r.status);
       state.data=await r.json();
       if(!state.data||!Array.isArray(state.data.institutions)||state.data.institutions.length!==state.data.total)throw new Error('기관 원장 자료 무결성 오류');
